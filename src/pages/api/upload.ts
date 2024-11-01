@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import csvParser from 'csv-parser';
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
+import streamifier from 'streamifier';
 
 const prisma = new PrismaClient();
 
@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const results: any[] = [];
 
-            // Parse the CSV data
-            fs.createReadStream(req.file.buffer)
+            // Parse the CSV data from the buffer
+            streamifier.createReadStream(req.file.buffer)
                 .pipe(csvParser())
                 .on('data', (data) => results.push(data))
                 .on('end', async () => {
