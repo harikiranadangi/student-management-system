@@ -1,5 +1,5 @@
-# student-management-system
 
+# student-Management-System
 # Comprehensive Guide to Building a Database Management System with Next.js, Prisma, and MySQL
 
 ## Table of Contents
