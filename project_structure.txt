@@ -1,0 +1,22 @@
+D:\GITHUB\KOTAK-SALESIAN-SCHOOL
+│
+├── src
+│   ├── app              # Contains the Next.js application
+│   │   └── page.tsx     # Entry point for the application
+│   ├── models           # Directory for database models
+│   │   ├── Student.js   # Model definition for students
+│   │   ├── Grades.js    # Model definition for grades
+│   │   ├── Teachers.js   # Model definition for teachers
+│   │   ├── Admins.js    # Model definition for admins
+│   │   ├── Classes.js    # Model definition for classes
+│   │   ├── Parents.js    # Model definition for parents
+│   │   ├── Attendance.js  # Model definition for attendance
+│   │   ├── ClassSchedule.js # Model definition for class schedules
+│   │   ├── Activities.js  # Model definition for activities
+│   │   ├── Results.js     # Model definition for results
+│   │   └── Notifications.js # Model definition for notifications
+│   └── syncDatabase.ts   # Script for syncing database models with Prisma
+│
+├── .env                   # Environment variables
+├── next.config.ts         # Next.js configuration file
+└── package.json           # Project dependencies and scripts

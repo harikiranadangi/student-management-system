@@ -40,3 +40,4 @@ If you haven't created a Next.js project, run the following command:
 ```bash
 npx create-next-app@latest my-next-app --typescript
 cd my-next-app
+
