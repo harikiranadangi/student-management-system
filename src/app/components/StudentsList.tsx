@@ -1,120 +1,92 @@
-"use client";  // Mark this component as a client component
+"use client"; // Mark this component as a client component
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const AddStudentForm = () => {
-    const [studentName, setStudentName] = useState('');
-    const [studentGrade, setStudentGrade] = useState('');
-    const [studentMobileNumber, setStudentMobileNumber] = useState('');
+// Define the type for a student
+interface Student {
+    id: number; // Assuming you have an 'id' field
+    name: string;
+    grade: string;
+    mobileNumber: string;
+}
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+const StudentsList = () => {
+    const [students, setStudents] = useState<Student[]>([]); // Specify the type for students
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string>(''); // Specify the type for error
 
-        const response = await fetch('/api/addStudent', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                name: studentName,
-                grade: studentGrade,
-                mobileNumber: studentMobileNumber,
-                // Removed teacherId since you don't have teachers yet
-            }),
-        });
-
-        const result = await response.json();
-        if (!response.ok) {
-            console.error('Failed to add student:', result);
-            // Handle the error appropriately (e.g., show a message to the user)
-        } else {
-            // Handle the success (e.g., clear the form or show a success message)
-            console.log('Student added successfully:', result);
-            // Clear the form fields after submission
-            setStudentName('');
-            setStudentGrade('');
-            setStudentMobileNumber('');
+    // Fetch students from the backend API
+    const fetchStudents = async () => {
+        try {
+            const response = await fetch('/api/getStudents'); // Adjust the endpoint as needed
+            if (!response.ok) {
+                throw new Error('Failed to fetch students');
+            }
+            const data: Student[] = await response.json(); // Specify the type of the data
+            setStudents(data);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message); // Safely access the message property
+            } else {
+                setError('An unknown error occurred');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchStudents();
+    }, []);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
     return (
-        <form onSubmit={handleSubmit} style={formStyle}>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Name:</label>
-                <input
-                    type="text"
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    required
-                    style={inputStyle}
-                />
-            </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Grade:</label>
-                <input
-                    type="text"
-                    value={studentGrade}
-                    onChange={(e) => setStudentGrade(e.target.value)}
-                    required
-                    style={inputStyle}
-                />
-            </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Mobile Number:</label>
-                <input
-                    type="text"
-                    value={studentMobileNumber}
-                    onChange={(e) => setStudentMobileNumber(e.target.value)}
-                    required
-                    style={inputStyle}
-                />
-            </div>
-            <button type="submit" style={buttonStyle}>Add Student</button>
-        </form>
+        <div>
+            <h2>Students List</h2>
+            {students.length === 0 ? (
+                <p>No students found.</p>
+            ) : (
+                <table style={tableStyle}>
+                    <thead>
+                        <tr>
+                            <th style={headerStyle}>Name</th>
+                            <th style={headerStyle}>Grade</th>
+                            <th style={headerStyle}>Mobile Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {students.map((student) => (
+                            <tr key={student.id}>
+                                <td style={cellStyle}>{student.name}</td>
+                                <td style={cellStyle}>{student.grade}</td>
+                                <td style={cellStyle}>{student.mobileNumber}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
     );
 };
 
 // Styles
-const formStyle: React.CSSProperties = {
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-};
-
-const inputGroupStyle: React.CSSProperties = {
-    marginBottom: '15px',
-};
-
-const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontWeight: 'bold',
-    marginBottom: '5px',
-    color: 'black',  // Black font color for labels
-};
-
-const inputStyle: React.CSSProperties = {
+const tableStyle: React.CSSProperties = {
     width: '100%',
-    padding: '10px',
+    borderCollapse: 'collapse',
+};
+
+const headerStyle: React.CSSProperties = {
+    backgroundColor: '#f2f2f2',
+    padding: '8px',
     border: '1px solid #ddd',
-    borderRadius: '4px',
-    color: 'black',  // Black font color for input text
+    textAlign: 'left',
 };
 
-const buttonStyle: React.CSSProperties = {
-    padding: '10px 15px',
-    border: 'none',
-    borderRadius: '4px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
+const cellStyle: React.CSSProperties = {
+    padding: '8px',
+    border: '1px solid #ddd',
 };
 
-// Change button text color to black on hover
-const buttonHoverStyle: React.CSSProperties = {
-    ...buttonStyle,
-    color: 'black',  // Black font color when hovered
-};
-
-export default AddStudentForm;
+export default StudentsList;
