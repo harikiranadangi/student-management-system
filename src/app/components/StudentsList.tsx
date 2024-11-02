@@ -8,25 +8,27 @@ interface Student {
     name: string;
     grade: string;
     mobileNumber: string;
+    dateOfBirth: string; // Change to string since it comes as a string from API
+    address: string;
 }
 
 const StudentsList = () => {
-    const [students, setStudents] = useState<Student[]>([]); // Specify the type for students
+    const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string>(''); // Specify the type for error
+    const [error, setError] = useState<string>('');
 
     // Fetch students from the backend API
     const fetchStudents = async () => {
         try {
-            const response = await fetch('/api/getStudents'); // Adjust the endpoint as needed
+            const response = await fetch('/api/students'); // Change here
             if (!response.ok) {
                 throw new Error('Failed to fetch students');
             }
-            const data: Student[] = await response.json(); // Specify the type of the data
+            const data: Student[] = await response.json();
             setStudents(data);
         } catch (err) {
             if (err instanceof Error) {
-                setError(err.message); // Safely access the message property
+                setError(err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -44,7 +46,7 @@ const StudentsList = () => {
 
     return (
         <div>
-            <h2>Students List</h2>
+            <h2></h2>
             {students.length === 0 ? (
                 <p>No students found.</p>
             ) : (
@@ -54,6 +56,8 @@ const StudentsList = () => {
                             <th style={headerStyle}>Name</th>
                             <th style={headerStyle}>Grade</th>
                             <th style={headerStyle}>Mobile Number</th>
+                            <th style={headerStyle}>Date of Birth</th>
+                            <th style={headerStyle}>Address</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,6 +66,10 @@ const StudentsList = () => {
                                 <td style={cellStyle}>{student.name}</td>
                                 <td style={cellStyle}>{student.grade}</td>
                                 <td style={cellStyle}>{student.mobileNumber}</td>
+                                <td style={cellStyle}>
+                                    {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td style={cellStyle}>{student.address}</td>
                             </tr>
                         ))}
                     </tbody>

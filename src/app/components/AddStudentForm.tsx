@@ -3,17 +3,16 @@
 import React, { useState } from 'react';
 
 const AddStudentForm = () => {
-    // State hooks for form inputs
     const [studentName, setStudentName] = useState('');
     const [studentGrade, setStudentGrade] = useState('');
     const [studentMobileNumber, setStudentMobileNumber] = useState('');
+    const [studentDateOfBirth, setStudentDateOfBirth] = useState('');
+    const [studentAddress, setStudentAddress] = useState('');
 
-    // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Send POST request to the API
-        const response = await fetch('/api/addStudent', {
+        const response = await fetch('/api/students', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -22,6 +21,8 @@ const AddStudentForm = () => {
                 name: studentName,
                 grade: studentGrade,
                 mobileNumber: studentMobileNumber,
+                dateOfBirth: studentDateOfBirth,
+                address: studentAddress,
             }),
         });
 
@@ -29,13 +30,14 @@ const AddStudentForm = () => {
 
         if (!response.ok) {
             console.error('Failed to add student:', result);
-            // Handle the error appropriately (e.g., show a message to the user)
         } else {
             console.log('Student added successfully:', result);
-            // Clear the form fields after successful submission
+            // Reset form fields
             setStudentName('');
             setStudentGrade('');
             setStudentMobileNumber('');
+            setStudentDateOfBirth('');
+            setStudentAddress('');
         }
     };
 
@@ -71,6 +73,26 @@ const AddStudentForm = () => {
                     style={inputStyle}
                 />
             </div>
+            <div style={inputGroupStyle}>
+                <label style={labelStyle}>Date of Birth:</label>
+                <input
+                    type="date"
+                    value={studentDateOfBirth}
+                    onChange={(e) => setStudentDateOfBirth(e.target.value)}
+                    required
+                    style={inputStyle}
+                />
+            </div>
+            <div style={inputGroupStyle}>
+                <label style={labelStyle}>Address:</label>
+                <input
+                    type="text"
+                    value={studentAddress}
+                    onChange={(e) => setStudentAddress(e.target.value)}
+                    required
+                    style={inputStyle}
+                />
+            </div>
             <button type="submit" style={buttonStyle}>Add Student</button>
         </form>
     );
@@ -92,7 +114,7 @@ const labelStyle: React.CSSProperties = {
     display: 'block',
     fontWeight: 'bold',
     marginBottom: '5px',
-    color: 'black',  // Black font color for labels
+    color: 'black',
 };
 
 const inputStyle: React.CSSProperties = {
@@ -100,7 +122,7 @@ const inputStyle: React.CSSProperties = {
     padding: '10px',
     border: '1px solid #ddd',
     borderRadius: '4px',
-    color: 'black',  // Black font color for input text
+    color: 'black',
 };
 
 const buttonStyle: React.CSSProperties = {
@@ -111,12 +133,6 @@ const buttonStyle: React.CSSProperties = {
     color: 'white',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-};
-
-// Optional: Style for hover effect on button
-const buttonHoverStyle: React.CSSProperties = {
-    ...buttonStyle,
-    // Add hover styles here if needed
 };
 
 export default AddStudentForm;
