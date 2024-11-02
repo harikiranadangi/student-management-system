@@ -5,6 +5,7 @@
 import { useState } from 'react';
 
 const AddStudentForm = () => {
+    const [message, setMessage] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [classId, setClassId] = useState('');
@@ -29,10 +30,10 @@ const AddStudentForm = () => {
 
         if (response.ok) {
             // Handle success (e.g., clear the form, show a message)
+            setMessage('Student added succesfully');
             setName('');
             setEmail('');
             setClassId('');
-            console.log('Student added successfully');
         } else {
             // Handle error
             const errorText = await response.text(); // Get error text from response

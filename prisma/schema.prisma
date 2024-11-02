@@ -1,28 +1,63 @@
-datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL") // Set your DATABASE_URL in the .env file
-}
+// schema.prisma
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-model Student {
-    id       Int     @id @default(autoincrement())
-    name     String
-    email    String  @unique
-    classId  Int
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Teacher {
-    id       Int     @id @default(autoincrement())
-    name     String
-    email    String  @unique
+model Teachers {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  mobileNumber String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Students     Students[]
 }
 
-model Class {
-    id       Int     @id @default(autoincrement())
-    name     String
+model Students {
+  id           String     @id @default(uuid())
+  name         String
+  grade        String
+  mobileNumber String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  teacherId   String?
+  Teachers    Teachers?   @relation(fields: [teacherId], references: [id])
+  Attendance  Attendance[]
+  Payments    Payments[]
 }
 
-// Define other models as per your requirements
+model Attendance {
+  id        String   @id @default(uuid())
+  studentId String
+  lessonId  String
+  status    String
+  createdAt DateTime @default(now())
+
+  Students Students @relation(fields: [studentId], references: [id])
+}
+
+model ClassSchedule {
+  id        String   @id @default(uuid())
+  lessonId  String
+  dayOfWeek String
+  startTime DateTime
+  endTime   DateTime
+  frequency String
+}
+
+model Payments {
+  id          String   @id @default(uuid())
+  studentId   String
+  amount      Float
+  paymentDate DateTime @default(now())
+  status      String
+
+  Students Students @relation(fields: [studentId], references: [id])
+}
