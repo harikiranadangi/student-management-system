@@ -1,25 +1,27 @@
-// app/api/addStudent/route.ts
-
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
-    const { name, email, classId } = await request.json();
+    const { name, grade, mobileNumber } = await request.json();
 
     try {
-        const newStudent = await prisma.student.create({
+        const newStudent = await prisma.students.create({
             data: {
                 name,
-                email,
-                classId: Number(classId), // Ensure classId is a number
+                grade,
+                mobileNumber,
+                // Remove teacherId as you mentioned you don't have teachers yet
             },
         });
-        return NextResponse.json(newStudent); // Return the newly created student as JSON
-    } catch (error) {
-        console.error('Error adding student:', error); // Log the specific error
-        return NextResponse.json({ error: 'Failed to add student' }, { status: 500 }); // Return an error message
+        return NextResponse.json(newStudent);
+    } catch (error: any) { // Use 'any' to allow error to be of any type
+        console.error('Error adding student:', error);
+        return NextResponse.json(
+            { error: 'Failed to add student', details: error.message || 'Unknown error' },
+            { status: 500 }
+        );
     } finally {
         await prisma.$disconnect();
     }

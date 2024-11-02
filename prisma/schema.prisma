@@ -20,27 +20,27 @@ model Teachers {
 }
 
 model Students {
-  id           String     @id @default(uuid())
+  id           Int       @id @default(autoincrement())  // Updated to Int
   name         String
   grade        String
   mobileNumber String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  teacherId   String?
-  Teachers    Teachers?   @relation(fields: [teacherId], references: [id])
-  Attendance  Attendance[]
-  Payments    Payments[]
+  teacherId    String?
+  Teachers     Teachers? @relation(fields: [teacherId], references: [id])
+  Attendance   Attendance[]
+  Payments     Payments[]
 }
 
 model Attendance {
   id        String   @id @default(uuid())
-  studentId String
+  studentId Int      // Changed to Int
   lessonId  String
   status    String
   createdAt DateTime @default(now())
 
-  Students Students @relation(fields: [studentId], references: [id])
+  Students  Students @relation(fields: [studentId], references: [id])
 }
 
 model ClassSchedule {
@@ -54,10 +54,10 @@ model ClassSchedule {
 
 model Payments {
   id          String   @id @default(uuid())
-  studentId   String
+  studentId   Int      // Changed to Int
   amount      Float
   paymentDate DateTime @default(now())
   status      String
 
-  Students Students @relation(fields: [studentId], references: [id])
+  Students    Students @relation(fields: [studentId], references: [id])
 }
