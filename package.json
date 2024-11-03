@@ -14,8 +14,10 @@
     "csv-parser": "^3.0.0",
     "multer": "^1.4.5-lts.1",
     "next": "15.0.2",
-    "react": "19.0.0-rc-02c0e824-20241028",
-    "react-dom": "19.0.0-rc-02c0e824-20241028",
+    "re-chart": "^1.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {

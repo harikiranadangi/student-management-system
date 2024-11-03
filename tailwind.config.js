@@ -1,10 +1,27 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // Adjust the path according to your directory structure
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
+      colors: {
+        LamaSky: "#C3EBFA",
+        LamaSkyLight: "#EDF9FD",
+        lamaPurple: "#CFCEFF",
+        lamaPurpleLight: "#F1F0FF",
+        lamaYellow: "#FAE27C",
+        lamaYellowLight: "#FEFCE8",
+      },
+    },
   },
   plugins: [],
-}
+};
+
+module.exports = config;

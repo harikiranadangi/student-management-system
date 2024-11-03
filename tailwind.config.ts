@@ -8,12 +8,21 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        LamaSky: "#C3EBFA",
+        LamaSkyLight: "#EDF9FD",
+        lamaPurple: "#CFCEFF",
+        lamaPurpleLight: "#F1F0FF",
+        lamaYellow: "#FAE27C",
+        lamaYellowLight: "#FEFCE8",
       },
     },
   },
   plugins: [],
 };
+
 export default config;
