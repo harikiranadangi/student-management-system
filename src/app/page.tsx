@@ -11,7 +11,7 @@ const Home = () => {
                         <Link href="/students">View Students</Link>
                     </li>
                     <li>
-                        <Link href="/add-student">Add Student</Link>
+                        <Link href="/students/add">Add Student</Link>
                     </li>
                 </ul>
             </nav>
