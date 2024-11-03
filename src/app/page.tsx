@@ -1,14 +1,20 @@
 // app/page.tsx
-import AddStudentForm from './components/AddStudentForm';
-import StudentsList from './components/StudentsList';
+import Link from 'next/link';
 
 const Home = () => {
     return (
         <div>
-            <h1>Add a New Student</h1>
-            <AddStudentForm />
-            <h2>Student List</h2>
-            <StudentsList />
+            <h1>Welcome to the Student Management System</h1>
+            <nav>
+                <ul>
+                    <li>
+                        <Link href="/students">View Students</Link>
+                    </li>
+                    <li>
+                        <Link href="/add-student">Add Student</Link>
+                    </li>
+                </ul>
+            </nav>
         </div>
     );
 };

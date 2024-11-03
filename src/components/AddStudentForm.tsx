@@ -1,6 +1,8 @@
+// src/components/AddStudentForm.tsx
 "use client"; // Mark this component as a client component
 
 import React, { useState } from 'react';
+import styles from './AddStudentForm.module.css'; // Import the CSS module
 
 const AddStudentForm = () => {
     const [studentName, setStudentName] = useState('');
@@ -32,7 +34,7 @@ const AddStudentForm = () => {
             console.error('Failed to add student:', result);
         } else {
             console.log('Student added successfully:', result);
-            // Reset form fields
+            // Clear the form after successful submission
             setStudentName('');
             setStudentGrade('');
             setStudentMobileNumber('');
@@ -42,97 +44,55 @@ const AddStudentForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={formStyle}>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Name:</label>
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
+            <div>
+                <label className={styles.label}>Name:</label>
                 <input
                     type="text"
                     value={studentName}
                     onChange={(e) => setStudentName(e.target.value)}
                     required
-                    style={inputStyle}
                 />
             </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Grade:</label>
+            <div>
+                <label className={styles.label}>Grade:</label>
                 <input
                     type="text"
                     value={studentGrade}
                     onChange={(e) => setStudentGrade(e.target.value)}
                     required
-                    style={inputStyle}
                 />
             </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Mobile Number:</label>
+            <div>
+                <label className={styles.label}>Mobile Number:</label>
                 <input
                     type="text"
                     value={studentMobileNumber}
                     onChange={(e) => setStudentMobileNumber(e.target.value)}
                     required
-                    style={inputStyle}
                 />
             </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Date of Birth:</label>
+            <div>
+                <label className={styles.label}>Date of Birth:</label>
                 <input
                     type="date"
                     value={studentDateOfBirth}
                     onChange={(e) => setStudentDateOfBirth(e.target.value)}
                     required
-                    style={inputStyle}
                 />
             </div>
-            <div style={inputGroupStyle}>
-                <label style={labelStyle}>Address:</label>
+            <div>
+                <label className={styles.label}>Address:</label>
                 <input
                     type="text"
                     value={studentAddress}
                     onChange={(e) => setStudentAddress(e.target.value)}
                     required
-                    style={inputStyle}
                 />
             </div>
-            <button type="submit" style={buttonStyle}>Add Student</button>
+            <button type="submit">Add Student</button>
         </form>
     );
-};
-
-// Styles
-const formStyle: React.CSSProperties = {
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-};
-
-const inputGroupStyle: React.CSSProperties = {
-    marginBottom: '15px',
-};
-
-const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontWeight: 'bold',
-    marginBottom: '5px',
-    color: 'black',
-};
-
-const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    color: 'black',
-};
-
-const buttonStyle: React.CSSProperties = {
-    padding: '10px 15px',
-    border: 'none',
-    borderRadius: '4px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
 };
 
 export default AddStudentForm;

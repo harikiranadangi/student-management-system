@@ -1,0 +1,12 @@
+/* src/components/AddStudentForm.module.css */
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #000;
+}
+
+.label {
+    color: white;
+    font: bold,#000;
+}
