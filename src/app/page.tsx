@@ -8,10 +8,10 @@ const Home = () => {
             <nav>
                 <ul>
                     <li>
-                        <Link href="/students">View Students</Link>
+                       // <Link href="/students">View Students</Link>
                     </li>
                     <li>
-                        <Link href="/students/add">Add Student</Link>
+                     //   <Link href="/students/add">Add Student</Link>
                     </li>
                 </ul>
             </nav>
