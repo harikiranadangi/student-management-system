@@ -1,0 +1,18 @@
+/* src/components/layouts/MainLayout.module.css */
+
+header {
+    background-color: #0070f3;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: #f1f1f1;
+}
+
+main {
+    padding: 1rem;
+}

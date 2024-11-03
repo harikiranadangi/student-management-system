@@ -1,12 +1,14 @@
-// In src/app/students/page.tsx
+// src/app/students/page.tsx
+
 import StudentsList from '@/components/StudentsList';
+import MainLayout from '@/components/layouts/MainLayout';
 
 const StudentsPage = () => {
     return (
-        <div>
+        <MainLayout title="Students List">
             <h2>Students List</h2>
             <StudentsList />
-        </div>
+        </MainLayout>
     );
 };
 
