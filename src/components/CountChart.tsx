@@ -12,7 +12,7 @@ import { count } from "console";
 // Sample data for the chart
 const data = [
   { name: "Total", count: 1735, fill: "white" },
-  { name: "Female", count: 600, fill: "#FAE27C" },
+  { name: "Female", count: 800, fill: "#FAE27C" },
   { name: "Male", count: 865, fill: "#C3EBFA" },
 ];
 
@@ -49,19 +49,19 @@ const CountChart = () => {
             />
           </RadialBarChart>
         </ResponsiveContainer>
-        <Image src="/malefemale.png" alt="" width={50} height={50} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"/>
+        <Image src="/malefemale.png" alt="" width={70} height={70} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"/>
       </div>
       {/* BOTTOM SECTION */}
-      <div className='flex justify-center gap-16 mt-4'>
+      <div className='flex justify-center gap-16 '>
         <div className='flex flex-col items-center'>
-          <div className='w-5 h-5 bg-lamaSky rounded-full' />
-          <h1 className="font-bold">1,234</h1>
-          <h2 className="text-xs text-gray-500">Boys (55%)</h2>
+        <div className='w-5 h-5 bg-black rounded-full' />
+          <h1 className="font-bold">865</h1>
+          <h2 className="text-xs text-gray-300">Boys (55%)</h2>
         </div>
         <div className='flex flex-col items-center'>
-          <div className='w-5 h-5 bg-lamaPink rounded-full' />
-          <h1 className="font-bold">1,234</h1>
-          <h2 className="text-xs text-gray-500">Girls (45%)</h2>
+          <div className='w-5 h-5 bg-lamaYellow rounded-full' />
+          <h1 className="font-bold">800</h1>  
+          <h2 className="text-xs text-gray-300">Girls (45%)</h2>
         </div>
       </div>
     </div>
