@@ -48,6 +48,7 @@ const StudentsList = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
                 <tr>
+                    <th>Id</th>
                     <th>Name</th>
                     <th>Grade</th>
                     <th>Mobile Number</th>
@@ -58,6 +59,7 @@ const StudentsList = () => {
             <tbody>
                 {students.map(student => (
                     <tr key={student.id}>
+                        <td>{student.id}</td>
                         <td>{student.name}</td>
                         <td>{student.grade}</td>
                         <td>{student.mobileNumber}</td>

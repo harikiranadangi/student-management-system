@@ -25,7 +25,7 @@ const Menu = () => {
   return (
     <div className="mt-4 text-sm">
       {menuItems.map((item) => (
-        <Link href={item.href} key={item.label} className="flex items-center justify-center lg:justify-start gap-2 p-2 hover:bg-gray-100 rounded">
+        <Link href={item.href} key={item.label} className="flex items-center justify-center gap-2 p-2 rounded lg:justify-start hover:bg-gray-100">
           <Image src={item.icon} alt={item.label} width={20} height={20} />
           <span className="hidden lg:block">{item.label}</span>
         </Link>

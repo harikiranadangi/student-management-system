@@ -3,6 +3,16 @@ D:\GITHUB\KOTAK-SALESIAN-SCHOOL
 ├── src
 │   ├── app              # Contains the Next.js application
 │   │   └── page.tsx     # Entry point for the application
+|   |
+|   ├── components
+|   |   ├── AddStudentForm.tsx 
+|   |   ├── CountChart.tsx
+|   |   ├── Menu.tsx
+|   |   ├── Navbar.tsx
+|   |   ├── StudentList.tsx
+|   |   ├── UserCard.tsx
+|   |   └── UserCardsContainer.tsx
+|   |
 │   ├── models           # Directory for database models
 │   │   ├── Student.js   # Model definition for students
 │   │   ├── Grades.js    # Model definition for grades
