@@ -2,25 +2,3 @@
 @tailwind components;
 @tailwind utilities;
 
-.react-calendar {
-    width: 100% !important;
-    max-width: 100% !important; /* Ensures it doesn’t exceed the container */
-    border: none !important;
-    font-family: "Inter", sans-serif !important;
-}
-
-.react-calendar__tile {
-    flex: 1 1 14.28%; /* Ensure tiles fill each row completely (7 days in a week) */
-    max-width: 100%;
-    padding: 10px; /* Optional: adjust padding to suit the layout */
-}
-
-.react-calendar__month-view__days {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.react-calendar__navigation {
-    display: flex;
-    justify-content: space-between;
-}
