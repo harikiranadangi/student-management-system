@@ -9,13 +9,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-screen flex">
+    <div className="flex h-screen">
       {/* LEFT */}
       <div className='w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] '>
-        <Link href="/" className="flex items-center justify-center lg:justify-start gap-2 p-4"
+        <Link href="/" className="flex items-center justify-center gap-2 p-4 lg:justify-start"
         >
           <Image src="/logo.png" alt="logo" width={50} height={50} />
-          <span className="hidden lg:block">Kotak Salesian School</span>
+          <span className="hidden font-bold lg:block">Kotak Salesian School</span>
         </Link>
         <Menu/>
       </div>
