@@ -17,28 +17,104 @@
   color: black !important; 
 }
 
-/* Limit the width of calendar events */
-.rbc-event {
-  width: 60px; /* Adjust this value as needed */
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+
+.rbc-btn-group:first-child{
+  display: none !important ;
 }
 
-
-.rbc-event-label {
-  white-space: nowrap; /* Ensure event labels don't overflow */
-  text-overflow: ellipsis; /* Show ellipsis if text is too long */
-  overflow: hidden;
+.rbc-toolbar-label{
+  text-align: right !important;
+  padding: 0px 20px;
 }
 
-/* Optional: Adjust the calendar view to have a wider layout */
-.rbc-work-week-view .rbc-time-slot {
-  width: 150px; /* Customize the width of the time slots */
+.rbc-btn-group:last-child{
+  font-size: 13px;
 }
 
-.rbc-day-slot {
-  width: 150px; /* Customize the width of day slots */
+.rbc-btn-group:last-child{
+  border: none;
+  background-color: #f1f0ff !important;
 }
 
+.rbc-toolbar button.rbc-active{
+  background-color: #dbdafe !important;
+  box-shadow: none !important;
+}
 
+.rbc-time-view{
+  border-color: #eee;
+}
+
+.rbc-time-header{
+  display: none !important;
+}
+
+.rbc-time-content{
+  border: none !important;
+}
+
+.rbc-time-gutter.rbc-time-column{
+  font-size: 12px !important;
+}
+
+.rbc-time-gutter.rbc-time-column.rbc-timeslot-group{
+  padding: 0px 20px !important;
+}
+
+.rbc-time-slot {
+  height: 25px !important; /* Adjust as needed for your desired row height */
+}
+
+.rbc-timeslot-group{
+  background-color: #f7fdff !important;
+}
+
+.rbc-day-slot{
+  font-size: 14px;
+}
+
+.rbc-event{
+  border: none !important;
+  color: black !important;
+  padding: 10px !important;
+  margin: 0px !important;
+  width: 90%;
+  left: 0%;
+}
+
+.rbc-event:nth-child(1) {
+  background-color: #e2f8ff !important;
+}
+
+.rbc-event:nth-child(2) {
+  background-color: #fefce8 !important;
+}
+
+.rbc-event:nth-child(3) {
+  background-color: #f2f1ff !important;
+}
+
+.rbc-event:nth-child(4) {
+  background-color: #fdf2fb !important;
+}
+
+.rbc-event:nth-child(5) {
+  background-color: #e2f8ff !important;
+}
+
+.rbc-event:nth-child(6) {
+  background-color: #fefce8 !important;
+}
+
+.rbc-event:nth-child(7) {
+  background-color: #f2f1ff !important;
+}
+
+.rbc-event:nth-child(8) {
+  background-color: #fdf2fb !important;
+}
+
+.rbc-event-label{
+  color: gray !important;
+  margin-bottom: 3px;
+}
