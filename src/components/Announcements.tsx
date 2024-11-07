@@ -20,11 +20,11 @@ const Announcements = () => {
             <div className='p-4 rounded-md bg-LamaPurple'>
                 <div className='flex items-center justify-between'>
                     <h2 className="font-medium">📚 Library Book Fair</h2>
-                    <span className="px-1 py-1 text-xs text-gray-400 bg-white rounded-md">
+                    <span className="px-1 py-1 text-xs text-gray-500 bg-white rounded-md">
                     2025-01-01
                     </span>
                 </div>
-                <p>
+                <p className="mt-1 text-sm text-gray-400">
                 Our annual Library Book Fair is back! Students and parents are invited to explore a variety of books and resources. Special discounts will be available. Don’t miss out!  
                 </p>
                 
@@ -32,9 +32,9 @@ const Announcements = () => {
             <div className='p-4 rounded-md bg-LamaYellow'>
                 <div className='flex items-center justify-between'>
                     <h2 className="font-medium">🏆 Sports Day Celebration</h2>
-                    <span className="px-1 py-1 text-xs text-gray-400 bg-white rounded-md">2025-01-01</span>
+                    <span className="px-1 py-1 text-xs text-gray-500 bg-white rounded-md">2025-01-01</span>
                 </div>
-                <p>
+                <p className="mt-1 text-sm text-gray-500">
                 Get ready for our annual Sports Day on December 5! Students will compete in various sports and games. Families are invited to join and cheer for their kids. Let’s make it a memorable event!    
                 </p>
             </div>
