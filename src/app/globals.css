@@ -17,4 +17,26 @@
   color: black !important; 
 }
 
+/* Add this to your styles.css or global styles */
+.rbc-event {
+  min-width: 100px; /* Minimum width of events */
+  max-width: 180px; /* Maximum width of events */
+  width: auto; /* Let the width adjust based on content */
+}
+
+.rbc-event-label {
+  white-space: nowrap; /* Ensure event labels don't overflow */
+  text-overflow: ellipsis; /* Show ellipsis if text is too long */
+  overflow: hidden;
+}
+
+/* Optional: Adjust the calendar view to have a wider layout */
+.rbc-work-week-view .rbc-time-slot {
+  width: 150px; /* Customize the width of the time slots */
+}
+
+.rbc-day-slot {
+  width: 150px; /* Customize the width of day slots */
+}
+
 
