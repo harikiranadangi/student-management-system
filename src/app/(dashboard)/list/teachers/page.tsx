@@ -1,3 +1,4 @@
+import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 
@@ -21,12 +22,11 @@ const TeacherList = () => {
             </button>
           
           </div>
-      </div>
+        </div>
       </div>
       {/* LIST: Description */}
-      <div className=''></div>
       {/* PAGINATIOM: Description */}
-      <div className=''></div>
+        <Pagination/>
 
     </div>
   );
