@@ -39,7 +39,7 @@ const columns = [
     },
     {
       header: "Address",
-      accessor: "address",
+      accessor: "address", 
       className: "hidden lg:table-cell",
     },
     {
@@ -49,7 +49,7 @@ const columns = [
   ];
   
 
-const TeacherList = () => {
+const StudentList = () => {
   const renderRow = (item: Student) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
       <td className="flex items-center gap-4 p-4">
@@ -110,4 +110,4 @@ const TeacherList = () => {
   );
 };
 
-export default TeacherList;
+export default StudentList;
