@@ -99,9 +99,11 @@ const TeacherList = () => {
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/create.png" alt="" width={14} height={14} />
-            </button>
+            {role === "admin" && (
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/create.png" alt="" width={14} height={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
