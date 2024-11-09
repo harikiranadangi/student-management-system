@@ -9,44 +9,79 @@ type Student = {
   id: number;
   studentId: string;
   name: string;
-  email?: string;
-  photo: string;
-  phone?: string;
-  grade: number;
+  branch: string;
   class: string;
-  address: string;
+  gender: string;
+  parentName: string;
+  dob: string;
+  mobile: string;
+  religion: string;
+  caste: string;
+  language: string;
 };
 
 const columns = [
-    {
-      header: "Info",
-      accessor: "info",
-    },
-    {
-      header: "Student ID",
-      accessor: "studentId",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Grade",
-      accessor: "grade",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Phone",
-      accessor: "phone",
-      className: "hidden lg:table-cell",
-    },
-    {
-      header: "Address",
-      accessor: "address", 
-      className: "hidden lg:table-cell",
-    },
-    {
-      header: "Actions",
-      accessor: "action",
-    },
-  ];
+  {
+    header: "Info",
+    accessor: "name",
+  },
+  {
+    header: "Student ID",
+    accessor: "studentId",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Branch",
+    accessor: "branch",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Gender",
+    accessor: "gender",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Parent Name",
+    accessor: "parentName",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "DOB",
+    accessor: "dob",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Mobile",
+    accessor: "mobile",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Religion",
+    accessor: "religion",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Caste",
+    accessor: "caste",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Language",
+    accessor: "language",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Actions",
+    accessor: "action",
+  },
+];
+
+
   
 
 const StudentList = () => {
@@ -59,10 +94,16 @@ const StudentList = () => {
           <p className="text-xs text-gray-500">{item.class}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.studentId}</td>
-      <td className="hidden md:table-cell">{item.grade}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
-      <td className="hidden md:table-cell">{item.address}</td>
+      <td className="hidden md:table-cell">{item.studentId}</td>  {/* For Student ID */}
+      <td className="hidden md:table-cell">{item.branch}</td>  {/* For Branch */}
+      <td className="hidden md:table-cell">{item.class}</td>  {/* For Class */}
+      <td className="hidden lg:table-cell">{item.gender}</td>  {/* For Gender */}
+      <td className="hidden lg:table-cell">{item.parentName}</td>  {/* For Parent Name */}
+      <td className="hidden lg:table-cell">{item.dob}</td>  {/* For DOB */}
+      <td className="hidden lg:table-cell">{item.mobile}</td>  {/* For Mobile */}
+      <td className="hidden lg:table-cell">{item.religion}</td>  {/* For Religion */}
+      <td className="hidden lg:table-cell">{item.caste}</td>  {/* For Caste */}
+      <td className="hidden lg:table-cell">{item.language}</td>  {/* For Language */}
       <td>
         <div className="flex items-center gap-2">
           <Link href={`/list/teachers/${item.id}`}>
