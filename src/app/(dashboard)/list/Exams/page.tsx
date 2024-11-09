@@ -1,7 +1,7 @@
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { examsData, lessonsData, role} from "@/lib/data";
+import { examsData,  role} from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -67,7 +67,7 @@ const ExamsList = () => {
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Lessons</h1>
+        <h1 className="hidden text-lg font-semibold md:block">All Exams</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
