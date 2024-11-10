@@ -45,11 +45,6 @@ const TeacherForm = ({
       return <form className="flex flex-col gap-8" onSubmit={onSubmit}>
         <h1 className="text-xl font-semibold">Create a New Teacher</h1>
         <span className="text-xs font-medium text-gray-400">Authentication Information</span>
-        <div className='flex flex-col gap-2 md:w-1/4'>
-        <label className="text-xs text-gray-500">Username</label>
-        <input type="text" {...register("username")} className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" />
-        {errors.username?.message && <p className="text-xs text-red-400">{errors.name?.message?.toString()}</p>}
-        </div>
         <span className="text-xs font-medium text-gray-400">Personal Information</span>
         <button className="p-2 text-white bg-blue-400 rounded-md">{type==="create" ? "Create" : "Update"}</button>
 </form>
