@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
 import InputField from "../InputField";
+import AddStudentForm from "../AddStudentForm";
 
 // Define the schema with zod
 const schema = z.object({
@@ -24,7 +25,7 @@ const schema = z.object({
 // Infer the form data type from schema
 type Inputs = z.infer<typeof schema>;
 
-const TeacherForm = ({ type, data }: { type: "create" | "update"; data?: Inputs }) => {
+const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs }) => {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>({
         resolver: zodResolver(schema),
         defaultValues: data,
@@ -36,7 +37,7 @@ const TeacherForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-            <h1 className="text-xl font-semibold">Create a new teacher</h1>
+            <h1 className="text-xl font-semibold">Create a new student</h1>
             <span className="text-xs font-medium text-gray-400">Authentication Information</span>
             <div className="flex flex-wrap justify-between gap-4">
                 <InputField label="Username" name="username" defaultValue={data?.username} register={register} error={errors?.username} />
@@ -111,4 +112,4 @@ const TeacherForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
     );
 };
 
-export default TeacherForm;
+export default StudentForm;
