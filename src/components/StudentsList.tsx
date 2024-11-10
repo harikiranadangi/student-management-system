@@ -1,15 +1,16 @@
 // src/components/StudentsList.tsx
-"use client";
+"use client"; // Ensure this component is rendered on the client
 
 import React, { useEffect, useState } from 'react';
 
+// Define the type for a student
 interface Student {
     id: number;
     name: string;
     grade: string;
     mobileNumber: string;
-    dateOfBirth: string;
-    address: string;
+    dateOfBirth: string; // Add any other properties you need
+    address: string; // Add any other properties you need
 }
 
 const StudentsList = () => {
@@ -41,29 +42,29 @@ const StudentsList = () => {
     }, []);
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (error) return <div style={{ color: 'red', fontWeight: 'bold' }}>Error: {error}</div>;
 
     return (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
             <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Grade</th>
-                    <th>Mobile Number</th>
-                    <th>Date of Birth</th>
-                    <th>Address</th>
+                <tr style={{ backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Id</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Name</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Grade</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Mobile Number</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Date of Birth</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Address</th>
                 </tr>
             </thead>
             <tbody>
-                {students.map((student) => (
-                    <tr key={student.id}>
-                        <td>{student.id}</td>
-                        <td>{student.name}</td>
-                        <td>{student.grade}</td>
-                        <td>{student.mobileNumber}</td>
-                        <td>{new Date(student.dateOfBirth).toLocaleDateString()}</td>
-                        <td>{student.address}</td>
+                {students.map(student => (
+                    <tr key={student.id} style={{ borderBottom: '1px solid #ddd' }}>
+                        <td style={{ padding: '8px' }}>{student.id}</td>
+                        <td style={{ padding: '8px' }}>{student.name}</td>
+                        <td style={{ padding: '8px' }}>{student.grade}</td>
+                        <td style={{ padding: '8px' }}>{student.mobileNumber}</td>
+                        <td style={{ padding: '8px' }}>{new Date(student.dateOfBirth).toLocaleDateString()}</td>
+                        <td style={{ padding: '8px' }}>{student.address}</td>
                     </tr>
                 ))}
             </tbody>
