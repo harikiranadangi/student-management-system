@@ -4,19 +4,20 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 
-
+// Dynamically import the form components
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
- 
+
+// Define the available forms based on the table type
 const forms: {
   [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
 } = {
   teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />
+  student: (type, data) => <StudentForm type={type} data={data} />,
 };
 
 const FormModal = ({
@@ -50,24 +51,25 @@ const FormModal = ({
       ? "bg-lamaSky"
       : "bg-lamaPurple";
 
-
   const [open, setOpen] = useState(false);
 
+  // Define the form to render based on the type and table
   const Form = () => {
-    return type === "delete" && id ? (
-      <form action="" className="flex flex-col gap-4 p-4">
-        <span className="font-medium text-center">
-          All data will be lost. Are you sure you want to delete this {table}?
-        </span>
-        <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
-          Delete
-        </button>
-      </form>
-    ) : type === "create" || "update" ? (
-      forms[table](type, data)
-    ) : (
-      "Form not found!" 
-    );
+    if (type === "delete" && id) {
+      return (
+        <form action="" className="flex flex-col gap-4 p-4">
+          <span className="font-medium text-center">
+            All data will be lost. Are you sure you want to delete this {table}?
+          </span>
+          <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
+            Delete
+          </button>
+        </form>
+      );
+    } else if (type === "create" || type === "update") {
+      return forms[table] ? forms[table](type, data) : <div>Form not found!</div>;
+    }
+    return <div>Form not found!</div>;
   };
 
   return (
@@ -86,7 +88,7 @@ const FormModal = ({
               className="absolute cursor-pointer top-4 right-4"
               onClick={() => setOpen(false)}
             >
-              <Image src="/close.png" alt="" width={14} height={14} />
+              <Image src="/close.png" alt="Close" width={14} height={14} />
             </div>
           </div>
         </div>
