@@ -22,20 +22,15 @@ type Student = {
 
 const columns = [
   {
-    header: "Info",
-    accessor: "name",
-  },
-  {
-    header: "Student ID",
+    header: "Id",
     accessor: "studentId",
     className: "hidden md:table-cell",
   },
   {
-    header: "Branch",
-    accessor: "branch",
-    className: "hidden md:table-cell",
+    header: "Student Name",
+    accessor: "name",
   },
-  {
+ {
     header: "Class",
     accessor: "class",
     className: "hidden md:table-cell",
@@ -87,24 +82,19 @@ const columns = [
 const StudentList = () => {
   const renderRow = (item: Student) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      <td className="flex items-center gap-4 p-4">
-        <Image src={item.photo} alt="" width={40} height={40} className="object-cover w-10 h-10 rounded-full md:hidden xl:block"/>
-        <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item.class}</p>
-        </div>
-      </td>
-      <td className="hidden md:table-cell">{item.studentId}</td>  {/* For Student ID */}
-      <td className="hidden md:table-cell">{item.branch}</td>  {/* For Branch */}
-      <td className="hidden md:table-cell">{item.class}</td>  {/* For Class */}
-      <td className="hidden lg:table-cell">{item.gender}</td>  {/* For Gender */}
-      <td className="hidden lg:table-cell">{item.parentName}</td>  {/* For Parent Name */}
-      <td className="hidden lg:table-cell">{item.dob}</td>  {/* For DOB */}
-      <td className="hidden lg:table-cell">{item.mobile}</td>  {/* For Mobile */}
-      <td className="hidden lg:table-cell">{item.religion}</td>  {/* For Religion */}
-      <td className="hidden lg:table-cell">{item.caste}</td>  {/* For Caste */}
-      <td className="hidden lg:table-cell">{item.language}</td>  {/* For Language */}
-      <td>
+      {/*<td className="flex items-center gap-4 p-4">
+          <Image src={item.photo} alt="" width={40} height={40} className="object-cover w-10 h-10 rounded-full md:hidden xl:block"/>*/}
+       <td className="hidden md:table-cell">{item.studentId}</td> {/* For Student ID */}
+       <td className="font-semibold">{item.name}</td>
+       <td className="hidden md:table-cell">{item.class}</td>  {/* For Class */}
+       <td className="hidden lg:table-cell">{item.gender}</td>  {/* For Gender */}
+       <td className="hidden lg:table-cell">{item.parentName}</td>  {/* For Parent Name */}
+       <td className="hidden lg:table-cell">{item.dob}</td>  {/* For DOB */}
+       <td className="hidden lg:table-cell">{item.mobile}</td>  {/* For Mobile */}
+       <td className="hidden lg:table-cell">{item.religion}</td>  {/* For Religion */}
+       <td className="hidden lg:table-cell">{item.caste}</td>  {/* For Caste */}
+       <td className="hidden lg:table-cell">{item.language}</td>  {/* For Language */}
+       <td>
         <div className="flex items-center gap-2">
           <Link href={`/list/teachers/${item.id}`}>
             <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
