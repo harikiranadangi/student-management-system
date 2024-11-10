@@ -4,12 +4,31 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 
+{/* 
+// USE LAZY LOADING
+
+import TeacherForm from "./forms/TeacherForm";
+import StudentForm from "./forms/StudentForm";
+
+const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+ 
+const forms: {
+  [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
+} = {
+  teacher: (type, data) => <TeacherForm type={type} data={data} />,
+  student: (type, data) => <StudentForm type={type} data={data} />
+};
+*/}
 const FormModal = ({
   table,
   type,
   data,
   id,
-  className = "",
 }: {
   table:
     | "teacher"
@@ -27,10 +46,15 @@ const FormModal = ({
   type: "create" | "update" | "delete";
   data?: any;
   id?: number;
-  className?: string; // Add className as an optional prop
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
-  const bgColor = type === "create" ? "bg-lamaYellow" : type === "update" ? "bg-lamaSky" : "bg-lamaPurple";
+  const bgColor =
+    type === "create"
+      ? "bg-lamaYellow"
+      : type === "update"
+      ? "bg-lamaSky"
+      : "bg-lamaPurple";
+
 
   const [open, setOpen] = useState(false);
 
@@ -44,17 +68,16 @@ const FormModal = ({
           Delete
         </button>
       </form>
-    ) : type === "create" || type === "update" ? (
-      forms[table](type, data)
+    
     ) : (
-      "Form not found!"
+      "Create or update form!"
     );
   };
 
   return (
     <>
       <button
-        className={`${size} flex items-center justify-center rounded-full ${bgColor} ${className}`}
+        className={`${size} flex items-center justify-center rounded-full ${bgColor}`}
         onClick={() => setOpen(true)}
       >
         <Image src={`/${type}.png`} alt="" width={16} height={16} />
