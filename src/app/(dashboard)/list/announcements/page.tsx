@@ -4,7 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { announcementsData, role} from "@/lib/data";
 import Image from "next/image";
-import Link from "next/link";
+
 
 type Announcements = {
       id: number,
@@ -45,8 +45,8 @@ const AnnouncementsList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
               <>
-              <FormModal table="announcement" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="announcement" type="delete" className="p-2 text-white rounded-full bg-LamaSky" /> 
+              <FormModal table="announcement" type="update" data={item}  /> 
+              <FormModal table="announcement" type="delete"  /> 
              </>
           )}
         </div>
@@ -69,7 +69,7 @@ const AnnouncementsList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="announcement" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+                <FormModal table="announcement" type="create" /> 
             )}
           </div>
         </div>
