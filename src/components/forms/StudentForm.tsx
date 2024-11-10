@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
 import InputField from "../InputField";
-import AddStudentForm from "../AddStudentForm";
+
 
 // Define the schema with zod
 const schema = z.object({
