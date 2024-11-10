@@ -72,8 +72,8 @@ const TeacherList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
             <>
-            <FormModal table="subject" type="update" data={item} /> 
-            <FormModal table="subject" type="delete"  /> 
+            <FormModal table="teacher" type="update" data={item} /> 
+            <FormModal table="teacher" type="delete" /> 
             </>
            )}
         </div>
@@ -96,7 +96,7 @@ const TeacherList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="subject" type="create"/> 
+                <FormModal table="teacher" type="create"/> 
             )}
           </div>
         </div>
