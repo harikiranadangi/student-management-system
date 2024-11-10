@@ -51,8 +51,8 @@ const AssignmentsList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
             <>
-              <FormModal table="student" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="student" type="delete" id={item.id} className="p-2 text-white rounded-full bg-LamaPurple" />
+              <FormModal table="assignment" type="update" data={item}  /> 
+              <FormModal table="assignment" type="delete" id={item.id} />
             </>
           )}
         </div>
@@ -75,7 +75,7 @@ const AssignmentsList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="student" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+                <FormModal table="assignment" type="create" /> 
             )}
           </div>
         </div>
