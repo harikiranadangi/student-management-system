@@ -4,7 +4,6 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { role, teachersData } from "@/lib/data";
 import Image from "next/image";
-import Link from "next/link";
 
 type Teacher = {
   id: number;
@@ -73,8 +72,8 @@ const TeacherList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
             <>
-            <FormModal table="subject" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-            <FormModal table="subject" type="delete" className="p-2 text-white rounded-full bg-LamaSky" /> 
+            <FormModal table="subject" type="update" data={item} /> 
+            <FormModal table="subject" type="delete"  /> 
             </>
            )}
         </div>
@@ -97,7 +96,7 @@ const TeacherList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="subject" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+                <FormModal table="subject" type="create"/> 
             )}
           </div>
         </div>
