@@ -1,3 +1,4 @@
+// src/components/StudentList.tsx
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -22,85 +23,38 @@ type Student = {
 };
 
 const columns = [
-  {
-    header: "Id",
-    accessor: "studentId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Student Name",
-    accessor: "name",
-  },
- {
-    header: "Class",
-    accessor: "class",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Gender",
-    accessor: "gender",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Parent Name",
-    accessor: "parentName",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "DOB",
-    accessor: "dob",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Mobile",
-    accessor: "mobile",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Religion",
-    accessor: "religion",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Caste",
-    accessor: "caste",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Language",
-    accessor: "language",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Id", accessor: "studentId", className: "hidden md:table-cell" },
+  { header: "Student Name", accessor: "name" },
+  { header: "Class", accessor: "class", className: "hidden md:table-cell" },
+  { header: "Gender", accessor: "gender", className: "hidden lg:table-cell" },
+  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell" },
+  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell" },
+  { header: "Mobile", accessor: "mobile", className: "hidden lg:table-cell" },
+  { header: "Religion", accessor: "religion", className: "hidden lg:table-cell" },
+  { header: "Caste", accessor: "caste", className: "hidden lg:table-cell" },
+  { header: "Language", accessor: "language", className: "hidden lg:table-cell" },
+  { header: "Actions", accessor: "action" },
 ];
-
-
-  
 
 const StudentList = () => {
   const renderRow = (item: Student) => (
-    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      {/*<td className="flex items-center gap-4 p-4">
-          <Image src={item.photo} alt="" width={40} height={40} className="object-cover w-10 h-10 rounded-full md:hidden xl:block"/>*/}
-       <td className="hidden md:table-cell">{item.studentId}</td> {/* For Student ID */}
-       <td className="font-semibold">{item.name}</td>
-       <td className="hidden md:table-cell">{item.class}</td>  {/* For Class */}
-       <td className="hidden lg:table-cell">{item.gender}</td>  {/* For Gender */}
-       <td className="hidden lg:table-cell">{item.parentName}</td>  {/* For Parent Name */}
-       <td className="hidden lg:table-cell">{item.dob}</td>  {/* For DOB */}
-       <td className="hidden lg:table-cell">{item.mobile}</td>  {/* For Mobile */}
-       <td className="hidden lg:table-cell">{item.religion}</td>  {/* For Religion */}
-       <td className="hidden lg:table-cell">{item.caste}</td>  {/* For Caste */}
-       <td className="hidden lg:table-cell">{item.language}</td>  {/* For Language */}
-       <td>
+    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
+      <td className="hidden md:table-cell">{item.studentId}</td>
+      <td className="font-semibold">{item.name}</td>
+      <td className="hidden md:table-cell">{item.class}</td>
+      <td className="hidden lg:table-cell">{item.gender}</td>
+      <td className="hidden lg:table-cell">{item.parentName}</td>
+      <td className="hidden lg:table-cell">{item.dob}</td>
+      <td className="hidden lg:table-cell">{item.mobile}</td>
+      <td className="hidden lg:table-cell">{item.religion}</td>
+      <td className="hidden lg:table-cell">{item.caste}</td>
+      <td className="hidden lg:table-cell">{item.language}</td>
+      <td>
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table="parent" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="parent" type="delete" id={item.id} className="p-2 text-white rounded-full bg-LamaPurple" />
+              <FormModal table="parent" type="update" data={item}  />
+              <FormModal table="parent" type="delete" id={item.id}  />
             </>
           )}
         </div>
@@ -123,7 +77,7 @@ const StudentList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="student" type="create" className="p-2 text-white rounded-full bg-LamaYellow" />
+              <FormModal table="student" type="create" />
             )}
           </div>
         </div>
