@@ -3,11 +3,11 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
+import TeacherForm from "./forms/TeacherForm";
 
 {/* 
 // USE LAZY LOADING
 
-import TeacherForm from "./forms/TeacherForm";
 import StudentForm from "./forms/StudentForm";
 
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
@@ -70,7 +70,7 @@ const FormModal = ({
       </form>
     
     ) : (
-      "Create or update form!"
+     <TeacherForm type="create"/>
     );
   };
 
