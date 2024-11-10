@@ -1,16 +1,15 @@
 // src/components/StudentsList.tsx
-"use client"; // Ensure this component is rendered on the client
+"use client";
 
 import React, { useEffect, useState } from 'react';
 
-// Define the type for a student
 interface Student {
     id: number;
     name: string;
     grade: string;
     mobileNumber: string;
-    dateOfBirth: string; // Add any other properties you need
-    address: string; // Add any other properties you need
+    dateOfBirth: string;
+    address: string;
 }
 
 const StudentsList = () => {
@@ -57,7 +56,7 @@ const StudentsList = () => {
                 </tr>
             </thead>
             <tbody>
-                {students.map(student => (
+                {students.map((student) => (
                     <tr key={student.id}>
                         <td>{student.id}</td>
                         <td>{student.name}</td>
