@@ -1,3 +1,5 @@
+// \src\components\Pagination.tsx
+
 const Pagination = () => {
   return (
     <div className="flex items-center justify-between p-4 text-gray-500">
