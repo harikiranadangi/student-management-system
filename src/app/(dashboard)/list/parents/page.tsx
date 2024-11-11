@@ -44,8 +44,8 @@ const ParentList = () => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table="parent" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="parent" type="delete" id={item.id} className="p-2 text-white rounded-full bg-LamaPurple" />
+              <FormModal table="parent" type="update" data={item} /> 
+              <FormModal table="parent" type="delete" id={item.id} />
             </>
           )}
         </div>
@@ -68,7 +68,7 @@ const ParentList = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table="parent" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+              <FormModal table="parent" type="create" /> 
             )}
           </div>
         </div>
