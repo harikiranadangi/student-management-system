@@ -59,8 +59,8 @@ const EventsList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
               <>
-              <FormModal table="exam" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="exam" type="delete" className="p-2 text-white rounded-full bg-LamaSky" /> 
+              <FormModal table="event" type="update" data={item}  /> 
+              <FormModal table="event" type="delete" id={item.id}  /> 
              </>
           )}
         </div>
@@ -83,7 +83,7 @@ const EventsList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="exam" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+                <FormModal table="event" type="create" /> 
             )}
           </div>
         </div>
