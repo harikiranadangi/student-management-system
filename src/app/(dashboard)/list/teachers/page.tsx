@@ -73,7 +73,7 @@ const TeacherList = () => {
         {role === "admin" && (
             <>
             <FormModal table="teacher" type="update" data={item} /> 
-            <FormModal table="teacher" type="delete" /> 
+            <FormModal table="teacher" type="delete" id={item.id} /> 
             </>
            )}
         </div>
