@@ -46,7 +46,7 @@ const AnnouncementsList = () => {
         {role === "admin" && (
               <>
               <FormModal table="announcement" type="update" data={item}  /> 
-              <FormModal table="announcement" type="delete"  /> 
+              <FormModal table="announcement" type="delete" id={item.id}  /> 
              </>
           )}
         </div>
