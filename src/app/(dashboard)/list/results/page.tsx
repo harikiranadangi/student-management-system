@@ -72,8 +72,8 @@ const ResultsList = () => {
         <div className="flex items-center gap-2">
         {role === "admin" && (
             <>
-              <FormModal table="student" type="update" data={item} className="p-2 text-white rounded-full bg-LamaSky" /> 
-              <FormModal table="student" type="delete" id={item.id} className="p-2 text-white rounded-full bg-LamaPurple" />
+              <FormModal table="result" type="update" data={item} /> 
+              <FormModal table="result" type="delete" id={item.id}/>
             </>
           )}
         </div>
@@ -96,7 +96,7 @@ const ResultsList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="student" type="create" className="p-2 text-white rounded-full bg-LamaYellow" /> 
+                <FormModal table="result" type="create"/> 
             )}
           </div>
         </div>
