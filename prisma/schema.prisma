@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +8,7 @@ datasource db {
 }
 
 model Teachers {
-  id           String     @id @default(uuid())
+  id           Int        @id @default(autoincrement())
   name         String
   email        String     @unique
   mobileNumber String
@@ -20,25 +18,24 @@ model Teachers {
 }
 
 model Students {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   name         String
   grade        String
   mobileNumber String
-  dateOfBirth  DateTime? // Ensure this line is present
-  address      String?   // Ensure this line is present
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  dateOfBirth  DateTime?  // Ensure this line is present
+  address      String?    // Ensure this line is present
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  teacherId    String?
-  Teachers     Teachers? @relation(fields: [teacherId], references: [id])
+  teacherId    Int?       // Changed to Int for consistency
+  Teachers     Teachers?  @relation(fields: [teacherId], references: [id])
   Attendance   Attendance[]
   Payments     Payments[]
 }
 
-
 model Attendance {
-  id        String   @id @default(uuid())
-  studentId Int      // Changed to Int
+  id        Int      @id @default(autoincrement())
+  studentId Int
   status    String
   createdAt DateTime @default(now())
 
@@ -46,8 +43,8 @@ model Attendance {
 }
 
 model ClassSchedule {
-  id        String   @id @default(uuid())
-  lessonId  String
+  id        Int      @id @default(autoincrement())
+  lessonId  Int
   dayOfWeek String
   startTime DateTime
   endTime   DateTime
@@ -55,8 +52,8 @@ model ClassSchedule {
 }
 
 model Payments {
-  id          String   @id @default(uuid())
-  studentId   Int      // Changed to Int
+  id          Int      @id @default(autoincrement())
+  studentId   Int
   amount      Float
   paymentDate DateTime @default(now())
   status      String
