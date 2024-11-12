@@ -1,62 +1,119 @@
+// Prisma schema
+
+// Client generator
 generator client {
   provider = "prisma-client-js"
 }
 
+// Database datasource
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
 }
 
+// Enum for grade levels
+enum Grade {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+  FIFTH
+  SIXTH
+  SEVENTH
+  EIGHTH
+  NINTH
+  TENTH
+  ELEVENTH
+  TWELFTH
+}
+
+// Enum for terms
+enum Term {
+  TERM_1
+  TERM_2
+  TERM_3
+  TERM_4
+}
+
+// Teacher model
 model Teachers {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  mobileNumber String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  Students     Students[]
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  email              String               @unique
+  mobileNumber       String               @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  deletedAt          DateTime? // Soft delete for teachers
+  Students           Students[] // Students relation without `onDelete`
+  ClassSchedules     ClassSchedule[] // Relation to class schedules
+  TeacherAssignments TeacherAssignments[] // Reverse relation to TeacherAssignments
 }
 
+// Student model
 model Students {
-  id           Int        @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   name         String
-  grade        String
+  grade        Grade // Enum for grade
   mobileNumber String
-  dateOfBirth  DateTime?  // Ensure this line is present
-  address      String?    // Ensure this line is present
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  dateOfBirth  DateTime?
+  address      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime? // Soft delete for students
 
-  teacherId    Int?       // Changed to Int for consistency
-  Teachers     Teachers?  @relation(fields: [teacherId], references: [id])
-  Attendance   Attendance[]
-  Payments     Payments[]
+  teacherId          Int?
+  Teachers           Teachers?            @relation(fields: [teacherId], references: [id], onDelete: Cascade) // `onDelete` is set here
+  Attendance         Attendance[]
+  Payments           Payments[]
+  TeacherAssignments TeacherAssignments[] // Relation to teacher assignments
 }
 
+// Attendance model
 model Attendance {
   id        Int      @id @default(autoincrement())
   studentId Int
+  classId   Int // Link attendance to a class
   status    String
   createdAt DateTime @default(now())
 
-  Students  Students @relation(fields: [studentId], references: [id])
+  Students      Students      @relation(fields: [studentId], references: [id])
+  ClassSchedule ClassSchedule @relation(fields: [classId], references: [id]) // Link to class
 }
 
+// ClassSchedule model
 model ClassSchedule {
   id        Int      @id @default(autoincrement())
   lessonId  Int
+  teacherId Int // Link schedule to teacher
   dayOfWeek String
   startTime DateTime
   endTime   DateTime
   frequency String
+
+  Teachers   Teachers     @relation(fields: [teacherId], references: [id]) // Relation to teacher
+  Attendance Attendance[] // Relation to attendance
 }
 
+// Payments model with term-based payments
 model Payments {
   id          Int      @id @default(autoincrement())
   studentId   Int
   amount      Float
   paymentDate DateTime @default(now())
-  status      String
+  status      String // Payment status as a String
+  term        Term // Enum for term-based payments
 
-  Students    Students @relation(fields: [studentId], references: [id])
+  Students Students @relation(fields: [studentId], references: [id])
+}
+
+// TeacherAssignments model for many-to-many relationships between teachers and students
+model TeacherAssignments {
+  id        Int      @id @default(autoincrement())
+  teacherId Int
+  studentId Int
+  subject   String // Subject taught by teacher to student
+  createdAt DateTime @default(now())
+
+  Teachers Teachers @relation(fields: [teacherId], references: [id])
+  Students Students @relation(fields: [studentId], references: [id])
 }
