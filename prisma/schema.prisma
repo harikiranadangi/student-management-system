@@ -39,7 +39,6 @@ model Students {
 model Attendance {
   id        String   @id @default(uuid())
   studentId Int      // Changed to Int
-  lessonId  String
   status    String
   createdAt DateTime @default(now())
 
