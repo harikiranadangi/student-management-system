@@ -41,6 +41,7 @@ model Teachers {
   name               String
   email              String               @unique
   mobileNumber       String               @unique
+  img                String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   deletedAt          DateTime? // Soft delete for teachers
