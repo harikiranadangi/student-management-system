@@ -54,6 +54,25 @@ enum Gender {
   Female
 }
 
+// Student model
+model Students {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  grade              Grade                // Enum for grade level
+  mobileNumber       String
+  dateOfBirth        DateTime?
+  address            String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  deletedAt          DateTime?            // Soft delete for students
+
+  teacherId          Int?
+  Teachers           Teachers?            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  Attendance         Attendance[]         // Relation to Attendance records
+  Payments           Payments[]           // Relation to Payments records
+  TeacherAssignments TeacherAssignments[] // Relation to TeacherAssignments
+}
+
 // Teacher model
 model Teachers {
   id                 Int                  @id @default(autoincrement())
@@ -74,24 +93,14 @@ model Teachers {
   classes            Class[]
 }
 
-// Student model
-model Students {
-  id                 Int                  @id @default(autoincrement())
-  name               String
-  grade              Grade                // Enum for grade level
-  mobileNumber       String
-  dateOfBirth        DateTime?
-  address            String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  deletedAt          DateTime?            // Soft delete for students
+model Class {
+  id Int @id @default(autoincrement())
+  name Int @unique
 
-  teacherId          Int?
-  Teachers           Teachers?            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  Attendance         Attendance[]         // Relation to Attendance records
-  Payments           Payments[]           // Relation to Payments records
-  TeacherAssignments TeacherAssignments[] // Relation to TeacherAssignments
-}
+  students Students[]
+ }
+
+
 
 // Attendance model
 model Attendance {
@@ -102,26 +111,21 @@ model Attendance {
   createdAt DateTime         @default(now())
 
   Students      Students      @relation(fields: [studentId], references: [id])
-  ClassSchedule ClassSchedule @relation(fields: [classId], references: [id])
+
 }
 
-model Grade {
-  id Int @id @default(autoincrement())
-  level Int @unique
 
-  students Students[]
-  classes  Class[]
-}
 
 // Payments model
 model Payments {
   id          Int      @id @default(autoincrement())
   studentId   Int
   amount      Float
+  term        Term // Enum for term-based payments
+  recieptDate DateTime
   paymentDate DateTime @default(now())
   status      String   @default("Pending") // Set a default value or ensure correct enum
-  term        Term     // Enum for term-based payments
-
+       
   Students Students @relation(fields: [studentId], references: [id])
 }
 
