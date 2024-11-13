@@ -9,7 +9,7 @@ import InputField from "../InputField";
 // Define the schema with zod
 const schema = z.object({
   username: z.string().min(3, { message: 'Username must be at least 3 characters long!' }).max(20, { message: 'Username must be at most 20 characters long!' }),
-  email: z.string().email({ message: "Invalid email address!" }),
+  email: z.string().email({ message: "Invalid email address!" }).optional(),
   password: z.string().min(8, { message: "Password must be at least 8 characters long!" }),
   firstName: z.string().min(1, { message: "First Name is required!" }),
   lastName: z.string().min(1, { message: "Last Name is required!" }),
