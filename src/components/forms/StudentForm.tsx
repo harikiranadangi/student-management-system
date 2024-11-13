@@ -9,15 +9,15 @@ import InputField from "../InputField";
 
 // Define the schema with zod
 const schema = z.object({
-  username: z.string().min(3, { message: 'Username must be at least 3 characters long!' }).max(20, { message: 'Username must be at most 20 characters long!' }),
-  email: z.string().email({ message: "Invalid email address!" }).optional(),
-  password: z.string().min(8, { message: "Password must be at least 8 characters long!" }),
+  username: z.string().length(10, { message: 'Invalid Username!' }),
+  email: z.string().optional(),
+  password: z.string().min(5, { message: "Password must be at least 8 characters long!" }),
   firstName: z.string().min(1, { message: "First Name is required!" }),
-  lastName: z.string().min(1, { message: "Last Name is required!" }),
-  gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
-  phone: z.string().optional(),
+  surName: z.string().optional(),
+  gender: z.enum(["Male", "Female"], { message: "Gender is required!"}),
+  phone: z.string().length(10, { message: 'Invalid Mobile Number!' }),
   address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], { message: "Please select a valid blood type!" }),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Don't Know"], { message: "Please select a valid blood type!" }),
   dateOfBirth: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Date of Birth is required!" }),
   img: z.any().optional(),
 });
@@ -57,7 +57,7 @@ const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
       <div className="flex flex-wrap justify-between gap-4">
         <InputField label="First Name" name="firstName" defaultValue={data?.firstName} register={register} error={errors.firstName} />
-        <InputField label="Last Name" name="lastName" defaultValue={data?.lastName} register={register} error={errors.lastName} />
+        <InputField label="Surname" name="surName" defaultValue={data?.surName} register={register} error={errors.surName} />
         <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
         <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
         
@@ -68,7 +68,7 @@ const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
             {...register("bloodType")}
             defaultValue={data?.bloodType}
           >
-            <option value="">Select Blood Type</option>
+            <option value="">-Select-</option>
             <option value="A+">A+</option>
             <option value="A-">A-</option>
             <option value="B+">B+</option>
@@ -77,7 +77,7 @@ const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
             <option value="AB-">AB-</option>
             <option value="O+">O+</option>
             <option value="O-">O-</option>
-            <option value="Under Investigation">Under Investigation</option>
+            <option value="Under Investigation">Don't Know</option>
           </select>
           {errors.bloodType?.message && (
             <p className="text-xs text-red-400">{errors.bloodType.message.toString()}</p>
@@ -93,8 +93,9 @@ const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs 
           <select
               className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
               {...register("gender")}
-              defaultValue={data?.gender}
+              defaultValue=""
           >
+              <option value="" disabled>-Select-</option> {/* Default "Select" option */}
               <option value="Male">Male</option> 
               <option value="Female">Female</option>
           </select>
