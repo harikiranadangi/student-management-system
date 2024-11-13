@@ -3,6 +3,7 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { role, teachersData } from "@/lib/data";
+import prisma from "@/lib/prisma";
 import Image from "next/image";
 
 type Teacher = {
@@ -80,7 +81,17 @@ const TeacherList = () => {
       </td>
     </tr>
   );
+{/* 
+const TeacherList = async () => {
+  const data = await prisma.teachers.findMany({
+    include: {
+      subjects= true,
+      classes= true,
+    },
+  });
 
+  console.log(data);
+ */}
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
