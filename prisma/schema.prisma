@@ -49,20 +49,29 @@ enum AttendanceStatus {
   LATE
 }
 
+enum Gender {
+  Male
+  Female
+}
+
 // Teacher model
 model Teachers {
   id                 Int                  @id @default(autoincrement())
+  username           String               @unique
   name               String
-  email              String               @unique
-  mobileNumber       String               @unique
+  surname            String
+  email              String?               @unique
+  phone              String               @unique
+  address            String               
   img                String?
+  bloodtype          String
+  gender             Gender
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   deletedAt          DateTime? // Soft delete for teachers
 
-  Students           Students[]           // Relation to students
-  ClassSchedules     ClassSchedule[]      // Relation to class schedules
-  TeacherAssignments TeacherAssignments[] // Relation to TeacherAssignments
+  subjects           Subject[]
+  classes            Class[]
 }
 
 // Student model
@@ -96,18 +105,12 @@ model Attendance {
   ClassSchedule ClassSchedule @relation(fields: [classId], references: [id])
 }
 
-// ClassSchedule model
-model ClassSchedule {
-  id                 Int               @id @default(autoincrement())
-  lessonId           Int
-  teacherId          Int               // Link to teacher
-  dayOfWeek          String
-  startTime          DateTime
-  endTime            DateTime
-  frequency          String            // e.g., "Weekly", "Biweekly"
+model Grade {
+  id Int @id @default(autoincrement())
+  level Int @unique
 
-  Teachers           Teachers          @relation(fields: [teacherId], references: [id]) // Relation to teacher
-  Attendance         Attendance[]      // Relation to Attendance records
+  students Students[]
+  classes  Class[]
 }
 
 // Payments model
