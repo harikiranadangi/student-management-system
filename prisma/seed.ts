@@ -1,107 +1,291 @@
-import { PrismaClient, Grade, Term } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Seed 10 Teachers
-  const teachers = await Promise.all(
-    Array.from({ length: 10 }, (_, i) =>
-      prisma.teachers.create({
-        data: {
-          name: `Teacher ${i + 1}`,
-          email: `teacher${i + 1}@example.com`,
-          mobileNumber: `12345678${i + 1}`,
-        },
-      })
-    )
-  );
+  // Create Classes
+  const class1 = await prisma.class.create({
+    data: {
+      name: 'Class 1A',
+    },
+  });
 
-  // Seed 10 Students with random grades and assign them to a teacher
-  const students = await Promise.all(
-    Array.from({ length: 10 }, (_, i) =>
-      prisma.students.create({
-        data: {
-          name: `Student ${i + 1}`,
-          grade: Object.values(Grade)[i % Object.values(Grade).length],
-          mobileNumber: `98765432${i + 1}`,
-          dateOfBirth: new Date(`2010-0${i + 1}-15`),
-          address: `Address ${i + 1}`,
-          teacherId: teachers[i % teachers.length].id, // Assign to a teacher
-        },
-      })
-    )
-  );
+  const class2 = await prisma.class.create({
+    data: {
+      name: 'Class 1B',
+    },
+  });
 
-  // Seed 10 ClassSchedules with random days and times
-  const classSchedules = await Promise.all(
-    Array.from({ length: 10 }, (_, i) =>
-      prisma.classSchedule.create({
-        data: {
-          lessonId: i + 1,
-          teacherId: teachers[i % teachers.length].id,
-          dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][i % 5],
-          startTime: new Date(`2024-01-01T0${i % 9}:00:00.000Z`),
-          endTime: new Date(`2024-01-01T0${(i % 9) + 1}:00:00.000Z`),
-          frequency: "Weekly",
-        },
-      })
-    )
-  );
+  const class3 = await prisma.class.create({
+    data: {
+      name: 'Class 2A',
+    },
+  });
 
-  // Seed 10 Attendance records for each student in different classes
-  const attendanceRecords = await Promise.all(
-    students.flatMap((student, i) =>
-      Array.from({ length: 10 }, (_, j) =>
-        prisma.attendance.create({
-          data: {
-            studentId: student.id,
-            classId: classSchedules[j % classSchedules.length].id,
-            status: j % 2 === 0 ? "Present" : "Absent",
-          },
-        })
-      )
-    )
-  );
+  const class4 = await prisma.class.create({
+    data: {
+      name: 'Class 2B',
+    },
+  });
 
-  // Seed 10 Payments per student, one for each term
-  const payments = await Promise.all(
-    students.flatMap((student, i) =>
-      Array.from({ length: 4 }, (_, j) =>
-        prisma.payments.create({
-          data: {
-            studentId: student.id,
-            amount: 1000 + j * 500,
-            paymentDate: new Date(),
-            status: j % 2 === 0 ? "Completed" : "Pending",
-            term: Object.values(Term)[j % Object.values(Term).length],
-          },
-        })
-      )
-    )
-  );
+  const class5 = await prisma.class.create({
+    data: {
+      name: 'Class 3A',
+    },
+  });
 
-  // Seed 10 TeacherAssignments linking teachers to students with subjects
-  const teacherAssignments = await Promise.all(
-    students.flatMap((student, i) =>
-      Array.from({ length: 10 }, (_, j) =>
-        prisma.teacherAssignments.create({
-          data: {
-            teacherId: teachers[j % teachers.length].id,
-            studentId: student.id,
-            subject: ["Mathematics", "Science", "History", "Art"][j % 4],
-          },
-        })
-      )
-    )
-  );
+  // Create Teachers
+  const teacher1 = await prisma.teachers.create({
+    data: {
+      username: 'teacher1',  // Unique username
+      name: 'John',
+      surname: 'Doe',
+      gender: 'Male',
+      bloodtype: 'O+',
+      phone: '1234567890',
+      address: '123 School St',
+    },
+  });
 
-  console.log("Database seeding completed successfully.");
+  const teacher2 = await prisma.teachers.create({
+    data: {
+      username: 'teacher2',  // Unique username
+      name: 'Jane',
+      surname: 'Smith',
+      gender: 'Female',
+      bloodtype: 'A+',
+      phone: '1234567891',
+      address: '124 School St',
+    },
+  });
+
+  const teacher3 = await prisma.teachers.create({
+    data: {
+      username: 'teacher3',  // Unique username
+      name: 'Michael',
+      surname: 'Johnson',
+      gender: 'Male',
+      bloodtype: 'B+',
+      phone: '1234567892',
+      address: '125 School St',
+    },
+  });
+
+  const teacher4 = await prisma.teachers.create({
+    data: {
+      username: 'teacher4',  // Unique username
+      name: 'Emily',
+      surname: 'Brown',
+      gender: 'Female',
+      bloodtype: 'AB+',
+      phone: '1234567893',
+      address: '126 School St',
+    },
+  });
+
+  const teacher5 = await prisma.teachers.create({
+    data: {
+      username: 'teacher5',  // Unique username
+      name: 'Chris',
+      surname: 'Davis',
+      gender: 'Male',
+      bloodtype: 'O-',
+      phone: '1234567894',
+      address: '127 School St',
+    },
+  });
+
+  // Link Teachers to Classes
+  await prisma.class.update({
+    where: { id: class1.id },
+    data: {
+      teacherId: teacher1.id,  // Assign teacher1 to class1
+    },
+  });
+
+  await prisma.class.update({
+    where: { id: class2.id },
+    data: {
+      teacherId: teacher2.id,  // Assign teacher2 to class2
+    },
+  });
+
+  await prisma.class.update({
+    where: { id: class3.id },
+    data: {
+      teacherId: teacher3.id,  // Assign teacher3 to class3
+    },
+  });
+
+  await prisma.class.update({
+    where: { id: class4.id },
+    data: {
+      teacherId: teacher4.id,  // Assign teacher4 to class4
+    },
+  });
+
+  await prisma.class.update({
+    where: { id: class5.id },
+    data: {
+      teacherId: teacher5.id,  // Assign teacher5 to class5
+    },
+  });
+
+  // Create Students and associate them with a Class
+  const student1 = await prisma.students.create({
+    data: {
+      name: 'Alice',
+      mobileNumber: '9876543210',
+      gender: 'Female',
+      classId: class1.id, // Assign student to class1
+    },
+  });
+
+  const student2 = await prisma.students.create({
+    data: {
+      name: 'Bob',
+      mobileNumber: '9876543211',
+      gender: 'Male',
+      classId: class2.id, // Assign student to class2
+    },
+  });
+
+  const student3 = await prisma.students.create({
+    data: {
+      name: 'Charlie',
+      mobileNumber: '9876543212',
+      gender: 'Male',
+      classId: class3.id, // Assign student to class3
+    },
+  });
+
+  const student4 = await prisma.students.create({
+    data: {
+      name: 'David',
+      mobileNumber: '9876543213',
+      gender: 'Male',
+      classId: class4.id, // Assign student to class4
+    },
+  });
+
+  const student5 = await prisma.students.create({
+    data: {
+      name: 'Eva',
+      mobileNumber: '9876543214',
+      gender: 'Female',
+      classId: class5.id, // Assign student to class5
+    },
+  });
+
+  // Create Attendance Records
+  // Create Attendance Records
+  const attendance1 = await prisma.attendance.create({
+    data: {
+      studentId: 1,
+      classId: 1, // Assigning classId here
+      status: 'PRESENT',
+      createdAt: new Date('2024-10-15T08:00:00Z'),
+    },
+  });
+
+  const attendance2 = await prisma.attendance.create({
+    data: {
+      studentId: 2,
+      classId: 2, // Assigning classId here
+      status: 'PRESENT',
+      createdAt: new Date('2024-10-15T08:00:00Z'),
+    },
+  });
+
+  const attendance3 = await prisma.attendance.create({
+    data: {
+      studentId: 3,
+      classId: 3, // Assigning classId here
+      status: 'PRESENT',
+      createdAt: new Date('2024-10-15T08:00:00Z'),
+    },
+  });
+
+  const attendance4 = await prisma.attendance.create({
+    data: {
+      studentId: 4,
+      classId: 4, // Assigning classId here
+      status: 'PRESENT',
+      createdAt: new Date('2024-10-15T08:00:00Z'),
+    },
+  });
+
+  const attendance5 = await prisma.attendance.create({
+    data: {
+      studentId: 5,
+      classId: 5, // Assigning classId here
+      status: 'PRESENT',
+      createdAt: new Date('2024-10-15T08:00:00Z'),
+    },
+  });
+
+  // Create Payments
+  const payment1 = await prisma.payments.create({
+    data: {
+      studentId: 1,
+      amount: 500,
+      paymentDate: new Date('2024-10-15'),
+      status: 'Paid',
+      term: 'TERM_1', // Required field
+      recieptDate: new Date('2024-10-15T14:30:00Z'), // Required field
+    },
+  });
+
+  const payment2 = await prisma.payments.create({
+    data: {
+      studentId: 2,
+      amount: 500,
+      paymentDate: new Date('2024-10-16'),
+      status: 'Pending',
+      term: 'TERM_1', // Required field
+      recieptDate: new Date('2024-10-16T14:30:00Z'), // Required field
+    },
+  });
+
+  const payment3 = await prisma.payments.create({
+    data: {
+      studentId: 3,
+      amount: 500,
+      paymentDate: new Date('2024-10-17'),
+      status: 'Paid',
+      term: 'TERM_1', // Required field
+      recieptDate: new Date('2024-10-17T14:30:00Z'), // Required field
+    },
+  });
+
+  const payment4 = await prisma.payments.create({
+    data: {
+      studentId: 4,
+      amount: 500,
+      paymentDate: new Date('2024-10-18'),
+      status: 'Paid',
+      term: 'TERM_1', // Required field
+      recieptDate: new Date('2024-10-18T14:30:00Z'), // Required field
+    },
+  });
+
+  const payment5 = await prisma.payments.create({
+    data: {
+      studentId: 5,
+      amount: 500,
+      paymentDate: new Date('2024-10-19'),
+      status: 'Pending',
+      term: 'TERM_1', // Required field
+      recieptDate: new Date('2024-10-19T14:30:00Z'), // Required field
+    },
+  });
+
+  console.log('Seed data inserted successfully!');
 }
 
 main()
-  .catch((e) => {
-    console.error("Error seeding the database:", e);
-    process.exit(1);
+  .catch(e => {
+    throw e;
   })
   .finally(async () => {
     await prisma.$disconnect();
