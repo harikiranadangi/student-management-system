@@ -50,7 +50,7 @@ async function main() {
 
     console.log('Seeding Teachers...');
     const subjects = await prisma.subject.findMany();
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 15; i++) {
       console.log(`Creating teacher ${i}`);
       await prisma.teacher.create({
         data: {
