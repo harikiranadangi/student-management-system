@@ -9,124 +9,131 @@ datasource db {
   url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
 }
 
-enum Term {
-  TERM_1
-  TERM_2
-  TERM_3
-  TERM_4
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
 }
 
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
+model Grade {
+  id      Int    @id @default(autoincrement())
+  level   Int
+  classes Class[]
+  students Student[]
 }
 
-enum Gender {
-  Male
-  Female
-}
-
-
-// Class model
 model Class {
-  id         Int         @id @default(autoincrement())
-  name       String      @unique
-  students   Students[]  // Relation to students in this class
-  subjects   Subject[]   @relation("ClassSubjects") // Relation to subjects in this class
-  teacherId  Int?
-  teacher    Teachers?   @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: SetNull)
-  Attendance Attendance[] // Relation to attendance records
+  id          Int       @id @default(autoincrement())
+  name        String
+  gradeId     Int
+  capacity    Int
+  grade       Grade     @relation(fields: [gradeId], references: [id])
+  subjects    Subject[]
+  students    Student[]
+  teachers    Teacher[] @relation("TeacherClasses", map: "Class_Teacher_fkey")
+  exams       Exam[]
+  events      Event[]
+  assignments Assignment[]
+  attendances Attendance[]
+  announcements Announcement[]
+  results     Result[]
 }
 
-// Student model
-model Students {
-  id                 Int                  @id @default(autoincrement())
-  name               String
-  mobileNumber       String
-  dateOfBirth        DateTime?
-  address            String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  deletedAt          DateTime?            // Soft delete for students
-  gender             Gender
-
-  class              Class?               @relation(fields: [classId], references: [id], onDelete: SetNull)
-  classId            Int?
-  teacher            Teachers?            @relation("TeacherStudents", fields: [teacherId], references: [id], onDelete: Cascade)
-  teacherId          Int?
-  Attendance         Attendance[]         // Relation to Attendance records
-  Payments           Payments[]           // Relation to Payments records
-  TeacherAssignments TeacherAssignments[] // Relation to TeacherAssignments
-  subjects           Subject[]            @relation("SubjectStudents")
-}
-
-// Teacher model
-model Teachers {
-  id                 Int                  @id @default(autoincrement())
-  username           String               @unique
-  name               String
-  surname            String
-  email              String?              @unique
-  phone              String               @unique
-  address            String               
-  img                String?
-  bloodtype          String
-  gender             Gender
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  deletedAt          DateTime?            // Soft delete for teachers
-
-  subjects           Subject[]
-  classes            Class[]              @relation("TeacherClasses") // Classes taught by this teacher
-  students           Students[]           @relation("TeacherStudents") // Students taught by this teacher
-  TeacherAssignments TeacherAssignments[]
-}
-
-
-
-// Subject model
 model Subject {
-  id         Int         @id @default(autoincrement())
-  name       String      @unique
-  teacherId  Int?
-  teacher    Teachers?   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  students   Students[]  @relation("SubjectStudents") // Students enrolled in this subject
-  classes    Class[]     @relation("ClassSubjects")    // Classes associated with this subject
-  TeacherAssignments TeacherAssignments[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  classes   Class[]
+  teachers  Teacher[] @relation("TeacherSubjects", map: "Subject_Teacher_fkey")
+  exams     Exam[]
+  assignments Assignment[]
 }
 
-// Attendance model
-model Attendance {
-  id        Int              @id @default(autoincrement())
-  student   Students         @relation(fields: [studentId], references: [id])
-  studentId Int
-  class     Class            @relation(fields: [classId], references: [id])
+model Teacher {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  name      String
+  surname   String
+  email     String?   @unique
+  phone     String
+  address   String
+  gender    String
+  classes   Class[]   @relation("TeacherClasses")
+  subjects  Subject[] @relation("TeacherSubjects")
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  name      String
+  surname   String
+  email     String   @unique
+  phone     String
+  address   String
+  bloodType String
+  gender    String
+  gradeId   Int
   classId   Int
-  status    AttendanceStatus // Use the enum here
-  createdAt DateTime         @default(now())
+  grade     Grade    @relation(fields: [gradeId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+  results   Result[]
+  attendances Attendance[]
 }
 
-// Payments model
-model Payments {
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Result {
+  id        Int      @id @default(autoincrement())
+  score     Float
+  classId   Int
+  studentId Int
+  class     Class    @relation(fields: [classId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean
+  studentId Int
+  classId   Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Event {
   id          Int      @id @default(autoincrement())
-  student     Students @relation(fields: [studentId], references: [id])
-  studentId   Int
-  amount      Float
-  term        Term     // Enum for term-based payments
-  recieptDate DateTime
-  paymentDate DateTime @default(now())
-  status      String   @default("Pending") // Set a default value or ensure correct enum
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  classId     Int
+  class       Class    @relation(fields: [classId], references: [id])
 }
 
-// TeacherAssignments model
-model TeacherAssignments {
-  id         Int      @id @default(autoincrement())
-  teacher    Teachers @relation(fields: [teacherId], references: [id])
-  teacherId  Int
-  student    Students @relation(fields: [studentId], references: [id])
-  studentId  Int
-  subject    Subject  @relation(fields: [subjectId], references: [id])
-  subjectId  Int
-  createdAt  DateTime @default(now())
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  classId     Int
+  class       Class    @relation(fields: [classId], references: [id])
 }
