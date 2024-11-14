@@ -74,13 +74,12 @@ const renderRow = (item: TeachersList ) => (
 
 const TeacherList = async () => {
 
-  const data = await prisma.teacher.findMany({
+  const data: TeachersList[] = await prisma.teacher.findMany({
     include: {
       subjects: true,
       classes: true,
-
     },
-  });
+  }); 
   
   console.log(data)
 
