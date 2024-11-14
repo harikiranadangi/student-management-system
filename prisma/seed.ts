@@ -60,6 +60,7 @@ async function main() {
           email: `teacher${i}@school.com`,
           phone: `123456789${i}`,
           address: `Address ${i}`,
+          img: "/noAvatar.png",
           gender: i % 2 === 0 ? 'Male' : 'Female',
         },
       });
@@ -67,7 +68,7 @@ async function main() {
 
     console.log('Seeding Students...');
     const teachers = await prisma.teacher.findMany();
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 50; i++) {
       console.log(`Creating student ${i}`);
       await prisma.student.create({
         data: {
