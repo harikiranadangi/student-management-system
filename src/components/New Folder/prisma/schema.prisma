@@ -1,0 +1,139 @@
+// Client generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Database datasource
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+}
+
+model Grade {
+  id      Int    @id @default(autoincrement())
+  level   Int
+  classes Class[]
+  students Student[]
+}
+
+model Class {
+  id          Int       @id @default(autoincrement())
+  name        String
+  gradeId     Int
+  capacity    Int
+  grade       Grade     @relation(fields: [gradeId], references: [id])
+  subjects    Subject[]
+  students    Student[]
+  teachers    Teacher[] @relation("TeacherClasses", map: "Class_Teacher_fkey")
+  exams       Exam[]
+  events      Event[]
+  assignments Assignment[]
+  attendances Attendance[]
+  announcements Announcement[]
+  results     Result[]
+}
+
+model Subject {
+  id        Int       @id @default(autoincrement())
+  name      String
+  classes   Class[]
+  teachers  Teacher[] @relation("TeacherSubjects", map: "Subject_Teacher_fkey")
+  exams     Exam[]
+  assignments Assignment[]
+}
+
+model Teacher {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  name      String
+  surname   String
+  email     String?   @unique
+  phone     String
+  address   String
+  gender    String
+  classes   Class[]   @relation("TeacherClasses")
+  subjects  Subject[] @relation("TeacherSubjects")
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  name      String
+  surname   String
+  email     String   @unique
+  phone     String
+  address   String
+  bloodType String
+  gender    String
+  gradeId   Int
+  classId   Int
+  grade     Grade    @relation(fields: [gradeId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+  results   Result[]
+  attendances Attendance[]
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Result {
+  id        Int      @id @default(autoincrement())
+  score     Float
+  classId   Int
+  studentId Int
+  class     Class    @relation(fields: [classId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean
+  studentId Int
+  classId   Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  classId     Int
+  class       Class    @relation(fields: [classId], references: [id])
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  classId     Int
+  class       Class    @relation(fields: [classId], references: [id])
+}
