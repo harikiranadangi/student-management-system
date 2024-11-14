@@ -55,7 +55,9 @@ model Teacher {
   email     String?   @unique
   phone     String
   address   String
+  img       String?
   gender    String
+  createdAt DateTime @default(now())
   classes   Class[]   @relation("TeacherClasses")
   subjects  Subject[] @relation("TeacherSubjects")
 }
