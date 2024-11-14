@@ -4,19 +4,10 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { role, teachersData } from "@/lib/data";
 import prisma from "@/lib/prisma";
+import { Class, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type Teacher = {
-  id: number;
-  teacherId: string;
-  name: string;
-  email?: string;
-  photo: string;
-  phone: string;
-  subjects: string[];
-  classes: string[];
-  address: string;
-};
+type TeachersList = Teacher & {subjects: Subject[]} & {classes: Class[]}
 
 const columns = [
   {
@@ -54,44 +45,45 @@ const columns = [
   },
 ];
 
-const TeacherList = () => {
-  const renderRow = (item: Teacher) => (
-    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      <td className="flex items-center gap-4 p-4">
-        <Image src={item.photo} alt="" width={40} height={40} className="object-cover w-10 h-10 rounded-full md:hidden xl:block"/>
-        <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item?.email}</p>
-        </div>
-      </td>
-      <td className="hidden md:table-cell">{item.teacherId}</td>
-      <td className="hidden md:table-cell">{item.subjects.join(", ")}</td>
-      <td className="hidden md:table-cell">{item.classes.join(", ")}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
-      <td className="hidden md:table-cell">{item.address}</td>
-      <td>
-        <div className="flex items-center gap-2">
-        {role === "admin" && (
-            <>
-            <FormModal table="teacher" type="update" data={item} /> 
-            <FormModal table="teacher" type="delete" id={item.id} /> 
-            </>
-           )}
-        </div>
-      </td>
-    </tr>
-  );
-{/* 
+const renderRow = (item: TeachersList ) => (
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+    <td className="flex items-center gap-4 p-4">
+      <Image src={item.img || "/parent.png"} alt="" width={40} height={40} className="object-cover rounded-full h-15 w-15 md:hidden xl:block"/>
+      <div className="flex flex-col">
+        <h3 className="font-semibold">{item.name}</h3>
+        <p className="text-xs text-gray-500">{item?.email}</p>
+      </div>
+    </td>
+    <td className="hidden md:table-cell">{item.username}</td>
+    <td className="hidden md:table-cell">{item.subjects.map(SubjectItem=>SubjectItem.name).join(",")}</td>
+    <td className="hidden md:table-cell">{item.classes.map(ClassItem=>ClassItem.name).join(",")}</td>
+    <td className="hidden md:table-cell">{item.phone}</td>
+    <td className="hidden md:table-cell">{item.address}</td>
+    <td>
+      <div className="flex items-center gap-2">
+      {role === "admin" && (
+          <>
+          <FormModal table="teacher" type="update" data={item} /> 
+          <FormModal table="teacher" type="delete" id={item.id} /> 
+          </>
+         )}
+      </div>
+    </td>
+  </tr>
+);
+
 const TeacherList = async () => {
-  const data = await prisma.teachers.findMany({
+
+  const data = await prisma.teacher.findMany({
     include: {
-      subjects= true,
-      classes= true,
+      subjects: true,
+      classes: true,
+
     },
   });
+  
+  console.log(data)
 
-  console.log(data);
- */}
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
@@ -113,7 +105,7 @@ const TeacherList = async () => {
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={teachersData} />
+      <Table columns={columns} renderRow={renderRow} data={data} />
       {/* PAGINATION: Description */}
       <Pagination />
     </div>
