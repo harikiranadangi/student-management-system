@@ -67,11 +67,14 @@ model Student {
   username  String   @unique
   name      String
   surname   String
-  email     String   @unique
+  email     String?   @unique
   phone     String
   address   String
+  img       String?
   bloodType String
   gender    String
+  createdAt DateTime @default(now())
+  
   gradeId   Int
   classId   Int
   grade     Grade    @relation(fields: [gradeId], references: [id])
