@@ -4,6 +4,15 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
+    console.log('Clearing existing data...');
+    // Clear all relevant tables before seeding new data
+    await prisma.admin.deleteMany();
+    await prisma.teacher.deleteMany();
+    await prisma.student.deleteMany();
+    await prisma.class.deleteMany();
+    await prisma.grade.deleteMany();
+    await prisma.subject.deleteMany();
+
     console.log('Seeding Admins...');
     for (let i = 1; i <= 10; i++) {
       console.log(`Creating admin ${i}`);
@@ -60,7 +69,7 @@ async function main() {
           email: `teacher${i}@school.com`,
           phone: `123456789${i}`,
           address: `Address ${i}`,
-          img: "/noAvatar.png",
+          img: "/teacher.png",
           gender: i % 2 === 0 ? 'Male' : 'Female',
         },
       });
@@ -79,6 +88,7 @@ async function main() {
           phone: `987654321${i}`,
           address: `Address ${i}`,
           bloodType: i % 2 === 0 ? 'A+' : 'O+',
+          img: "/student.png",
           gender: i % 2 === 0 ? 'Male' : 'Female',
           gradeId: grades[i % grades.length].id,
           classId: classes[i % classes.length].id,
