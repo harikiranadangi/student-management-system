@@ -1,3 +1,5 @@
+"use server";
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -8,7 +10,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type TeachersList = Teacher & {subjects: Subject[]} & {classes: Class[]}
+type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
 const columns = [
   {
@@ -76,10 +78,12 @@ const renderRow = (item: TeachersList ) => (
 const TeacherList = async ({
   searchParams,
 }: {
-  searchParams: { [key:string]:string | undefined };
+  searchParams: { [key: string]: string | undefined };
 }) => {
-  const {page, ...queryParams} = searchParams
-  const p = page ? parseInt(page) : 1;
+  // Ensure `page` is parsed safely
+  const pageParam = searchParams.page;
+  const page = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam) : 1;
+  const p = page < 1 ? 1 : page; // Ensure `p` is a positive integer
 
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
@@ -88,8 +92,8 @@ const TeacherList = async ({
         classes: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p-1),
-    }), 
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
     prisma.teacher.count(),
   ]);
     
