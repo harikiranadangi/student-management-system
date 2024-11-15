@@ -17,25 +17,29 @@ model Admin {
 model Grade {
   id      Int    @id @default(autoincrement())
   level   Int
+  
   classes Class[]
   students Student[]
 }
 
 model Class {
   id          Int       @id @default(autoincrement())
-  name        String
-  gradeId     Int
+  name        String    @unique
   capacity    Int
+
+  gradeId     Int
   grade       Grade     @relation(fields: [gradeId], references: [id])
   subjects    Subject[]
   students    Student[]
-  teachers    Teacher[] @relation("TeacherClasses", map: "Class_Teacher_fkey")
-  exams       Exam[]
-  events      Event[]
-  assignments Assignment[]
-  attendances Attendance[]
+  
+  supervisorId Int?
+  supervisor    Teacher? @relation(fields: [supervisorId], references: [id])
+  exams         Exam[]
+  events        Event[]
+  assignments   Assignment[]
+  attendances   Attendance[]
   announcements Announcement[]
-  results     Result[]
+  results       Result[]
 }
 
 model Subject {
@@ -52,14 +56,14 @@ model Teacher {
   username  String    @unique
   name      String
   surname   String
-  email     String?   @unique
+  email     String?   
   phone     String
   address   String
   img       String?
   gender    String
-  
+
   createdAt DateTime @default(now())
-  classes   Class[]   @relation("TeacherClasses")
+  classes   Class[]   
   subjects  Subject[] @relation("TeacherSubjects")
 }
 
