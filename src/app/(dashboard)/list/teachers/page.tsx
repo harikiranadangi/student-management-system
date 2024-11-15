@@ -87,6 +87,11 @@ const TeacherList = async ({
 
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
+      where:{
+        lessons:{
+          some:{classId:parseInt(searchParams.classId!)}
+        }
+      },
       include: {
         subjects: true,
         classes: true,
