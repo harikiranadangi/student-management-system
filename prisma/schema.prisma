@@ -1,3 +1,6 @@
+// Reset Database npx prisma db push --force-reset
+// Run Seed npx prisma db seed
+
 // Client generator
 generator client {
   provider = "prisma-client-js"
@@ -9,6 +12,7 @@ datasource db {
   url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
 }
 
+// Models
 model Admin {
   id       Int    @id @default(autoincrement())
   username String @unique
@@ -17,133 +21,172 @@ model Admin {
 model Grade {
   id      Int    @id @default(autoincrement())
   level   Int
-  
   classes Class[]
   students Student[]
 }
 
 model Class {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  capacity    Int
-
-  gradeId     Int
-  grade       Grade     @relation(fields: [gradeId], references: [id])
-  subjects    Subject[]
-  students    Student[]
-  
+  id           Int          @id @default(autoincrement())
+  name         String       @unique
+  capacity     Int
+  gradeId      Int
+  grade        Grade        @relation(fields: [gradeId], references: [id])
+  subjects     Subject[]
+  students     Student[]
   supervisorId Int?
-  supervisor    Teacher? @relation(fields: [supervisorId], references: [id])
-  exams         Exam[]
-  events        Event[]
-  assignments   Assignment[]
-  attendances   Attendance[]
+  supervisor   Teacher?     @relation(fields: [supervisorId], references: [id])
+  lessons      Lesson[]
+  exams        Exam[]
+  events       Event[]
+  assignments  Assignment[]
+  attendances  Attendance[]
   announcements Announcement[]
-  results       Result[]
+  results      Result[]
 }
 
 model Subject {
-  id        Int       @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
   name      String
   classes   Class[]
-  teachers  Teacher[] @relation("TeacherSubjects", map: "Subject_Teacher_fkey")
+  lessons   Lesson[]
   exams     Exam[]
   assignments Assignment[]
+
+  // Many-to-many relation with Teacher
+  teacherSubjects TeacherSubject[]
 }
 
 model Teacher {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
+  id        Int             @id @default(autoincrement())
+  username  String          @unique
   name      String
   surname   String
-  email     String?   
+  email     String?
   phone     String
   address   String
   img       String?
   gender    String
+  createdAt DateTime        @default(now())
+  classes   Class[]
+  lessons   Lesson[]
 
-  createdAt DateTime @default(now())
-  classes   Class[]   
-  subjects  Subject[] @relation("TeacherSubjects")
+  // Many-to-many relation with Subject
+  teacherSubjects TeacherSubject[]
+}
+
+model TeacherSubject {
+  teacherId Int
+  subjectId Int
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  @@id([teacherId, subjectId]) // Composite key for uniqueness
 }
 
 model Student {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  name      String
-  surname   String
-  email     String?   @unique
-  phone     String
-  address   String
-  img       String?
-  bloodType String
-  gender    String
-  createdAt DateTime @default(now())
-  
-  gradeId   Int
-  classId   Int
-  grade     Grade    @relation(fields: [gradeId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
-  results   Result[]
+  id          Int          @id @default(autoincrement())
+  username    String       @unique
+  name        String
+  surname     String
+  email       String?      @unique
+  phone       String
+  address     String
+  img         String?
+  bloodType   String
+  gender      String
+  createdAt   DateTime     @default(now())
+  gradeId     Int
+  classId     Int
+  grade       Grade        @relation(fields: [gradeId], references: [id])
+  class       Class        @relation(fields: [classId], references: [id])
+  results     Result[]
   attendances Attendance[]
 }
 
+model Lesson {
+  id          Int          @id @default(autoincrement())
+  name        String
+  day         String       // Use Enum if specific days are needed
+  startTime   DateTime
+  endTime     DateTime
+  subjectId   Int
+  classId     Int
+  teacherId   Int
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  class       Class        @relation(fields: [classId], references: [id])
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  
+  // Relation fields for exams, assignments, and attendances
+  exams       Exam[]       @relation("LessonExams")
+  assignments Assignment[] @relation("LessonAssignments")
+  attendances Attendance[] @relation("LessonAttendances")
+}
+
 model Exam {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   title     String
   startTime DateTime
   endTime   DateTime
   subjectId Int
   classId   Int
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  class     Class     @relation(fields: [classId], references: [id])
+  
+  // Back relation to Lesson
+  lessons   Lesson[]  @relation("LessonExams")
 }
 
 model Assignment {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   title     String
   startTime DateTime
   endTime   DateTime
   subjectId Int
   classId   Int
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
-}
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  class     Class     @relation(fields: [classId], references: [id])
 
-model Result {
-  id        Int      @id @default(autoincrement())
-  score     Float
-  classId   Int
-  studentId Int
-  class     Class    @relation(fields: [classId], references: [id])
-  student   Student  @relation(fields: [studentId], references: [id])
+  // Back relation to Lesson
+  lessons   Lesson[]  @relation("LessonAssignments")
 }
 
 model Attendance {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   date      DateTime
   present   Boolean
   studentId Int
   classId   Int
-  student   Student  @relation(fields: [studentId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
+  student   Student   @relation(fields: [studentId], references: [id])
+  class     Class     @relation(fields: [classId], references: [id])
+
+  // Back relation to Lesson
+  lessons   Lesson[]  @relation("LessonAttendances")
+}
+
+model Result {
+  id        Int       @id @default(autoincrement())
+  score     Float
+  classId   Int
+  studentId Int
+  class     Class     @relation(fields: [classId], references: [id])
+  student   Student   @relation(fields: [studentId], references: [id])
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String
   startTime   DateTime
   endTime     DateTime
   classId     Int
-  class       Class    @relation(fields: [classId], references: [id])
+  class       Class     @relation(fields: [classId], references: [id])
 }
 
 model Announcement {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String
   date        DateTime
   classId     Int
-  class       Class    @relation(fields: [classId], references: [id])
+  class       Class     @relation(fields: [classId], references: [id])
 }
