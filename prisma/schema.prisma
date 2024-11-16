@@ -9,7 +9,7 @@ generator client {
 // Database datasource
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
+  url      = env("DATABASE_URL") 
 }
 
 // Models
@@ -31,18 +31,19 @@ model Class {
   capacity     Int
   gradeId      Int
   grade        Grade        @relation(fields: [gradeId], references: [id])
-  subjects     Subject[]
-  students     Student[]
+  subjects     Subject[]    
+  students     Student[]    
   supervisorId Int?
   supervisor   Teacher?     @relation(fields: [supervisorId], references: [id])
-  lessons      Lesson[]
-  exams        Exam[]
-  events       Event[]
-  assignments  Assignment[]
-  attendances  Attendance[]
-  announcements Announcement[]
-  results      Result[]
+  lessons      Lesson[]     
+  exams        Exam[]       
+  events       Event[]      
+  assignments  Assignment[] 
+  attendances  Attendance[] 
+  announcements Announcement[] 
+  results      Result[]     
 }
+
 
 model Subject {
   id        Int             @id @default(autoincrement())
@@ -67,12 +68,13 @@ model Teacher {
   img       String?
   gender    String
   createdAt DateTime        @default(now())
-  classes   Class[]
-  lessons   Lesson[]
+  classes   Class[]         
+  lessons   Lesson[]        
 
   // Many-to-many relation with Subject
-  teacherSubjects TeacherSubject[]
+  teacherSubjects TeacherSubject[] 
 }
+
 
 model TeacherSubject {
   id       Int      @id @default(autoincrement())
@@ -115,11 +117,12 @@ model Lesson {
   subject     Subject      @relation(fields: [subjectId], references: [id])
   class       Class        @relation(fields: [classId], references: [id])
   teacher     Teacher      @relation(fields: [teacherId], references: [id])
-  
+
   // Relation fields for exams, assignments, and attendances
   exams       Exam[]       @relation("LessonExams")
   assignments Assignment[] @relation("LessonAssignments")
   attendances Attendance[] @relation("LessonAttendances")
+
 }
 
 model Exam {
