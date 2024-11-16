@@ -1,14 +1,15 @@
 "use server";
 
+import React from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import prisma from "@/lib/prisma";
-import { ITEM_PER_PAGE } from "@/lib/settings";
 import Image from "next/image";
+import { ITEM_PER_PAGE } from "@/lib/settings";
 
+// Define types
 type TeachersList = {
   id: number;
   name: string;
@@ -38,7 +39,7 @@ const renderRow = (item: TeachersList, role: string) => (
     {/* Info Column */}
     <td className="flex items-center gap-4 p-4">
       <Image
-        src={item.img || "/parent.png"}
+        src={item.img || "/profile.png"}
         alt={`Profile image of ${item.name}`}
         width={40}
         height={40}
@@ -55,9 +56,7 @@ const renderRow = (item: TeachersList, role: string) => (
 
     {/* Subjects Column */}
     <td className="hidden md:table-cell">
-      {item.teacherSubjects
-        .map((ts) => ts.subject.name) // Extracting subject names
-        .join(", ")}
+      {item.teacherSubjects.map((ts) => ts.subject.name).join(", ")}
     </td>
 
     {/* Classes Column */}
@@ -66,10 +65,10 @@ const renderRow = (item: TeachersList, role: string) => (
     </td>
 
     {/* Phone Column */}
-    <td className="hidden md:table-cell">{item.phone}</td>
+    <td className="hidden lg:table-cell">{item.phone}</td>
 
     {/* Address Column */}
-    <td className="hidden md:table-cell">{item.address}</td>
+    <td className="hidden lg:table-cell">{item.address}</td>
 
     {/* Actions Column */}
     <td>
@@ -85,20 +84,22 @@ const renderRow = (item: TeachersList, role: string) => (
   </tr>
 );
 
-const TeacherList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
-  // Parse and validate `page` query param
-  const pageParam = searchParams.page;
-  const page = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam) : 1;
-  const p = page < 1 ? 1 : page;
+const TeacherList = async ({ searchParams }: { searchParams?: Record<string, string | undefined> }) => {
+  const classId = searchParams?.classId;
 
-  // Fetch teachers and total count from Prisma
+  // Parse and validate `page` query param
+  const pageParam = searchParams?.page;
+  const page = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam) : 1;
+  const currentPage = page < 1 ? 1 : page;
+
+  // Fetch teachers and total count from Prisma (directly within the component)
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
       where: {
-        ...(searchParams.classId
+        ...(classId
           ? {
               classes: {
-                some: { id: parseInt(searchParams.classId) },
+                some: { id: parseInt(classId) },
               },
             }
           : {}),
@@ -108,21 +109,20 @@ const TeacherList = async ({ searchParams }: { searchParams: { [key: string]: st
         classes: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (currentPage - 1),
     }),
     prisma.teacher.count({
       where: {
-        ...(searchParams.classId
+        ...(classId
           ? {
               classes: {
-                some: { id: parseInt(searchParams.classId) },
+                some: { id: parseInt(classId) },
               },
             }
           : {}),
       },
     }),
   ]);
-  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -138,7 +138,7 @@ const TeacherList = async ({ searchParams }: { searchParams: { [key: string]: st
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="teacher" type="create" />}
+            <FormModal table="teacher" type="create" />
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@ const TeacherList = async ({ searchParams }: { searchParams: { [key: string]: st
       <Table columns={columns} renderRow={(item) => renderRow(item, "admin")} data={data} />
 
       {/* Pagination Section */}
-      <Pagination page={p} count={count} />
+      <Pagination page={currentPage} count={count} />
     </div>
   );
 };
