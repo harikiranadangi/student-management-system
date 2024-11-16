@@ -75,13 +75,13 @@ model Teacher {
 }
 
 model TeacherSubject {
+  id       Int      @id @default(autoincrement())
+  teacher  Teacher  @relation(fields: [teacherId], references: [id])
   teacherId Int
+  subject  Subject  @relation(fields: [subjectId], references: [id])
   subjectId Int
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
-  subject   Subject @relation(fields: [subjectId], references: [id])
-
-  @@id([teacherId, subjectId]) // Composite key for uniqueness
 }
+
 
 model Student {
   id          Int          @id @default(autoincrement())
