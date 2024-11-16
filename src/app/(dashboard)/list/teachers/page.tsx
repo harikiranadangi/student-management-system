@@ -8,6 +8,7 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { Prisma } from "@prisma/client";
 
 // Define types
 type TeachersList = {
@@ -84,44 +85,47 @@ const renderRow = (item: TeachersList, role: string) => (
   </tr>
 );
 
-const TeacherList = async ({ searchParams }: { searchParams?: Record<string, string | undefined> }) => {
-  const classId = searchParams?.classId;
+const TeacherListPage = async ({ 
+  searchParams, 
+}: { 
+  searchParams: { [key: string]: string | undefined };
+}) => {
+  const { page, ...queryParams } = searchParams;
+  const p = page ? parseInt(page) : 1;
+  
+  // URL PARAM CONDITION
+  const query: Prisma.TeacherWhereInput = {};
 
-  // Parse and validate `page` query param
-  const pageParam = searchParams?.page;
-  const page = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam) : 1;
-  const currentPage = page < 1 ? 1 : page;
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId": 
+            query.lessons = {
+              some: {
+                classId: parseInt(value),
+              },
+            };
+            break;
+        }
+      }
+    }
+  }
+
+  {/*  */}
 
   // Fetch teachers and total count from Prisma (directly within the component)
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
-      where: {
-        ...(classId
-          ? {
-              classes: {
-                some: { id: parseInt(classId) },
-              },
-            }
-          : {}),
-      },
+      where: query,
       include: {
         teacherSubjects: { include: { subject: true } },
         classes: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (currentPage - 1),
+      skip: ITEM_PER_PAGE * (p - 1),
     }),
-    prisma.teacher.count({
-      where: {
-        ...(classId
-          ? {
-              classes: {
-                some: { id: parseInt(classId) },
-              },
-            }
-          : {}),
-      },
-    }),
+    prisma.teacher.count({ where: query }),
   ]);
 
   return (
@@ -147,9 +151,9 @@ const TeacherList = async ({ searchParams }: { searchParams?: Record<string, str
       <Table columns={columns} renderRow={(item) => renderRow(item, "admin")} data={data} />
 
       {/* Pagination Section */}
-      <Pagination page={currentPage} count={count} />
+      <Pagination page={p} count={count} />
     </div>
   );
 };
 
-export default TeacherList;
+export default TeacherListPage;
