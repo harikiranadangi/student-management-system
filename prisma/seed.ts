@@ -27,7 +27,7 @@ async function main() {
     // Seed Teachers
     console.log('Seeding Teachers...');
     const teachers = [];
-    for (let i = 1; i <= 30; i++) {
+    for (let i = 1; i <= 40; i++) {
       const teacher = await prisma.teacher.create({
         data: {
           username: `teacher${i}`,
