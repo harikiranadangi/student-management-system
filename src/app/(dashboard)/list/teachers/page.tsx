@@ -112,7 +112,15 @@ const TeacherListPage = async ({
     }
   }
 
-  {/*  */}
+  {/*  where: {
+        ...(classId
+          ? {
+              classes: {
+                some: { id: parseInt(classId) },
+              },
+            }
+          : {}),
+      }, */}
 
   // Fetch teachers and total count from Prisma (directly within the component)
   const [data, count] = await prisma.$transaction([
