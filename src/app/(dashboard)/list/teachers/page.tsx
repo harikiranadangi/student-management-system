@@ -7,126 +7,147 @@ import TableSearch from "@/components/TableSearch";
 import { role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
+type TeachersList = {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  address: string;
+  img: string | null;
+  teacherSubjects: { subject: { name: string } }[]; // Relation with subjects
+  classes: { name: string }[]; // Relation with classes
+};
 
+// Define table columns
 const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Teacher ID",
-    accessor: "teacherId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Subjects",
-    accessor: "subjects",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Classes",
-    accessor: "classes",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Info", accessor: "info" },
+  { header: "Teacher ID", accessor: "teacherId", className: "hidden md:table-cell" },
+  { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
+  { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
+  { header: "Phone", accessor: "phone", className: "hidden lg:table-cell" },
+  { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
+  { header: "Actions", accessor: "action" },
 ];
 
-const renderRow = (item: TeachersList ) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+// Function to render a table row
+const renderRow = (item: TeachersList, role: string) => (
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
+    {/* Info Column */}
     <td className="flex items-center gap-4 p-4">
-      <Image src={item.img || "/parent.png"} alt="" width={40} height={40} className="object-cover rounded-full h-15 w-15 md:hidden xl:block"/>
+      <Image
+        src={item.img || "/parent.png"}
+        alt={`Profile image of ${item.name}`}
+        width={40}
+        height={40}
+        className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
+      />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs text-gray-500">{item?.email}</p>
       </div>
     </td>
+
+    {/* Teacher ID Column */}
     <td className="hidden md:table-cell">{item.username}</td>
-    <td className="hidden md:table-cell">{item.subjects.map(SubjectItem=>SubjectItem.name).join(",")}</td>
-    <td className="hidden md:table-cell">{item.classes.map(ClassItem=>ClassItem.name).join(",")}</td>
+
+    {/* Subjects Column */}
+    <td className="hidden md:table-cell">
+      {item.teacherSubjects
+        .map((ts) => ts.subject.name) // Extracting subject names
+        .join(", ")}
+    </td>
+
+    {/* Classes Column */}
+    <td className="hidden md:table-cell">
+      {item.classes.map((cls) => cls.name).join(", ")}
+    </td>
+
+    {/* Phone Column */}
     <td className="hidden md:table-cell">{item.phone}</td>
+
+    {/* Address Column */}
     <td className="hidden md:table-cell">{item.address}</td>
+
+    {/* Actions Column */}
     <td>
       <div className="flex items-center gap-2">
-      {role === "admin" && (
+        {role === "admin" && (
           <>
-          <FormModal table="teacher" type="update" data={item} /> 
-          <FormModal table="teacher" type="delete" id={item.id} /> 
+            <FormModal table="teacher" type="update" data={item} />
+            <FormModal table="teacher" type="delete" id={item.id} />
           </>
-         )}
+        )}
       </div>
     </td>
   </tr>
 );
 
-const TeacherList = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) => {
-  // Ensure `page` is parsed safely
+const TeacherList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
+  // Parse and validate `page` query param
   const pageParam = searchParams.page;
   const page = pageParam && !isNaN(Number(pageParam)) ? parseInt(pageParam) : 1;
-  const p = page < 1 ? 1 : page; // Ensure `p` is a positive integer
+  const p = page < 1 ? 1 : page;
 
+  // Fetch teachers and total count from Prisma
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
-      where:{
-        lessons:{
-          some:{classId:parseInt(searchParams.classId!)}
-        }
+      where: {
+        ...(searchParams.classId
+          ? {
+              classes: {
+                some: { id: parseInt(searchParams.classId) },
+              },
+            }
+          : {}),
       },
       include: {
-        subjects: true,
+        teacherSubjects: { include: { subject: true } },
         classes: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
-    prisma.teacher.count(),
+    prisma.teacher.count({
+      where: {
+        ...(searchParams.classId
+          ? {
+              classes: {
+                some: { id: parseInt(searchParams.classId) },
+              },
+            }
+          : {}),
+      },
+    }),
   ]);
-    
+  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* TOP: Description */}
+      {/* Header Section */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Teachers</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && (
-                <FormModal table="teacher" type="create"/> 
-            )}
+            {role === "admin" && <FormModal table="teacher" type="create" />}
           </div>
         </div>
       </div>
-      {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION: Description */}
-      <Pagination page={p} count={count}/>
+
+      {/* Table Section */}
+      <Table columns={columns} renderRow={(item) => renderRow(item, "admin")} data={data} />
+
+      {/* Pagination Section */}
+      <Pagination page={p} count={count} />
     </div>
   );
 };
