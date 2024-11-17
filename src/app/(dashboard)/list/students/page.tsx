@@ -3,7 +3,7 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, studentsData } from "@/lib/data";
+import { role } from "@/lib/data"; // Make sure this is correctly imported
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Prisma, Student } from "@prisma/client";
@@ -13,38 +13,38 @@ import Link from "next/link";
 type StudentList = Student & { class: Class };
 
 const columns = [
-  { header: "Student Name", accessor: "name", className: "w-36" }, // Keep the width auto for name
-  { header: "Admission No", accessor: "id", className: "hidden xl:table-cell w-16" },  // Decreased width
-  { header: "Gender", accessor: "gender", className: "hidden lg:table-cell w-16" },   // Decreased width
-  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },  // Decreased width
-  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },  // Decreased width
-  { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" }, // Decreased width
-  { header: "Actions", accessor: "action", className: "w-16" },  // Decreased width for actions
+  { header: "Student Name", accessor: "name", className: "w-36" },
+  { header: "Class", accessor: "class", className: "hidden xl:table-cell w-16" },
+  { header: "Gender", accessor: "gender", className: "hidden xl:table-cell w-16" },
+  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },
+  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },
+  { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" },
+  { header: "Actions", accessor: "action", className: "w-16" },
 ];
-
 
 const renderRow = (item: StudentList) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
-      <Image 
-        src={item.img || "/profile.png"} 
-        alt={item.name} 
-        width={40} 
-        height={40} 
+      <Image
+        src={item.img || "/profile.png"}
+        alt={item.name}
+        width={40}
+        height={40}
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item.id}</p>
+        <p className="text-gray-500 text-s">{item.id}</p>
       </div>
     </td>
-    <td className="hidden md:table-cell">{item.class.name}</td> {/* Access class name */}
-    <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td> {/* Parent Name or fallback */}
+    
+    <td className="hidden md:table-cell">{item.class.name}</td>
     <td className="hidden lg:table-cell">{item.gender}</td>
+    <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden lg:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
     <td className="hidden lg:table-cell">{item.phone}</td>
-    <td>
+    <td className="p-4">
       <div className="flex items-center gap-2">
         <Link href={`/list/students/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
