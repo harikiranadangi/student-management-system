@@ -77,13 +77,13 @@ model Teacher {
 }
 
 model TeacherSubject {
+  id        Int      @id @default(autoincrement())
   teacherId Int
   subjectId Int
 
   teacher Teacher @relation(fields: [teacherId], references: [id])
   subject Subject @relation(fields: [subjectId], references: [id])
 
-  @@id([teacherId, subjectId])
 }
 
 model Student {
