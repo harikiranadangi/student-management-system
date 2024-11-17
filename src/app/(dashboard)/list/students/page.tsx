@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
+import Link from "next/link";
 
 type StudentList = Student & { class: Class };
 
@@ -27,7 +28,7 @@ const renderRow = (item: StudentList) => (
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
       <Image 
-        src={item.img || "/default-img.png"} 
+        src={item.img || "/profile.png"} 
         alt={item.name} 
         width={40} 
         height={40} 
@@ -44,8 +45,12 @@ const renderRow = (item: StudentList) => (
     <td className="hidden lg:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
     <td className="hidden lg:table-cell">{item.phone}</td>
     <td>
-      {/* Action buttons for admin */}
       <div className="flex items-center gap-2">
+        <Link href={`/list/students/${item.id}`}>
+          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+            <Image src="/view.png" alt="View" width={16} height={16} />
+          </button>
+        </Link>
         {role === "admin" && (
           <>
             <FormModal table="student" type="update" data={item} />
