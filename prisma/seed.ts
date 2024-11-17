@@ -24,26 +24,34 @@ async function main() {
     console.log('Seeding Subjects...');
     const subjects = ['Math', 'Science', 'History', 'Geography'];
     const createdSubjects = await Promise.all(
-      subjects.map((subject) => prisma.subject.create({ data: { name: subject } }))
+      subjects.map((subject) =>
+        prisma.subject.create({ data: { name: subject } })
+      )
     );
+    console.log('Created Subjects:', createdSubjects);  // Log subjects
 
     // Seed Teachers
     console.log('Seeding Teachers...');
-    const teachers = [];
+    const teachersData = [];
     for (let i = 1; i <= 40; i++) {
-      const teacher = await prisma.teacher.create({
-        data: {
-          username: `teacher${i}`,
-          name: `Teacher ${i}`,
-          surname: `Surname ${i}`,
-          email: `teacher${i}@school.com`,
-          phone: `123456789${i}`,
-          address: `Address ${i}`,
-          gender: i % 2 === 0 ? 'Male' : 'Female',
-        },
+      const teacher = {
+        username: `teacher${i}`,
+        name: `Teacher ${i}`,
+        surname: `Surname ${i}`,
+        email: `teacher${i}@school.com`,
+        phone: `12345678${String(i).padStart(2, '0')}`,
+        address: `Address ${i}`,
+        gender: i % 2 === 0 ? 'Male' : 'Female',
+      };
+
+      const createdTeacher = await prisma.teacher.create({
+        data: teacher,
       });
-      teachers.push(teacher);
+
+      teachersData.push(createdTeacher);
     }
+
+    console.log('Teachers seeded successfully!');
 
     // Seed Classes
     console.log('Seeding Classes...');
@@ -65,9 +73,9 @@ async function main() {
     console.log('Assigning Teachers to Classes...');
     let teacherIndex = 0;
     for (const _class of classes) {
-      if (teacherIndex >= teachers.length) break;
+      if (teacherIndex >= teachersData.length) break;
 
-      const teacher = teachers[teacherIndex];
+      const teacher = teachersData[teacherIndex];
       teacherIndex++;
 
       await prisma.class.update({
@@ -75,7 +83,7 @@ async function main() {
         data: { supervisorId: teacher.id },
       });
 
-      const assignedSubjects = createdSubjects.slice(0, 2);
+      const assignedSubjects = createdSubjects.slice(0, 2); // Assign first two subjects to teacher
       for (const subject of assignedSubjects) {
         await prisma.teacherSubject.create({
           data: {
@@ -88,19 +96,21 @@ async function main() {
       console.log(`Assigned ${teacher.name} to ${_class.name} with subjects: ${assignedSubjects.map(sub => sub.name).join(', ')}`);
     }
 
+    let studentCounter = 1; // Global counter for unique student usernames
+
     // Seed Students
     console.log('Seeding Students...');
     for (const _class of classes) {
       for (let i = 1; i <= _class.capacity; i++) {
         const student = await prisma.student.create({
           data: {
-            username: `student${_class.id}${i}`,
+            username: `student${studentCounter}`, // Use global counter to ensure uniqueness
             name: `Student ${i}`,
             surname: `Surname ${i}`,
             dob: new Date(2005, 0, 1),
             parentName: `Parent ${i}`,
-            email: `student${_class.id}${i}@school.com`,
-            phone: `987654321${i}`,
+            email: `student${studentCounter}@school.com`, // Ensure unique email
+            phone: `987654321${String(i).padStart(2, '0')}`,
             address: `Address ${i}`,
             bloodType: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][i % 8],
             gender: i % 2 === 0 ? 'Male' : 'Female',
@@ -108,6 +118,9 @@ async function main() {
             classId: _class.id,
           },
         });
+
+        studentCounter++; // Increment the counter to ensure the next username is unique
+
         console.log(`Added ${student.name} to ${_class.name}`);
       }
     }
