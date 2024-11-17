@@ -35,7 +35,6 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
-// Function to render a table row
 const renderRow = (item: TeachersList, role: string) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     {/* Info Column */}
@@ -58,12 +57,12 @@ const renderRow = (item: TeachersList, role: string) => (
 
     {/* Subjects Column */}
     <td className="hidden md:table-cell">
-      {item.teacherSubjects.map((ts) => ts.subject.name).join(", ")}
+      {item.teacherSubjects?.map((ts) => ts.subject.name).join(", ") || "No Subjects"}
     </td>
 
     {/* Classes Column */}
     <td className="hidden md:table-cell">
-      {item.classes.map((cls) => cls.name).join(", ")}
+      {item.classes?.map((cls) => cls.name).join(", ") || "No Classes"}
     </td>
 
     {/* Phone Column */}
@@ -74,7 +73,7 @@ const renderRow = (item: TeachersList, role: string) => (
 
     {/* Actions Column */}
     <td>
-    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
@@ -120,7 +119,7 @@ const TeacherListPage = async ({
     prisma.teacher.findMany({
       where: query,
       include: {
-        teacherSubjects: { include: { subject: true } },
+        subjects: { include: { subject: true } },
         classes: true,
       },
       take: ITEM_PER_PAGE,
