@@ -6,57 +6,50 @@ import TableSearch from "@/components/TableSearch";
 import { role, studentsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Prisma } from "@prisma/client";
+import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
-type Student = {
-  id: number;
-  studentId: string;
-  name: string;
-  branch: string;
-  class: string;
-  gender: string;
-  parentName: string;
-  dob: string;
-  mobile: string;
-  religion: string;
-  caste: string;
-  language: string;
-};
+type StudentList = Student & { class: Class };
 
 const columns = [
-  { header: "Id", accessor: "studentId", className: "hidden md:table-cell" },
-  { header: "Student Name", accessor: "name" },
-  { header: "Class", accessor: "class", className: "hidden md:table-cell" },
-  { header: "Gender", accessor: "gender", className: "hidden lg:table-cell" },
-  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell" },
-  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell" },
-  { header: "Mobile", accessor: "mobile", className: "hidden lg:table-cell" },
-  { header: "Religion", accessor: "religion", className: "hidden lg:table-cell" },
-  { header: "Caste", accessor: "caste", className: "hidden lg:table-cell" },
-  { header: "Language", accessor: "language", className: "hidden lg:table-cell" },
-  { header: "Actions", accessor: "action" },
+  { header: "Student Name", accessor: "name", className: "w-36" }, // Keep the width auto for name
+  { header: "Admission No", accessor: "id", className: "hidden xl:table-cell w-16" },  // Decreased width
+  { header: "Gender", accessor: "gender", className: "hidden lg:table-cell w-16" },   // Decreased width
+  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },  // Decreased width
+  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },  // Decreased width
+  { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" }, // Decreased width
+  { header: "Actions", accessor: "action", className: "w-16" },  // Decreased width for actions
 ];
 
-const renderRow = (item: Student) => (
+
+const renderRow = (item: StudentList) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td className="hidden md:table-cell">{item.studentId}</td>
-    <td className="font-semibold">{item.name}</td>
-    <td className="hidden md:table-cell">{item.class}</td>
+    <td className="flex items-center gap-4 p-4">
+      {/* Image display */}
+      <Image 
+        src={item.img || "/default-img.png"} 
+        alt={item.name} 
+        width={40} 
+        height={40} 
+        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
+      />
+      <div className='flex flex-col'>
+        <h3 className="font-semibold">{item.name}</h3>
+        <p className="text-xs text-gray-500">{item.id}</p>
+      </div>
+    </td>
+    <td className="hidden md:table-cell">{item.class.name}</td> {/* Access class name */}
+    <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td> {/* Parent Name or fallback */}
     <td className="hidden lg:table-cell">{item.gender}</td>
-    <td className="hidden lg:table-cell">{item.parentName}</td>
-    <td className="hidden lg:table-cell">{item.dob}</td>
-    <td className="hidden lg:table-cell">{item.mobile}</td>
-    <td className="hidden lg:table-cell">{item.religion}</td>
-    <td className="hidden lg:table-cell">{item.caste}</td>
-    <td className="hidden lg:table-cell">{item.language}</td>
+    <td className="hidden lg:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
+    <td className="hidden lg:table-cell">{item.phone}</td>
     <td>
+      {/* Action buttons for admin */}
       <div className="flex items-center gap-2">
         {role === "admin" && (
           <>
-            <FormModal table="student" type="update" data={item}  />
-            <FormModal table="student" type="delete" id={item.id}  />
+            <FormModal table="student" type="update" data={item} />
+            <FormModal table="student" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -73,23 +66,24 @@ const StudentListPage = async ({
   const p = page ? parseInt(page) : 1;
 
   // URL PARAM CONDITION
-  const query: Prisma.TeacherWhereInput = {};
+  const query: Prisma.StudentWhereInput = {};
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
-          case "classId":
-            query.classes = {
-              some: {
-                id: parseInt(value),
+          case "teacherId":
+            query.class = {
+              lessons: {
+                some: {
+                  teacherId: Number(value),
+                },
               },
             };
             break;
           case "search":
             query.name = {
               contains: value,
-              
             };
             break;
         }
@@ -97,20 +91,18 @@ const StudentListPage = async ({
     }
   }
 
-  {/* // Fetch teachers and total count from Prisma
+  // Fetch students and total count from Prisma
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
       include: {
-        teacherSubjects: { include: { subject: true } },
-        classes: true,
+        class: true, // Include class relation
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.student.count({ where: query }),
-  ]); */}
-  
+  ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -133,9 +125,9 @@ const StudentListPage = async ({
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={studentsData} />
+      <Table columns={columns} renderRow={renderRow} data={data} />
       {/* PAGINATION: Description */}
-      <Pagination />
+      <Pagination page={p} count={count} />
     </div>
   );
 };
