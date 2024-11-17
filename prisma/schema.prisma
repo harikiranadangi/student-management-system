@@ -90,6 +90,8 @@ model Student {
   username    String       @unique
   name        String
   surname     String
+  dob         DateTime
+  parentName  String
   email       String?      @unique
   phone       String
   address     String
