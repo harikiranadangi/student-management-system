@@ -40,7 +40,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/app/(dashboard)/list/teachers/.page copy.tsx"  ],
   "exclude": [
     "node_modules"
   ]
