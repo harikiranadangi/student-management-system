@@ -111,6 +111,7 @@ model Lesson {
   day         String       // Use Enum if specific days are needed
   startTime   DateTime
   endTime     DateTime
+  
   subjectId   Int
   classId     Int
   teacherId   Int
