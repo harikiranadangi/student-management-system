@@ -5,10 +5,13 @@ const prisma = new PrismaClient();
 async function main() {
   try {
     console.log('Clearing existing data...');
+    await prisma.attendance.deleteMany();
+    await prisma.result.deleteMany();
+    await prisma.student.deleteMany();
+    await prisma.teacherSubject.deleteMany();
     await prisma.teacher.deleteMany();
     await prisma.class.deleteMany();
     await prisma.subject.deleteMany();
-    await prisma.student.deleteMany();
     await prisma.grade.deleteMany();
 
     // Seed Grades
@@ -60,21 +63,19 @@ async function main() {
     }
 
     console.log('Assigning Teachers to Classes...');
-    let teacherIndex = 0; // To track teachers
+    let teacherIndex = 0;
     for (const _class of classes) {
-      if (teacherIndex >= teachers.length) break; // Prevent out of bounds error
+      if (teacherIndex >= teachers.length) break;
 
-      const teacher = teachers[teacherIndex]; // Assign one teacher to one class
-      teacherIndex++; // Increment teacher index for the next class
+      const teacher = teachers[teacherIndex];
+      teacherIndex++;
 
-      // Assign the teacher as the class supervisor
       await prisma.class.update({
         where: { id: _class.id },
         data: { supervisorId: teacher.id },
       });
 
-      // Assign two subjects to the teacher
-      const assignedSubjects = createdSubjects.slice(0, 2); // Take only the first two subjects
+      const assignedSubjects = createdSubjects.slice(0, 2);
       for (const subject of assignedSubjects) {
         await prisma.teacherSubject.create({
           data: {
@@ -87,6 +88,29 @@ async function main() {
       console.log(`Assigned ${teacher.name} to ${_class.name} with subjects: ${assignedSubjects.map(sub => sub.name).join(', ')}`);
     }
 
+    // Seed Students
+    console.log('Seeding Students...');
+    for (const _class of classes) {
+      for (let i = 1; i <= _class.capacity; i++) {
+        const student = await prisma.student.create({
+          data: {
+            username: `student${_class.id}${i}`,
+            name: `Student ${i}`,
+            surname: `Surname ${i}`,
+            dob: new Date(2005, 0, 1),
+            parentName: `Parent ${i}`,
+            email: `student${_class.id}${i}@school.com`,
+            phone: `987654321${i}`,
+            address: `Address ${i}`,
+            bloodType: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][i % 8],
+            gender: i % 2 === 0 ? 'Male' : 'Female',
+            gradeId: grade.id,
+            classId: _class.id,
+          },
+        });
+        console.log(`Added ${student.name} to ${_class.name}`);
+      }
+    }
 
     console.log('Seeding complete!');
   } catch (e) {
