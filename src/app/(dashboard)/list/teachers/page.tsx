@@ -85,14 +85,14 @@ const renderRow = (item: TeachersList, role: string) => (
   </tr>
 );
 
-const TeacherListPage = async ({ 
-  searchParams, 
-}: { 
+const TeacherListPage = async ({
+  searchParams,
+}: {
   searchParams: { [key: string]: string | undefined };
 }) => {
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
-  
+
   // URL PARAM CONDITION
   const query: Prisma.TeacherWhereInput = {};
 
@@ -100,11 +100,17 @@ const TeacherListPage = async ({
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
-          case "classId": 
-            query.lessons = {
+          case "classId":
+            query.classes = {
               some: {
-                classId: parseInt(value),
+                id: parseInt(value),
               },
+            };
+            break;
+          case "search":
+            query.name = {
+              contains: value,
+              
             };
             break;
         }
@@ -112,7 +118,7 @@ const TeacherListPage = async ({
     }
   }
 
-  // Fetch teachers and total count from Prisma (directly within the component)
+  // Fetch teachers and total count from Prisma
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
       where: query,
