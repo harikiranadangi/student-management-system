@@ -114,19 +114,36 @@ const TeacherListPage = async ({
       }
     }
   }
-
+ {/*
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
-      where: query,
+      where: {
+        lessons: {
+          some: {classId: parseInt(queryParams.classId!)}
+        }
+      },
       include: {
-        subjects: { include: { subject: true } },
+        teacherSubjects: { include: { subject: true } },
         classes: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.teacher.count({ where: query }),
-  ]);
+  ]);*/}
+  
+  const [data, count] = await prisma.$transaction([
+    prisma.teacher.findMany({
+      where: query,
+      include: {
+        teacherSubjects: { include: { subject: true } },
+        classes: true,
+      },
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
+    prisma.teacher.count({ where: query }),
+  ]); 
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
