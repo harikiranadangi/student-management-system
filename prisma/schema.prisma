@@ -26,7 +26,7 @@ model Class {
   name          String         @unique
   capacity      Int
   supervisorId  Int?
-  supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
+  supervisor    Teacher?       @relation("ClassSupervisor", fields: [supervisorId], references: [id])
   lessons       Lesson[]
   students      Student[]
   gradeId       Int
@@ -37,15 +37,33 @@ model Class {
   attendances   Attendance[]
   results       Result[]
   exams         Exam[]
+  teachers      Teacher[]      @relation("TeacherClasses")
+}
+
+model Teacher {
+  id                Int              @id @default(autoincrement())
+  username          String           @unique
+  name              String
+  surname           String
+  email             String?
+  phone             String
+  address           String
+  img               String?
+  gender            String
+  createdAt         DateTime         @default(now())
+  classes           Class[]          @relation("TeacherClasses")
+  supervisedClasses Class[]          @relation("ClassSupervisor")
+  lessons           Lesson[]
+  teacherSubjects   TeacherSubject[]
 }
 
 model Subject {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique
-  lessons     Lesson[]
-  teachers    TeacherSubject[]
-  assignments Assignment[]
-  exams       Exam[] // Back-relation to the Exam model
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  lessons         Lesson[]
+  teacherSubjects TeacherSubject[]
+  assignments     Assignment[]
+  exams           Exam[] // Back-relation to the Exam model
 }
 
 model Exam {
@@ -60,30 +78,13 @@ model Exam {
   lessons   Lesson[] @relation("ExamLessons")
 }
 
-model Teacher {
-  id       Int     @id @default(autoincrement())
-  username  String           @unique
-  name      String
-  surname   String
-  email     String?
-  phone     String
-  address   String
-  img       String?
-  gender    String
-  createdAt DateTime         @default(now())
-  classes   Class[]
-  lessons   Lesson[]
-  subjects  TeacherSubject[]
-}
-
 model TeacherSubject {
-  id        Int      @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   teacherId Int
   subjectId Int
 
   teacher Teacher @relation(fields: [teacherId], references: [id])
   subject Subject @relation(fields: [subjectId], references: [id])
-
 }
 
 model Student {
