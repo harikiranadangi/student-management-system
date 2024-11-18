@@ -9,7 +9,6 @@ import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Prisma } from "@prisma/client";
-import Link from "next/link";
 
 // Define types
 type TeachersList = {
@@ -20,8 +19,8 @@ type TeachersList = {
   phone: string;
   address: string;
   img: string | null;
-  teacherSubjects: { subject: { name: string } }[];
-  classes: { name: string }[];
+  teacherSubjects: { subject: { name: string } }[]; // Relation with subjects
+  classes: { name: string }[]; // Relation with classes
 };
 
 // Define table columns
@@ -35,6 +34,7 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
+// Function to render a table row
 const renderRow = (item: TeachersList, role: string) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     {/* Info Column */}
@@ -57,12 +57,12 @@ const renderRow = (item: TeachersList, role: string) => (
 
     {/* Subjects Column */}
     <td className="hidden md:table-cell">
-      {item.teacherSubjects?.map((ts) => ts.subject.name).join(", ") || "No Subjects"}
+      {item.teacherSubjects.map((ts) => ts.subject.name).join(", ")}
     </td>
 
     {/* Classes Column */}
     <td className="hidden md:table-cell">
-      {item.classes?.map((cls) => cls.name).join(", ") || "No Classes"}
+      {item.classes.map((cls) => cls.name).join(", ")}
     </td>
 
     {/* Phone Column */}
@@ -74,11 +74,6 @@ const renderRow = (item: TeachersList, role: string) => (
     {/* Actions Column */}
     <td>
       <div className="flex items-center gap-2">
-        <Link href={`/list/teachers/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
-            <Image src="/view.png" alt="View" width={16} height={16} />
-          </button>
-        </Link>
         {role === "admin" && (
           <>
             <FormModal table="teacher" type="update" data={item} />
@@ -92,58 +87,49 @@ const renderRow = (item: TeachersList, role: string) => (
 
 const TeacherListPage = async ({
   searchParams,
-  role = "admin",
 }: {
   searchParams: { [key: string]: string | undefined };
-  role?: string;
 }) => {
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
-  const query: Prisma.TeacherWhereInput = {};
+  // URL PARAM CONDITION
+  const query: Prisma.teacherWhereInput = {};
 
-  for (const [key, value] of Object.entries(queryParams)) {
-    if (value) {
-      switch (key) {
-        case "classId":
-          query.classes = { some: { id: Number(value) } };
-          break;
-        case "search":
-          query.name = { contains: value };
-          break;
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId":
+            query.classes = {
+              some: {
+                id: parseInt(value),
+              },
+            };
+            break;
+          case "search":
+            query.name = {
+              contains: value,
+            };
+            break;
+        }
       }
     }
   }
- {/*
-  const [data, count] = await prisma.$transaction([
-    prisma.teacher.findMany({
-      where: {
-        lessons: {
-          some: {classId: parseInt(queryParams.classId!)}
-        }
-      },
-      include: {
-        teacherSubjects: { include: { subject: true } },
-        classes: true,
-      },
-      take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
-    }),
-    prisma.teacher.count({ where: query }),
-  ]);*/}
-  
+
+  // Fetch teachers and total count from Prisma
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
       where: query,
       include: {
-        teacherSubjects: { include: { subject: true } },
-        classes: true,
+        teachersubject: { include: { subject: true } },
+        class: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.teacher.count({ where: query }),
-  ]); 
+  ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -153,19 +139,19 @@ const TeacherListPage = async ({
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
-            <button aria-label="Filter" className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
-            <button aria-label="Sort" className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="teacher" type="create" />}
+            <FormModal table="teacher" type="create" />
           </div>
         </div>
       </div>
 
       {/* Table Section */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, "admin")} data={data} />
 
       {/* Pagination Section */}
       <Pagination page={p} count={count} />
