@@ -2,7 +2,6 @@
 // npx prisma generate
 // npx prisma migrate dev --name update_relations
 
-
 generator client {
   provider = "prisma-client-js"
 }
