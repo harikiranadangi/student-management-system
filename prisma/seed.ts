@@ -13,6 +13,10 @@ async function main() {
     await prisma.class.deleteMany();
     await prisma.subject.deleteMany();
     await prisma.grade.deleteMany();
+    await prisma.announcement.deleteMany();
+    await prisma.assignment.deleteMany();
+    await prisma.event.deleteMany();
+    await prisma.exam.deleteMany();
 
     // Seed Grades
     console.log('Seeding Grades...');
@@ -122,6 +126,24 @@ async function main() {
         studentCounter++; // Increment the counter to ensure the next username is unique
 
         console.log(`Added ${student.name} to ${_class.name}`);
+
+        // Seed Attendance and Results
+        await prisma.attendance.create({
+          data: {
+            date: new Date(),
+            present: Math.random() > 0.5, // Random attendance for demonstration
+            studentId: student.id,
+            classId: _class.id,
+          },
+        });
+
+        await prisma.result.create({
+          data: {
+            score: Math.random() * 100, // Random score for demonstration
+            studentId: student.id,
+            classId: _class.id,
+          },
+        });
       }
     }
 
