@@ -13,31 +13,58 @@ import { Prisma } from "@prisma/client";
 // Define types
 type TeachersList = {
   id: number;
+  teacherId: string;
   name: string;
-  username: string;
-  email: string;
+  email?: string;
   phone: string;
   address: string;
   img: string | null;
-  teacherSubjects: { subject: { name: string } }[]; // Relation with subjects
-  classes: { name: string }[]; // Relation with classes
+  subjects: string[];
+  classes:  string[];
 };
 
 // Define table columns
 const columns = [
-  { header: "Info", accessor: "info" },
-  { header: "Teacher ID", accessor: "teacherId", className: "hidden md:table-cell" },
-  { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
-  { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
-  { header: "Phone", accessor: "phone", className: "hidden lg:table-cell" },
-  { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
-  { header: "Actions", accessor: "action" },
+  {
+    header: "Info",
+    accessor: "info",
+  },
+  {
+    header: "Teacher ID",
+    accessor: "teacherId",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Subjects",
+    accessor: "subjects",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Classes",
+    accessor: "classes",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Phone",
+    accessor: "phone",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Address",
+    accessor: "address",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Actions",
+    accessor: "action",
+  },
 ];
 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     {/* Info Column */}
+    
     <td className="flex items-center gap-4 p-4">
       <Image
         src={item.img || "/profile.png"}
@@ -47,30 +74,20 @@ const renderRow = (item: TeachersList, role: string) => (
         className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
       />
       <div className="flex flex-col">
-        <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item?.email}</p>
+        <h3 className="font-semibold">{item.name ?? 'No name available'}</h3>
+        <p className="text-xs text-gray-500">{item?.email ?? 'No email available'}</p>
       </div>
     </td>
-
-    {/* Teacher ID Column */}
-    <td className="hidden md:table-cell">{item.username}</td>
-
-    {/* Subjects Column */}
+    <td className="hidden md:table-cell">{item.id}</td>
+    {/* Directly use the strings from subjects and classes */}
     <td className="hidden md:table-cell">
-      {item.teacherSubjects.map((ts) => ts.subject.name).join(", ")}
+      {item.subjects?.join(", ") || 'No subjects available'}
     </td>
-
-    {/* Classes Column */}
     <td className="hidden md:table-cell">
-      {item.classes.map((cls) => cls.name).join(", ")}
+      {item.classes?.join(", ") || 'No classes available'}
     </td>
-
-    {/* Phone Column */}
-    <td className="hidden lg:table-cell">{item.phone}</td>
-
-    {/* Address Column */}
-    <td className="hidden lg:table-cell">{item.address}</td>
-
+    <td className="hidden md:table-cell">{item.phone}</td>
+    <td className="hidden md:table-cell">{item.address}</td>
     {/* Actions Column */}
     <td>
       <div className="flex items-center gap-2">
@@ -85,29 +102,34 @@ const renderRow = (item: TeachersList, role: string) => (
   </tr>
 );
 
+
+
+
 const TeacherListPage = async ({ 
   searchParams, 
 }: { 
   searchParams: { [key: string]: string | undefined }; 
 }) => {
   const { page, ...queryParams } = searchParams;
-  
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
+  // Initialize Prisma query object
   const query: Prisma.TeacherWhereInput = {};
 
-  if(queryParams) {
-    for(const [key,value] of Object.entries(queryParams)){
-      if(value !== undefined){
-        switch(key) {
-          case "classId": 
-            query.lessons =  {
+  // Dynamically add filters based on query parameters
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId":
+            query.lessons = {
               some: {
-                classId:parseInt(value),
+                classId: parseInt(value),
               },
             };
+            break;
+          case "search":
+            query.name = {contains: value};
         }
       }
     }
@@ -124,8 +146,11 @@ const TeacherListPage = async ({
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
-    prisma.teacher.count({where:query}),
+    prisma.teacher.count({ where: query }),
   ]);
+  
+
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
