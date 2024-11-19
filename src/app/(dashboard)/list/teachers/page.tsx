@@ -103,7 +103,7 @@ const TeacherListPage = async ({
       if(value !== undefined){
         switch(key) {
           case "classId": 
-            query.Lessons =  {
+            query.lessons =  {
               some: {
                 classId:parseInt(value),
               },
@@ -118,8 +118,8 @@ const TeacherListPage = async ({
     prisma.teacher.findMany({
       where: query,
       include: {
-        Subjects: true,
-        TeachingClasses: true,
+        teacherSubjects: true,
+        classes: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
