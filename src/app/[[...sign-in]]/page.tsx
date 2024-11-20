@@ -5,11 +5,11 @@ import * as SignIn from '@clerk/elements/sign-in'
 
 export default function SignInPage() {
   return (
-    <div className="grid items-center flex-grow w-full px-4 bg-zinc-100 sm:justify-center">
+    <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-100">
       <SignIn.Root>
         <SignIn.Step
           name="start"
-          className="w-full px-4 py-10 space-y-6 bg-white shadow-md rounded-2xl ring-1 ring-black/5 sm:w-96 sm:px-8"
+          className="flex flex-col gap-4 p-12 bg-white rounded-md shadow-2xl"
         >
           <header className="text-center">
             <svg
@@ -28,7 +28,7 @@ export default function SignInPage() {
               </g>
             </svg>
             <h1 className="mt-4 text-xl font-medium tracking-tight text-zinc-950">
-              Sign in to Kotak School
+              Sign in to Kotak Salesian School
             </h1>
           </header>
           <Clerk.GlobalError className="block text-sm text-red-400" />
