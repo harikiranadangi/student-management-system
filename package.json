@@ -10,6 +10,7 @@
     "clean": "rd /s /q .next"
   },
   "dependencies": {
+    "@clerk/elements": "^0.19.4",
     "@clerk/nextjs": "^6.4.0",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^5.22.0",
