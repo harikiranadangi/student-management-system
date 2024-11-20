@@ -26,13 +26,13 @@ async function main() {
 
     // Seed Subjects
     console.log('Seeding Subjects...');
-    const subjects = ['Math', 'Science', 'History', 'Geography'];
+    const subjects = ['Math', 'Science', 'History', 'Geography', 'English', 'Physical Education'];
     const createdSubjects = await Promise.all(
       subjects.map((subject) =>
         prisma.subject.create({ data: { name: subject } })
       )
     );
-    console.log('Created Subjects:', createdSubjects);  // Log subjects
+    console.log('Created Subjects:', createdSubjects);
 
     // Seed Teachers
     console.log('Seeding Teachers...');
@@ -79,25 +79,31 @@ async function main() {
     for (const _class of classes) {
       if (teacherIndex >= teachersData.length) break;
 
-      const teacher = teachersData[teacherIndex];
+      const classTeacher = teachersData[teacherIndex];
+      teacherIndex++;
+
+      const supervisor = teachersData[teacherIndex];
       teacherIndex++;
 
       await prisma.class.update({
         where: { id: _class.id },
-        data: { supervisorId: teacher.id },
+        data: {
+          supervisorId: supervisor.id,
+        },
       });
 
-      const assignedSubjects = createdSubjects.slice(0, 2); // Assign first two subjects to teacher
+      // Assign Subjects to Teachers and Classes
+      const assignedSubjects = createdSubjects.slice(0, 6); // Assign all 6 subjects to the class
       for (const subject of assignedSubjects) {
         await prisma.teacherSubject.create({
           data: {
-            teacherId: teacher.id,
+            teacherId: classTeacher.id,  // Assign teacher to subject
             subjectId: subject.id,
           },
         });
       }
 
-      console.log(`Assigned ${teacher.name} to ${_class.name} with subjects: ${assignedSubjects.map(sub => sub.name).join(', ')}`);
+      console.log(`Assigned ${classTeacher.name} as Class Teacher and ${supervisor.name} as Supervisor to ${_class.name}`);
     }
 
     let studentCounter = 1; // Global counter for unique student usernames
@@ -108,7 +114,7 @@ async function main() {
       for (let i = 1; i <= _class.capacity; i++) {
         const student = await prisma.student.create({
           data: {
-            username: `student${studentCounter}`, // Use global counter to ensure uniqueness
+            username: `student${studentCounter}`,
             name: `Student ${i}`,
             surname: `Surname ${i}`,
             dob: new Date(2005, 0, 1),
@@ -123,7 +129,7 @@ async function main() {
           },
         });
 
-        studentCounter++; // Increment the counter to ensure the next username is unique
+        studentCounter++;
 
         console.log(`Added ${student.name} to ${_class.name}`);
 
