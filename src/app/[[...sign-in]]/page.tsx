@@ -33,12 +33,12 @@ export default function LoginPage() {
               alt="Kotak Salesian School Logo"
               className="w-20 h-20 mx-auto"
             />
-            <h1 className="items-center gap-2 text-xl text-center font-mediumbold ">
+            <h1 className="items-center gap-2 text-lg font-bold text-center ">
               Kotak Salesian School
             </h1>
-            <h2 className='text-gray-500'>
+            {/* <h2 className='text-gray-500'>
               Sign in to your account
-            </h2>
+            </h2> */}
           </header>
           <Clerk.GlobalError className="text-sm text-red-400" />
           <div className="space-y-4">
