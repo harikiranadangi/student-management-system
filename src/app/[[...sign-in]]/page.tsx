@@ -21,7 +21,7 @@ export default function LoginPage() {
   }, [user, router]);
 
   return (
-    <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-100">
+    <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-200">
       <SignIn.Root>
         <SignIn.Step
           name="start"
@@ -67,16 +67,7 @@ export default function LoginPage() {
           >
             Sign In
           </SignIn.Action>
-          <p className="text-sm text-center text-zinc-500">
-            No account?{' '}
-            <Clerk.Link
-              navigate="sign-up"
-              className="font-medium outline-none text-zinc-950 decoration-zinc-950/20 underline-offset-4 hover:text-zinc-700 hover:underline focus-visible:underline"
-            >
-              Create an account
-            </Clerk.Link>
-          </p>
-        </SignIn.Step>
+          </SignIn.Step>
       </SignIn.Root>
     </div>
   )
