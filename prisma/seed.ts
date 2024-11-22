@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 async function main() {
   try {
     console.log('Clearing existing data...');
+    // Clear existing data
     await prisma.attendance.deleteMany();
     await prisma.result.deleteMany();
     await prisma.student.deleteMany();
-    await prisma.teacherSubject.deleteMany();
     await prisma.teacher.deleteMany();
     await prisma.class.deleteMany();
     await prisma.subject.deleteMany();
@@ -28,141 +28,100 @@ async function main() {
     console.log('Seeding Subjects...');
     const subjects = ['Math', 'Science', 'History', 'Geography', 'English', 'Physical Education'];
     const createdSubjects = await Promise.all(
-      subjects.map((subject) =>
-        prisma.subject.create({ data: { name: subject } })
-      )
+      subjects.map((subject) => prisma.subject.create({ data: { name: subject } }))
     );
-    console.log('Created Subjects:', createdSubjects);
+    console.log('Subjects seeded successfully.');
 
     // Seed Teachers
     console.log('Seeding Teachers...');
-    const teachersData = [];
-    for (let i = 1; i <= 40; i++) {
-      const teacher = {
-        username: `teacher${i}`,
-        name: `Teacher ${i}`,
-        surname: `Surname ${i}`,
-        email: `teacher${i}@school.com`,
-        phone: `12345678${String(i).padStart(2, '0')}`,
-        address: `Address ${i}`,
-        gender: i % 2 === 0 ? 'Male' : 'Female',
-      };
-
-      const createdTeacher = await prisma.teacher.create({
-        data: teacher,
-      });
-
-      teachersData.push(createdTeacher);
-    }
-
-    console.log('Teachers seeded successfully!');
+    const teachers = await Promise.all(
+      Array.from({ length: 40 }, (_, i) =>
+        prisma.teacher.create({
+          data: {
+            id: `teacher${i + 1}`,
+            username: `teacher${i + 1}`,
+            name: `Teacher ${i + 1}`,
+            surname: `Surname ${i + 1}`,
+            email: `teacher${i + 1}@school.com`,
+            phone: `12345678${String(i + 1).padStart(2, '0')}`,
+            addresss: `Address ${i + 1}`,
+            gender: i % 2 === 0 ? 'Male' : 'Female',
+          },
+        })
+      )
+    );
+    console.log('Teachers seeded successfully.');
 
     // Seed Classes
     console.log('Seeding Classes...');
     const classes = [];
     for (let i = 1; i <= 10; i++) {
-      for (let j = 1; j <= 4; j++) {
-        const sectionName = `${i}${['A', 'B', 'C', 'D'][j - 1]}`;
+      const section = ['A', 'B', 'C', 'D'];
+      for (let j = 0; j < section.length; j++) {
+        const supervisor = teachers[(i * 4 + j) % teachers.length];
         const _class = await prisma.class.create({
           data: {
-            name: `Class ${i} ${sectionName}`,
-            capacity: 30,
+            name: `Class ${i}${section[j]}`,
             gradeId: grade.id,
+            supervisorId: supervisor.id,
           },
         });
         classes.push(_class);
       }
     }
-
-    console.log('Assigning Teachers to Classes...');
-    let teacherIndex = 0;
-    for (const _class of classes) {
-      if (teacherIndex >= teachersData.length) break;
-
-      const classTeacher = teachersData[teacherIndex];
-      teacherIndex++;
-
-      const supervisor = teachersData[teacherIndex];
-      teacherIndex++;
-
-      await prisma.class.update({
-        where: { id: _class.id },
-        data: {
-          supervisorId: supervisor.id,
-        },
-      });
-
-      // Assign Subjects to Teachers and Classes
-      const assignedSubjects = createdSubjects.slice(0, 6); // Assign all 6 subjects to the class
-      for (const subject of assignedSubjects) {
-        await prisma.teacherSubject.create({
-          data: {
-            teacherId: classTeacher.id,  // Assign teacher to subject
-            subjectId: subject.id,
-          },
-        });
-      }
-
-      console.log(`Assigned ${classTeacher.name} as Class Teacher and ${supervisor.name} as Supervisor to ${_class.name}`);
-    }
-
-    let studentCounter = 1; // Global counter for unique student usernames
+    console.log('Classes seeded successfully.');
 
     // Seed Students
     console.log('Seeding Students...');
+    let studentCounter = 1;
     for (const _class of classes) {
-      for (let i = 1; i <= _class.capacity; i++) {
+      for (let i = 1; i <= 10; i++) {
         const student = await prisma.student.create({
           data: {
+            id: `student${studentCounter}`,
             username: `student${studentCounter}`,
-            name: `Student ${i}`,
-            surname: `Surname ${i}`,
-            dob: new Date(2005, 0, 1),
-            parentName: `Parent ${i}`,
-            email: `student${studentCounter}@school.com`, // Ensure unique email
-            phone: `987654321${String(i).padStart(2, '0')}`,
-            address: `Address ${i}`,
-            bloodType: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][i % 8],
+            name: `Student ${studentCounter}`,
+            surname: `Surname ${studentCounter}`,
+            email: `student${studentCounter}@school.com`,
+            phone: `98765432${String(studentCounter).padStart(2, '0')}`,
+            addresss: `Address ${studentCounter}`,
+            bloodType: ['A+', 'B+', 'AB+', 'O+'][i % 4],
             gender: i % 2 === 0 ? 'Male' : 'Female',
             gradeId: grade.id,
             classId: _class.id,
           },
         });
-
         studentCounter++;
 
-        console.log(`Added ${student.name} to ${_class.name}`);
-
-        // Seed Attendance and Results
+        // Seed Attendance
         await prisma.attendance.create({
           data: {
             date: new Date(),
-            present: Math.random() > 0.5, // Random attendance for demonstration
+            present: Math.random() > 0.5,
             studentId: student.id,
-            classId: _class.id,
           },
         });
 
+        // Seed Results
         await prisma.result.create({
           data: {
-            score: Math.random() * 100, // Random score for demonstration
+            score: Math.floor(Math.random() * 100),
             studentId: student.id,
-            classId: _class.id,
           },
         });
       }
     }
+    console.log('Students seeded successfully.');
 
-    console.log('Seeding complete!');
-  } catch (e) {
-    console.error('Error during seeding:', e);
+    console.log('Seeding process completed successfully.');
+  } catch (error) {
+    console.error('Error during seeding:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((e) => {
-    console.error('Unexpected error:', e);
-    process.exit(1);
-  });
+main().catch((e) => {
+  console.error('Unexpected error:', e);
+  process.exit(1);
+});
