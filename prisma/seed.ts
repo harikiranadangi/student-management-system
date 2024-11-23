@@ -5,18 +5,19 @@ const prisma = new PrismaClient();
 async function main() {
   try {
     console.log('Clearing existing data...');
-    // Clear existing data
+    // Clear existing data in the correct order
     await prisma.attendance.deleteMany();
     await prisma.result.deleteMany();
     await prisma.student.deleteMany();
-    await prisma.teacher.deleteMany();
     await prisma.class.deleteMany();
+    await prisma.teacher.deleteMany();
     await prisma.subject.deleteMany();
     await prisma.grade.deleteMany();
     await prisma.announcement.deleteMany();
     await prisma.assignment.deleteMany();
     await prisma.event.deleteMany();
     await prisma.exam.deleteMany();
+    await prisma.homework.deleteMany();
 
     // Seed Grades
     console.log('Seeding Grades...');
@@ -30,27 +31,25 @@ async function main() {
     const createdSubjects = await Promise.all(
       subjects.map((subject) => prisma.subject.create({ data: { name: subject } }))
     );
-    console.log('Subjects seeded successfully.');
 
     // Seed Teachers
-    console.log('Seeding Teachers...');
     const teachers = await Promise.all(
       Array.from({ length: 40 }, (_, i) =>
         prisma.teacher.create({
           data: {
-            id: `teacher${i + 1}`,
             username: `teacher${i + 1}`,
             name: `Teacher ${i + 1}`,
             surname: `Surname ${i + 1}`,
             email: `teacher${i + 1}@school.com`,
             phone: `12345678${String(i + 1).padStart(2, '0')}`,
-            addresss: `Address ${i + 1}`,
+            address: `Address ${i + 1}`,
             gender: i % 2 === 0 ? 'Male' : 'Female',
           },
         })
       )
     );
-    console.log('Teachers seeded successfully.');
+    
+    
 
     // Seed Classes
     console.log('Seeding Classes...');
@@ -69,7 +68,19 @@ async function main() {
         classes.push(_class);
       }
     }
-    console.log('Classes seeded successfully.');
+
+    // Seed Homework
+    console.log('Seeding Homework...');
+    for (const _class of classes) {
+      const homework = await prisma.homework.create({
+        data: {
+          description: `Homework for ${_class.name}`,
+          class: { connect: { id: _class.id } },
+          subject: { connect: { id: createdSubjects[0].id } }, // Linking the first subject
+        },
+      });
+      console.log(`Homework created for ${_class.name}`);
+    }
 
     // Seed Students
     console.log('Seeding Students...');
@@ -111,7 +122,6 @@ async function main() {
         });
       }
     }
-    console.log('Students seeded successfully.');
 
     console.log('Seeding process completed successfully.');
   } catch (error) {
