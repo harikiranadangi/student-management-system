@@ -10,6 +10,7 @@ import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { role, subjectsData } from "@/lib/data";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
+import Link from "next/link";
 
 // // Define types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
@@ -77,10 +78,14 @@ const renderRow = (item: TeachersList) => (
     <td className="hidden md:table-cell">{item.address}</td>
     {/* Actions Column */}
     <td>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2">
+        <Link href={`/list/teachers/${item.id}`}>
+          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+            <Image src="/view.png" alt="View" width={16} height={16} />
+          </button>
+        </Link>
         {role === "admin" && (
           <>
-            <FormModal table="teacher" type="update" data={item} />
             <FormModal table="teacher" type="delete" id={item.id} />
           </>
         )}
