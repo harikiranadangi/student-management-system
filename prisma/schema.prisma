@@ -13,17 +13,19 @@ model Admin {
 }
 
 model Student {
-  id        String   @id
-  username  String   @unique
-  name      String
-  surname   String
-  email     String?  @unique
-  phone     String
-  addresss  String
-  img       String?
-  bloodType String?
-  gender    Gender
-  createdAt DateTime @default(now())
+  id         Int   @id
+  username   String   @unique
+  name       String
+  surname    String
+  parentName String
+  email      String?  @unique
+  phone      String
+  address    String
+  img        String?
+  bloodType  String?
+  gender     Gender
+  dob        DateTime
+  createdAt  DateTime @default(now())
 
   classId     Int
   class       Class        @relation(fields: [classId], references: [id])
@@ -134,7 +136,7 @@ model Result {
   exam         Exam?       @relation(fields: [examId], references: [id])
   assignmentId Int?
   assignment   Assignment? @relation(fields: [assignmentId], references: [id])
-  studentId    String
+  studentId    Int
   student      Student     @relation(fields: [studentId], references: [id])
 }
 
@@ -143,7 +145,7 @@ model Attendance {
   date    DateTime
   present Boolean
 
-  studentId String
+  studentId Int
   student   Student @relation(fields: [studentId], references: [id])
 }
 
