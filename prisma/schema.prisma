@@ -38,13 +38,13 @@ model Student {
 }
 
 model Teacher {
-  id        String   @id
+  id        Int      @id @default(autoincrement())
   username  String   @unique
   name      String
   surname   String
   email     String?
   phone     String
-  addresss  String
+  address  String
   img       String?
   bloodType String?
   gender    Gender
@@ -67,7 +67,7 @@ model Class {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  supervisorId  String
+  supervisorId  Int
   supervisor    Teacher        @relation(fields: [supervisorId], references: [id])
   lessons       Lesson[]
   students      Student[]
@@ -75,6 +75,8 @@ model Class {
   grade         Grade          @relation(fields: [gradeId], references: [id])
   announcements Announcement[]
   events        Event[]
+  Homework      Homework?      @relation(fields: [homeworkId], references: [id])
+  homeworkId    Int?
 }
 
 model Subject {
@@ -82,8 +84,10 @@ model Subject {
   name      String   @unique
   createdAt DateTime @default(now())
 
-  teachers Teacher[]
-  lessons  Lesson[]
+  teachers   Teacher[]
+  lessons    Lesson[]
+  homeworkId Int?
+  Homework   Homework? @relation(fields: [homeworkId], references: [id])
 }
 
 model Lesson {
@@ -97,7 +101,7 @@ model Lesson {
   subject     Subject      @relation(fields: [subjectId], references: [id])
   classId     Int
   class       Class        @relation(fields: [classId], references: [id])
-  teacherId   String
+  teacherId   Int
   teacher     Teacher      @relation(fields: [teacherId], references: [id])
   exams       Exam[]
   assignments Assignment[]
@@ -166,6 +170,14 @@ model Announcement {
 
   classId Int?
   class   Class? @relation(fields: [classId], references: [id])
+}
+
+model Homework {
+  id          Int       @id @default(autoincrement())
+  date        DateTime  @default(now())
+  description String
+  subject     Subject[]
+  class       Class[]
 }
 
 enum Gender {
