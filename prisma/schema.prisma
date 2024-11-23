@@ -13,7 +13,7 @@ model Admin {
 }
 
 model Student {
-  id         Int   @id
+  id         Int   @id @default(autoincrement())
   username   String   @unique
   name       String
   surname    String
@@ -47,6 +47,7 @@ model Teacher {
   bloodType String?
   gender    Gender
   createdAt DateTime @default(now())
+  supervisor  Boolean @default(false)
 
   subjects Subject[]
   lessons  Lesson[]
