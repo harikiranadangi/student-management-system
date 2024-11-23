@@ -10,8 +10,9 @@ import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { role, subjectsData } from "@/lib/data";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
+import Link from "next/link";
 
-// // Define types
+// Define Types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
 // Define table columns
@@ -59,7 +60,7 @@ const renderRow = (item: TeachersList) => (
     <td className="flex items-center gap-4 p-4">
       <Image
         src={item.img || "/profile.png"}
-        alt={`Profile image of ${item.name}`}
+        alt={``}
         width={40}
         height={40}
         className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
@@ -78,9 +79,13 @@ const renderRow = (item: TeachersList) => (
     {/* Actions Column */}
     <td>
       <div className="flex items-center gap-2">
+      <Link href={`/list/teachers/${item.id}`}>
+          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+            <Image src="/view.png" alt="View" width={16} height={16} />
+          </button>
+      </Link>
         {role === "admin" && (
           <>
-            <FormModal table="teacher" type="update" data={item} />
             <FormModal table="teacher" type="delete" id={item.id} />
           </>
         )}
@@ -90,13 +95,11 @@ const renderRow = (item: TeachersList) => (
 );
 
 
-// Defining List
 const TeacherListPage = async ({
-searchParams,
+  searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
