@@ -14,7 +14,7 @@ const SingleTeacherPage = () => {
         {/* TOP */}
         <div className="flex flex-col gap-4 lg:flex-row">
           {/* USER INFO CARD */}
-          <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-lamaSky">
+          <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
                 src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200"
@@ -140,19 +140,19 @@ const SingleTeacherPage = () => {
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
-            <Link className="p-3 rounded-md bg-lamaSkyLight" href="/">
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/classes?supervisorId=${2}`}>
               Teacher&apos;s Classes
             </Link>
-            <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/students?teacherId=${24}`}>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/students?teacherId=${24}`}>
               Teacher&apos;s Students
             </Link>
-            <Link className="p-3 rounded-md bg-lamaYellowLight" href="/">
+            <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/lessons?teacherId=${2}`}>
               Teacher&apos;s Lessons
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href="/">
               Teacher&apos;s Exams
             </Link>
-            <Link className="p-3 rounded-md bg-lamaSkyLight" href="/">
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href="/">
               Teacher&apos;s Assignments
             </Link>
           </div>
