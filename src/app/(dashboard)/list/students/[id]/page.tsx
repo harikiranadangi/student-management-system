@@ -14,7 +14,7 @@ const SingleStudentPage = () => {
         {/* TOP */}
         <div className="flex flex-col gap-4 lg:flex-row">
           {/* USER INFO CARD */}
-          <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-lamaSky">
+          <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
                 src="https://images.pexels.com/photos/5414817/pexels-photo-5414817.jpeg?auto=compress&cs=tinysrgb&w=1200"
@@ -140,16 +140,16 @@ const SingleStudentPage = () => {
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
-          <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/teachers?classId=${2}`}>
+          <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${2}`}>
               Student&apos;s Teachers
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href="/">
               Student&apos;s Exams
             </Link>
-            <Link className="p-3 rounded-md bg-lamaSkyLight" href="/">
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href="/">
               Student&apos;s Assignments
             </Link>
-            <Link className="p-3 rounded-md bg-lamaYellowLight" href="/">
+            <Link className="p-3 rounded-md bg-LamaYellowLight" href="/">
               Student&apos;s Results
             </Link>
           </div>
