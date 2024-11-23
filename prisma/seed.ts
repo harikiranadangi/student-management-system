@@ -2,22 +2,34 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Helper function to truncate tables and reset auto-increment counters
+async function clearTable(tableName: string) {
+  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tableName};`);
+}
+
 async function main() {
   try {
     console.log('Clearing existing data...');
-    // Clear existing data in the correct order
-    await prisma.attendance.deleteMany();
-    await prisma.result.deleteMany();
-    await prisma.student.deleteMany();
-    await prisma.class.deleteMany();
-    await prisma.teacher.deleteMany();
-    await prisma.subject.deleteMany();
-    await prisma.grade.deleteMany();
-    await prisma.announcement.deleteMany();
-    await prisma.assignment.deleteMany();
-    await prisma.event.deleteMany();
-    await prisma.exam.deleteMany();
-    await prisma.homework.deleteMany();
+
+    // Disable foreign key checks (optional, use if truncating causes foreign key issues)
+    await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0;');
+
+    // Clear existing data and reset auto-increment counters
+    await clearTable('Attendance');
+    await clearTable('Result');
+    await clearTable('Student');
+    await clearTable('Class');
+    await clearTable('Teacher');
+    await clearTable('Subject');
+    await clearTable('Grade');
+    await clearTable('Announcement');
+    await clearTable('Assignment');
+    await clearTable('Event');
+    await clearTable('Exam');
+    await clearTable('Homework');
+
+    // Re-enable foreign key checks
+    await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1;');
 
     // Seed Grades
     console.log('Seeding Grades...');
@@ -36,12 +48,11 @@ async function main() {
     console.log('Seeding Teachers...');
     const teachers = await Promise.all(
       Array.from({ length: 40 }, (_, i) => {
-        // Select 2 subjects for each teacher
         const assignedSubjects = [
-          createdSubjects[i % createdSubjects.length], // First subject (wrap around)
-          createdSubjects[(i + 1) % createdSubjects.length], // Second subject (next subject)
+          createdSubjects[i % createdSubjects.length],
+          createdSubjects[(i + 1) % createdSubjects.length],
         ];
-        
+
         return prisma.teacher.create({
           data: {
             username: `teacher${i + 1}`,
@@ -52,7 +63,7 @@ async function main() {
             address: `Address ${i + 1}`,
             gender: i % 2 === 0 ? 'Male' : 'Female',
             subjects: {
-              connect: assignedSubjects.map(subject => ({
+              connect: assignedSubjects.map((subject) => ({
                 id: subject.id,
               })),
             },
@@ -86,7 +97,7 @@ async function main() {
         data: {
           description: `Homework for ${_class.name}`,
           class: { connect: { id: _class.id } },
-          subject: { connect: { id: createdSubjects[0].id } }, // Linking the first subject
+          subject: { connect: { id: createdSubjects[0].id } },
         },
       });
       console.log(`Homework created for ${_class.name}`);
@@ -99,13 +110,15 @@ async function main() {
       for (let i = 1; i <= 10; i++) {
         const student = await prisma.student.create({
           data: {
-            id: `student${studentCounter}`,
+            id: studentCounter,
             username: `student${studentCounter}`,
             name: `Student ${studentCounter}`,
             surname: `Surname ${studentCounter}`,
+            parentName: `Parent ${studentCounter}`,
             email: `student${studentCounter}@school.com`,
             phone: `98765432${String(studentCounter).padStart(2, '0')}`,
-            addresss: `Address ${studentCounter}`,
+            dob: new Date(2005, i % 12, i % 28 + 1),
+            address: `Address ${studentCounter}`,
             bloodType: ['A+', 'B+', 'AB+', 'O+'][i % 4],
             gender: i % 2 === 0 ? 'Male' : 'Female',
             gradeId: grade.id,
