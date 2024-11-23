@@ -32,10 +32,17 @@ async function main() {
       subjects.map((subject) => prisma.subject.create({ data: { name: subject } }))
     );
 
-    // Seed Teachers
+    // Seed Teachers and assign a maximum of 2 subjects each
+    console.log('Seeding Teachers...');
     const teachers = await Promise.all(
-      Array.from({ length: 40 }, (_, i) =>
-        prisma.teacher.create({
+      Array.from({ length: 40 }, (_, i) => {
+        // Select 2 subjects for each teacher
+        const assignedSubjects = [
+          createdSubjects[i % createdSubjects.length], // First subject (wrap around)
+          createdSubjects[(i + 1) % createdSubjects.length], // Second subject (next subject)
+        ];
+        
+        return prisma.teacher.create({
           data: {
             username: `teacher${i + 1}`,
             name: `Teacher ${i + 1}`,
@@ -44,12 +51,15 @@ async function main() {
             phone: `12345678${String(i + 1).padStart(2, '0')}`,
             address: `Address ${i + 1}`,
             gender: i % 2 === 0 ? 'Male' : 'Female',
+            subjects: {
+              connect: assignedSubjects.map(subject => ({
+                id: subject.id,
+              })),
+            },
           },
-        })
-      )
+        });
+      })
     );
-    
-    
 
     // Seed Classes
     console.log('Seeding Classes...');
