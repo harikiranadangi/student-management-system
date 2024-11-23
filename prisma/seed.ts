@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Day, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -10,23 +10,18 @@ async function clearTable(tableName: string) {
 async function main() {
   try {
     console.log('Clearing existing data...');
-
     // Disable foreign key checks (optional, use if truncating causes foreign key issues)
     await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0;');
 
     // Clear existing data and reset auto-increment counters
-    await clearTable('Attendance');
-    await clearTable('Result');
-    await clearTable('Student');
-    await clearTable('Class');
-    await clearTable('Teacher');
-    await clearTable('Subject');
-    await clearTable('Grade');
-    await clearTable('Announcement');
-    await clearTable('Assignment');
-    await clearTable('Event');
-    await clearTable('Exam');
-    await clearTable('Homework');
+    const tables = [
+      'Attendance', 'Result', 'Student', 'Class', 'Teacher', 'Subject', 'Grade', 
+      'Announcement', 'Assignment', 'Event', 'Exam', 'Homework'
+    ];
+    
+    for (const table of tables) {
+      await clearTable(table);
+    }
 
     // Re-enable foreign key checks
     await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1;');
@@ -63,9 +58,7 @@ async function main() {
             address: `Address ${i + 1}`,
             gender: i % 2 === 0 ? 'Male' : 'Female',
             subjects: {
-              connect: assignedSubjects.map((subject) => ({
-                id: subject.id,
-              })),
+              connect: assignedSubjects.map((subject) => ({ id: subject.id })),
             },
           },
         });
@@ -127,22 +120,49 @@ async function main() {
         });
         studentCounter++;
 
-        // Seed Attendance
-        await prisma.attendance.create({
-          data: {
-            date: new Date(),
-            present: Math.random() > 0.5,
-            studentId: student.id,
-          },
-        });
+        // Seed Attendance and Results in parallel for better performance
+        await Promise.all([
+          prisma.attendance.create({
+            data: {
+              date: new Date(),
+              present: Math.random() > 0.5,
+              studentId: student.id,
+            },
+          }),
+          prisma.result.create({
+            data: {
+              score: Math.floor(Math.random() * 100),
+              studentId: student.id,
+            },
+          }),
+        ]);
+      }
+    }
 
-        // Seed Results
-        await prisma.result.create({
+    // Seed Lessons
+    console.log('Seeding Lessons...');
+    for (const _class of classes) {
+      // Assign lessons to the class
+      for (let i = 0; i < 5; i++) { // You can set the number of lessons you want per class
+        const teacher = teachers[i % teachers.length];  // Assign a teacher
+        const subject = createdSubjects[i % createdSubjects.length];  // Assign a subject
+
+        // Create a random day from the Day enum
+        const days = Object.values(Day);
+        const randomDay: Day = days[i % days.length];  // Assign random day
+
+        const lesson = await prisma.lesson.create({
           data: {
-            score: Math.floor(Math.random() * 100),
-            studentId: student.id,
+            name: `Lesson ${i + 1} for ${_class.name}`,
+            day: randomDay, // Correctly assign the random day
+            startTime: new Date(2024, 0, 1, 8 + i, 0), // Example start time
+            endTime: new Date(2024, 0, 1, 9 + i, 0), // Example end time (1 hour per lesson)
+            classId: _class.id,
+            subjectId: subject.id,
+            teacherId: teacher.id,
           },
         });
+        console.log(`Lesson ${lesson.name} created for ${_class.name} by ${teacher.name}`);
       }
     }
 
