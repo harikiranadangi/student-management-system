@@ -35,7 +35,7 @@ const renderRow = (item: StudentList) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-gray-500 text-s">{item.id}</p>
+        <p className="text-gray-500 text-s">{item.email}</p>
       </div>
     </td>
     
@@ -53,7 +53,6 @@ const renderRow = (item: StudentList) => (
         </Link>
         {role === "admin" && (
           <>
-            <FormModal table="student" type="update" data={item} />
             <FormModal table="student" type="delete" id={item.id} />
           </>
         )}
