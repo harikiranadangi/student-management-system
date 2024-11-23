@@ -2,56 +2,96 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { lessonsData, role} from "@/lib/data";
+import { lessonsData, role } from "@/lib/data";
+import prisma from "@/lib/prisma";
+import { ITEM_PER_PAGE } from "@/lib/settings";
+import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
-type Lessons = {
-  id: number;
-  subject: string;
-  class: number;
-  teacher : number;
-};
+type LessonsList = Lesson & { subject: Subject } & { class: Class } & { teacher: Teacher };
 
 const columns = [
-    {
-      header: "Subject",
-      accessor: "subject",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Teacher",
-      accessor: "teacher",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Actions",
-      accessor: "action",
-    },
-  ];
-  
+  {
+    header: "Subject",
+    accessor: "subject",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Teacher",
+    accessor: "teacher",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Actions",
+    accessor: "action",
+  },
+];
 
-const LessonsList = () => {
-  const renderRow = (item: Lessons) => (
-    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      <td className="flex items-center gap-4 p-4">{item.subject}</td>
-      <td>{item.class}</td>
-      <td className="hidden md:table-cell">{item.teacher }</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" && (
-            <>
-              <FormModal table="lesson" type="update" data={item} /> 
-              <FormModal table="lesson" type="delete" id={item.id}/> 
+
+const renderRow = (item: LessonsList) => (
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+    <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
+    <td>{item.class.name}</td>
+    <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
+    <td>
+      <div className="flex items-center gap-2">
+        {role === "admin" && (
+          <>
+            <FormModal table="lesson" type="update" data={item} />
+            <FormModal table="lesson" type="delete" id={item.id} />
           </>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
+        )}
+      </div>
+    </td>
+  </tr>
+);
+
+const LessonsListPage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
+  const { page, ...queryParams } = searchParams;
+  const p = page ? parseInt(page) : 1;
+
+  // Initialize Prisma query object
+  const query: Prisma.LessonWhereInput = {};
+
+  // Dynamically add filters based on query parameters
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "teacherId":
+            query.teacherId = parseInt(value);
+            break;
+          case "search":
+            query.name = { contains: value };
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  // Fetch teachers and include related fields (subjects, classes)
+  const [data, count] = await prisma.$transaction([
+    prisma.lesson.findMany({
+      where: query,
+      include: {
+        subject: {select:{name:true}},
+        class: {select:{name:true}},
+        teacher:{select:{name:true, surname: true}},
+      },
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
+    prisma.lesson.count({ where: query }),
+  ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -68,17 +108,17 @@ const LessonsList = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormModal table="lesson" type="create" /> 
+              <FormModal table="lesson" type="create" />
             )}
           </div>
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={lessonsData} />
+      <Table columns={columns} renderRow={renderRow} data={data} />
       {/* PAGINATION: Description */}
-      <Pagination />
+      <Pagination page={p} count={count} />
     </div>
   );
 };
 
-export default LessonsList;
+export default LessonsListPage;
