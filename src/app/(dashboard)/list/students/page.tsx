@@ -69,9 +69,10 @@ const StudentListPage = async ({
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAM CONDITION
+  // Initialize Prisma query object
   const query: Prisma.StudentWhereInput = {};
 
+  // Dynamically add filters based on query parameters
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -80,27 +81,24 @@ const StudentListPage = async ({
             query.class = {
               lessons: {
                 some: {
-                  teacherId: Number(value),
+                  teacherId: parseInt(value),
                 },
               },
             };
             break;
           case "search":
-            query.name = {
-              contains: value,
-            };
-            break;
+            query.name = { contains: value };
         }
       }
     }
   }
 
-  // Fetch students and total count from Prisma
+  // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
       include: {
-        class: true, // Include class relation
+        class: true,   
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
