@@ -8,14 +8,11 @@ const matchers = Object.keys(routeAccessMap).map((route) => ({
 
 console.log(matchers);
 
+const isProtectedRoute = createRouteMatcher(['/admin', '/forum(.*)'])
+
 export default clerkMiddleware(async (auth, req) => {
-  // Resolve the promise from auth()
-  const { sessionClaims } = await auth();
-
-  console.log("Session Claims:", sessionClaims);
-
-  // Add custom logic here if needed
-});
+  if (isProtectedRoute(req)) await auth.protect()
+})
 
 export const config = {
   matcher: [
