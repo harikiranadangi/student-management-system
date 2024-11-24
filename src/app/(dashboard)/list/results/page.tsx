@@ -49,13 +49,12 @@ const columns = [
     accessor: "date",
     className: "hidden md:table-cell",
   },
-  {
-    header: "Type",
-    accessor: "type",
-    className: "hidden md:table-cell",
-  },
-
-  {
+  // {
+  //   header: "Type",
+  //   accessor: "type",
+  //   className: "hidden md:table-cell",
+  // },
+{
     header: "Actions",
     accessor: "action",
   },
@@ -119,7 +118,7 @@ const ResultsList = async ({
   // Fetch teachers and include related fields (subjects, classes)
   const [dataRes, count] = await prisma.$transaction([
     prisma.result.findMany({
-      // where: query,
+      where: query,
       include: {
         student: { select: { name: true, surname: true } },
         exam: {
