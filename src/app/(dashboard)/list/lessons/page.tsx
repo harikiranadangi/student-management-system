@@ -77,6 +77,8 @@ const LessonsListPage = async ({
               {teacher: { name: { contains: value } } },
             ]
             break;
+          default:
+            break;
         }
       }
     }
