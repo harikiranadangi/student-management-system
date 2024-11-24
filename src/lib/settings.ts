@@ -20,3 +20,4 @@ type RouteAccessMap = {
     "/list/announcements": ["admin", "teacher", "student"],
   };
   
+  
