@@ -120,8 +120,8 @@ model Exam {
 model Assignment {
   id        Int      @id @default(autoincrement())
   title     String
-  startTime DateTime
-  endTime   DateTime
+  startDate DateTime
+  endDate   DateTime
 
   lessonId Int
   lesson   Lesson @relation(fields: [lessonId], references: [id])
