@@ -12,8 +12,12 @@ export const routeAccessMap: RouteAccessMap = {
   "/student(.*)": ["student"],
   "/teacher(.*)": ["teacher"],
 
+  // Admin-specific list routes
+  "/list/subjects": ["admin"],
+  "/list/teachers": ["admin"],
+
   // Routes accessible to admin and teacher
-  "/list/teachers": ["admin", "teacher"],
+  
   "/list/students": ["admin", "teacher"],
   "/list/classes": ["admin", "teacher"],
 
@@ -24,9 +28,11 @@ export const routeAccessMap: RouteAccessMap = {
   "/list/attendance": ["admin", "teacher", "student"],
   "/list/events": ["admin", "teacher", "student"],
   "/list/announcements": ["admin", "teacher", "student"],
+  "/list/lessons": ["admin", "teacher", "student"],
+  "/list/messages" : ["admin", "teacher", "student"],
+  
 
-  // Admin-specific list routes
-  "/list/subjects": ["admin"],
+  
 };
 
   
