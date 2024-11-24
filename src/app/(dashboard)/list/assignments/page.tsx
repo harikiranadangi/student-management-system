@@ -48,7 +48,7 @@ const columns = [
       <td className="hidden md:table-cell">{item.lesson.teacher.name + " " + item.lesson.teacher.surname}</td>
       <td className="hidden md:table-cell">
         {}
-        {new Intl.DateTimeFormat("en-US").format(item.endTime) }
+        {new Intl.DateTimeFormat("en-US").format(item.endDate) }
         </td>
       <td>
         <div className="flex items-center gap-2">
@@ -92,6 +92,8 @@ const AssignmentsList = async ({
                 }
               }
               break;
+              default:
+                break;
           }
         }
       }
