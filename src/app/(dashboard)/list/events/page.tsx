@@ -3,6 +3,8 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { eventsData,   role} from "@/lib/data";
+import prisma from "@/lib/prisma";
+import { ITEM_PER_PAGE } from "@/lib/settings";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -47,7 +49,6 @@ const columns = [
   ];
   
 
-const EventsList = () => {
   const renderRow = (item: Events) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
       <td className="flex items-center gap-4 p-4">{item.title }</td>
@@ -67,6 +68,71 @@ const EventsList = () => {
       </td>
     </tr>
   );
+
+const EventsList = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
+  const { page, ...queryParams } = searchParams;
+  const p = page ? parseInt(page) : 1;
+
+  // Initialize Prisma query object
+  const query: Prisma.ResultWhereInput = {};
+
+  // Dynamically add filters based on query parameters
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "studentId":
+            query.studentId = parseInt(value);
+            break;
+          case "search":
+            query.OR = [
+              { exam : {title: {contains:value}}},
+              { student : {name: {contains:value}}},
+            ];
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  // Fetch teachers and include related fields (subjects, classes)
+  const [dataRes, count] = await prisma.$transaction([
+    prisma.result.findMany({
+      // where: query,
+      include: {
+        student: { select: { name: true, surname: true } },
+        exam: {
+          include: {
+            lesson: {
+              select: {
+                class: { select: { name: true } },
+                teacher: { select: { name: true, surname: true } },
+              },
+            },
+          },
+        },
+        assignment: {
+          include: {
+            lesson: {
+              select: {
+                class: { select: { name: true } },
+                teacher: { select: { name: true, surname: true } },
+              },
+            },
+          },
+        },
+      },
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
+    prisma.result.count({ where: query }),
+  ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -91,7 +157,7 @@ const EventsList = () => {
       {/* LIST: Description */}
       <Table columns={columns} renderRow={renderRow} data={eventsData} />
       {/* PAGINATION: Description */}
-      <Pagination />
+      <Pagination page={p} count={count} />
     </div>
   );
 };
