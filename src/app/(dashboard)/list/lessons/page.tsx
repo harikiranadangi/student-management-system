@@ -65,13 +65,17 @@ const LessonsListPage = async ({
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
+          case "classId":
+            query.classId = parseInt(value);
+            break;
           case "teacherId":
             query.teacherId = parseInt(value);
             break;
           case "search":
-            query.name = { contains: value };
-            break;
-          default:
+            query.OR = [
+              {subject: { name: { contains: value } } },
+              {teacher: { name: { contains: value } } },
+            ]
             break;
         }
       }
