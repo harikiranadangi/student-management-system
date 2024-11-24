@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { routeAccessMap } from "./lib/settings";
+import { string } from "zod";
 
 const matchers = Object.keys(routeAccessMap).map((route) => ({
   matcher: createRouteMatcher([route]),
@@ -8,11 +9,18 @@ const matchers = Object.keys(routeAccessMap).map((route) => ({
 
 console.log(matchers);
 
-const isProtectedRoute = createRouteMatcher(['/admin', '/forum(.*)'])
+// const isProtectedRoute = createRouteMatcher(['/admin', '/forum(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect()
-})
+  // if (isProtectedRoute(req)) await auth.protect()
+  const { sessionClaims } = auth();
+
+  const role = (sessionClaims?.metadata as { role?: string})?.role;
+
+  for( const { matcher, allowedRoles } of matchers){
+    if matcher(req) && !allowedRoles
+  }
+});
 
 export const config = {
   matcher: [
