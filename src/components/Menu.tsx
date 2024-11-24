@@ -1,8 +1,10 @@
-import { role } from "@/lib/data";
+import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 
 const menuItems = [
+
+  
   {
     title: "MENU",
     items: [
@@ -24,7 +26,7 @@ const menuItems = [
         href: "/list/students",
         visible: ["admin", "teacher"],
       },
-      
+
       {
         icon: "/subject.png",
         label: "Subjects",
@@ -112,21 +114,26 @@ const menuItems = [
   },
 ];
 
-const Menu = () => {
+const Menu = async () => {
+
+  const user = await currentUser()
+  const role = user?.publicMetadata.role as string;
+  
+
   return (
     <div className="mt-4 text-sm">
       {menuItems.map((i) => (
         <div className="flex flex-col gap-2" key={i.title}>
-          <span className="hidden my-4 font-light text-gray-400 lg:block">
+          <span className="hidden my-4 mb-4 font-light text-gray-400 lg:block">
             {i.title}
           </span>
           {i.items.map((item) => {
             if (item.visible.includes(role)) {
               return (
-                <Link 
+                <Link
                   href={item.href}
                   key={item.label}
-                  className="flex items-center justify-center gap-4 py-2 text-gray-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
+                  className="flex items-center justify-center gap-6 py-2 text-gray-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
                 >
                   <Image src={item.icon} alt="" width={20} height={20} />
                   <span className="hidden lg:block">{item.label}</span>
