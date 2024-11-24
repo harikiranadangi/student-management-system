@@ -89,6 +89,8 @@ const ExamsList = async ({
               }
             }
             break;
+            default:
+              break;
         }
       }
     }
