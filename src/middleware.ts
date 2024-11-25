@@ -8,30 +8,41 @@ const matchers = Object.keys(routeAccessMap).map((route) => ({
   allowedRoles: routeAccessMap[route],
 }));
 
-console.log(matchers);
+console.log("Generated Matchers:", matchers);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Resolve the authentication object
-  const authObject = await auth();
-  const sessionClaims = authObject.sessionClaims;
+  try {
+    // Resolve the authentication object
+    const authObject = await auth();
+    const sessionClaims = authObject.sessionClaims;
 
-  // Extract role from session claims metadata
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
+    // Extract role from session claims metadata
+    const role = (sessionClaims?.metadata as { role?: string })?.role || "guest";
 
-  // Check each matcher to see if the route matches and if the role is allowed
-  for (const { matcher, allowedRoles } of matchers) {
-    if (matcher(req)) {
-      // If the role is not allowed, redirect
-      if (!allowedRoles.includes(role!)) {
-        const redirectPath = `/${role}`;
-        return NextResponse.redirect(new URL(redirectPath, req.url));
+    console.log("User Role:", role);
+
+    // Check each matcher to see if the route matches and if the role is allowed
+    for (const { matcher, allowedRoles } of matchers) {
+      if (matcher(req)) {
+        console.log("Matched Route:", req.url);
+
+        // If the role is not allowed, redirect
+        if (!allowedRoles.includes(role)) {
+          const redirectPath = `/${role}`;
+          console.log(`Unauthorized access. Redirecting to: ${redirectPath}`);
+          return NextResponse.redirect(new URL(redirectPath, req.url));
+        }
+        break; // Stop checking other matchers if one matches
       }
-      break; // Stop checking other matchers if one matches
     }
-  }
 
-  // If no matching route or role restrictions, continue to the next middleware
-  return NextResponse.next();
+    // If no matching route or role restrictions, continue to the next middleware
+    return NextResponse.next();
+  } catch (error) {
+    console.error("Middleware Error:", error);
+    // Handle unexpected errors by redirecting to a generic error or login page
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 });
 
 // Middleware configuration
