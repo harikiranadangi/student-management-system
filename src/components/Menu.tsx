@@ -116,11 +116,9 @@ const menuItems = [
 
 const Menu = async () => {
 
-  const authObject = await auth();
-  const sessionClaims = authObject.sessionClaims;
+  const user = await currentUser()
 
-    // Extract role from session claims metadata
-  const role = (sessionClaims?.metadata as { role?: string })?.role || "guest";
+  const role = user?.publicMetadata.role as string;
   
 
   return (
