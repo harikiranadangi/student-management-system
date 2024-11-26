@@ -2,12 +2,11 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { classesData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 type ClassList = Class & {supervisor:Teacher}
 
@@ -38,7 +37,7 @@ const columns = [
 ];
 
 
-const renderRow = (item: ClassList) => (
+const renderRow = (item: ClassList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td className="flex items-center gap-4 p-4">{item.name}</td>
     {/* <td className="hidden md:table-cell">{item.capacity}</td>
@@ -64,6 +63,39 @@ const ClassesList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  // Fetch user role
+  const role = await getRole();
+
+  // Define columns dynamically based on role
+  const columns = [
+    {
+      header: "Class Name",
+      accessor: "name",
+    },
+    // {
+    //   header: "Capacity",
+    //   accessor: "capacity",
+    //   className: "hidden md:table-cell",
+    // },
+    // {
+    //   header: "Grade",
+    //   accessor: "grade",
+    //   className: "hidden md:table-cell",
+    // },
+    {
+      header: "Supervisor",
+      accessor: "supervisor",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -122,7 +154,7 @@ const ClassesList = async ({
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
