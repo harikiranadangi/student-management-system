@@ -2,38 +2,15 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { announcementsData, role} from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-
 type AnnouncementList = Announcement & { class: Class}
 
-const columns = [
-    {
-      header: "Title",
-      accessor: "title",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-     header: "Date",
-     accessor: "date",
-     className: "hidden md:table-cell",
-    },
-    {
-      header: "Actions",
-      accessor: "action",
-    },
-  ];
-  
-
-  const renderRow = (item: AnnouncementList) => (
+  const renderRow = (item: AnnouncementList, role: string | null) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
       <td className="flex items-center gap-4 p-4">{item.title}</td>
       <td>  {item.class.name}</td>
@@ -58,6 +35,36 @@ const columns = [
   }: {
     searchParams: { [key: string]: string | undefined };
   }) => {
+    // Fetch user role
+    const role = await getRole();
+
+    // Define columns dynamically based on role
+    const columns = [
+      {
+        header: "Title",
+        accessor: "title",
+        className: "hidden md:table-cell",
+      },
+      {
+        header: "Class",
+        accessor: "class",
+      },
+      {
+        header: "Date",
+        accessor: "date",
+        className: "hidden md:table-cell",
+      },
+      ...(role === "admin"
+        ? [
+            {
+              header: "Actions",
+              accessor: "action",
+            },
+          ]
+        : []),
+    ];
+
+
     const { page, ...queryParams } = searchParams;
     const p = page ? parseInt(page) : 1;
   
@@ -114,7 +121,7 @@ const columns = [
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
