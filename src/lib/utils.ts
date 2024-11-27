@@ -5,9 +5,22 @@ import { auth } from "@clerk/nextjs/server";
  * @returns The user's role as a string or null if unavailable.
  */
 export async function getRole(): Promise<string | null> {
-  const { userId, sessionClaims } = await auth();
+  try {
+    const { userId, sessionClaims } = await auth();
 
-  // Ensure that if role is undefined, it returns null instead
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
-  return role ?? null; // If role is undefined, return null
+    // Log the userId if necessary
+    console.log("User ID:", userId);
+
+    // Define the expected shape of session metadata
+    interface SessionMetadata {
+      role?: string;
+    }
+
+    // Extract and return the role, defaulting to null if undefined
+    const role = (sessionClaims?.metadata as SessionMetadata)?.role;
+    return role ?? null;
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return null;
+  }
 }
