@@ -4,7 +4,8 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getRole } from "@/lib/utils"; // Adjust the relative path accordingly
+import { getRole } from "@/lib/utils";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Assignment, Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
@@ -44,6 +45,9 @@ const AssignmentsList = async ({
 }) => {
   // Fetch user role
   const role = await getRole();
+  
+  // Fetch userId
+  const userId = await auth();
 
   // Define columns dynamically based on role
   const columns = [
@@ -105,7 +109,7 @@ const AssignmentsList = async ({
         }
       }
     }
- 
+  
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
       prisma.assignment.findMany({
@@ -124,8 +128,6 @@ const AssignmentsList = async ({
       }),
       prisma.assignment.count({ where: query }),
     ]);
-
-    
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
