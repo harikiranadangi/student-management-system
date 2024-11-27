@@ -8,41 +8,17 @@ import { getRole } from "@/lib/utils";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type ClassList = Class & {supervisor:Teacher}
-
-const columns = [
-  {
-    header: "Class Name",
-    accessor: "name",
-  },
-  // {
-  //   header: "Capacity",
-  //   accessor: "capacity",
-  //   className: "hidden md:table-cell",
-  // },
-  // {
-  //   header: "Grade",
-  //   accessor: "grade",
-  //   className: "hidden md:table-cell",
-  // },
-  {
-    header: "Supervisor",
-    accessor: "supervisor",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
-
+type ClassList = Class & { supervisor: Teacher };
 
 const renderRow = (item: ClassList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+  <tr
+    key={item.id}
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  >
     <td className="flex items-center gap-4 p-4">{item.name}</td>
-    {/* <td className="hidden md:table-cell">{item.capacity}</td>
-    <td className="hidden md:table-cell">{item.name[0]}</td> */}
-    <td className="hidden md:table-cell">{item.supervisor.name + " " + item.supervisor.surname}</td>
+    <td className="hidden md:table-cell">
+      {item.supervisor.name + " " + item.supervisor.surname}
+    </td>
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" && (
@@ -50,13 +26,11 @@ const renderRow = (item: ClassList, role: string | null) => (
             <FormModal table="class" type="update" data={item} />
             <FormModal table="class" type="delete" id={item.id} />
           </>
-
         )}
       </div>
     </td>
   </tr>
 );
-
 
 const ClassesList = async ({
   searchParams,
@@ -72,16 +46,6 @@ const ClassesList = async ({
       header: "Class Name",
       accessor: "name",
     },
-    // {
-    //   header: "Capacity",
-    //   accessor: "capacity",
-    //   className: "hidden md:table-cell",
-    // },
-    // {
-    //   header: "Grade",
-    //   accessor: "grade",
-    //   className: "hidden md:table-cell",
-    // },
     {
       header: "Supervisor",
       accessor: "supervisor",
@@ -96,6 +60,7 @@ const ClassesList = async ({
         ]
       : []),
   ];
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -120,7 +85,7 @@ const ClassesList = async ({
     }
   }
 
-  // Fetch teachers and include related fields (subjects, classes)
+  // Fetch classes and include related fields (supervisor)
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
       where: query,
@@ -147,9 +112,7 @@ const ClassesList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && (
-              <FormModal table="class" type="create" />
-            )}
+            {role === "admin" && <FormModal table="class" type="create" />}
           </div>
         </div>
       </div>
