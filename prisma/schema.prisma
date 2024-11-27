@@ -148,7 +148,7 @@ model Attendance {
 
   studentId Int
   student   Student @relation(fields: [studentId], references: [id])
-}
+} 
 
 model Event {
   id          Int      @id @default(autoincrement())
