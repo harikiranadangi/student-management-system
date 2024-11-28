@@ -5,6 +5,7 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
@@ -61,31 +62,46 @@ const AnnouncementsList = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const role = await getRole();
+  
+  const userId = await auth();
+  
 
   const columns = getColumns(role);  // Get dynamic columns
 
   const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1;
-
-  // Initialize Prisma query object
-  const query: Prisma.AnnouncementWhereInput = {};
-
-  if (queryParams.search) {
-    query.title = { contains: queryParams.search };
-  }
-
-  // Fetch announcements and count in a single transaction
-  const [data, count] = await prisma.$transaction([
-    prisma.announcement.findMany({
-      where: query,
-      include: {
-        class: true,
-      },
-      take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
-    }),
-    prisma.announcement.count({ where: query }),
-  ]);
+    const p = page ? parseInt(page) : 1;
+  
+    // Initialize Prisma query object
+    const query: Prisma.AnnouncementWhereInput = {};
+  
+    // Dynamically add filters based on query parameters
+    if (queryParams) {
+      for (const [key, value] of Object.entries(queryParams)) {
+        if (value !== undefined) {
+          switch (key) {
+            case "search":
+              query.title = { contains: value }
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+  
+    // Fetch teachers and include related fields (subjects, classes)
+    const [data, count] = await prisma.$transaction([
+      prisma.announcement.findMany({
+        where: query,
+        include: {
+          class: true,
+        },
+          
+        take: ITEM_PER_PAGE,
+        skip: ITEM_PER_PAGE * (p - 1),
+      }),
+      prisma.announcement.count({ where: query }),
+    ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
