@@ -6,21 +6,17 @@ import { auth } from "@clerk/nextjs/server";
  */
 export async function getRole(): Promise<string | null> {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    // Log the userId if necessary
-    console.log("User ID:", userId);
+    const { sessionClaims } = await auth(); // Await the promise resolution
 
     // Define the expected shape of session metadata
     interface SessionMetadata {
       role?: string;
     }
 
-    // Extract and return the role, defaulting to null if undefined
-    const role = (sessionClaims?.metadata as SessionMetadata)?.role;
-    return role ?? null;
+    // Safely access the role
+    return (sessionClaims?.metadata as SessionMetadata)?.role || null;
   } catch (error) {
-    console.error("Error fetching user role:", error);
+    console.error("Failed to fetch role:", error);
     return null;
   }
 }
