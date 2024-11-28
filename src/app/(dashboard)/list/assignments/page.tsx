@@ -109,6 +109,8 @@ const AssignmentsList = async ({
         }
       }
     }
+
+    
   
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
