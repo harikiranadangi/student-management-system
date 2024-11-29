@@ -2,52 +2,23 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { eventsData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 type Events = Event & { class: Class };
 
-const columns = [
-  {
-    header: "Title",
-    accessor: "title",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Start Time",
-    accessor: "startTime",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "End Time",
-    accessor: "endTime",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
 
 
-const renderRow = (item: Events) => (
+
+const renderRow = (item: Events, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" 
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name}</td>
+    <td>{item.class?.name || "-" }</td>
     <td className="hidden md:table-cell">
       {""}
       {new Intl.DateTimeFormat("en-US").format(item.startTime)}
@@ -86,6 +57,46 @@ const EventsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+
+  const role = await getRole();
+
+  const {userId} = await auth()
+
+  const columns = [
+    {
+      header: "Title",
+      accessor: "title",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Class",
+      accessor: "class",
+    },
+    {
+      header: "Date",
+      accessor: "date",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Start Time",
+      accessor: "startTime",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "End Time",
+      accessor: "endTime",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -107,6 +118,34 @@ const EventsList = async ({
     }
   }
 
+  //  * ROLE CONDITIONS
+
+  const roleConditions = {
+
+    teacher: { lessons: { some: { teacherId: userId! } } },
+    student: { students: { some: { id: userId! } } },
+
+  };
+
+  query.OR = [
+    { classId: null},
+    {
+      class: roleConditions [role as keyof typeof roleConditions] || {},
+    }
+  ]
+
+  // switch(role){
+  //   case "admin":
+  //     break;
+      
+  //   case "teacher":
+  //     query.OR = [
+  //       { classId: null }, 
+  //       { class: { lessons: { some: {teacherId: userId!}}}},
+  //     ]  
+  //     break;
+  // }
+  
   // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
@@ -142,7 +181,7 @@ const EventsList = async ({
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
