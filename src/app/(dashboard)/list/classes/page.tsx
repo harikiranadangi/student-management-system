@@ -73,7 +73,7 @@ const ClassesList = async ({
       if (value !== undefined) {
         switch (key) {
           case "supervisorId":
-            query.supervisorId = parseInt(value);
+            query.supervisorId = value;
             break;
           case "search":
             query.name = { contains: value };
