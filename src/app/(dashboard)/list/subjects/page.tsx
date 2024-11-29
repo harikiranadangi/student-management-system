@@ -11,25 +11,8 @@ import Image from "next/image";
 
 type SubjectList = Subject & {teachers:Teacher[]}
 
-const columns = [
-    {
-      header: "Subject Name",
-      accessor: "name",
-    },
-    {
-      header: "Teachers",
-      accessor: "teachers",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Actions",
-      accessor: "action",
-    },
-  ];
-  
 
-
-  const renderRow = (item: SubjectList) => (
+  const renderRow = (item: SubjectList, role: string | null) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
       <td className="flex items-center gap-4 p-4">
       {item.name}
@@ -53,6 +36,27 @@ const columns = [
   }: {
     searchParams: { [key: string]: string | undefined };
   }) => {
+
+    const columns = [
+      {
+        header: "Subject Name",
+        accessor: "name",
+      },
+      {
+        header: "Teachers",
+        accessor: "teachers",
+        className: "hidden md:table-cell",
+      },
+      ...(role === "admin"
+        ? [
+            {
+              header: "Actions",
+              accessor: "action",
+            },
+          ]
+        : []),
+    ];
+
     const { page, ...queryParams } = searchParams;
     const p = page ? parseInt(page) : 1;
   
@@ -116,7 +120,7 @@ const columns = [
       </div>
       
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
