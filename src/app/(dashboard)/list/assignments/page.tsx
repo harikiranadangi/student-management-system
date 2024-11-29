@@ -43,11 +43,11 @@ const AssignmentsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  // Fetch user role
+
   const role = await getRole();
-  
-  // Fetch userId
-  const userId = await auth();
+
+  const {userId} = await auth()
+
 
   // Define columns dynamically based on role
   const columns = [
@@ -87,8 +87,6 @@ const AssignmentsList = async ({
 
   query.lesson = {};
 
-
-
   // Dynamically add filters based on query parameters
     if (queryParams) {
       for (const [key, value] of Object.entries(queryParams)) {
@@ -98,7 +96,7 @@ const AssignmentsList = async ({
               query.lesson.classId = parseInt(value);
               break;
             case "teacherId":
-              query.lesson.teacherId = parseInt(value);
+              query.lesson.teacherId = value
               break;
             case "search":
               query.lesson.subject= {
@@ -112,14 +110,29 @@ const AssignmentsList = async ({
       }
     }
 
-    // switch (role) {
-    //   case "admin":
-    //     break;
-    //   case "teacherId":
-    //     query.lesson.teacherId = parseInt(userId, 10)
-    //     break;
-    // }
-     
+    // * Role conditions
+
+    switch(role) {
+      case "admin":
+        break;
+
+      case "teacher":
+        query.lesson.teacherId = userId!
+        break;
+
+      case "student":
+        query.lesson.class = {
+          students: {
+            some: {
+              id: userId!
+            }
+          }
+        }
+        default:
+          break;
+
+    }
+
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
       prisma.assignment.findMany({
