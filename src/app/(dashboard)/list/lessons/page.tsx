@@ -2,36 +2,19 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { lessonsData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
 type LessonsList = Lesson & { subject: Subject } & { class: Class } & { teacher: Teacher };
 
-const columns = [
-  {
-    header: "Subject",
-    accessor: "subject",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
 
 
-const renderRow = (item: LessonsList) => (
+
+const renderRow = (item: LessonsList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td>{item.class.name}</td>
@@ -54,6 +37,35 @@ const LessonsListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+
+  const role = await getRole();
+
+  const {userId} = await auth()  
+
+  const columns = [
+    {
+      header: "Subject",
+      accessor: "subject",
+    },
+    {
+      header: "Class",
+      accessor: "class",
+    },
+    {
+      header: "Teacher",
+      accessor: "teacher",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -69,7 +81,7 @@ const LessonsListPage = async ({
             query.classId = parseInt(value);
             break;
           case "teacherId":
-            query.teacherId = parseInt(value);
+            query.teacherId = value;
             break;
           case "search":
             query.OR = [
@@ -120,7 +132,7 @@ const LessonsListPage = async ({
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
