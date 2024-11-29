@@ -5,7 +5,7 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getRole } from "@/lib/utils";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { Assignment, Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
@@ -87,6 +87,8 @@ const AssignmentsList = async ({
 
   query.lesson = {};
 
+
+
   // Dynamically add filters based on query parameters
     if (queryParams) {
       for (const [key, value] of Object.entries(queryParams)) {
@@ -104,14 +106,20 @@ const AssignmentsList = async ({
               };
               break;
               default:
-                break;
+              break;
           }
         }
       }
     }
 
-    
-  
+    switch (role) {
+      case "admin":
+        break;
+      case "teacherId":
+        query.lesson.teacherId = parseInt(userId, 10)
+        break;
+    }
+     
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
       prisma.assignment.findMany({
