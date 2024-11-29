@@ -8,52 +8,18 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { role, subjectsData } from "@/lib/data";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 
-// // Define types
+// Define types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
-// Define table columns
-const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Teacher ID",
-    accessor: "teacherId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Subjects",
-    accessor: "subjects",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Classes",
-    accessor: "classes",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
+
 
 // Function to render a table row
-const renderRow = (item: TeachersList) => (
+const renderRow = (item: TeachersList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     {/* Info Column */}
 
@@ -78,7 +44,7 @@ const renderRow = (item: TeachersList) => (
     <td className="hidden md:table-cell">{item.address}</td>
     {/* Actions Column */}
     <td>
-    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
@@ -100,6 +66,52 @@ const TeacherListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+
+  const role = await getRole();
+
+  const {userId} = await auth()
+  
+  // Define table columns
+  const columns = [
+    {
+      header: "Info",
+      accessor: "info",
+    },
+    {
+      header: "Teacher ID",
+      accessor: "teacherId",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Subjects",
+      accessor: "subjects",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Classes",
+      accessor: "classes",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Phone",
+      accessor: "phone",
+      className: "hidden lg:table-cell",
+    },
+    {
+      header: "Address",
+      accessor: "address",
+      className: "hidden lg:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -133,8 +145,8 @@ const TeacherListPage = async ({
     prisma.teacher.findMany({
       where: query,
       include: {
-        subjects: true,  
-        classes: true,   
+        subjects: true,
+        classes: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
@@ -162,7 +174,7 @@ const TeacherListPage = async ({
       </div>
 
       {/* Table Section */}
-      <Table columns={columns} renderRow={(item) => renderRow(item)} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
 
       {/* Pagination Section */}
       <Pagination page={p} count={count} />
