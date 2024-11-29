@@ -14,7 +14,7 @@ type AnnouncementList = Announcement & { class: Class };
 const renderRow = (item: AnnouncementList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name}</td>
+    <td>{item.class.name || "-"}</td>
     <td className="hidden md:table-cell">
       {new Intl.DateTimeFormat("en-US").format(item.date)}
     </td>
@@ -62,10 +62,9 @@ const AnnouncementsList = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const role = await getRole();
-  
-  const userId = await auth();
-  
 
+  const { userId } = await auth();
+  
   const columns = getColumns(role);  // Get dynamic columns
 
   const { page, ...queryParams } = searchParams;
@@ -88,6 +87,20 @@ const AnnouncementsList = async ({
         }
       }
     }
+
+    const roleConditions = {
+
+      teacher: { lessons: { some: { teacherId: userId! } } },
+      student: { students: { some: { id: userId! } } },
+  
+    };
+  
+    query.OR = [
+      { classId: null},
+      {
+        class: roleConditions [role as keyof typeof roleConditions] || {},
+      }
+    ]
   
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
