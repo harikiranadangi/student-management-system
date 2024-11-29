@@ -3,26 +3,19 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data"; // Make sure this is correctly imported
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
 type StudentList = Student & { class: Class };
 
-const columns = [
-  { header: "Student Name", accessor: "name", className: "w-36" },
-  { header: "Class", accessor: "class", className: "hidden xl:table-cell w-16" },
-  { header: "Gender", accessor: "gender", className: "hidden xl:table-cell w-16" },
-  { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },
-  { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },
-  { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" },
-  { header: "Actions", accessor: "action", className: "w-16" },
-];
 
-const renderRow = (item: StudentList) => (
+
+const renderRow = (item: StudentList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
@@ -66,6 +59,22 @@ const StudentListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+
+  const role = await getRole();
+
+  const {userId} = await auth()
+
+  const columns = [
+    { header: "Student Name", accessor: "name", className: "w-36" },
+    { header: "Class", accessor: "class", className: "hidden xl:table-cell w-16" },
+    { header: "Gender", accessor: "gender", className: "hidden xl:table-cell w-16" },
+    { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },
+    { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },
+    { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" },
+    ...(role === "admin" ? [ { header: "Actions", accessor: "action", }, ] : []), 
+  ];
+
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -81,7 +90,7 @@ const StudentListPage = async ({
             query.class = {
               lessons: {
                 some: {
-                  teacherId: parseInt(value),
+                  teacherId: value,
                 },
               },
             };
@@ -130,7 +139,7 @@ const StudentListPage = async ({
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
