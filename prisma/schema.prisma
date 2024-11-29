@@ -14,7 +14,7 @@ model Admin {
 }
 
 model Student {
-  id         Int      @id @default(autoincrement())
+  id         String      @id 
   username   String   @unique
   name       String
   surname    String
@@ -37,7 +37,7 @@ model Student {
 }
 
 model Teacher {
-  id        Int      @id @default(autoincrement())
+  id        String      @id
   username  String   @unique
   name      String
   surname   String
@@ -66,14 +66,15 @@ model Grade {
 model Class {
   id          Int           @id @default(autoincrement())
   name        String        @unique
-  supervisorId Int
+  
+  supervisorId String
   supervisor  Teacher       @relation(fields: [supervisorId], references: [id])
   lessons     Lesson[]
   students    Student[]
   gradeId     Int
   grade       Grade         @relation(fields: [gradeId], references: [id])
-  announcements Announcement[]
   events      Event[]
+  announcements Announcement[]
 }
 
 model Subject {
@@ -96,7 +97,7 @@ model Lesson {
   subject   Subject     @relation(fields: [subjectId], references: [id])
   classId   Int
   class     Class       @relation(fields: [classId], references: [id])
-  teacherId Int
+  teacherId String
   teacher   Teacher     @relation(fields: [teacherId], references: [id])
   exams     Exam[]
   assignments Assignment[]
@@ -131,7 +132,7 @@ model Result {
   exam       Exam?     @relation(fields: [examId], references: [id])
   assignmentId Int?
   assignment Assignment? @relation(fields: [assignmentId], references: [id])
-  studentId  Int
+  studentId  String
   student    Student   @relation(fields: [studentId], references: [id])
 }
 
@@ -140,7 +141,7 @@ model Attendance {
   date      DateTime
   present   Boolean
 
-  studentId Int
+  studentId String
   student   Student @relation(fields: [studentId], references: [id])
 }
 
