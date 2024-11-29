@@ -2,9 +2,10 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { resultsData, role, studentsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import Image from "next/image";
 
@@ -20,48 +21,10 @@ type Results = {
   startTime: Date;
 }
 
-const columns = [
-  {
-    header: "Title",
-    accessor: "title",
-  },
-  {
-    header: "Student",
-    accessor: "student",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Score",
-    accessor: "score",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  // {
-  //   header: "Type",
-  //   accessor: "type",
-  //   className: "hidden md:table-cell",
-  // },
-{
-    header: "Actions",
-    accessor: "action",
-  },
-];
 
 
-const renderRow = (item: Results) => (
+
+const renderRow = (item: Results, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
     <td >{item.studentName + " " + item.studentSurname }</td>
@@ -72,7 +35,7 @@ const renderRow = (item: Results) => (
         {new Intl.DateTimeFormat("en-US").format(item.startTime) }</td>
     <td>
       <div className="flex items-center gap-2">
-        {role === "admin" && (
+        {(role === "admin" || role === "teacher") && (
           <>
             <FormModal table="result" type="update" data={item} />
             <FormModal table="result" type="delete" id={item.id} />
@@ -88,6 +51,55 @@ const ResultsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+
+  const role = await getRole();
+
+  const {userId} = await auth()
+
+  const columns = [
+    {
+      header: "Title",
+      accessor: "title",
+    },
+    {
+      header: "Student",
+      accessor: "student",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Score",
+      accessor: "score",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Teacher",
+      accessor: "teacher",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Class",
+      accessor: "class",
+    },
+    {
+      header: "Date",
+      accessor: "date",
+      className: "hidden md:table-cell",
+    },
+    // {
+    //   header: "Type",
+    //   accessor: "type",
+    //   className: "hidden md:table-cell",
+    // },
+    ...(role === "admin" || role === "teacher"
+    ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : []),
+  ];
+
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -100,7 +112,7 @@ const ResultsList = async ({
       if (value !== undefined) {
         switch (key) {
           case "studentId":
-            query.studentId = parseInt(value);
+            query.studentId = value;
             break;
           case "search":
             query.OR = [
@@ -113,6 +125,26 @@ const ResultsList = async ({
         }
       }
     }
+  }
+
+  //  * ROLE CONDITIONS
+
+  switch(role) {
+      case "admin":
+        break;
+
+      case "teacher":
+        query.OR = [
+          { exam: {lesson: {teacherId: userId! } } },
+          { assignment: {lesson: {teacherId: userId! } } }
+        ];
+        break;
+
+      case "student":
+        query.studentId = userId!;
+        break;
+
+        
   }
 
   // Fetch teachers and include related fields (subjects, classes)
@@ -182,14 +214,14 @@ const ResultsList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && (
+            {(role === "admin" || role === "teacher") && (
               <FormModal table="result" type="create" />
             )}
           </div>
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={renderRow} data={data} />
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
