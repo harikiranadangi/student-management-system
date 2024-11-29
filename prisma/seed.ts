@@ -26,7 +26,6 @@ async function main() {
       'Assignment',
       'Event',
       'Exam',
-      'Homework',
       'Lesson',
     ];
 
