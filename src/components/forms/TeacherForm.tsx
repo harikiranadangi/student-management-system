@@ -24,7 +24,13 @@ const schema = z.object({
 // Infer the form data type from schema
 type Inputs = z.infer<typeof schema>;
 
-const TeacherForm = ({ type, data }: { type: "create" | "update"; data?: Inputs }) => {
+const TeacherForm = ({ 
+    type, 
+    data, 
+}: { 
+    type: "create" | "update"; 
+    data?: any;
+ }) => {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>({
         resolver: zodResolver(schema),
         defaultValues: data,
