@@ -6,7 +6,7 @@ const BigCalendarContainer = async ({
     type,
     id,
 }: {
-    type: "teacherId" | "class";
+    type: "teacherId" | "classId";
     id: string | number;
 }) => {
 
