@@ -9,10 +9,9 @@ const Announcements = async () => {
     const role = await getRole()
 
     const roleConditions = {
-        admin: {},
-        teacher: { lessons: { some: { teacherId: userId! } } },
-        student: { lessons: { some: { id: userId! } } },
-    }
+        teacher: { lessons: { some: { teacherId: (userId!) } } }, // Convert to Int
+        student: { students: { some: { id: (userId!) } } },       // Convert to Int
+    };
 
 
     const data = await prisma.announcement.findMany({
@@ -20,12 +19,16 @@ const Announcements = async () => {
         orderBy: { date: "desc" },
         where: {
             ...(role !== "admin" && {
-                OR: [{ classId: null },
-                { class: roleConditions[role as keyof typeof roleConditions] || {} },
+                OR: [
+                    { classId: null },
+                    { class: roleConditions[role as keyof typeof roleConditions] || {} },
                 ],
             }),
-        }
+        },
     });
+
+    console.log(data);
+
 
     return (
         <div className="p-4 bg-white rounded-md">
@@ -64,7 +67,7 @@ const Announcements = async () => {
                         <span className="px-1 py-1 text-xs text-gray-500 bg-white rounded-md">{new Intl.DateTimeFormat("en-GB").format(data[2].date)}</span>
                     </div>
                     <p className="mt-1 text-sm text-gray-500">
-                        {data[2].title}
+                        {data[2].description}
                     </p>
                 </div>}
 
