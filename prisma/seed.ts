@@ -179,7 +179,7 @@ async function main() {
         data: {
           title: `Announcement for ${classItem.name}`,
           description: `This is an announcement for ${classItem.name}`,
-          date: new Date(),
+          date: new Date('2024-12-01T00:00:00Z'),
           classId: classItem.id,
         },
       });
@@ -189,8 +189,8 @@ async function main() {
         data: {
           title: `Event for ${classItem.name}`,
           description: `This is an event for ${classItem.name}`,
-          startTime: new Date('2024-03-01T08:00:00Z'),
-          endTime: new Date('2024-03-01T10:00:00Z'),
+          startTime: new Date('2024-11-30T08:00:00Z'),
+          endTime: new Date('2024-11-30T10:00:00Z'),
           classId: classItem.id,
         },
       });
