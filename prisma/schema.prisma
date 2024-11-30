@@ -101,6 +101,7 @@ model Lesson {
   teacher   Teacher     @relation(fields: [teacherId], references: [id])
   exams     Exam[]
   assignments Assignment[]
+  attendanes Attendance[]
 }
 
 model Exam {
@@ -143,6 +144,8 @@ model Attendance {
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id])
+  lesson Int
+  lessons Lesson[] 
 }
 
 model Event {
