@@ -142,8 +142,8 @@ async function main() {
             data: {
               name: `Lesson for ${classItem.name} - ${subject.name}`,
               day: Day.MONDAY,
-              startTime: new Date('2024-01-01T08:00:00Z'),
-              endTime: new Date('2024-01-01T09:00:00Z'),
+              startTime: new Date('2024-11-30T08:00:00Z'),
+              endTime: new Date('2024-11-30T09:00:00Z'),
               classId: classItem.id,
               subjectId: subject.id,
               teacherId: classItem.supervisorId,
