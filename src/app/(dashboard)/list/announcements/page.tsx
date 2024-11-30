@@ -88,20 +88,7 @@ const AnnouncementsList = async ({
       }
     }
 
-    const roleConditions = {
-
-      teacher: { lessons: { some: { teacherId: userId! } } },
-      student: { students: { some: { id: userId! } } },
-  
-    };
-  
-    query.OR = [
-      { classId: null},
-      {
-        class: roleConditions [role as keyof typeof roleConditions] || {},
-      }
-    ]
-  
+     
     // Fetch teachers and include related fields (subjects, classes)
     const [data, count] = await prisma.$transaction([
       prisma.announcement.findMany({
