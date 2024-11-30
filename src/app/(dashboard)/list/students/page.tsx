@@ -9,7 +9,7 @@ import { getRole } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next/link"; 
 
 type StudentList = Student & { class: Class };
 
