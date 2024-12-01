@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { z } from "zod";
 import Image from "next/image";
 import InputField from "../InputField";
@@ -25,8 +25,22 @@ const schema = z.object({
 // Infer the form data type from schema
 type Inputs = z.infer<typeof schema>;
 
-const StudentForm = ({ type, data }: { type: "create" | "update"; data?: Inputs }) => {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<Inputs>({
+const StudentForm = ({ 
+  type, 
+  data,
+  setOpen
+}: { 
+  type: "create" | "update"; 
+  data?: any;
+  setOpen: Dispatch<SetStateAction<boolean>>
+}) => {
+  const { 
+    register, 
+    handleSubmit, 
+    setValue, 
+    watch, 
+    formState: { errors },
+   } = useForm<Inputs>({
     resolver: zodResolver(schema),
     defaultValues: data,
   });
