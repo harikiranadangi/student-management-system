@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { SubjectSchema } from "./formValidationSchemas"
 import prisma from "./prisma"
-import { error } from "console";
 
 type CurrentState = {success:boolean;error:boolean}
 
@@ -50,14 +49,14 @@ export const updateSubject = async (
 
 export const deleteSubject = async (
     currentState: CurrentState, 
-    data:SubjectSchema
+    data:FormData
 ) => {
+    const id = data.get("id") as string;
     try{
         await prisma.subject.delete({
             where: {
-                id: data.id
+                id: parseInt(id)
             },
-            
         });
      
         // revalidatePath("/list/subjects")
