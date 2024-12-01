@@ -24,19 +24,19 @@ const renderRow = (item: StudentList, role: string | null) => (
         alt={item.name}
         width={40}
         height={40}
-        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
+        className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-gray-500 text-s">{item.email}</p>
+        <p className="text-xs text-gray-500">{item.email}</p>
       </div>
     </td>
     
     <td className="hidden md:table-cell">{item.class.name}</td>
-    <td className="hidden lg:table-cell">{item.gender}</td>
+    <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
-    <td className="hidden lg:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
-    <td className="hidden lg:table-cell">{item.phone}</td>
+    <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
+    <td className="hidden md:table-cell">{item.phone}</td>
     <td className="p-4">
       <div className="flex items-center gap-2">
         <Link href={`/list/students/${item.id}`}>
