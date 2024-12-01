@@ -1,8 +1,26 @@
 "use client";
 
+import { deleteSubject } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
+const deleteActionMap = {
+  teacher: deleteSubject,
+  subject: deleteSubject,
+  student: deleteSubject,
+  parent: deleteSubject,
+  class: deleteSubject,
+  lesson: deleteSubject,
+  exam: deleteSubject,
+  assignment: deleteSubject,
+  result: deleteSubject,
+  attendance: deleteSubject,
+  event: deleteSubject,
+  announcement: deleteSubject,
+}
 
 // Dynamically import the form components
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
@@ -17,11 +35,20 @@ const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
 
 // Define the available forms based on the table type
 const forms: {
-  [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
+  [key: string]: (
+    setOpen: Dispatch<SetStateAction<boolean>>,
+    type: "create" | "update", data?: any
+  ) => JSX.Element;
 } = {
-  subject: (type, data) => <SubjectForm type={type} data={data} />,
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />,
+  subject: (setOpen, type, data) => (
+    <SubjectForm type={type} data={data} setOpen={setOpen} />
+  ),
+  teacher: (setOpen, type, data) => (
+    <TeacherForm type={type} data={data} setOpen={setOpen} />
+  ),
+  student: (setOpen, type, data) => (
+    <StudentForm type={type} data={data} setOpen={setOpen} />
+  ),
 };
 
 const FormModal = ({
@@ -31,18 +58,18 @@ const FormModal = ({
   id,
 }: {
   table:
-    | "teacher"
-    | "student"
-    | "parent"
-    | "subject"
-    | "class"
-    | "lesson"
-    | "exam"
-    | "assignment"
-    | "result"
-    | "attendance"
-    | "event"
-    | "announcement";
+  | "teacher"
+  | "student"
+  | "parent"
+  | "subject"
+  | "class"
+  | "lesson"
+  | "exam"
+  | "assignment"
+  | "result"
+  | "attendance"
+  | "event"
+  | "announcement";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
@@ -52,28 +79,51 @@ const FormModal = ({
     type === "create"
       ? "bg-LamaYellow"
       : type === "update"
-      ? "bg-LamaSky"
-      : "bg-LamaPurple";
+        ? "bg-LamaSky"
+        : "bg-LamaPurple";
 
   const [open, setOpen] = useState(false);
 
   // Define the form to render based on the type and table
   const Form = () => {
-    if (type === "delete" && id) {
-      return (
-        <form action="" className="flex flex-col gap-4 p-4">
-          <span className="font-medium text-center">
-            All data will be lost. Are you sure you want to delete this {table}?
-          </span>
-          <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
-            Delete
-          </button>
-        </form>
-      );
-    } else if (type === "create" || type === "update") {
-      return forms[table] ? forms[table](type, data) : <div>Form not found!</div>;
-    }
-    return <div>Form not found!</div>;
+
+    // Using useActionState with startTransition
+    const [state, formAction] = React.useActionState(deleteActionMap[table], {
+      success: false,
+      error: false,
+    });
+
+    const router = useRouter(); 
+
+    useEffect(() => {
+      if (state.success) {
+        toast(`Subject has been deleted!`);
+        setOpen(false);
+        router.refresh()
+      }
+    }, [state]);
+
+    return type === "delete" && id ? (
+      <form action={formAction} className="flex flex-col gap-4 p-4">
+        <input
+          type="text | number"
+          name="id"
+          value={id || ""} // Use the id value or an empty string if undefined
+          readOnly 
+        />
+
+        <span className="font-medium text-center">
+          All data will be lost. Are you sure you want to delete this {table}?
+        </span>
+        <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
+          Delete
+        </button>
+      </form>
+    ) : type === "create" || type === "update" ? (
+      forms[table](setOpen, type, data)
+    ) : (
+      "Form not found!"
+    );
   };
 
   return (
@@ -87,7 +137,7 @@ const FormModal = ({
       {open && (
         <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-screen h-screen bg-black bg-opacity-60">
           <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
-            <Form />
+            <Form/>
             <div
               className="absolute cursor-pointer top-4 right-4"
               onClick={() => setOpen(false)}
