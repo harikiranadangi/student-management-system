@@ -111,6 +111,7 @@ const TeacherForm = ({
                     <p className="text-xs text-red-400">{errors.img.message.toString()}</p>
                 )}
               </div>
+
             </div>
 
             <button className="p-2 text-white bg-blue-400 rounded-md">
