@@ -6,6 +6,7 @@ export const subjectSchema = z.object({
     name: z
     .string()
     .min(1, { message: 'Subject Name is required!' }),  
+    teachers: z.array(z.string()), // teacher id's
     
   });
   
