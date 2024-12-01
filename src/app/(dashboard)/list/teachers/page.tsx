@@ -16,8 +16,6 @@ import { auth } from "@clerk/nextjs/server";
 // Define types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
-
-
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
