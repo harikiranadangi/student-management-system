@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteSubject } from "@/lib/actions";
+import {  deleteClass, deleteSubject, deleteTeacher } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -9,11 +9,11 @@ import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
 const deleteActionMap = {
-  teacher: deleteSubject,
   subject: deleteSubject,
+  class: deleteClass,
+  teacher: deleteTeacher,
   student: deleteSubject,
   parent: deleteSubject,
-  class: deleteSubject,
   lesson: deleteSubject,
   exam: deleteSubject,
   assignment: deleteSubject,
@@ -33,6 +33,9 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
 // Define the available forms based on the table type
 const forms: {
@@ -42,16 +45,23 @@ const forms: {
     data?: any,
     relatedData?: any
   ) => JSX.Element;
+
 } = {
+  
   subject: (setOpen, type, data, relatedData) => (
     <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
-  teacher: (setOpen, type, data) => (
-    <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+
+  class: (setOpen, type, data, relatedData) => (
+    <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
-  student: (setOpen, type, data) => (
-    <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
+
+  // teacher: (setOpen, type, data) => (
+  //   <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  // ),
+  // student: (setOpen, type, data) => (
+  //   <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  // ),
 };
 
 const FormModal = ({
@@ -93,9 +103,7 @@ const FormModal = ({
     return type === "delete" && id ? (
       <form action={formAction} className="flex flex-col gap-4 p-4">
         <input
-          type="text | number"
-          name="id"
-          value={id || ""} // Use the id value or an empty string if undefined
+          type="text | number" name="id" value={id || ""} // Use the id value or an empty string if undefined
           readOnly 
         />
 
