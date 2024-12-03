@@ -69,8 +69,8 @@ model Class {
   id          Int           @id @default(autoincrement())
   name        String        @unique
   
-  supervisorId String
-  supervisor  Teacher       @relation(fields: [supervisorId], references: [id])
+  supervisorId String?
+  supervisor  Teacher?       @relation(fields: [supervisorId], references: [id])
   lessons     Lesson[]
   students    Student[]
   gradeId     Int
