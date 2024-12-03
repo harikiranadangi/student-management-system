@@ -92,7 +92,6 @@ const SubjectForm = ({
                         <option value={teacher.id} key={teacher.id}>
                             {teacher.name + " " + teacher.surname}</option> 
                     ))}
-                    <option value="Female">Female</option>
                 </select>
                 {/* {errors.teachers?.message && (
                     <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
