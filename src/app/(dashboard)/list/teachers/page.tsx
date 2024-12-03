@@ -1,7 +1,6 @@
 "use server";
 
 import React from "react";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -12,6 +11,7 @@ import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
 import { getRole } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
+import FormContainer from "@/components/FormContainer";
 
 // Define types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
@@ -50,7 +50,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
         </Link>
         {role === "admin" && (
           <>
-            <FormModal table="teacher" type="delete" id={item.id} />
+            <FormContainer table="teacher" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -166,7 +166,7 @@ const TeacherListPage = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            <FormModal table="teacher" type="create" />
+            <FormContainer table="teacher" type="create" />
           </div>
         </div>
       </div>
