@@ -4,11 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import InputField from "../InputField";
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import {CldUploadWidget} from 'next-cloudinary';
 
 
 
@@ -28,6 +29,8 @@ const TeacherForm = ({
     });
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
+
+    const [img, setImg] = useState<any>()
 
     // Using useActionState with startTransition
     const [state, formAction] = React.useActionState(
@@ -132,16 +135,19 @@ const TeacherForm = ({
                     )}
                 </div>
 
-                {/* <div className="flex flex-col justify-center w-full gap-2 md:w-1/4">
-                    <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" htmlFor="img">
-                        <Image src="/upload.png" alt="Upload" width={28} height={28} />
-                        <span>Upload a photo</span>
-                    </label>
-                    <input type="file" id="img" {...register("img")} className="hidden" />
-                    {errors.img?.message && (
-                        <p className="text-xs text-red-400">{errors.img.message.toString()}</p>
-                    )}
-                </div> */}
+                <CldUploadWidget uploadPreset="school" onSuccess={(result, {widget})=> {
+                    setImg(result.info)
+                    widget.close()
+                }}>
+                    {({ open }) => {
+                        return (
+                            <div className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
+                            <Image src="/upload.png" alt="Upload" width={28} height={28} />
+                            <span>Upload a photo</span>
+                        </div>
+                        );
+                    }}
+                </CldUploadWidget>
 
             </div>
 
