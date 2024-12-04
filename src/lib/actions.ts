@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ClassSchema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import prisma from "./prisma"
+import { clerkClient } from "@clerk/nextjs/server";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -149,11 +150,23 @@ export const createTeacher = async (
     data: Teacherschema
 ) => {
     try {
+
+
+        const user = await clerkClient.users.createuser({
+            username: data.username,
+            password: data.password,
+            name: data.name,
+            surname: data.surname,
+        })
+
+
+
         await prisma.teacher.create({
             data: {
+                id: user.id,
+                username: data.username,
                 name: data.name,
-                supervisorId: data.supervisorId,
-                gradeId: data.gradeId,
+                surname: data.surname,
             },
         });
 
