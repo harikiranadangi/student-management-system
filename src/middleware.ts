@@ -1,7 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { routeAccessMap } from "./lib/settings";
 import { NextResponse } from "next/server";
-// import { NextResponse } from "next/server";
 // import { role } from "./lib/data";
 
 // Create matchers for all routes in the access map
