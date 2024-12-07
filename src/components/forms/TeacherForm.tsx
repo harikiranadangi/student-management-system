@@ -9,8 +9,6 @@ import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import {CldUploadWidget} from 'next-cloudinary';
-
 
 
 const TeacherForm = ({
@@ -135,19 +133,7 @@ const TeacherForm = ({
                     )}
                 </div>
 
-                <CldUploadWidget uploadPreset="school" onSuccess={(result, {widget})=> {
-                    setImg(result.info)
-                    widget.close()
-                }}>
-                    {({ open }) => {
-                        return (
-                            <div className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
-                            <Image src="/upload.png" alt="Upload" width={28} height={28} />
-                            <span>Upload a photo</span>
-                        </div>
-                        );
-                    }}
-                </CldUploadWidget>
+                
 
             </div>
 
