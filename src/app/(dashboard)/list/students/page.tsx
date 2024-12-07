@@ -21,7 +21,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       {/* Image display */}
       <Image
         src={item.img || "/profile.png"}
-        alt={item.name}
+        alt={''}
         width={40}
         height={40}
         className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
@@ -32,7 +32,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       </div>
     </td>
     
-    <td className="hidden md:table-cell">{item.class.name}</td>
+    <td className="hidden text-center md:table-cell">{item.class.name}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
