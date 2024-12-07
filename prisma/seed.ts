@@ -146,7 +146,8 @@ async function main() {
               endTime: new Date('2024-11-30T09:00:00Z'),
               classId: classItem.id,
               subjectId: subject.id,
-              teacherId: classItem.supervisorId,
+              teacherId: classItem.supervisorId ?? "default_teacher_id",
+
             },
           })
         )
