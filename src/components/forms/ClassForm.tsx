@@ -114,7 +114,7 @@ const ClassForm = ({
                         <option value={grade.id} key={grade.id} 
                         selected= {data && grade.id === data.gradeId}
                         >
-                            {grade.level}
+                        {grade.level}
                         </option> 
                     ))}
                 </select>
