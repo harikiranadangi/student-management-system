@@ -42,7 +42,7 @@ async function main() {
 
     // Seed Subjects
     const subjectNames = [
-      'Math', 'Science', 'English', 'History', 'Geography', 
+      'Math', 'Science', 'English', 'History', 'Geography',
       'Biology', 'Physics', 'Chemistry', 'Economics', 'Art',
     ];
     const subjects = await Promise.all(
@@ -81,15 +81,17 @@ async function main() {
           username: `teacher${i}`,
           name: `Teacher Name ${i}`,
           surname: `Teaching`,
-          email: `teacher${i}@school.com`,
+          email: `teacher${i}@school.com`, // Make sure email is unique for each teacher
           phone: `88888888${i.toString().padStart(2, '0')}`,
           address: `Teacher Address ${i}`,
-          gender: i % 2 === 0 ? Gender.Male : Gender.Female,
+          gender: i % 2 === 0 ? "Male" : "Female", // Ensure gender is correct (string)
           supervisor: i <= 20, // First 20 teachers are supervisors
+          dob: new Date(new Date(new Date().setFullYear(new Date().getFullYear() - 30))), // Add dob here
         },
       });
       teachers.push(teacher);
     }
+
 
     // Seed Classes
     const classes = [];
@@ -146,7 +148,7 @@ async function main() {
               endTime: new Date('2024-11-30T09:00:00Z'),
               classId: classItem.id,
               subjectId: subject.id,
-              teacherId: classItem.supervisorId,
+              teacherId: classItem.supervisorId ?? undefined,
             },
           })
         )
