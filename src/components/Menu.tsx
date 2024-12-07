@@ -119,6 +119,14 @@ const Menu = async () => {
   const user = await currentUser()
 
   const role = user?.publicMetadata.role as string;
+
+  // Dynamically update "Home" link to redirect based on role
+  if (role) {
+    const homeMenu = menuItems[0].items.find((item) => item.label === "Home");
+    if (homeMenu) {
+      homeMenu.href = `/${role}`;
+    }
+  }
   
 
   return (
