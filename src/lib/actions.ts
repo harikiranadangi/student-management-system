@@ -168,9 +168,20 @@ export const createTeacher = async (
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
+                email: data.email || null,
+                phone: data.phone!,
+                address: data.address!,
+                gender: data.gender,
+                img: data.img || null,
+                bloodType: data.bloodType || null,
+                subjects: {
+                    connect: data.subjects?.map((subjectId: string) => ({
+                        id: parseInt(subjectId)
+                    })),
+                },
             },
         });
-
+        
         // revalidatePath("/list/teachers")
         return { success: true, error: false };
     } catch (err) {
