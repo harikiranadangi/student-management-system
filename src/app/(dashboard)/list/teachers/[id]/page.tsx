@@ -18,7 +18,7 @@ const SingleTeacherPage = async ({
 }) => {
 
 const teacher: 
-  (Teacher & { _count: { subject: number; lesson: number; classes: number; }; }
+  (Teacher & { _count: { subjects: number; lessons: number; classes: number; }; }
   ) 
   | null = await prisma.teacher.findUnique({
     where: {id},
@@ -62,7 +62,7 @@ const teacher:
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">{teacher.name + " " + teacher.surname}</h1>
                 {role === "admin" && 
-                <FormContainer
+                <FormContainer 
                   table="teacher" 
                   type="update"
                   data={teacher}
@@ -117,7 +117,7 @@ const teacher:
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{teacher._count.subject}</h1>
+                <h1 className="text-xl font-semibold">{teacher._count.subjects}</h1>
                 <span className="text-sm text-gray-400">Branches</span>
               </div>
             </div>
@@ -131,7 +131,7 @@ const teacher:
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{teacher._count.lesson}</h1>
+                <h1 className="text-xl font-semibold">{teacher._count.lessons}</h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
