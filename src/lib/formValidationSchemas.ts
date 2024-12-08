@@ -25,53 +25,37 @@ export const classSchema = z.object({
   // Infer the form data type from schema
   export type ClassSchema = z.infer<typeof classSchema>;
 
-  // Define the schema with zod
-export const teacherschema = z.object({
-  id: z.string().optional(),
-  username: z
-  .string()
-  .min(3, { message: 'Username must be at least 3 characters long!' }).max(20, { message: 'Username must be at most 20 characters long!' }),
-  
-  email: z
-  .string()
-  .email({ message: "Invalid email address!" }).optional().or(z.literal("")),
 
-  password: z
-  .string()
-  .min(8, { message: "Password must be at least 8 characters long!" }),
+  export const teacherschema = z.object({
+    id: z.string().optional(),
+    username: z
+      .string()
+      .min(3, { message: "Username must be at least 3 characters long!" })
+      .max(20, { message: "Username must be at most 20 characters long!" }),
+    email: z
+      .string()
+      .email({ message: "Invalid email address!" })
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters long!" }),
+    name: z.string().min(1, { message: "Name is required!" }),
+    surname: z.string().min(1, { message: "Surname is required!" }),
+    gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
+    phone: z.string(),
+    address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
+    bloodType: z
+      .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
+        message: "Please select a valid blood type!",
+      })
+      .optional(),
+    dob: z.coerce.date({ message: "Date of Birth is required!" }),
+    img: z.string().optional(),
+    supervisor: z.boolean().optional(),
+    subjects: z.array(z.string()).optional(), // For related Subject IDs
+  });
   
-  name: z
-  .string()
-  .min(1, { message: "First Name is required!" }),
+  // Infer the form data type from schema
+  export type Teacherschema = z.infer<typeof teacherschema>;
   
-  surname: z
-  .string()
-  .min(1, { message: "Last Name is required!" }),
-  
-  gender: z
-  .enum(["Male", "Female"], { message: "Gender is required!" }),
-  
-  phone: z
-  .string()
-  .optional(),
-  
-  address: z
-  .string()
-  .optional(),
-  
-  bloodType: z
-  .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], { message: "Please select a valid blood type!" }),
-  
-  dateOfBirth: z
-  .coerce
-  .date({message: "Date of Birth is required!"}),
-  
-  img: z
-  .string()
-  .optional(),
-
-  subjects: z.array(z.string()).optional() // subjectIds
-});
-
-// Infer the form data type from schema
-export type Teacherschema = z.infer<typeof teacherschema>;
