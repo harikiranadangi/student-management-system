@@ -1,9 +1,9 @@
 "use server"
 
-import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ClassSchema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import prisma from "./prisma"
+import { clerkClient } from "@clerk/nextjs/server";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -151,16 +151,21 @@ export const createTeacher = async (
 ) => {
     try {
 
+        // Initialize Clerk client by awaiting clerkClient()
+        const client = await clerkClient();
 
-        const user = await clerkClient.users.createUser({
+        // Ensure the Clerk client has the 'users' API
+        if (!client.users) {
+            throw new Error("Clerk client does not have the 'users' API.");
+        }
+
+        // Create the user in Clerk
+        const user = await client.users.createUser({
             username: data.username,
             password: data.password,
             firstName: data.name,
             lastName: data.surname,
         });
-        
-        
-
 
         await prisma.teacher.create({
             data: {
@@ -168,6 +173,7 @@ export const createTeacher = async (
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
+                dob: data.dob,
                 email: data.email || null,
                 phone: data.phone!,
                 address: data.address!,
@@ -181,7 +187,7 @@ export const createTeacher = async (
                 },
             },
         });
-        
+
         // revalidatePath("/list/teachers")
         return { success: true, error: false };
     } catch (err) {
@@ -220,7 +226,7 @@ export const deleteTeacher = async (
     try {
         await prisma.teacher.delete({
             where: {
-                id: parseInt(id)
+                id: id
             },
         });
 
