@@ -25,7 +25,7 @@ export const classSchema = z.object({
   // Infer the form data type from schema
   export type ClassSchema = z.infer<typeof classSchema>;
 
-
+// Teacher Schema
   export const teacherschema = z.object({
     id: z.string().optional(),
     username: z
