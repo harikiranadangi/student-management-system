@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ClassSchema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import prisma from "./prisma"
 import { clerkClient } from "@clerk/nextjs/server";
+import { error } from "console";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -201,12 +202,47 @@ export const updateTeacher = async (
     data: Teacherschema
 ) => {
     try {
+        // Initialize Clerk client by awaiting clerkClient()
+        const client = await clerkClient();
+
+        // Ensure the Clerk client has the 'users' API
+        if (!client.users) {
+            throw new Error("Clerk client does not have the 'users' API.");
+        }
+
+        if(!data.id) {
+            return { success: false, error: true}
+        }
+
+        // Create the user in Clerk
+        const user = await client.users.updateUser( data.id, {
+            username: data.username,
+            ...(data.password !== "" && { password: data.password}),
+            firstName: data.name,
+            lastName: data.surname,
+        });
+
         await prisma.teacher.update({
-            where: { id: data.id },
+            where: {
+                id: data.id,
+            },
             data: {
+                ...(data.password !== "" && { password: data.password}),
+                username: data.username,
                 name: data.name,
-                // supervisorId: data.supervisorId,
-                // gradeId: data.gradeId,
+                surname: data.surname,
+                dob: data.dob,
+                email: data.email || null,
+                phone: data.phone!,
+                address: data.address!,
+                gender: data.gender,
+                img: data.img || null,
+                bloodType: data.bloodType || null,
+                subjects: {
+                    connect: data.subjects?.map((subjectId: string) => ({
+                        id: parseInt(subjectId)
+                    })),
+                },
             },
         });
 
