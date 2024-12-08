@@ -2,28 +2,30 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import Image from "next/image";
 import InputField from "../InputField";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { CldUploadWidget } from 'next-cloudinary';
+import Image from 'next/image';
 
 
 const TeacherForm = ({
     type,
     data,
-    relatedData,
-    setOpen
+    setOpen,
+    relatedData
 }: {
     type: "create" | "update";
     data?: any;
-    relatedData?: any;
     setOpen: Dispatch<SetStateAction<boolean>>
+    relatedData?: any;
 }) => {
     const { register, handleSubmit, formState: { errors } } = useForm<Teacherschema>({
         resolver: zodResolver(teacherschema),
+        defaultValues: data || {},
     });
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
@@ -38,11 +40,10 @@ const TeacherForm = ({
     });
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        React.startTransition(() => {
-            formAction(data); // Dispatching inside startTransition
-        });
+        console.log("Submitting data:", data); // Debugging
+        formAction(data); 
     });
+    
 
     const router = useRouter()
 
@@ -54,22 +55,43 @@ const TeacherForm = ({
         }
     }, [state.success]);
 
+    useEffect(() => {
+        if (state.error) {
+            console.error("Form submission error:", state.error);
+        }
+    }, [state.error]);
+    
+
     const { subjects } = relatedData;
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-            <h1 className="text-xl font-semibold">{type === "create" ? "Create a new teacher" : "Update the teacher"}</h1>
+            <h1 className="text-xl font-semibold">
+                {type === "create" ? "Create a new teacher" : "Update the teacher"}
+            </h1>
+
             <span className="text-xs font-medium text-gray-400">Authentication Information</span>
+
             <div className="flex flex-wrap justify-between gap-4">
+
                 <InputField label="Username" name="username" defaultValue={data?.username} register={register} error={errors?.username} />
+
                 <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
+
                 <InputField label="Password" name="password" type="password" defaultValue={data?.password} register={register} error={errors?.password} />
+
             </div>
+
             <span className="text-xs font-medium text-gray-400">Personal Information</span>
+
             <div className="flex flex-wrap justify-between gap-4">
+
                 <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
+
                 <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors.surname} />
+
                 <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
+
                 <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
 
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
@@ -95,10 +117,12 @@ const TeacherForm = ({
                     )} */}
                 </div>
 
-                <InputField label="Birthday" name="dateOfBirth" defaultValue={data?.dateOfBirth} register={register} error={errors.dateOfBirth} type="date" />
+                <InputField label="Birthday" name="dob" defaultValue={data?.dob} register={register} error={errors.dob} type="date" />
+
             </div>
 
             <div className="flex flex-wrap gap-16">
+
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
                     <label className="text-xs text-gray-500">Gender</label>
                     <select
@@ -129,14 +153,25 @@ const TeacherForm = ({
                         ))}
                     </select>
                     {errors.subjects?.message && (
-                        <p className="text-xs text-red-400">{errors.subjects.message.toString()}</p>
+                        <p className="text-xs text-red-500">{errors.subjects.message.toString()}</p>
                     )}
                 </div>
-
-                
-
-            </div>
-
+                    <CldUploadWidget uploadPreset="school">
+                        {({ open }) => {
+                            return (
+                                <div 
+                                className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
+                                    <Image src="/upload.png" alt="" width={28} height={28} />
+                                    <span>Upload a photo</span>
+                                </div>
+                            );
+                        }}
+                    </CldUploadWidget>
+                </div>
+           
+            {state.error && (
+                <span className="text-red-500">Something went wrong!</span>
+            )}
             <button className="p-2 text-white bg-blue-400 rounded-md">
                 {type === "create" ? "Create" : "Update"}
             </button>
