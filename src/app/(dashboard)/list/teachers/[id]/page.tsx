@@ -1,12 +1,46 @@
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalendar";
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
-import { role } from "@/lib/data";
+import prisma from "@/lib/prisma";
+import { getRole } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
+import { Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-const SingleTeacherPage = () => {
+const SingleTeacherPage = async ({ 
+
+  params: { id },
+ }: { 
+  params: { id: string};
+}) => {
+
+const teacher: 
+  (Teacher & { _count: { subject: number; lesson: number; classes: number; }; }
+  ) 
+  | null = await prisma.teacher.findUnique({
+    where: {id},
+    include: {
+      _count:{
+        select:{
+          subjects: true,
+          lessons: true,
+          classes: true,
+        }
+      }
+    }
+  });
+
+  if (!teacher) {
+    return notFound();
+  }
+  
+  const { userId } = await auth();
+
+  const role = await getRole()
+
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
       {/* LEFT */}
@@ -17,7 +51,7 @@ const SingleTeacherPage = () => {
           <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
-                src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src={teacher.img || '/profile.png'}
                 alt=""
                 width={144}
                 height={144}
@@ -26,24 +60,12 @@ const SingleTeacherPage = () => {
             </div>
             <div className="flex flex-col justify-between w-2/3 gap-4">
               <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">Leonard Snyder</h1>
-                {role === "admin" && <FormModal
+                <h1 className="text-xl font-semibold">{teacher.name + " " + teacher.surname}</h1>
+                {role === "admin" && 
+                <FormContainer
                   table="teacher" 
                   type="update"
-                  data={{
-                    id: 1,
-                    username: "deanguerrero",
-                    email: "deanguerrero@gmail.com",
-                    password: "password",
-                    firstName: "Dean",
-                    lastName: "Guerrero",
-                    phone: "+1 234 567 89",
-                    address: "1234 Main St, Anytown, USA",
-                    bloodType: "A+",
-                    dateOfBirth: "2000-01-01",
-                    sex: "male",
-                    img: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=1200",
-                  }}
+                  data={teacher}
                 />}
               </div>
               <p className="text-sm text-gray-500">
@@ -52,19 +74,19 @@ const SingleTeacherPage = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/blood.png" alt="" width={14} height={14} />
-                  <span>A+</span>
+                  <span>{teacher.bloodType}</span>
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>January 2025</span>
+                  <span>{new Intl.DateTimeFormat("en-GB").format(teacher.dob)}</span>
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/mail.png" alt="" width={14} height={14} />
-                  <span>user@gmail.com</span>
+                  <span>{teacher.email || "-"}</span>
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/phone.png" alt="" width={14} height={14} />
-                  <span>+1 234 567</span>
+                  <span>{teacher.phone}</span>
                 </div>
               </div>
             </div>
@@ -95,7 +117,7 @@ const SingleTeacherPage = () => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">2</h1>
+                <h1 className="text-xl font-semibold">{teacher._count.subject}</h1>
                 <span className="text-sm text-gray-400">Branches</span>
               </div>
             </div>
@@ -109,7 +131,7 @@ const SingleTeacherPage = () => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">6</h1>
+                <h1 className="text-xl font-semibold">{teacher._count.lesson}</h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
@@ -123,7 +145,7 @@ const SingleTeacherPage = () => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">6</h1>
+                <h1 className="text-xl font-semibold">{teacher._count.classes}</h1>
                 <span className="text-sm text-gray-400">Classes</span>
               </div>
             </div>
