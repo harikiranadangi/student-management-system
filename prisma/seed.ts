@@ -56,17 +56,9 @@ async function main() {
     // Seed Admins
     const admins = [];
     for (let i = 1; i <= 5; i++) {
-      const admin = await prisma.teacher.create({
+      const admin = await prisma.admin.create({
         data: {
-          id: `admin_user_${i}`,
           username: `admin${i}`,
-          name: `Admin Name ${i}`,
-          surname: `Administrator`,
-          email: `admin${i}@school.com`,
-          phone: `999999999${i}`,
-          address: `Admin Address ${i}`,
-          gender: i % 2 === 0 ? Gender.Male : Gender.Female,
-          supervisor: true,
         },
       });
       admins.push(admin);
@@ -81,17 +73,16 @@ async function main() {
           username: `teacher${i}`,
           name: `Teacher Name ${i}`,
           surname: `Teaching`,
-          email: `teacher${i}@school.com`, // Make sure email is unique for each teacher
+          email: `teacher${i}@school.com`,
           phone: `88888888${i.toString().padStart(2, '0')}`,
           address: `Teacher Address ${i}`,
-          gender: i % 2 === 0 ? "Male" : "Female", // Ensure gender is correct (string)
+          gender: i % 2 === 0 ? "Male" : "Female",
           supervisor: i <= 20, // First 20 teachers are supervisors
-          dob: new Date(new Date(new Date().setFullYear(new Date().getFullYear() - 30))), // Add dob here
+          dob: new Date(new Date().setFullYear(new Date().getFullYear() - 30)), // Add dob here
         },
       });
       teachers.push(teacher);
     }
-
 
     // Seed Classes
     const classes = [];
@@ -148,7 +139,7 @@ async function main() {
               endTime: new Date('2024-11-30T09:00:00Z'),
               classId: classItem.id,
               subjectId: subject.id,
-              teacherId: classItem.supervisorId ?? undefined,
+              teacherId: classItem.supervisorId ?? 'defaultTeacherId',
             },
           })
         )
