@@ -39,7 +39,7 @@ export const classSchema = z.object({
       .or(z.literal("")),
     password: z
       .string()
-      .min(8, { message: "Password must be at least 8 characters long!" }),
+      .min(8, { message: "Password must be at least 8 characters long!" }).or(z.literal("")).optional(),
     name: z.string().min(1, { message: "Name is required!" }),
     surname: z.string().min(1, { message: "Surname is required!" }),
     gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
