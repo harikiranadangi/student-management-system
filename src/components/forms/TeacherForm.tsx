@@ -41,9 +41,9 @@ const TeacherForm = ({
 
     const onSubmit = handleSubmit((data) => {
         console.log("Submitting data:", data); // Debugging
-        formAction(data); 
+        formAction({ ...data, img: img?.secure_url });
     });
-    
+
 
     const router = useRouter()
 
@@ -60,7 +60,7 @@ const TeacherForm = ({
             console.error("Form submission error:", state.error);
         }
     }, [state.error]);
-    
+
 
     const { subjects } = relatedData;
 
@@ -95,7 +95,7 @@ const TeacherForm = ({
                 <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
 
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
-                    {/* <label className="text-xs text-gray-500">Blood Type</label>
+                    <label className="text-xs text-gray-500">Blood Type</label>
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                         {...register("bloodType")}
@@ -114,10 +114,27 @@ const TeacherForm = ({
                     </select>
                     {errors.bloodType?.message && (
                         <p className="text-xs text-red-400">{errors.bloodType.message.toString()}</p>
-                    )} */}
+                    )}
                 </div>
 
-                <InputField label="Birthday" name="dob" defaultValue={data?.dob} register={register} error={errors.dob} type="date" />
+                <InputField
+                    label="Birthday"
+                    name="dob"
+                    defaultValue={data?.dob.toISOString().split("T")[0]}
+                    register={register}
+                    error={errors.dob}
+                    type="date"
+                />
+
+                {data && (<InputField
+                    label="Id"
+                    name="id"
+                    defaultValue={data?.id}
+                    register={register}
+                    error={errors?.id}
+                    hidden
+                />
+                )}
 
             </div>
 
@@ -156,19 +173,22 @@ const TeacherForm = ({
                         <p className="text-xs text-red-500">{errors.subjects.message.toString()}</p>
                     )}
                 </div>
-                    <CldUploadWidget uploadPreset="school">
-                        {({ open }) => {
-                            return (
-                                <div 
+                <CldUploadWidget uploadPreset="school" onSuccess={(result, { widget }) => {
+                    setImg(result.info)
+                    widget.close()
+                }}>
+                    {({ open }) => {
+                        return (
+                            <div
                                 className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
-                                    <Image src="/upload.png" alt="" width={28} height={28} />
-                                    <span>Upload a photo</span>
-                                </div>
-                            );
-                        }}
-                    </CldUploadWidget>
-                </div>
-           
+                                <Image src="/upload.png" alt="" width={28} height={28} />
+                                <span>Upload a photo</span>
+                            </div>
+                        );
+                    }}
+                </CldUploadWidget>
+            </div>
+
             {state.error && (
                 <span className="text-red-500">Something went wrong!</span>
             )}
