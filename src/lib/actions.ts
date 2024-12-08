@@ -202,6 +202,8 @@ export const updateTeacher = async (
     data: Teacherschema
 ) => {
     try {
+
+        
         // Initialize Clerk client by awaiting clerkClient()
         const client = await clerkClient();
 
@@ -210,24 +212,25 @@ export const updateTeacher = async (
             throw new Error("Clerk client does not have the 'users' API.");
         }
 
-        if(!data.id) {
-            return { success: false, error: true}
+        if (!data.id) {
+            return { success: false, error: true };
         }
 
-        // Create the user in Clerk
-        const user = await client.users.updateUser( data.id, {
+        // Update the user in Clerk
+        const user = await client.users.updateUser(data.id, {
             username: data.username,
-            ...(data.password !== "" && { password: data.password}),
+            ...(data.password !== "" && { password: data.password }),
             firstName: data.name,
             lastName: data.surname,
         });
 
+        // Update the teacher in the database
         await prisma.teacher.update({
             where: {
                 id: data.id,
             },
             data: {
-                ...(data.password !== "" && { password: data.password}),
+                ...(data.password !== "" && { password: data.password }),  // Ensure password handling is done correctly
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
@@ -246,13 +249,18 @@ export const updateTeacher = async (
             },
         });
 
-        // revalidatePath("/list/teachers")
+        
+
+        // Return success result
         return { success: true, error: false };
     } catch (err) {
-        console.log(err)
+        console.error(err);
         return { success: false, error: true };
     }
+
+    
 };
+
 
 export const deleteTeacher = async (
     currentState: CurrentState,
