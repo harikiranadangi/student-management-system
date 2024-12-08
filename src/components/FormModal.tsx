@@ -27,9 +27,9 @@ const deleteActionMap = {
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const StudentForm = dynamic(() => import("./forms/StudentForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
+// const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+//   loading: () => <h1>Loading...</h1>,
+// });
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -83,6 +83,7 @@ const FormModal = ({
 
   // Define the form to render based on the type and table
   const Form = () => {
+    
 
     // Using useActionState with startTransition
     const [state, formAction] = React.useActionState(deleteActionMap[table], {
