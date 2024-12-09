@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, startTransition, useEffect, useState } from "react";
 import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
@@ -23,10 +23,14 @@ const TeacherForm = ({
     setOpen: Dispatch<SetStateAction<boolean>>
     relatedData?: any;
 }) => {
-    const { register, handleSubmit, formState: { errors } } = useForm<Teacherschema>({
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<Teacherschema>({
         resolver: zodResolver(teacherschema),
         defaultValues: data || {},
     });
+
+    useEffect(() => {
+        reset(data); // Reset form when data changes
+    }, [data, reset]);
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
 
@@ -34,14 +38,18 @@ const TeacherForm = ({
 
     // Using useActionState with startTransition
     const [state, formAction] = React.useActionState(
-        type === "create" ? createTeacher : updateTeacher, {
-        success: false,
-        error: false,
-    });
+        type === "create" ? createTeacher : updateTeacher,
+        {
+            success: false,
+            error: false,
+        }
+    );
 
     const onSubmit = handleSubmit((data) => {
         console.log("Submitting data:", data); // Debugging
-        formAction({ ...data, img: img?.secure_url });
+        startTransition(() => {
+            formAction({ ...data, img: img?.secure_url });
+        });
     });
 
 
@@ -63,6 +71,9 @@ const TeacherForm = ({
 
 
     const { subjects } = relatedData;
+
+    console.log("Payload being sent to createTeacher:", data);
+
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
