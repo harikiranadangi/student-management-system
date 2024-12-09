@@ -242,7 +242,7 @@ export const updateTeacher = async (
                 img: data.img || null,
                 bloodType: data.bloodType || null,
                 subjects: {
-                    connect: data.subjects?.map((subjectId: string) => ({
+                    set: data.subjects?.map((subjectId: string) => ({
                         id: parseInt(subjectId)
                     })),
                 },
