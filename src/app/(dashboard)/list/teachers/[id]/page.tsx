@@ -4,7 +4,7 @@ import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import prisma from "@/lib/prisma";
 import { getRole } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +16,7 @@ const SingleTeacherPage = async ({
  }: { 
   params: { id: string};
 }) => {
+
 
 const teacher: 
   (Teacher & { _count: { subjects: number; lessons: number; classes: number; }; }
@@ -37,9 +38,11 @@ const teacher:
     return notFound();
   }
   
-  const { userId } = await auth();
+  console.log(id);
+  
+  const { sessionClaims } = await auth();
 
-  const role = await getRole()
+  const role = (sessionClaims?.metadata as {role?:string})?.role
 
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
