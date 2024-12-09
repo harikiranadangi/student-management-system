@@ -131,7 +131,7 @@ const TeacherForm = ({
                 <InputField
                     label="Birthday"
                     name="dob"
-                    defaultValue={data?.dob.toISOString().split("T")[0]}
+                    defaultValue={data?.dob}
                     register={register}
                     error={errors.dob}
                     type="date"
