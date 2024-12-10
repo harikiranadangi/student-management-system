@@ -13,7 +13,7 @@ const deleteActionMap = {
   class: deleteClass,
   teacher: deleteTeacher,
   student: deleteSubject,
-  parent: deleteSubject,
+  
   lesson: deleteSubject,
   exam: deleteSubject,
   assignment: deleteSubject,
