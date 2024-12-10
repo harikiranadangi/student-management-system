@@ -146,21 +146,19 @@ export const deleteClass = async (
 // * ---------------------------------------------- TEACHER SCHEMA --------------------------------------------------------
 
 
-export const createTeacher = async (
-    currentState: CurrentState,
-    data: Teacherschema
-) => {
+export const createTeacher = async (currentState: CurrentState, data: Teacherschema) => {
     try {
-
-        // Initialize Clerk client by awaiting clerkClient()
+        // Initialize Clerk client
         const client = await clerkClient();
 
-        // Ensure the Clerk client has the 'users' API
-        if (!client.users) {
-            throw new Error("Clerk client does not have the 'users' API.");
-        }
+        // Debug Clerk input
+        console.log("Data sent to Clerk:", {
+            username: data.username,
+            password: data.password,
+            firstName: data.name,
+            lastName: data.surname,
+        });
 
-        // Create the user in Clerk
         const user = await client.users.createUser({
             username: data.username,
             password: data.password,
@@ -168,6 +166,25 @@ export const createTeacher = async (
             lastName: data.surname,
         });
 
+        // Debug Prisma input
+        console.log("Data sent to Prisma:", {
+            id: user.id,
+            username: data.username,
+            name: data.name,
+            surname: data.surname,
+            dob: data.dob,
+            email: data.email || null,
+            phone: data.phone,
+            address: data.address,
+            gender: data.gender,
+            img: data.img || null,
+            bloodType: data.bloodType || null,
+            subjects: data.subjects?.map((subjectId: string) => ({
+                id: parseInt(subjectId),
+            })),
+        });
+
+        // Store teacher in database
         await prisma.teacher.create({
             data: {
                 id: user.id,
@@ -176,26 +193,31 @@ export const createTeacher = async (
                 surname: data.surname,
                 dob: data.dob,
                 email: data.email || null,
-                phone: data.phone!,
-                address: data.address!,
+                phone: data.phone,
+                address: data.address,
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
                 subjects: {
                     connect: data.subjects?.map((subjectId: string) => ({
-                        id: parseInt(subjectId)
+                        id: parseInt(subjectId),
                     })),
                 },
             },
         });
 
-        // revalidatePath("/list/teachers")
         return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
+    } catch (err: any) {
+        console.error("Error in createTeacher:", err.message);
+        return { 
+            success: false, 
+            error: true, 
+            message: err.message || "Unprocessable Entity." 
+        };
     }
 };
+
+
 
 export const updateTeacher = async (
     currentState: CurrentState,
