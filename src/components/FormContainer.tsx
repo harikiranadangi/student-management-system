@@ -5,7 +5,6 @@ export type FormContainerProps = {
     table:
     | "teacher"
     | "student"
-    | "parent"
     | "subject"
     | "class"
     | "lesson"
