@@ -43,7 +43,9 @@ export const teacherschema = z.object({
     .email({ message: "Invalid email address!" })
     .optional()
     .or(z.literal("")),
-  phone: z.string(),
+    phone: z
+    .string()
+    .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   img: z.string().optional(),
   bloodType: z
