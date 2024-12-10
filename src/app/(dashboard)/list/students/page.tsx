@@ -13,10 +13,11 @@ import Link from "next/link";
 
 type StudentList = Student & { class: Class };
 
-
-
 const renderRow = (item: StudentList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
+  <tr 
+  key={item.id} 
+  className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  >
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
       <Image
@@ -24,7 +25,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         alt={item.name}
         width={40}
         height={40}
-        className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
+        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
@@ -59,24 +60,25 @@ const StudentListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  
+  const { page, ...queryParams } = searchParams;
+  const p = page ? parseInt(page) : 1;
 
   const role = await getRole();
 
   const {userId} = await auth()
 
   const columns = [
-    { header: "Student Name", accessor: "name", className: "w-36" },
-    { header: "Class", accessor: "class", className: "hidden xl:table-cell w-16" },
-    { header: "Gender", accessor: "gender", className: "hidden xl:table-cell w-16" },
-    { header: "Parent Name", accessor: "parentName", className: "hidden lg:table-cell w-24" },
-    { header: "DOB", accessor: "dob", className: "hidden lg:table-cell w-24" },
-    { header: "Mobile", accessor: "phone", className: "hidden lg:table-cell w-24" },
+    { header: "Student Name", accessor: "name" },
+    { header: "Class", accessor: "class"},
+    { header: "Gender", accessor: "gender"},
+    { header: "Parent Name", accessor: "parentName"},
+    { header: "DOB", accessor: "dob"},
+    { header: "Mobile", accessor: "phone"},
     ...(role === "admin" ? [ { header: "Actions", accessor: "action", }, ] : []), 
   ];
 
 
-  const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1;
 
   // Initialize Prisma query object
   const query: Prisma.StudentWhereInput = {};
