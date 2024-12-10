@@ -4,46 +4,45 @@ import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import prisma from "@/lib/prisma";
-import { getRole } from "@/lib/utils";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const SingleTeacherPage = async ({ 
+const SingleTeacherPage = async ({
 
   params: { id },
- }: { 
-  params: { id: string};
+}: {
+  params: { id: string };
 }) => {
 
+  const { sessionClaims } = await auth();
 
-const teacher: 
-  (Teacher & { _count: { subjects: number; lessons: number; classes: number; }; }
-  ) 
-  | null = await prisma.teacher.findUnique({
-    where: {id},
-    include: {
-      _count:{
-        select:{
-          subjects: true,
-          lessons: true,
-          classes: true,
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+
+  const teacher:
+    (Teacher & { _count: { subjects: number; lessons: number; classes: number; }; }
+    )
+    | null = await prisma.teacher.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            subjects: true,
+            lessons: true,
+            classes: true,
+          }
         }
       }
-    }
-  });
+    });
 
   if (!teacher) {
     return notFound();
   }
-  
-  console.log(id);
-  
-  const { sessionClaims } = await auth();
 
-  const role = (sessionClaims?.metadata as {role?:string})?.role
+  console.log(id);
+
 
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
@@ -65,12 +64,12 @@ const teacher:
             <div className="flex flex-col justify-between w-2/3 gap-4">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">{teacher.name + " " + teacher.surname}</h1>
-                {role === "admin" && 
-                <FormContainer 
-                  table="teacher" 
-                  type="update"
-                  data={teacher}
-                />}
+                {role === "admin" &&
+                  <FormContainer
+                    table="teacher"
+                    type="update"
+                    data={teacher}
+                  />}
               </div>
               <p className="text-sm text-gray-500">
                 Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -166,19 +165,19 @@ const teacher:
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
-            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/classes?supervisorId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/classes?supervisorId=${teacher.id}`}>
               Teacher&apos;s Classes
             </Link>
-            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/students?teacherId=${24}`}>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/students?teacherId=${teacher.id}`}>
               Teacher&apos;s Students
             </Link>
-            <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/lessons?teacherId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/lessons?teacherId=${teacher.id}`}>
               Teacher&apos;s Lessons
             </Link>
-            <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?teacherId=${2}`}>
+            <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?teacherId=${teacher.id}`}>
               Teacher&apos;s Exams
             </Link>
-            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?teacherId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?teacherId=${teacher.id}`}>
               Teacher&apos;s Assignments
             </Link>
           </div>
