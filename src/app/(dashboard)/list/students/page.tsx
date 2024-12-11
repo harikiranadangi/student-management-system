@@ -1,4 +1,5 @@
 // src/components/StudentList.tsx
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -47,7 +48,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         </Link>
         {role === "admin" && (
           <>
-            <FormModal table="student" type="delete" id={item.id} />
+            <FormContainer table="student" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -65,8 +66,6 @@ const StudentListPage = async ({
   const p = page ? parseInt(page) : 1;
 
   const role = await getRole();
-
-  const {userId} = await auth()
 
   const columns = [
     { header: "Student Name", accessor: "name" },
@@ -135,7 +134,7 @@ const StudentListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table="student" type="create" />
+              <FormContainer table="student" type="create" />
             )}
           </div>
         </div>
