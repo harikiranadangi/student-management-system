@@ -4,7 +4,7 @@ export async function getRole(): Promise<string | null> {
   try {
     const { sessionClaims, userId } = await auth();
 
-    console.log("User ID:", userId);
+    console.log("User ID:", userId); 
 
     interface SessionMetadata {
       role?: string;
