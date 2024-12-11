@@ -60,3 +60,42 @@ export const teacherschema = z.object({
 
 // Infer the form data type from schema
 export type Teacherschema = z.infer<typeof teacherschema>;
+
+// Student Schema
+export const studentschema = z.object({
+  id: z.string().optional(),
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters long!" })
+    .max(20, { message: "Username must be at most 20 characters long!" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long!" })
+    .or(z.literal("")).optional(),
+  name: z.string().min(1, { message: "Name is required!" }),
+  surname: z.string().min(1, { message: "Surname is required!" }),
+  parentName: z.string().min(1, { message: "Parent Name is required!" }),
+  email: z
+    .string()
+    .email({ message: "Invalid email address!" })
+    .optional()
+    .or(z.literal("")),
+    phone: z
+    .string()
+    .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
+  address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
+  img: z.string().optional(),
+  bloodType: z
+  .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
+    message: "Please select a valid blood type!",
+  })
+  .optional(),
+  dob: z.coerce.date({ message: "Date of Birth is required!" }),
+  gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
+  gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
+  classId: z.coerce.number().min(1, { message: "Class is required!" }),
+  
+});
+
+// Infer the form data type from schema
+export type Studentschema = z.infer<typeof studentschema>;
