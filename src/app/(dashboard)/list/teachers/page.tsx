@@ -33,6 +33,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
       </div>
     </td>
     <td className="hidden md:table-cell">{item.id}</td>
+
     {/* Directly use the strings from subjects and classes */}
     <td className="hidden md:table-cell">{item.subjects.map(subject => subject.name).join(", ")}</td>
     <td className="hidden md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
