@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -29,8 +30,8 @@ type Exams = Exam & {lesson: {
         <div className="flex items-center gap-2">
           {role === "admin" && (
               <>
-              <FormModal table="exam" type="update" data={item}/> 
-              <FormModal table="exam" type="delete"  id={item.id} /> 
+              <FormContainer table="exam" type="update" data={item}/> 
+              <FormContainer table="exam" type="delete"  id={item.id} /> 
              </>
           )}
         </div>
@@ -163,7 +164,7 @@ const ExamsList = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher" ) && (
-                <FormModal table="exam" type="create"/> 
+                <FormContainer table="exam" type="create"/> 
             )}
           </div>
         </div>
