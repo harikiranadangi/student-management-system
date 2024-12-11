@@ -63,16 +63,16 @@ const SingleStudentPage = async ({
                 <h1 className="text-xl font-semibold">{student.name + " " + student.surname}</h1>
                 {role === "admin" && (
                   <FormModal
-                    table="teacher"
+                    table="student"
                     type="update"
                     data={{ student }}
                   />
                 )}
 
+              </div>
                 <p className="text-sm text-gray-500">
                   Lorem ipsum, dolor sit amet consectetur adipisicing elit.
                 </p>
-              </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/blood.png" alt="" width={14} height={14} />
@@ -146,7 +146,7 @@ const SingleStudentPage = async ({
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">6A</h1>
+                <h1 className="text-xl font-semibold"></h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
