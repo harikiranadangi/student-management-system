@@ -187,7 +187,7 @@ const StudentForm = ({
         </div>
 
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Grades</label>
+          <label className="text-xs text-gray-500">Grade</label>
           <select
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("gradeId")}
@@ -214,7 +214,8 @@ const StudentForm = ({
           >
             {classes.map((classItem: { id: number; name: string; capacity: number; _count: { students: number } }) => (
               <option value={classItem.id} key={classItem.id}>
-                ({classItem.name} - {classItem._count.students + "/" + classItem.capacity}{" "} Capacity)
+                ({classItem.name} 
+                {/* - {classItem._count.students + "/" + classItem.capacity}{" "} Capacity) */})
               </option>
             ))}
           </select>
