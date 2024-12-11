@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { ClassSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { ClassSchema, ExamSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import prisma from "./prisma"
 import { clerkClient } from "@clerk/nextjs/server";
 import { error } from "console";
@@ -473,6 +473,76 @@ export const deleteStudent = async (
         });
 
         // revalidatePath("/list/students")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+
+// * ----------------------------------EXAM FORM -------------------------------------------------
+
+export const createExam = async (
+    currentState: CurrentState,
+    data: ExamSchema
+) => {
+    try {
+        await prisma.exam.create({
+            data: {
+                name: data.name,
+                teachers: {
+                    connect: data.teachers.map((teacherId) => ({ id: teacherId })),
+                }
+            },
+        });
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+export const updateExam = async (
+    currentState: CurrentState,
+    data: ExamSchema
+) => {
+    try {
+        await prisma.exam.update({
+            where: {
+                id: data.id,
+            },
+            data: {
+                name: data.name,
+                teachers: {
+                    set: data.teachers.map((teacherId) => ({ id: teacherId })),
+                }
+            },
+        });
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+export const deleteExam = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    try {
+        await prisma.exam.delete({
+            where: {
+                id: parseInt(id)
+            },
+        });
+
+        // revalidatePath("/list/subjects")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
