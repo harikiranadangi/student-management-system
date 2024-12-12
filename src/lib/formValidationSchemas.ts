@@ -111,9 +111,6 @@ export const examSchema = z.object({
   endTime: z.coerce.date({ message: 'End Time is required!' }),
   lessonId: z.coerce.number({ message: 'Lesson is required!' }),
 
-
-
-
 });
 
 // Infer the form data type from schema
