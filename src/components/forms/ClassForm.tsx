@@ -109,13 +109,12 @@ const ClassForm = ({
                         defaultValue={data?.gradeId || ""}
                     >
                         {grades.map((grade: { id: number; level: number }) => (
-                            <option value={grade.id} key={grade.id}
-                                selected={data && grade.id === data.gradeId}
-                            >
+                            <option value={grade.id} key={grade.id}>
                                 {grade.level}
                             </option>
                         ))}
                     </select>
+
                     {errors.gradeId?.message && (
                         <p className="text-xs text-red-400">{errors.gradeId.message.toString()}</p>
                     )}
