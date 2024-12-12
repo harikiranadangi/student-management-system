@@ -120,8 +120,8 @@ const ExamForm = ({
                             </option>
                         ))}
                     </select>
-                    {errors?.teachers && (
-                        <p className="text-xs text-red-400">{errors.teachers?.message}</p>
+                    {errors?.lessonId?.message && (
+                        <p className="text-xs text-red-400">{errors.lessonId?.message}</p>
                     )}
                 </div>
             </div>
