@@ -43,16 +43,16 @@ export const teacherschema = z.object({
     .email({ message: "Invalid email address!" })
     .optional()
     .or(z.literal("")),
-    phone: z
+  phone: z
     .string()
     .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   img: z.string().optional(),
   bloodType: z
-  .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
-    message: "Please select a valid blood type!",
-  })
-  .optional(),
+    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
+      message: "Please select a valid blood type!",
+    })
+    .optional(),
   dob: z.coerce.date({ message: "Date of Birth is required!" }),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
@@ -80,21 +80,21 @@ export const studentschema = z.object({
     .email({ message: "Invalid email address!" })
     .optional()
     .or(z.literal("")),
-    phone: z
+  phone: z
     .string()
     .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   img: z.string().optional(),
   bloodType: z
-  .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
-    message: "Please select a valid blood type!",
-  })
-  .optional(),
+    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
+      message: "Please select a valid blood type!",
+    })
+    .optional(),
   dob: z.coerce.date({ message: "Date of Birth is required!" }),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
-  
+
 });
 
 // Infer the form data type from schema
@@ -107,10 +107,12 @@ export const examSchema = z.object({
   title: z
     .string()
     .min(1, { message: 'Title Name is required!' }),
-  startTime: z.coerce.date({message: 'Start Time is required}!'} ),
-  endTime: z.coerce.date({message: 'End Time is required}!'} ),
-  lessonId:  z.coerce.number({message: 'Lesson is required}!'} ),
-  
+  startTime: z.coerce.date({ message: 'Start Time is required!' }),
+  endTime: z.coerce.date({ message: 'End Time is required!' }),
+  lessonId: z.coerce.number({ message: 'Lesson is required!' }),
+
+
+
 
 });
 
