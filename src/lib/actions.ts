@@ -206,6 +206,7 @@ export const createTeacher = async (currentState: CurrentState, data: Teachersch
             },
         });
 
+        // revalidatePath("/list/teachers")
         return { success: true, error: false };
     } catch (err: any) {
         console.error("Error in createTeacher:", err.message);
@@ -273,7 +274,7 @@ export const updateTeacher = async (
 
 
 
-        // Return success result
+        // revalidatePath("/list/teachers")
         return { success: true, error: false };
     } catch (err) {
         console.error(err);
@@ -518,7 +519,7 @@ export const createExam = async (
             }
         });
 
-    // revalidatePath("/list/subjects")
+    // revalidatePath("/list/exams")
     return { success: true, error: false };
 } catch (err) {
     console.log(err)
@@ -564,7 +565,7 @@ export const updateExam = async (
             }
         });
 
-        // revalidatePath("/list/subjects")
+        // revalidatePath("/list/exams")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
@@ -590,7 +591,7 @@ export const deleteExam = async (
             },
         });
 
-        // revalidatePath("/list/subjects")
+        // revalidatePath("/list/exams")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
