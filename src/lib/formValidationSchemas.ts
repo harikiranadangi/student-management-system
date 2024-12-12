@@ -115,4 +115,4 @@ export const examSchema = z.object({
 });
 
 // Infer the form data type from schema
-export type ExamSchema = z.infer<typeof subjectSchema>;
+export type ExamSchema = z.infer<typeof examSchema>;
