@@ -20,13 +20,10 @@ const ExamForm = ({
     setOpen: Dispatch<SetStateAction<boolean>>;
     relatedData?: any
 }) => {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<ExamSchema>({
+    const { register, handleSubmit, formState: { errors } } = useForm<ExamSchema>({
         resolver: zodResolver(examSchema),
     });
+
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
 
@@ -36,6 +33,7 @@ const ExamForm = ({
         success: false,
         error: false,
     });
+    
 
     const onSubmit = handleSubmit((data) => {
         console.log(data);
@@ -64,7 +62,7 @@ const ExamForm = ({
             <div className="flex flex-wrap justify-between gap-4">
                 <InputField
                     label="Exam Title"
-                    name="name"
+                    name="title"
                     defaultValue={data?.title}
                     register={register}
                     error={errors?.title}
