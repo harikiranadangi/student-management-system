@@ -166,23 +166,7 @@ export const createTeacher = async (currentState: CurrentState, data: Teachersch
             lastName: data.surname,
         });
 
-        // Debug Prisma input
-        console.log("Data sent to Prisma:", {
-            id: user.id,
-            username: data.username,
-            name: data.name,
-            surname: data.surname,
-            dob: data.dob,
-            email: data.email || null,
-            phone: data.phone,
-            address: data.address,
-            gender: data.gender,
-            img: data.img || null,
-            bloodType: data.bloodType || null,
-            subjects: data.subjects?.map((subjectId: string) => ({
-                id: parseInt(subjectId),
-            })),
-        });
+        
 
         // Store teacher in database
         await prisma.teacher.create({
