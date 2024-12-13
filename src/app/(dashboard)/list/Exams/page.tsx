@@ -28,7 +28,7 @@ type Exams = Exam & {lesson: {
         {new Intl.DateTimeFormat("en-US").format(item.startTime) }</td>
       <td>
         <div className="flex items-center gap-2">
-          {role === "admin" && (
+          {role === "admin" || role === "teacher" && (
               <>
               <FormContainer table="exam" type="update" data={item}/> 
               <FormContainer table="exam" type="delete"  id={item.id} /> 
