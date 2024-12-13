@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -29,8 +30,8 @@ type Assignments = Assignment & {lesson: {
         <div className="flex items-center gap-2">
         {(role === "admin" || role === "teacher") && (
             <>
-              <FormModal table="assignment" type="update" data={item}  /> 
-              <FormModal table="assignment" type="delete" id={item.id} />
+              <FormContainer table="assignment" type="update" data={item}  /> 
+              <FormContainer table="assignment" type="delete" id={item.id} />
             </>
           )}
         </div>
