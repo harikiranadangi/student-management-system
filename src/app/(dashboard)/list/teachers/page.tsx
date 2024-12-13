@@ -66,8 +66,8 @@ const TeacherListPage = async ({
 
   const role = await getRole();
 
-  const {userId} = await auth()
-  
+  const { userId } = await auth()
+
   // Define table columns
   const columns = [
     {
@@ -101,15 +101,16 @@ const TeacherListPage = async ({
     },
     ...(role === "admin"
       ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
       : []),
   ];
-
-  const { page, ...queryParams } = searchParams;
+  // Await the searchParams first
+  const params = await searchParams;
+  const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
   // Initialize Prisma query object
