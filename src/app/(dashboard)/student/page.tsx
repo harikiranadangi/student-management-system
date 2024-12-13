@@ -17,6 +17,26 @@ const StudentPage = async () => {
 
   console.log("classItem:", classItem);
 
+  // Check if `classItem` is empty
+  if (classItem.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 p-4 xl:flex-row">
+        {/* LEFT: Schedule */}
+        <div className="w-full xl:w-2/3">
+          <div className="h-full p-4 bg-white rounded-md">
+            <h1 className="text-xl font-semibold">Schedule (4A)</h1>
+            <p>No schedule available for the user.</p>
+          </div>
+        </div>
+        {/* RIGHT: Additional Information */}
+        <div className="flex flex-col w-full gap-8 xl:w-1/3">
+          <EventCalendar />
+          <Announcements />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 p-4 xl:flex-row">
       {/* LEFT: Schedule */}
