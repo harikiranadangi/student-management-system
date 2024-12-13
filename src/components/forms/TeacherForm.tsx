@@ -66,8 +66,10 @@ const TeacherForm = ({
     useEffect(() => {
         if (state.error) {
             console.error("Form submission error:", state.error);
+            toast.error("There was an error submitting the form.");
         }
     }, [state.error]);
+
 
 
     const { subjects } = relatedData;
