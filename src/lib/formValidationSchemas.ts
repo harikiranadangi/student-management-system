@@ -35,7 +35,8 @@ export const teacherschema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters long!" })
-    .or(z.literal("")).optional(),
+    .optional() // Make it fully optional if empty is allowed
+    .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
   email: z
@@ -83,7 +84,7 @@ export const studentschema = z.object({
   phone: z
     .string()
     .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
-  address: z.string().min(1, { message: "Address is required!" }), 
+  address: z.string().min(1, { message: "Address is required!" }),
   img: z.string().optional(),
   bloodType: z
     .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
@@ -130,11 +131,12 @@ export const lessonsSchema = z.object({
   classId: z.number(),
   teacherId: z.string(),
 
-  
+
   // Relations
-  subject: z.object({id: z.coerce.number(), name: z.string() }).optional(),
-  class: z.object({id: z.coerce.number(), name: z.string() }).optional(),
-  teacher: z.object({ id: z.string(), name: z.string() }).optional(), });
+  subject: z.object({ id: z.coerce.number(), name: z.string() }).optional(),
+  class: z.object({ id: z.coerce.number(), name: z.string() }).optional(),
+  teacher: z.object({ id: z.string(), name: z.string() }).optional(),
+});
 
 // Infer the form data type from the schema
 export type LessonsSchema = z.infer<typeof lessonsSchema>;
