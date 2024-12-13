@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -21,12 +22,12 @@ const renderRow = (item: LessonsList, role: string | null) => (
     <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
     <td>
       <div className="flex items-center gap-2">
-        {role === "admin" && (
-          <>
-            <FormModal table="lesson" type="update" data={item} />
-            <FormModal table="lesson" type="delete" id={item.id} />
-          </>
-        )}
+      {role === "admin" || role === "teacher" && (
+              <>
+              <FormContainer table="lesson" type="update" data={item}/> 
+              <FormContainer table="lesson" type="delete"  id={item.id} /> 
+             </>
+          )}
       </div>
     </td>
   </tr>
