@@ -38,6 +38,9 @@ const ClassForm = dynamic(() => import("./forms/ClassForm"), {
 const ExamForm = dynamic(() => import("./forms/ExamForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
 // Define the available forms based on the table type
 const forms: {
@@ -67,6 +70,10 @@ const forms: {
  
   exam: (setOpen, type, data, relatedData) => (
     <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+  
+  lesson: (setOpen, type, data, relatedData) => (
+    <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 };
 
