@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -27,18 +28,18 @@ type Results = {
 const renderRow = (item: Results, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td >{item.studentName + " " + item.studentSurname }</td>
+    <td >{item.studentName + " " + item.studentSurname}</td>
     <td className="hidden md:table-cell">{item.score}</td>
     <td className="hidden md:table-cell">{item.teacherName + " " + item.teacherSurname}</td>
     <td className="hidden md:table-cell">{item.className}</td>
     <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(item.startTime) }</td>
+      {new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
     <td>
       <div className="flex items-center gap-2">
-        {(role === "admin" || role === "teacher") && (
+        {role === "admin" || role === "teacher" && (
           <>
-            <FormModal table="result" type="update" data={item} />
-            <FormModal table="result" type="delete" id={item.id} />
+            <FormContainer table="result" type="update" data={item} />
+            <FormContainer table="result" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -54,7 +55,7 @@ const ResultsList = async ({
 
   const role = await getRole();
 
-  const {userId} = await auth()
+  const { userId } = await auth()
 
   const columns = [
     {
@@ -91,13 +92,13 @@ const ResultsList = async ({
     //   className: "hidden md:table-cell",
     // },
     ...(role === "admin" || role === "teacher"
-    ? [
+      ? [
         {
           header: "Actions",
           accessor: "action",
         },
       ]
-    : []),
+      : []),
   ];
 
   const { page, ...queryParams } = searchParams;
@@ -116,8 +117,8 @@ const ResultsList = async ({
             break;
           case "search":
             query.OR = [
-              { exam : {title: {contains:value}}},
-              { student : {name: {contains:value}}},
+              { exam: { title: { contains: value } } },
+              { student: { name: { contains: value } } },
             ];
             break;
           default:
@@ -129,22 +130,22 @@ const ResultsList = async ({
 
   //  * ROLE CONDITIONS
 
-  switch(role) {
-      case "admin":
-        break;
+  switch (role) {
+    case "admin":
+      break;
 
-      case "teacher":
-        query.OR = [
-          { exam: {lesson: {teacherId: userId! } } },
-          { assignment: {lesson: {teacherId: userId! } } }
-        ];
-        break;
+    case "teacher":
+      query.OR = [
+        { exam: { lesson: { teacherId: userId! } } },
+        { assignment: { lesson: { teacherId: userId! } } }
+      ];
+      break;
 
-      case "student":
-        query.studentId = userId!;
-        break;
+    case "student":
+      query.studentId = userId!;
+      break;
 
-        
+
   }
 
   // Fetch teachers and include related fields (subjects, classes)
