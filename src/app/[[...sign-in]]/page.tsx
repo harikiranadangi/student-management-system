@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 export default function Page() {
   const { isLoaded: isUserLoaded, isSignedIn, user } = useUser()
   const { isLoaded: isSignInLoaded, signIn } = useSignIn()
-  const { session, isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
+  const {  isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
   const router = useRouter()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
