@@ -1,13 +1,11 @@
 // src/components/StudentList.tsx
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getRole } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link"; 
@@ -30,7 +28,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item.email}</p>
+        <p className="text-xs text-gray-500">{item.id}</p>
       </div>
     </td>
     
@@ -66,6 +64,7 @@ const StudentListPage = async ({
   const p = page ? parseInt(page) : 1;
 
   const role = await getRole();
+  
 
   const columns = [
     { header: "Student Name", accessor: "name" },
@@ -81,6 +80,7 @@ const StudentListPage = async ({
 
   // Initialize Prisma query object
   const query: Prisma.StudentWhereInput = {};
+  
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -96,6 +96,7 @@ const StudentListPage = async ({
               },
             };
             break;
+            
           case "search":
             query.name = { contains: value };
             break;
