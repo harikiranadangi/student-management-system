@@ -21,12 +21,12 @@ const renderRow = (item: AnnouncementList, role: string | null) => (
     </td>
     <td>
       <div className="flex items-center gap-2">
-      {role === "admin" || role === "teacher" && (
-              <>
-              <FormContainer table="announcement" type="update" data={item}/> 
-              <FormContainer table="announcement" type="delete"  id={item.id} /> 
-             </>
-          )}
+        {role === "admin" || role === "teacher" && (
+          <>
+            <FormContainer table="announcement" type="update" data={item} />
+            <FormContainer table="announcement" type="delete" id={item.id} />
+          </>
+        )}
       </div>
     </td>
   </tr>
@@ -49,11 +49,11 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "admin"
     ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
     : []),
 ];
 
@@ -65,44 +65,47 @@ const AnnouncementsList = async ({
   const role = await getRole();
 
   const { userId } = await auth();
-  
+
   const columns = getColumns(role);  // Get dynamic columns
 
-  const { page, ...queryParams } = searchParams;
-    const p = page ? parseInt(page) : 1;
-  
-    // Initialize Prisma query object
-    const query: Prisma.AnnouncementWhereInput = {};
-  
-    // Dynamically add filters based on query parameters
-    if (queryParams) {
-      for (const [key, value] of Object.entries(queryParams)) {
-        if (value !== undefined) {
-          switch (key) {
-            case "search":
-              query.title = { contains: value }
-              break;
-            default:
-              break;
-          }
+
+  // Await the searchParams first
+  const params = await searchParams;
+  const { page, ...queryParams } = params;
+  const p = page ? parseInt(page) : 1;
+
+  // Initialize Prisma query object
+  const query: Prisma.AnnouncementWhereInput = {};
+
+  // Dynamically add filters based on query parameters
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "search":
+            query.title = { contains: value }
+            break;
+          default:
+            break;
         }
       }
     }
+  }
 
-     
-    // Fetch teachers and include related fields (subjects, classes)
-    const [data, count] = await prisma.$transaction([
-      prisma.announcement.findMany({
-        where: query,
-        include: {
-          class: true,
-        },
-          
-        take: ITEM_PER_PAGE,
-        skip: ITEM_PER_PAGE * (p - 1),
-      }),
-      prisma.announcement.count({ where: query }),
-    ]);
+
+  // Fetch teachers and include related fields (subjects, classes)
+  const [data, count] = await prisma.$transaction([
+    prisma.announcement.findMany({
+      where: query,
+      include: {
+        class: true,
+      },
+
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
+    prisma.announcement.count({ where: query }),
+  ]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
