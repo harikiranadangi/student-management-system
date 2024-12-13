@@ -117,18 +117,19 @@ export const examSchema = z.object({
 export type ExamSchema = z.infer<typeof examSchema>;
 
 
-// Define the schema for Lesson
+
+
+// Assuming LessonSchema is defined using zod
 export const lessonsSchema = z.object({
-  id: z.coerce.number().optional(),
-  name: z.string().min(1, { message: 'Lesson Name is required!' }),
-  day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], {
-    message: 'Day is required and must be a valid day!'
-  }),
-  startTime: z.coerce.date({ message: 'Start Time is required!' }),
-  endTime: z.coerce.date({ message: 'End Time is required!' }),
-  subjectId: z.coerce.number({ message: 'Subject ID is required!' }),
-  classId: z.coerce.number({ message: 'Class ID is required!' }),
-  teacherId: z.string().min(1, { message: 'Teacher ID is required!' }),
+  id: z.number().optional(),
+  name: z.string(),
+  day: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]),
+  startTime: z.string(),
+  endTime: z.string(),
+  subjectId: z.number(),
+  classId: z.number(),
+  teacherId: z.string(),
+
   
   // Relations
   subject: z.object({id: z.coerce.number(), name: z.string() }).optional(),
