@@ -101,7 +101,9 @@ const ResultsList = async ({
       : []),
   ];
 
-  const { page, ...queryParams } = searchParams;
+  // Await the searchParams first
+  const params = await searchParams;
+  const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
   // Initialize Prisma query object
