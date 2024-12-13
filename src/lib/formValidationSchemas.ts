@@ -83,7 +83,7 @@ export const studentschema = z.object({
   phone: z
     .string()
     .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
-  address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
+  address: z.string().min(1, { message: "Address is required!" }), 
   img: z.string().optional(),
   bloodType: z
     .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
@@ -115,3 +115,25 @@ export const examSchema = z.object({
 
 // Infer the form data type from schema
 export type ExamSchema = z.infer<typeof examSchema>;
+
+
+// Define the schema for Lesson
+export const lessonsSchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string().min(1, { message: 'Lesson Name is required!' }),
+  day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], {
+    message: 'Day is required and must be a valid day!'
+  }),
+  startTime: z.coerce.date({ message: 'Start Time is required!' }),
+  endTime: z.coerce.date({ message: 'End Time is required!' }),
+  subjectId: z.coerce.number({ message: 'Subject ID is required!' }),
+  classId: z.coerce.number({ message: 'Class ID is required!' }),
+  teacherId: z.string().min(1, { message: 'Teacher ID is required!' }),
+  
+  // Relations
+  subject: z.object({id: z.coerce.number(), name: z.string() }).optional(),
+  class: z.object({id: z.coerce.number(), name: z.string() }).optional(),
+  teacher: z.object({ id: z.string(), name: z.string() }).optional(), });
+
+// Infer the form data type from the schema
+export type LessonsSchema = z.infer<typeof lessonsSchema>;
