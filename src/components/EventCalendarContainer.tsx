@@ -7,7 +7,9 @@ const EventCalendarContainer = async ({
 }:{
     searchParams: { [keys: string]: string | undefined}
 }) => {
-    const { date } = searchParams;
+    // Await searchParams before using it
+    const params = await searchParams;
+    const { date } = params;
     return (
         <div className="p-4 bg-white rounded-md">
             <EventCalendar/>
