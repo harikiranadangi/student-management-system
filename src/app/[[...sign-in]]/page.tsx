@@ -31,6 +31,8 @@ export default function Page() {
     }
   }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router])
 
+  
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('') // Clear previous errors
