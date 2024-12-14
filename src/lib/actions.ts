@@ -25,6 +25,8 @@ export const createSubject = async (
             },
         });
 
+        console.log("Created Subject:",data)
+
         // revalidatePath("/list/subjects")
         return { success: true, error: false };
     } catch (err) {
