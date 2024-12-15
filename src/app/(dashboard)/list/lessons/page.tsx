@@ -13,8 +13,6 @@ import Image from "next/image";
 type LessonsList = Lesson & { subject: Subject } & { class: Class } & { teacher: Teacher };
 
 
-
-
 const renderRow = (item: LessonsList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
@@ -57,7 +55,7 @@ const LessonsListPage = async ({
       accessor: "teacher",
       className: "hidden md:table-cell",
     },
-    ...(role === "admin"
+    ...(role === "admin" || role === "teacher"
       ? [
           {
             header: "Actions",
@@ -129,7 +127,7 @@ const LessonsListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" || role === "teacher" && (
-              <FormModal table="lesson" type="create" />
+              <FormContainer table="lesson" type="create" />
             )}
           </div>
         </div>
