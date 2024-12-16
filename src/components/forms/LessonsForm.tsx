@@ -9,7 +9,7 @@ import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-const ClassForm = ({
+const LessonForm = ({
     type,
     data,
     setOpen,
@@ -30,7 +30,7 @@ const ClassForm = ({
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
 
-    // Using useActionState with startTransition
+    // * Using useActionState with startTransition
     const [state, formAction] = React.useActionState(
         type === "create" ? createLesson : updateLesson, {
         success: false,
@@ -176,4 +176,4 @@ const ClassForm = ({
     
 };
 
-export default ClassForm;
+export default LessonForm;
