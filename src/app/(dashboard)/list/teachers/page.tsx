@@ -7,9 +7,9 @@ import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
-import { getRole } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import FormContainer from "@/components/FormContainer";
+import { fetchUserInfo } from "@/lib/utils";
 
 // Define types
 type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
@@ -64,9 +64,8 @@ const TeacherListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-  const role = await getRole();
-
-  const { userId } = await auth()
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
 
   // Define table columns
   const columns = [
