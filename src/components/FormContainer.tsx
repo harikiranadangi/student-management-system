@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import FormModal from "./FormModal";
-import { getRole } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { fetchUserInfo } from "@/lib/utils";
 
 export type FormContainerProps = {
     table:
@@ -73,46 +72,39 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 break;
 
             case "exam":
-                const { userId, sessionClaims } = await auth()
-
-                const role = (
-                    sessionClaims?.metadata as {
-                        role?: "admin" | "teacher" | "student";
-                    }
-                )?.role;
+                
+                // Fetch user info and role
+                const { userId, role } = await fetchUserInfo();
 
                 const examLessons = await prisma.lesson.findMany({
                     where: {
                         ...(role === "teacher" ? { teacherId: userId! } : {}),
                     },
-                    select: { id: true, name: true},
+                    select: { id: true, name: true },
                 });
 
-                
+
                 relatedData = { lessons: examLessons }
                 break;
 
-                case "lesson":
-                    
-                
-                    // Fetch related data for dropdowns or selection options
-                    const lessonSubjects = await prisma.subject.findMany({
-                        select: { id: true, name: true },
-                    });
-                
-                    const lessonClasses = await prisma.class.findMany({
-                        select: { id: true, name: true },
-                    });
-                
-                    const lessonTeachers = await prisma.teacher.findMany({
-                        select: { id: true, name: true, surname: true },
-                    });
-                
-                    relatedData = {subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers };
-                    break;
-                
+            case "lesson":
 
-                
+                // Fetch related data for dropdowns or selection options
+                const lessonSubjects = await prisma.subject.findMany({
+                    select: { id: true, name: true },
+                });
+
+                const lessonClasses = await prisma.class.findMany({
+                    select: { id: true, name: true },
+                });
+
+                const lessonTeachers = await prisma.teacher.findMany({
+                    select: { id: true, name: true, surname: true },
+                });
+
+                relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers };
+                break;
+
             default:
                 break;
 
