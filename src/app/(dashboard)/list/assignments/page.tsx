@@ -1,12 +1,10 @@
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getRole } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { fetchUserInfo } from "@/lib/utils";
 import { Assignment, Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
@@ -45,9 +43,8 @@ const AssignmentsList = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-  const role = await getRole();
-
-  const {userId} = await auth()
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
 
 
   // Define columns dynamically based on role
@@ -170,7 +167,7 @@ const AssignmentsList = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" || role === "teacher" && (
-                <FormModal table="assignment" type="create" /> 
+                <FormContainer table="assignment" type="create" /> 
             )}
           </div>
         </div>
