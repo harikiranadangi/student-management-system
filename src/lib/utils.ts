@@ -1,21 +1,52 @@
 import { auth } from "@clerk/nextjs/server";
 
-export async function getRole(): Promise<string | null> {
+// Function to extract the role from session claims
+export function getRoleFromSession(sessionClaims: any): string | null {
+  interface SessionMetadata {
+    role?: string;
+  }
+
+  // Extract the role from session metadata
+  return (sessionClaims?.metadata as SessionMetadata)?.role || null;
+}
+
+// Main usage function for fetching user info and role
+export async function fetchUserInfo(): Promise<{ userId: string | null; role: string | null }> {
   try {
+    // Fetch session claims and user ID from the authentication system
     const { sessionClaims, userId } = await auth();
 
-    console.log("User ID:", userId); 
+    console.log("User ID fetched:", userId);
 
-    interface SessionMetadata {
-      role?: string;
-    }
+    // Extract role using the helper function
+    const role = getRoleFromSession(sessionClaims);
 
-    return (sessionClaims?.metadata as SessionMetadata)?.role || null;
+    console.log("Role fetched:", role);
+
+    return { userId, role };
   } catch (error) {
-    console.error("Failed to fetch role:", error);
-    return null;
+    console.error("Error fetching user info:", error);
+    return { userId: null, role: null };
   }
 }
+
+
+// export async function getRole(): Promise<string | null> {
+//   try {
+//     const { sessionClaims, userId } = await auth();
+
+//     console.log("User ID:", userId); 
+
+//     interface SessionMetadata {
+//       role?: string;
+//     }
+
+//     return (sessionClaims?.metadata as SessionMetadata)?.role || null;
+//   } catch (error) {
+//     console.error("Failed to fetch role:", error);
+//     return null;
+//   }
+// }
 
 const currentWorkWeek = (): Date => {
   const today = new Date();
