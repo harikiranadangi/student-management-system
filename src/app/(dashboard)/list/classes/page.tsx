@@ -4,7 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getRole } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
@@ -38,9 +38,9 @@ const ClassesList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  // Fetch user role
-  const role = await getRole();
 
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
   // Define columns dynamically based on role
   const columns = [
     {
