@@ -1,5 +1,4 @@
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -15,9 +14,6 @@ type Exams = Exam & {lesson: {
   class: Class,
   teacher: Teacher 
 }}
-
-
-  
 
   const renderRow = (item: Exams, role: string | null) => (
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
@@ -38,6 +34,8 @@ type Exams = Exam & {lesson: {
       </td>
     </tr>
   );
+
+  
 const ExamsList = async ({
   searchParams,
 }: {
