@@ -1,12 +1,11 @@
 import prisma from "@/lib/prisma";
-import { getRole } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 
 const Announcements = async () => {
 
-    const { userId } = await auth();
-
-    const role = await getRole()
+    // Fetch user info and role
+    const { userId, role } = await fetchUserInfo();
 
     const roleConditions = {
         teacher: { lessons: { some: { teacherId: (userId!) } } }, // Convert to Int
