@@ -14,32 +14,39 @@ type LessonsList = Lesson & { subject: Subject } & { class: Class } & { teacher:
 
 
 const renderRow = (item: LessonsList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+  <tr
+    key={item.id}
+    className={`text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight`}
+  >
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td>{item.class.name}</td>
     <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
     <td>
       <div className="flex items-center gap-2">
-      {role === "admin" || role === "teacher" && (
-              <>
-              <FormContainer table="lesson" type="update" data={item}/> 
-              <FormContainer table="lesson" type="delete"  id={item.id} /> 
-             </>
-          )}
+        {role === "admin" || role === "teacher" && (
+          <>
+            <FormContainer table="lesson" type="update" data={item} />
+            <FormContainer table="lesson" type="delete" id={item.id} />
+          </>
+        )}
       </div>
     </td>
   </tr>
 );
 
-const LessonsListPage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) => {
+type SearchParams = {
+  classId?: string;
+  teacherId?: string;
+  search?: string;
+  page?: string;
+};
+
+
+const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   const role = await getRole();
 
-  const {userId} = await auth()  
+  const { userId } = await auth()
 
   const columns = [
     {
@@ -57,11 +64,11 @@ const LessonsListPage = async ({
     },
     ...(role === "admin" || role === "teacher"
       ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
       : []),
   ];
 
@@ -86,8 +93,8 @@ const LessonsListPage = async ({
             break;
           case "search":
             query.OR = [
-              {subject: { name: { contains: value } } },
-              {teacher: { name: { contains: value } } },
+              { subject: { name: { contains: value } } },
+              { teacher: { name: { contains: value } } },
             ]
             break;
           default:
@@ -102,9 +109,9 @@ const LessonsListPage = async ({
     prisma.lesson.findMany({
       where: query,
       include: {
-        subject: {select:{name:true}},
-        class: {select:{name:true}},
-        teacher:{select:{name:true, surname: true}},
+        subject: { select: { name: true } },
+        class: { select: { name: true } },
+        teacher: { select: { name: true, surname: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
