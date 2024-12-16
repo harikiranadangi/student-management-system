@@ -1,12 +1,10 @@
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getRole } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { fetchUserInfo } from "@/lib/utils";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
@@ -62,9 +60,9 @@ const AnnouncementsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  const role = await getRole();
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
 
-  const { userId } = await auth();
 
   const columns = getColumns(role);  // Get dynamic columns
 
@@ -121,7 +119,7 @@ const AnnouncementsList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="announcement" type="create" />}
+            {role === "admin" && <FormContainer table="announcement" type="create" />}
           </div>
         </div>
       </div>
