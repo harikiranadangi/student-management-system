@@ -5,7 +5,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getRole } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link"; 
@@ -65,7 +65,8 @@ const StudentListPage = async ({
   const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-  const role = await getRole();
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
   
 
   const columns = [
