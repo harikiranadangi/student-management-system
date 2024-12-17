@@ -5,6 +5,7 @@ import { ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, T
 import prisma from "./prisma"
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { error } from "console";
+import { fetchUserInfo } from "./utils";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -25,9 +26,9 @@ export const createSubject = async (
             },
         });
 
-        console.log("Created Subject:",data)
+        console.log("Created Subject:","[" + data.id + ", " + data.name + ", " + data.teachers + "]")
 
-        // revalidatePath("/list/subjects")
+        revalidatePath("/list/subjects")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
@@ -52,6 +53,8 @@ export const updateSubject = async (
             },
         });
 
+        console.log("Updated Subject:","[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+
         // revalidatePath("/list/subjects")
         return { success: true, error: false };
     } catch (err) {
@@ -72,7 +75,9 @@ export const deleteSubject = async (
             },
         });
 
-        // revalidatePath("/list/subjects")
+        console.log("Deleted Subject:",data)
+
+        revalidatePath("/list/subjects")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
@@ -475,12 +480,12 @@ export const createExam = async (
     data: ExamSchema
 ) => {
 
-    const { sessionClaims, userId } = await auth();
-    const role = (sessionClaims?.metadata as { role?: string })?.role;
+    // Fetch user info and role
+    const { userId, role } = await fetchUserInfo();
 
     try {
 
-        if(role === "teacher") {
+        if(role === "teacher" || role === "admin") {
 
         const teacherLesson = await prisma.lesson.findFirst({
             where: {
@@ -517,12 +522,12 @@ export const updateExam = async (
     currentState: CurrentState,
     data: ExamSchema
 ) => {
-    const { sessionClaims, userId } = await auth();
-    const role = (sessionClaims?.metadata as { role?: string })?.role;
+    // Fetch user info and role
+    const { userId, role } = await fetchUserInfo();
 
     try {
 
-        if(role === "teacher") {
+        if(role === "teacher" || role === "admin") {
 
             
             const teacherLesson = await prisma.lesson.findFirst({
@@ -565,15 +570,14 @@ export const deleteExam = async (
 ) => {
     const id = data.get("id") as string;
 
-    const { sessionClaims, userId } = await auth();
-
-    const role = (sessionClaims?.metadata as { role?: string })?.role;
+    // Fetch user info and role
+    const { userId, role } = await fetchUserInfo();
 
     try {
         await prisma.exam.delete({
             where: {
                 id: parseInt(id),
-                ...(role === "teacher" ? { lesson: { teacherId: userId! } } : {}),
+                ...((role === "teacher" || role === "admin") ? { lesson: { teacherId: userId! } } : {}),
             },
         });
 
@@ -593,8 +597,8 @@ export const createLesson = async (
   currentState: CurrentState,
   data: LessonsSchema
 ) => {
-  const { sessionClaims, userId } = await auth();
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
 
   try {
     if (role === "teacher") {
@@ -638,8 +642,8 @@ export const updateLesson = async (
   currentState: CurrentState,
   data: LessonsSchema
 ) => {
-  const { sessionClaims, userId } = await auth();
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
 
   try {
     if (role === "teacher") {
