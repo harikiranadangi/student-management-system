@@ -60,6 +60,7 @@ const AnnouncementsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
 
