@@ -568,26 +568,43 @@ export const deleteExam = async (
     currentState: CurrentState,
     data: FormData
 ) => {
-    const id = data.get("id") as string;
+    const id = parseInt(data.get("id") as string, 10);
+
+    if (isNaN(id)) {
+        return { success: false, error: "Invalid exam ID" };
+    }
 
     // Fetch user info and role
     const { userId, role } = await fetchUserInfo();
 
     try {
+        // Validate access
+        if (role === "teacher" || role === "admin") {
+            const teacherLesson = await prisma.lesson.findFirst({
+                where: {
+                    teacherId: userId!,
+                    exams: { some: { id } },
+                },
+            });
+
+            if (!teacherLesson) {
+                return { success: false, error: "Unauthorized access" };
+            }
+        }
+
         await prisma.exam.delete({
-            where: {
-                id: parseInt(id),
-                ...((role === "teacher" || role === "admin") ? { lesson: { teacherId: userId! } } : {}),
-            },
+            where: { id },
         });
 
-        // revalidatePath("/list/exams")
+        // Uncomment the revalidatePath if necessary
+        // revalidatePath("/list/exams");
         return { success: true, error: false };
     } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
+        console.error("Error deleting exam:", err);
+        return { success: false, error: "Internal server error" };
     }
 };
+
 
 // * ----------------------------------LESSONS FORM -------------------------------------------------
 
