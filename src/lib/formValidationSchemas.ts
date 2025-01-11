@@ -7,7 +7,6 @@ export const subjectSchema = z.object({
     .string()
     .min(1, { message: 'Subject Name is required!' }),
   teachers: z.array(z.string()), // teacher id's
-
 });
 
 // Infer the form data type from schema
@@ -19,7 +18,6 @@ export const classSchema = z.object({
   name: z.string().min(1, { message: 'Class Name is required!' }),
   supervisorId: z.coerce.string().optional(),
   gradeId: z.coerce.number().min(1, { message: 'gradeId is required!' }),
-
 });
 
 // Infer the form data type from schema
@@ -28,32 +26,19 @@ export type ClassSchema = z.infer<typeof classSchema>;
 // Teacher Schema
 export const teacherschema = z.object({
   id: z.string().optional(),
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
+  username: z.string().min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" })
-    .optional() // Make it fully optional if empty is allowed
+  password: z.string().min(8, { message: "Password must be at least 8 characters long!" }).optional()
     .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
-  email: z
-    .string()
-    .email({ message: "Invalid email address!" })
-    .optional()
-    .or(z.literal("")),
-  phone: z
-    .string()
-    .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
+  email: z.string().email({ message: "Invalid email address!" }).optional().or(z.literal(""))
+  .nullable(),
+  phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   img: z.string().optional(),
-  bloodType: z
-    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
-      message: "Please select a valid blood type!",
-    })
-    .optional(),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
+  .default("Under Investigation"),
   dob: z.coerce.date({ message: "Date of Birth is required!" }),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
