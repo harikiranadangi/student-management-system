@@ -1,6 +1,6 @@
 "use client";
 
-import {  deleteClass, deleteExam, deleteLesson, deleteStudent, deleteSubject, deleteTeacher } from "@/lib/actions";
+import { deleteClass, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -12,9 +12,9 @@ const deleteActionMap = {
   subject: deleteSubject,
   class: deleteClass,
   teacher: deleteTeacher,
-  student: deleteStudent,
-  exam: deleteExam,
-  lesson: deleteLesson,
+  student: deleteSubject,
+  exam: deleteSubject,
+  lesson: deleteSubject,
   assignment: deleteSubject,
   result: deleteSubject,
   attendance: deleteSubject,
@@ -46,13 +46,13 @@ const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
-    type: "create" | "update", 
+    type: "create" | "update",
     data?: any,
     relatedData?: any
   ) => JSX.Element;
 
 } = {
-  
+
   subject: (setOpen, type, data, relatedData) => (
     <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
@@ -64,17 +64,18 @@ const forms: {
   teacher: (setOpen, type, data, relatedData) => (
     <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
+  
   student: (setOpen, type, data, relatedData) => (
     <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
- 
-  exam: (setOpen, type, data, relatedData) => (
-    <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-  
-  lesson: (setOpen, type, data, relatedData) => (
-    <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
+
+  // exam: (setOpen, type, data, relatedData) => (
+  //   <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  // ),
+
+  // lesson: (setOpen, type, data, relatedData) => (
+  //   <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  // ),
 };
 
 const FormModal = ({
@@ -83,7 +84,7 @@ const FormModal = ({
   data,
   id,
   relatedData,
-}: FormContainerProps & { relatedData? : any}) => {
+}: FormContainerProps & { relatedData?: any }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -103,7 +104,7 @@ const FormModal = ({
       error: false,
     });
 
-    const router = useRouter(); 
+    const router = useRouter();
 
     useEffect(() => {
       if (state.success) {
@@ -117,7 +118,7 @@ const FormModal = ({
       <form action={formAction} className="flex flex-col gap-4 p-4">
         <input
           type="text | number" name="id" value={id || ""} // Use the id value or an empty string if undefined
-          readOnly 
+          readOnly
         />
 
         <span className="font-medium text-center">
@@ -145,7 +146,7 @@ const FormModal = ({
       {open && (
         <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-screen h-screen bg-black bg-opacity-60">
           <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
-            <Form/>
+            <Form />
             <div
               className="absolute cursor-pointer top-4 right-4"
               onClick={() => setOpen(false)}
