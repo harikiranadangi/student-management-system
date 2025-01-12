@@ -53,7 +53,8 @@ const SubjectForm = ({
     });
 
     const router = useRouter();
-    const { teachers } = relatedData || {};
+
+  
 
     useEffect(() => {
         if (state.success) {
@@ -61,7 +62,9 @@ const SubjectForm = ({
             setOpen(false);
             router.refresh();
         }
-    }, [state.success, router, setOpen, type]);
+    }, [state]);
+
+    const { teachers } = relatedData;
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
