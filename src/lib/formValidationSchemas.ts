@@ -28,7 +28,7 @@ export const teacherschema = z.object({
   id: z.string().optional(),
   username: z.string().min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters long!" }).optional()
+  password: z.string().min(5, { message: "Password must be at least 8 characters long!" }).optional()
     .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
@@ -39,7 +39,7 @@ export const teacherschema = z.object({
   img: z.string().optional(),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
   .default("Under Investigation"),
-  dob: z.coerce.date({ message: "Date of Birth is required!" }),
+  dob: z.coerce.date().optional(), // Mark as optional
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
 });
@@ -56,7 +56,7 @@ export const studentschema = z.object({
     .max(20, { message: "Username must be at most 20 characters long!" }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long!" })
+    .min(5, { message: "Password must be at least 8 characters long!" })
     .or(z.literal("")).optional(),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
@@ -101,8 +101,6 @@ export const examSchema = z.object({
 
 // Infer the form data type from schema
 export type ExamSchema = z.infer<typeof examSchema>;
-
-
 
 
 // Assuming LessonSchema is defined using zod
