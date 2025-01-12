@@ -1,4 +1,5 @@
 import { Day, Gender, PrismaClient } from '@prisma/client';
+import { nanoid } from 'nanoid'; // To generate unique IDs
 
 const prisma = new PrismaClient();
 
@@ -58,7 +59,7 @@ async function main() {
     for (let i = 1; i <= 5; i++) {
       const admin = await prisma.admin.create({
         data: {
-          username: `admin${i}`,
+          username: `admin_${nanoid(8)}`,
         },
       });
       admins.push(admin);
@@ -70,13 +71,13 @@ async function main() {
       const teacher = await prisma.teacher.create({
         data: {
           id: `teacher_user_${i}`,
-          username: `teacher${i}`,
+          username: `teacher_${nanoid(8)}`,
           name: `Teacher Name ${i}`,
           surname: `Teaching`,
           email: `teacher${i}@school.com`,
           phone: `88888888${i.toString().padStart(2, '0')}`,
           address: `Teacher Address ${i}`,
-          gender: i % 2 === 0 ? "Male" : "Female",
+          gender: i % 2 === 0 ? Gender.Male : Gender.Female,
           supervisor: i <= 20, // First 20 teachers are supervisors
           dob: new Date(new Date().setFullYear(new Date().getFullYear() - 30)), // Add dob here
         },
@@ -107,14 +108,14 @@ async function main() {
         const student = await prisma.student.create({
           data: {
             id: `student_${classItem.id}_${studentNum}`,
-            username: `student${classItem.id}_${studentNum}`,
+            username: `student_${classItem.id}_${studentNum}`,
             name: `Student Name ${classItem.id}_${studentNum}`,
             surname: `Learning`,
             parentName: `Parent ${classItem.id}_${studentNum}`,
             phone: `77777777${studentNum.toString().padStart(2, '0')}`,
             address: `Student Address ${classItem.id}_${studentNum}`,
             gender: studentNum % 2 === 0 ? Gender.Male : Gender.Female,
-            dob: new Date(2010, 0, studentNum),
+            dob: new Date(2010, 0, studentNum), // You can adjust this based on your needs
             classId: classItem.id,
             gradeId: classItem.gradeId,
           },
