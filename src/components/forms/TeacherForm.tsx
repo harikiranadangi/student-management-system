@@ -5,11 +5,11 @@ import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import React, { Dispatch, SetStateAction, startTransition, useEffect, useState } from "react";
 import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
-import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from 'next-cloudinary';
 import Image from 'next/image';
+import { createTeacher, updateTeacher } from "@/lib/actions";
 
 
 const TeacherForm = ({
@@ -23,14 +23,14 @@ const TeacherForm = ({
     setOpen: Dispatch<SetStateAction<boolean>>
     relatedData?: any;
 }) => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<Teacherschema>({
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<Teacherschema>({
         resolver: zodResolver(teacherschema),
-        defaultValues: data || {},
     });
 
-    useEffect(() => {
-        reset(data); // Reset form when data changes
-    }, [data, reset]);
 
     // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
 
@@ -61,16 +61,7 @@ const TeacherForm = ({
             setOpen(false);
             router.refresh()
         }
-    }, [state.success]);
-
-    useEffect(() => {
-        if (state.error) {
-            console.error("Form submission error:", state.error);
-            toast.error("There was an error submitting the form.");
-        }
-    }, [state.error]);
-
-
+    }, [state]);
 
     const { subjects } = relatedData;
 
@@ -186,6 +177,7 @@ const TeacherForm = ({
                         <p className="text-xs text-red-500">{errors.subjects.message.toString()}</p>
                     )}
                 </div>
+
                 <CldUploadWidget uploadPreset="school" onSuccess={(result, { widget }) => {
                     setImg(result.info)
                     widget.close()
