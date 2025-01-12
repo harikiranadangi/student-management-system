@@ -76,7 +76,7 @@ export const studentschema = z.object({
       message: "Please select a valid blood type!",
     })
     .optional(),
-  dob: z.coerce.date({ message: "Date of Birth is required!" }),
+  dob: z.coerce.date().optional(), // Mark as optional
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
