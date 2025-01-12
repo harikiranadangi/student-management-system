@@ -313,16 +313,18 @@ export const deleteTeacher = async (
             },
         });
 
+        // Log success message
+        console.log(`User with ID ${id} deleted successfully`);
+
         // revalidatePath("/list/teachers")
-        return { success: true, error: false };
+        return { success: true, error: false, message: 'Deleted user successfully' };
     } catch (err) {
         console.log(err)
-        return { success: false, error: true };
+        return { success: false, error: true, message: 'An error occurred while deleting the user' };
     }
 };
 
 // * ---------------------------------------------- STUDENT SCHEMA --------------------------------------------------------
-
 
 export const createStudent = async (
     currentState: CurrentState,
