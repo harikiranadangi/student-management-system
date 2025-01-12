@@ -1,16 +1,16 @@
 import { auth } from "@clerk/nextjs/server";
 
-// Function to extract the role from session claims
-export function getRoleFromSession(sessionClaims: any): string | null {
-  interface SessionMetadata {
-    role?: string;
-  }
+// Centralized interface for session metadata
+interface SessionMetadata {
+  role?: string;
+}
 
-  // Extract the role from session metadata
+// Helper function to extract the role from session claims
+export function getRoleFromSession(sessionClaims: any): string | null {
   return (sessionClaims?.metadata as SessionMetadata)?.role || null;
 }
 
-// Main usage function for fetching user info and role
+// Main function to fetch user info (userId and role)
 export async function fetchUserInfo(): Promise<{ userId: string | null; role: string | null }> {
   try {
     // Fetch session claims and user ID from the authentication system
@@ -29,24 +29,6 @@ export async function fetchUserInfo(): Promise<{ userId: string | null; role: st
     return { userId: null, role: null };
   }
 }
-
-
-// export async function getRole(): Promise<string | null> {
-//   try {
-//     const { sessionClaims, userId } = await auth();
-
-//     console.log("User ID:", userId); 
-
-//     interface SessionMetadata {
-//       role?: string;
-//     }
-
-//     return (sessionClaims?.metadata as SessionMetadata)?.role || null;
-//   } catch (error) {
-//     console.error("Failed to fetch role:", error);
-//     return null;
-//   }
-// }
 
 const currentWorkWeek = (): Date => {
   const today = new Date();
