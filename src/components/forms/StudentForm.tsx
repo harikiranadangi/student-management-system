@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import React, { Dispatch, SetStateAction, startTransition, useEffect, useState } from "react";
 import { studentschema, Studentschema } from "@/lib/formValidationSchemas";
-import { createStudent, updateStudent,  } from "@/lib/actions";
+import { createStudent, updateStudent } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from 'next-cloudinary';
@@ -46,11 +46,14 @@ const StudentForm = ({
   );
 
   const onSubmit = handleSubmit((data) => {
-    console.log("Submitting data:", data); // Debugging
+    console.log("Form Data Captured:", data);
     startTransition(() => {
-      formAction({ ...data, img: img?.secure_url });
+      const payload = { ...data, img: img?.secure_url };
+      console.log("Payload Sent to formAction:", payload);
+      formAction(payload);
     });
   });
+
 
 
   const router = useRouter()
@@ -85,39 +88,58 @@ const StudentForm = ({
 
       <div className="flex flex-wrap justify-between gap-4">
 
-        <InputField label="Username" name="username" defaultValue={data?.username} register={register} error={errors?.username} />
+        <InputField
 
-        <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
+          label="Username"
+          name="username"
+          register={register}
+          error={errors?.username}
+        />
 
-        <InputField label="Password" name="password" type="password" defaultValue={data?.password} register={register} error={errors?.password} />
+        <InputField
+
+          label="Email"
+          name="email"
+          defaultValue={data?.email}
+          register={register}
+          error={errors?.email}
+
+        />
+
+        <InputField
+          label="Password" name="password" type="password" defaultValue={data?.password} register={register} error={errors?.password} />
 
       </div>
 
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
-      
-      <CldUploadWidget uploadPreset="school" onSuccess={(result, { widget }) => {
-          setImg(result.info)
-          widget.close()
-        }}>
-          {({ open }) => {
-            return (
-              <div
-                className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
-                <Image src="/upload.png" alt="" width={28} height={28} />
-                <span>Upload a photo</span>
-              </div>
-            );
-          }}
-        </CldUploadWidget>
-      
-      <div className="flex flex-wrap justify-between gap-4">
 
-      
-        
+      <CldUploadWidget
+        uploadPreset="school"
+        onSuccess={(result, { widget }) => {
+          setImg(result.info);
+          console.log("Image Uploaded:", result.info); // Debug log
+          widget.close();
+        }}
+      >
+
+        {({ open }) => {
+          return (
+            <div
+              className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
+              <Image src="/upload.png" alt="" width={28} height={28} />
+              <span>Upload a photo</span>
+            </div>
+          );
+        }}
+      </CldUploadWidget>
+
+      <div className="flex flex-wrap justify-between gap-4">
 
         <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
 
         <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors.surname} />
+
+        <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName} />
 
         <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
 
@@ -154,7 +176,7 @@ const StudentForm = ({
           error={errors.dob}
           type="date"
         />
-        
+
         {data && (<InputField
           label="Id"
           name="id"
@@ -166,7 +188,6 @@ const StudentForm = ({
         )}
 
       </div>
-
 
 
       <div className="flex flex-wrap gap-16">
@@ -207,14 +228,14 @@ const StudentForm = ({
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label className="text-xs text-gray-500">Class</label>
           <select
-            
+
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("classId")}
             defaultValue={data?.classId}
           >
             {classes.map((classItem: { id: number; name: string; capacity: number; _count: { students: number } }) => (
               <option value={classItem.id} key={classItem.id}>
-                ({classItem.name} 
+                ({classItem.name}
                 {/* - {classItem._count.students + "/" + classItem.capacity}{" "} Capacity) */})
               </option>
             ))}
@@ -224,7 +245,7 @@ const StudentForm = ({
           )}
         </div>
 
-        
+
 
       </div>
 
