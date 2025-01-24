@@ -28,17 +28,17 @@ export const teacherschema = z.object({
   id: z.string().optional(),
   username: z.string().min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
-  password: z.string().min(5, { message: "Password must be at least 8 characters long!" }).optional()
+  password: z.string().min(5, { message: "Password must be at least 5 characters long!" }).optional()
     .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
   email: z.string().email({ message: "Invalid email address!" }).optional().or(z.literal(""))
-  .nullable(),
+    .nullable(),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   img: z.string().optional(),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
-  .default("Under Investigation"),
+    .default("Under Investigation"),
   dob: z.coerce.date().optional(), // Mark as optional
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
@@ -52,12 +52,11 @@ export const studentschema = z.object({
   id: z.string().optional(),
   username: z
     .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
-    .max(20, { message: "Username must be at most 20 characters long!" }),
+    .min(5, { message: "Username must be at least 5 characters long!" }),
   password: z
     .string()
-    .min(5, { message: "Password must be at least 8 characters long!" })
-    .or(z.literal("")).optional(),
+    .min(5, { message: "Password must be at least 5 characters long!" })
+    .optional().or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
   parentName: z.string().min(1, { message: "Parent Name is required!" }),
@@ -70,13 +69,11 @@ export const studentschema = z.object({
     .string()
     .regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }),
-  img: z.string().optional(),
   bloodType: z
-    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"], {
-      message: "Please select a valid blood type!",
-    })
-    .optional(),
-  dob: z.coerce.date().optional(), // Mark as optional
+  .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"])
+  .default("Under Investigation"),
+  dob: z.coerce.date().optional().or(z.literal("")),
+  img: z.string().optional().or(z.literal("")),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
