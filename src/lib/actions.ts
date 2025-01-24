@@ -26,7 +26,7 @@ export const createSubject = async (
             },
         });
 
-        console.log("Created Subject:","[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+        console.log("Created Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
 
         // revalidatePath("/list/subjects")
         return { success: true, error: false };
@@ -53,7 +53,7 @@ export const updateSubject = async (
             },
         });
 
-        console.log("Updated Subject:","[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+        console.log("Updated Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
 
         // revalidatePath("/list/subjects")
         return { success: true, error: false };
@@ -75,7 +75,7 @@ export const deleteSubject = async (
             },
         });
 
-        console.log("Deleted Subject:",data)
+        console.log("Deleted Subject:", data)
 
         // revalidatePath("/list/subjects")
         return { success: true, error: false };
@@ -154,66 +154,66 @@ export const deleteClass = async (
 
 
 export const createTeacher = async (
-  currentState: CurrentState,
-  data: Teacherschema
+    currentState: CurrentState,
+    data: Teacherschema
 ) => {
-  try {
-    // Initialize Clerk client
-    const client = await clerkClient();
+    try {
+        // Initialize Clerk client
+        const client = await clerkClient();
 
-    // Check if username already exists by accessing the 'data' property
-    const userListResponse = await client.users.getUserList({
-        query: data.username, // Ensure we search by the username
-      });
-  
-      // Check if any user with the same username exists by accessing 'data'
-      if (userListResponse.data.length > 0) {
-        throw new Error("Username is already taken.");
-      }
+        // Check if username already exists by accessing the 'data' property
+        const userListResponse = await client.users.getUserList({
+            query: data.username, // Ensure we search by the username
+        });
 
-    // Create a new user via Clerk
-    const user = await client.users.createUser({
-      username: data.username,
-      password: data.password,
-      firstName: data.name,
-      lastName: data.surname,
-    });
+        // Check if any user with the same username exists by accessing 'data'
+        if (userListResponse.data.length > 0) {
+            throw new Error("Username is already taken.");
+        }
 
-    // Create a new teacher record in Prisma
-    await prisma.teacher.create({
-      data: {
-        id: user.id,
-        username: data.username,
-        name: data.name,
-        surname: data.surname,
-        dob: data.dob,
-        email: data.email || null,  // If no email, set to null
-        phone: data.phone,
-        address: data.address,
-        gender: data.gender,
-        img: data.img || null,
-        bloodType: data.bloodType || null,
-        subjects: {
-          connect: data.subjects?.map((subjectId: string) => ({
-            id: parseInt(subjectId, 10), // Ensures the ID is parsed as an integer
-          })) || [],
-        },
-      },
-    });
+        // Create a new user via Clerk
+        const user = await client.users.createUser({
+            username: data.username,
+            password: data.password,
+            firstName: data.name,
+            lastName: data.surname,
+        });
 
-    return { success: true, error: false };
+        // Create a new teacher record in Prisma
+        await prisma.teacher.create({
+            data: {
+                id: user.id,
+                username: data.username,
+                name: data.name,
+                surname: data.surname,
+                dob: data.dob || new Date(),
+                email: data.email || null,  // If no email, set to null
+                phone: data.phone,
+                address: data.address,
+                gender: data.gender,
+                img: data.img || null,
+                bloodType: data.bloodType || null,
+                subjects: {
+                    connect: data.subjects?.map((subjectId: string) => ({
+                        id: parseInt(subjectId, 10), // Ensures the ID is parsed as an integer
+                    })) || [],
+                },
+            },
+        });
 
-  } catch (err: any) {
-    console.error("Error in createTeacher:", err);
-    console.error("Error details:", err.message || err);
-    console.log("Clerk Error Details:", err.errors);
+        return { success: true, error: false };
 
-    return {
-      success: false,
-      error: true,
-      message: err.message || "Unprocessable Entity.",
-    };
-  }
+    } catch (err: any) {
+        console.error("Error in createTeacher:", err);
+        console.error("Error details:", err.message || err);
+        console.log("Clerk Error Details:", err.errors);
+
+        return {
+            success: false,
+            error: true,
+            message: err.message || "Unprocessable Entity.",
+        };
+    }
 };
 
 
@@ -246,16 +246,7 @@ export const updateTeacher = async (
 
         const existingTeacher = await prisma.teacher.findUnique({
             where: { id: data.id },
-          });
-          
-          await prisma.teacher.update({
-            where: { id: data.id },
-            data: {
-              dob: data.dob || existingTeacher?.dob, // Use existing value if not provided
-              // Other fields...
-            },
-          });
-          
+        });
 
         // Update the teacher in the database
         await prisma.teacher.update({
@@ -329,148 +320,167 @@ export const deleteTeacher = async (
 export const createStudent = async (
     currentState: CurrentState,
     data: Studentschema
-  ) => {
+) => {
     try {
-      // Initialize Clerk client
-      const client = await clerkClient();
-  
-      // Check if username already exists by accessing the 'data' property
-      const userListResponse = await client.users.getUserList({
-          query: data.username, // Ensure we search by the username
+        // Initialize Clerk client
+        const client = await clerkClient();
+
+        const classItem = await prisma.class.findUnique({
+            where: { id: data.classId },
+            include: { _count: { select: { students: true } } }
         });
-    
+
+        // if (classItem && classItem.capacity === classItem._count.students) {
+        //     return { success: false, error: true }
+        // }
+
+        // Check if username already exists by accessing the 'data' property
+        const userListResponse = await client.users.getUserList({
+            query: data.username, // Ensure we search by the username
+        });
+
         // Check if any user with the same username exists by accessing 'data'
         if (userListResponse.data.length > 0) {
-          throw new Error("Username is already taken.");
+            throw new Error("Username is already taken.");
         }
-  
-      // Create a new user via Clerk
-      const user = await client.users.createUser({
-        username: data.username,
-        password: data.password,
-        firstName: data.name,
-        lastName: data.surname,
-      });
-  
-      // Create a new teacher record in Prisma
-      await prisma.student.create({
-        data: {
-          id: user.id,
-          username: data.username,
-          name: data.name,
-          surname: data.surname,
-          dob: data.dob,
-          email: data.email || null,  // If no email, set to null
-          phone: data.phone,
-          address: data.address,
-          gender: data.gender,
-          img: data.img || null,
-          bloodType: data.bloodType || null,
-          
-        },
-      });
-  
-      return { success: true, error: false };
-  
+
+        // Create a new user via Clerk
+        const user = await client.users.createUser({
+            username: data.username,
+            password: data.password,
+            firstName: data.name,
+            lastName: data.surname,
+        });
+
+        // Create a new teacher record in Prisma
+        await prisma.student.create({
+            data: {
+                id: user.id,
+                username: data.username,
+                name: data.name,
+                surname: data.surname,
+                parentName:data.parentName,
+                dob: data.dob || new Date(),
+                email: data.email || null,  // If no email, set to null
+                phone: data.phone,
+                address: data.address,
+                gender: data.gender,
+                img: data.img,
+                bloodType: data.bloodType,
+                gradeId: data.gradeId,
+                classId: data.classId
+
+            },
+        });
+
+        return { success: true, error: false };
+
     } catch (err: any) {
-      console.error("Error in createStudent:", err);
-      console.error("Error details:", err.message || err);
-      console.log("Clerk Error Details:", err.errors);
-  
-      return {
-        success: false,
-        error: true,
-        message: err.message || "Unprocessable Entity.",
-      };
+        console.error("Error creating student:", { username: data.username, classId: data.classId, err });
+        console.error("Error details:", err.message || err);
+        console.log("Clerk Error Details:", err.errors);
+
+        return { 
+            success: false, 
+            error: true, 
+            message: err.message || "An unexpected error occurred while creating the student." 
+        };
+        
+
     }
-  };
-  
-  
-  export const updateStudent = async (
-      currentState: CurrentState,
-      data: Studentschema
-  ) => {
-      try {
-  
-  
-          // Initialize Clerk client by awaiting clerkClient()
-          const client = await clerkClient();
-  
-          // Ensure the Clerk client has the 'users' API
-          if (!client.users) {
-              throw new Error("Clerk client does not have the 'users' API.");
-          }
-  
-          if (!data.id) {
-              return { success: false, error: true };
-          }
-  
-          // Update the user in Clerk
-          const user = await client.users.updateUser(data.id, {
-              username: data.username,
-              ...(data.password !== "" && { password: data.password }),
-              firstName: data.name,
-              lastName: data.surname,
-          });
-  
-          // Update the teacher in the database
-          await prisma.student.update({
-              where: {
-                  id: data.id,
-              },
-              data: {
-                  ...(data.password !== "" && { password: data.password }),  // Ensure password handling is done correctly
-                  username: data.username,
-                  name: data.name,
-                  surname: data.surname,
-                  dob: data.dob,
-                  email: data.email || null,
-                  phone: data.phone!,
-                  address: data.address!,
-                  gender: data.gender,
-                  img: data.img || null,
-                  bloodType: data.bloodType || null,
-                  
-              },
-          });
-  
-  
-  
-          // revalidatePath("/list/teachers")
-          return { success: true, error: false };
-      } catch (err) {
-          console.error(err);
-          return { success: false, error: true };
-      }
-  
-  
-  };
-  
-  
-  export const deleteStudent = async (
-      currentState: CurrentState,
-      data: FormData
-  ) => {
-      const id = data.get("id") as string;
-      try {
-  
-          // Initialize Clerk client by awaiting clerkClient()
-          const client = await clerkClient();
-  
-          await client.users.deleteUser(id)
-  
-          await prisma.teacher.delete({
-              where: {
-                  id: id
-              },
-          });
-  
-          // revalidatePath("/list/teachers")
-          return { success: true, error: false };
-      } catch (err) {
-          console.log(err)
-          return { success: false, error: true };
-      }
-  };
-  
-  
+};
+
+
+export const updateStudent = async (
+    currentState: CurrentState,
+    data: Studentschema
+) => {
+    try {
+
+
+        // Initialize Clerk client by awaiting clerkClient()
+        const client = await clerkClient();
+
+        // Ensure the Clerk client has the 'users' API
+        if (!client.users) {
+            throw new Error("Clerk client does not have the 'users' API.");
+        }
+
+        if (!data.id) {
+            return { success: false, error: true };
+        }
+
+        // Update the user in Clerk
+        const user = await client.users.updateUser(data.id, {
+            username: data.username,
+            ...(data.password !== "" && { password: data.password }),
+            firstName: data.name,
+            lastName: data.surname,
+        });
+
+        const existingStudent = await prisma.student.findUnique({
+            where: { id: data.id },
+        });
+
+        
+        // Update the teacher in the database
+        await prisma.student.update({
+            where: {
+                id: data.id,
+            },
+            data: {
+                ...(data.password !== "" && { password: data.password }),  // Ensure password handling is done correctly
+                username: data.username,
+                name: data.name,
+                surname: data.surname,
+                dob: data.dob || existingStudent?.dob, // Use existing value if not provided
+                email: data.email || null,
+                phone: data.phone!,
+                address: data.address!,
+                gender: data.gender,
+                img: data.img || null,
+                bloodType: data.bloodType || null,
+                gradeId: data.gradeId,
+                classId: data.classId
+            },
+        });
+
+        // revalidatePath("/list/teachers")
+        return { success: true, error: false };
+    } catch (err) {
+        console.error(err);
+        return { success: false, error: true };
+    }
+
+
+};
+
+
+export const deleteStudent = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    try {
+
+        // Initialize Clerk client by awaiting clerkClient()
+        const client = await clerkClient();
+
+        await client.users.deleteUser(id)
+
+        await prisma.student.delete({
+            where: {
+                id: id
+            },
+        });
+
+        // Log success message
+        console.log(`User with ID ${id} deleted successfully`);
+
+        // revalidatePath("/list/teachers")
+        return { success: true, error: false, message: 'Deleted user successfully' };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true, message: 'An error occurred while deleting the user' };
+    }
+};
