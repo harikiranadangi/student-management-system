@@ -30,16 +30,16 @@ export const teacherschema = z.object({
     .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
-  email: z.string().email({ message: "Invalid email address!" }).optional().or(z.literal(""))
-    .nullable(),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
-  img: z.string().optional(),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
     .default("Under Investigation"),
-  dob: z.coerce.date().optional(), // Mark as optional
+  dob: z.union([z.coerce.date(), z.string().length(0)]).optional(),
+  img: z.string().optional().nullable(),
+  email: z.string().email({ message: "Invalid email address!" }).optional().nullable(),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
+  
 });
 
 // Infer the form data type from schema
@@ -54,13 +54,13 @@ export const studentschema = z.object({
   name: z.string().min(1, { message: "Name is required!" }),
   surname: z.string().min(1, { message: "Surname is required!" }),
   parentName: z.string().min(1, { message: "Parent Name is required!" }),
-  email: z.string().email({ message: "Invalid email address!" }).optional().or(z.literal("")),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"])
     .default("Under Investigation"),
-  dob: z.coerce.date().optional().or(z.literal("")),
-  img: z.string().optional().or(z.literal("")),
+  dob: z.union([z.coerce.date(), z.string().length(0)]).optional(),
+  img: z.string().optional().nullable(),
+  email: z.string().email({ message: "Invalid email address!" }).optional().nullable(),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
