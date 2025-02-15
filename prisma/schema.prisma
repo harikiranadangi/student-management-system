@@ -34,24 +34,25 @@ model Student {
   grade       Grade        @relation(fields: [gradeId], references: [id])
   attendances Attendance[]
   results     Result[]
+  fees        Fee[] // Define the relation from Student to Fee
 
   @@index([classId])
 }
 
 model Teacher {
-  id         String   @id
-  username   String   @unique
+  id         String    @id
+  username   String    @unique
   name       String
   surname    String
   dob        DateTime?
-  email      String?  @unique
+  email      String?   @unique
   phone      String
   address    String
   img        String?
   bloodType  String?
   gender     Gender
-  createdAt  DateTime @default(now())
-  supervisor Boolean  @default(false)
+  createdAt  DateTime  @default(now())
+  supervisor Boolean   @default(false)
 
   subjects Subject[]
   lessons  Lesson[]
@@ -181,4 +182,25 @@ enum Day {
   THURSDAY
   FRIDAY
   SATURDAY
+}
+
+model Fee {
+  id        Int       @id @default(autoincrement())
+  studentId String
+  student   Student   @relation(fields: [studentId], references: [id])
+  term      Term // Term 1, 2, 3, or 4
+  amount    Decimal
+  status    String // Paid, Pending, Overdue
+  dueDate   DateTime
+  paidDate  DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([studentId, term]) // Ensures one entry per term per student
+}
+
+enum Term {
+  TERM1
+  TERM2
+  TERM3
+  TERM4
 }
