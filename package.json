@@ -23,7 +23,7 @@
     "echarts": "^5.5.1",
     "framer-motion": "^11.15.0",
     "multer": "^1.4.5-lts.1",
-    "next": "^15.1.6",
+    "next": "^15.1.7",
     "next-cloudinary": "^6.16.0",
     "node-fetch": "^3.3.2",
     "prisma": "^4.0.0",
