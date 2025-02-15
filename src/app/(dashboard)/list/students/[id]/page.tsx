@@ -11,32 +11,29 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-const SingleStudentPage = async ({
+const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
+  if (!params?.id) {
+    return <p>Loading...</p>; // ✅ Handles missing params gracefully
+  }
 
-  params: { id },
-}: {
-  params: { id: string };
-}) => {
+  const id = params.id; // ✅ Extract `id` safely
 
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
 
-  const student:
-    (Student & {
-      class: (Class & {_count: {lessons:number}})
-    })
-    | null = await prisma.student.findUnique({
-      where: { id },
-      include: {
-        class: {include: {_count:{select: {lessons:true}}}}
-      },
-    });
+  // Fetch student data from Prisma
+  const student = await prisma.student.findUnique({
+    where: { id },
+    include: {
+      class: { include: { _count: { select: { lessons: true } } } },
+    },
+  });
 
   if (!student) {
-    return notFound();
+    return notFound(); // ✅ Returns 404 if student not found
   }
 
-  console.log(id);
+  console.log("Fetched Student ID:", id);
 
   
 
