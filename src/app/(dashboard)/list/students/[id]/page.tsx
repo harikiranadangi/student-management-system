@@ -61,7 +61,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                   <FormContainer
                     table="student"
                     type="update"
-                    data={{ student }}
+                    data={ student }
                   />
                 )}
 
