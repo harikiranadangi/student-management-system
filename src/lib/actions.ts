@@ -484,3 +484,78 @@ export const deleteStudent = async (
         return { success: false, error: true, message: 'An error occurred while deleting the user' };
     }
 };
+
+// * ---------------------------------------------- LESSON SCHEMA --------------------------------------------------------
+
+export const createLesson = async (
+    currentState: CurrentState,
+    data: LessonsSchema
+) => {
+    try {
+        await prisma.lesson.create({
+            data: {
+                name: data.name,
+                teachers: {
+                    connect: data.teachers.map((teacherId) => ({ id: teacherId })),
+                }
+            },
+        });
+
+        console.log("Created Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+export const updateLesson = async (
+    currentState: CurrentState,
+    data: LessonsSchema
+) => {
+    try {
+        await prisma.subject.update({
+            where: {
+                id: data.id,
+            },
+            data: {
+                name: data.name,
+                teachers: {
+                    set: data.teachers.map((teacherId) => ({ id: teacherId })),
+                }
+            },
+        });
+
+        console.log("Updated Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+export const deleteLesson = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    try {
+        await prisma.subject.delete({
+            where: {
+                id: parseInt(id)
+            },
+        });
+
+        console.log("Deleted Subject:", data)
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
