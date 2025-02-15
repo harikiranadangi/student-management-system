@@ -36,41 +36,84 @@ const StudentForm = ({
 
   const [img, setImg] = useState<any>()
 
-  // Using useActionState with startTransition
-  const [state, formAction] = React.useActionState(
-    type === "create" ? createStudent : updateStudent,
-    {
-      success: false,
-      error: false,
-    }
-  );
+  // // Using useActionState with startTransition
+  // const [state, formAction] = React.useActionState(
+  //   type === "create" ? createStudent : updateStudent,
+  //   {
+  //     success: false,
+  //     error: false,
+  //   }
+  // );
 
+  const [state, setState] = useState<{ success: boolean; error: string | null }>({
+    success: false,
+    error: null,
+  });
+  
+  const formAction = async (currentState: any, data: any) => {
+    console.log("Payload being sent to", type === "update" ? "updateStudent" : "createStudent", data);
+  
+    try {
+      const response = type === "update"
+        ? await updateStudent(currentState, data)  // ✅ Use updateStudent for updates
+        : await createStudent(currentState, data);
+  
+      console.log("Response from server:", response);
+  
+      setState({
+        success: response.success,
+        error: response.error ? String(response.error) : null,
+      });
+    } catch (error) {
+      console.error("Form Submission Error:", error);
+      setState({ success: false, error: String(error) });
+    }
+  };
+    
+  
   const onSubmit = handleSubmit((data) => {
     console.log("Form Data Captured:", data);
     startTransition(() => {
       const payload = { ...data, img: img?.secure_url };
       console.log("Payload Sent to formAction:", payload);
-      formAction(payload);
+      formAction(state, payload);
     });
   });
+  
+
+
+
+
+  // const onSubmit = handleSubmit((data) => {
+  //   console.log("Form Data Captured:", data);
+  //   startTransition(() => {
+  //     const payload = { ...data, img: img?.secure_url };
+  //     console.log("Payload Sent to formAction:", payload);
+  //     formAction(payload);
+  //   });
+  // });
 
 
 
   const router = useRouter()
 
   useEffect(() => {
+    console.log("Current Form State:", state);
+    
     if (state.success) {
       toast(`Student has been ${type === "create" ? "created" : "updated"}!`);
       setOpen(false);
-      router.refresh()
+      router.refresh();
     }
   }, [state.success]);
-
+  
   useEffect(() => {
     if (state.error) {
       console.error("Form submission error:", state.error);
+      toast.error(state.error);  // ✅ Show error message in UI
     }
   }, [state.error]);
+  
 
 
   const { grades, classes } = relatedData;
@@ -171,11 +214,12 @@ const StudentForm = ({
         <InputField
           label="Birthday"
           name="dob"
-          defaultValue={data?.dob.toISOString().split("T")[0]}
+          defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""}
           register={register}
           error={errors.dob}
           type="date"
         />
+
 
         {data && (<InputField
           label="Id"
