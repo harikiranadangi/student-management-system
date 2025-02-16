@@ -428,7 +428,7 @@ export const updateStudent = async (
         });
 
         
-        // Update the teacher in the database
+        // Update the student in the database
         await prisma.student.update({
             where: {
                 id: data.id,
@@ -450,7 +450,7 @@ export const updateStudent = async (
             },
         });
 
-        // revalidatePath("/list/teachers")
+        // revalidatePath("/list/students")
         return { success: true, error: false };
     } catch (err) {
         console.error(err);
@@ -482,7 +482,7 @@ export const deleteStudent = async (
         // Log success message
         console.log(`User with ID ${id} deleted successfully`);
 
-        // revalidatePath("/list/teachers")
+        // revalidatePath("/list/student")
         return { success: true, error: false, message: 'Deleted user successfully' };
     } catch (err) {
         console.log(err)
@@ -500,14 +500,6 @@ export const createLesson = async (
         // Initialize Clerk client
         const client = await clerkClient();
 
-        
-
-        // if (classItem && classItem.capacity === classItem._count.students) {
-        //     return { success: false, error: true }
-        // }
-
-        
-        
         await prisma.lesson.create({
             data: {
                 name: data.name,
@@ -521,7 +513,7 @@ export const createLesson = async (
 
         console.log("Created Subject:", "[" + data.id + ", " + data.name + ", " + data.teacherId + "]")
 
-        // revalidatePath("/list/subjects")
+        // revalidatePath("/list/lessons")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
