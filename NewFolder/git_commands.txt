@@ -1,0 +1,14 @@
+# Switch to main branch
+git checkout main 
+
+# Get the latest updates
+git pull origin main    
+
+# Create and switch to new branch
+git checkout -b feature/student-reports 
+
+# Verify the new branch
+git branch             
+
+# Push to GitHub
+git push -u origin feature/student-reports 
