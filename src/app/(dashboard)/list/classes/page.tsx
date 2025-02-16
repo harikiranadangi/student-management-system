@@ -106,6 +106,9 @@ const ClassesList = async ({
     prisma.class.count({ where: query }),
   ]);
 
+  console.log("User Role:", role);
+  console.log("Classes Data:", data);
+
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
