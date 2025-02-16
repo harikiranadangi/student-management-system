@@ -132,9 +132,8 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" || role === "teacher" && (
-              <FormContainer table="lesson" type="create" />
-            )}
+            {(role === "admin" || role === "teacher") && (<FormContainer 
+            table="lesson" type="create" />)}
           </div>
         </div>
       </div>
