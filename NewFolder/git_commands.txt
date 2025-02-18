@@ -12,3 +12,12 @@ git branch
 
 # Push to GitHub
 git push -u origin feature/student-reports 
+
+
+Task	Command
+Delete migrations	rm -rf prisma/migrations
+Reset database	npx prisma migrate reset
+Create new migration	npx prisma migrate dev --name init
+Generate Prisma client	npx prisma generate
+Seed database (optional)	npx prisma db seed
+Restart server	npm run dev
