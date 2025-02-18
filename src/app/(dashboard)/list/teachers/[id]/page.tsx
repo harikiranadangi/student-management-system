@@ -10,12 +10,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const SingleTeacherPage = async ({
-
-  params: { id },
-}: {
-  params: { id: string };
-}) => {
+const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
+  // Destructure and await params
+  const { id } = await params;
 
   const { sessionClaims } = await auth();
 
@@ -81,7 +78,10 @@ const SingleTeacherPage = async ({
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>{new Intl.DateTimeFormat("en-GB").format(teacher.dob)}</span>
+                  <p className="text-sm text-gray-500">
+                    {teacher.dob ? new Intl.DateTimeFormat("en-GB").format(teacher.dob) : "Date of birth not available"}
+                  </p>
+
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/mail.png" alt="" width={14} height={14} />
