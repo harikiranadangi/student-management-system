@@ -17,7 +17,7 @@ const renderRow = (item: ClassList, role: string | null) => (
   >
     <td className="flex items-center gap-4 p-4">{item.name}</td>
     <td className="hidden md:table-cell">
-      {item.supervisor.name + " " + item.supervisor.surname}
+      {item.supervisor ? `${item.supervisor.name} ${item.supervisor.surname}` : "No Class Teacher"}
     </td>
     <td className="flex items-center gap-4 p-4">{item.gradeId}</td>
     <td>
@@ -32,6 +32,7 @@ const renderRow = (item: ClassList, role: string | null) => (
     </td>
   </tr>
 );
+
 
 const ClassesList = async ({
   searchParams,
