@@ -222,43 +222,50 @@ export const updateTeacher = async (
     data: Teacherschema
 ) => {
     try {
-
-
-        // Initialize Clerk client by awaiting clerkClient()
         const client = await clerkClient();
 
-        // Ensure the Clerk client has the 'users' API
-        if (!client.users) {
-            throw new Error("Clerk client does not have the 'users' API.");
-        }
-
         if (!data.id) {
-            return { success: false, error: true };
+            throw new Error("Missing teacher ID for update.");
         }
 
-        // Update the user in Clerk
-        const user = await client.users.updateUser(data.id, {
+        // Ensure the user exists
+        const existingUser = await client.users.getUser(data.id);
+        if (!existingUser) {
+            throw new Error("User not found in Clerk.");
+        }
+
+        // Construct update payload
+        const updateData: any = {
             username: data.username,
-            ...(data.password !== "" && { password: data.password }),
             firstName: data.name,
             lastName: data.surname,
-        });
+        };
 
+        if (data.password && data.password.trim() !== "") {
+            updateData.password = data.password;
+        }
+
+        if (data.email) {
+            updateData.emailAddress = data.email;
+        }
+
+        console.log("Updating user with:", JSON.stringify(updateData, null, 2));
+
+        // Update the user in Clerk
+        await client.users.updateUser(data.id, updateData);
+
+        // Update the teacher in Prisma
         const existingTeacher = await prisma.teacher.findUnique({
             where: { id: data.id },
         });
 
-        // Update the teacher in the database
         await prisma.teacher.update({
-            where: {
-                id: data.id,
-            },
+            where: { id: data.id },
             data: {
-                ...(data.password !== "" && { password: data.password }),  // Ensure password handling is done correctly
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
-                dob: data.dob || existingTeacher?.dob, // Use existing value if not provided
+                dob: data.dob || existingTeacher?.dob,
                 email: data.email || null,
                 phone: data.phone!,
                 address: data.address!,
@@ -267,22 +274,20 @@ export const updateTeacher = async (
                 bloodType: data.bloodType || null,
                 subjects: {
                     set: data.subjects?.map((subjectId: string) => ({
-                        id: parseInt(subjectId)
+                        id: parseInt(subjectId),
                     })),
                 },
             },
         });
 
-
-
-        // revalidatePath("/list/teachers")
         return { success: true, error: false };
-    } catch (err) {
-        console.error(err);
-        return { success: false, error: true };
+    } catch (err: any) {
+        console.error("Error updating teacher:", err);
+        if (err.errors) {
+            console.error("Clerk API Errors:", JSON.stringify(err.errors, null, 2));
+        }
+        return { success: false, error: true, message: err.message || "Failed to update teacher." };
     }
-
-
 };
 
 
@@ -423,7 +428,7 @@ export const updateStudent = async (
         });
 
         
-        // Update the teacher in the database
+        // Update the student in the database
         await prisma.student.update({
             where: {
                 id: data.id,
@@ -445,7 +450,7 @@ export const updateStudent = async (
             },
         });
 
-        // revalidatePath("/list/teachers")
+        // revalidatePath("/list/students")
         return { success: true, error: false };
     } catch (err) {
         console.error(err);
@@ -477,7 +482,7 @@ export const deleteStudent = async (
         // Log success message
         console.log(`User with ID ${id} deleted successfully`);
 
-        // revalidatePath("/list/teachers")
+        // revalidatePath("/list/student")
         return { success: true, error: false, message: 'Deleted user successfully' };
     } catch (err) {
         console.log(err)
@@ -495,14 +500,6 @@ export const createLesson = async (
         // Initialize Clerk client
         const client = await clerkClient();
 
-        
-
-        // if (classItem && classItem.capacity === classItem._count.students) {
-        //     return { success: false, error: true }
-        // }
-
-        
-        
         await prisma.lesson.create({
             data: {
                 name: data.name,
@@ -516,7 +513,7 @@ export const createLesson = async (
 
         console.log("Created Subject:", "[" + data.id + ", " + data.name + ", " + data.teacherId + "]")
 
-        // revalidatePath("/list/subjects")
+        // revalidatePath("/list/lessons")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)

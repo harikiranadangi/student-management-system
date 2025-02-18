@@ -114,7 +114,6 @@ const ClassForm = ({
                             </option>
                         ))}
                     </select>
-
                     {errors.gradeId?.message && (
                         <p className="text-xs text-red-400">{errors.gradeId.message.toString()}</p>
                     )}
