@@ -92,7 +92,7 @@ const StudentListPage = async ({
         switch (key) {
           case "teacherId":
             query.Class = {
-              Lesson: {
+              lessons: {
                 some: {
                   teacherId: value,
                 },
