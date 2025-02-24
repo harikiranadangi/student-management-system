@@ -99,7 +99,7 @@ const ClassesList = async ({
     prisma.class.findMany({
       where: query,
       include: {
-        supervisor: true,
+        Teacher: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
