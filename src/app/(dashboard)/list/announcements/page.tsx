@@ -97,7 +97,7 @@ const AnnouncementsList = async ({
     prisma.announcement.findMany({
       where: query,
       include: {
-        class: true,
+        Class: true,
       },
 
       take: ITEM_PER_PAGE,
