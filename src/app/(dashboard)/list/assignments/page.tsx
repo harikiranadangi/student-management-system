@@ -85,7 +85,7 @@ const AssignmentsList = async ({
   // Initialize Prisma query object
   const query: Prisma.AssignmentWhereInput = {};
 
-  query.lesson = {};
+  query.Lesson = {};
 
   // Dynamically add filters based on query parameters
     if (queryParams) {
@@ -93,13 +93,13 @@ const AssignmentsList = async ({
         if (value !== undefined) {
           switch (key) {
             case "classId":
-              query.lesson.classId = parseInt(value);
+              query.Lesson.classId = parseInt(value);
               break;
             case "teacherId":
-              query.lesson.teacherId = value
+              query.Lesson.teacherId = value
               break;
             case "search":
-              query.lesson.subject= {
+              query.Lesson.Subject= {
                   name: {contains:value},
               };
               break;
@@ -117,11 +117,11 @@ const AssignmentsList = async ({
         break;
 
       case "teacher":
-        query.lesson.teacherId = userId!
+        query.Lesson.teacherId = userId!
         break;
 
       case "student":
-        query.lesson.class = {
+        query.Lesson.Class = {
           students: {
             some: {
               id: userId!
@@ -138,11 +138,11 @@ const AssignmentsList = async ({
       prisma.assignment.findMany({
         where: query,
         include: {
-          lesson: {
+          Lesson: {
             select: {
-              subject: { select: { name: true } },
-              teacher: { select: { name: true, surname:true } },
-              class: { select: { name: true } },
+              Subject: { select: { name: true } },
+              Teacher: { select: { name: true, surname:true } },
+              Class: { select: { name: true } },
             }
           }
         },
