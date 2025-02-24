@@ -8,9 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rd /s /q .next",
-    "seed": "ts-node prisma/seed.ts"
-  },
+    "clean": "rd /s /q .next"
+    },
   "dependencies": {
     "@chakra-ui/react": "^3.2.3",
     "@clerk/clerk-react": "^5.18.2",
