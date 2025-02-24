@@ -6,45 +6,35 @@ import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
-import { Class, Event, Prisma } from "@prisma/client";
+import { Class, Event, Homework, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-type Events = Event & { class: Class };
+type Homeworks = Homework & { class: Class };
 
 
 
 
-const renderRow = (item: Events, role: string | null) => (
+const renderRow = (item: Homeworks, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" 
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
     <td>{item.class?.name || "-" }</td>
     <td className="hidden md:table-cell">
       {""}
-      {new Intl.DateTimeFormat("en-US").format(item.startTime)}
+      {new Intl.DateTimeFormat("en-US").format(item.dueDate)}
+    </td>
+    <td className="flex items-center gap-4 p-4">
+      {item.description}
     </td>
     <td className="hidden md:table-cell">
-      {item.startTime.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }
-      )}
-    </td>
-    <td className="hidden md:table-cell">
-      {item.endTime.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }
-      )}
+    {item.classId}
     </td>
       <td>
         <div className="flex items-center gap-2">
         {role === "admin" || role === "teacher" && (
               <>
-              <FormContainer table="event" type="update" data={item}/> 
-              <FormContainer table="event" type="delete"  id={item.id} /> 
+              <FormContainer table="homeworks" type="update" data={item}/> 
+              <FormContainer table="homeworks" type="delete"  id={item.id} /> 
              </>
           )}
         </div>
@@ -63,8 +53,8 @@ const EventsList = async ({
 
   const columns = [
     {
-      header: "Title",
-      accessor: "title",
+      header: "Date",
+      accessor: "date",
       className: "hidden md:table-cell",
     },
     {
@@ -72,18 +62,13 @@ const EventsList = async ({
       accessor: "class",
     },
     {
-      header: "Date",
-      accessor: "date",
+      header: "Title",
+      accessor: "title",
       className: "hidden md:table-cell",
     },
     {
-      header: "Start Time",
-      accessor: "startTime",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "End Time",
-      accessor: "endTime",
+      header: "Description",
+      accessor: "description",
       className: "hidden md:table-cell",
     },
     ...(role === "admin"
@@ -135,18 +120,7 @@ const EventsList = async ({
     }
   ]
 
-  // switch(role){
-  //   case "admin":
-  //     break;
-      
-  //   case "teacher":
-  //     query.OR = [
-  //       { classId: null }, 
-  //       { class: { lessons: { some: {teacherId: userId!}}}},
-  //     ]  
-  //     break;
-  // }
-  
+   
   // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
