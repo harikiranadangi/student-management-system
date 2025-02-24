@@ -131,7 +131,7 @@ const EventsList = async ({
   query.OR = [
     { classId: null},
     {
-      class: roleConditions [role as keyof typeof roleConditions] || {},
+      Class: roleConditions [role as keyof typeof roleConditions] || {},
     }
   ]
 
@@ -152,7 +152,7 @@ const EventsList = async ({
     prisma.event.findMany({
       where: query,
       include: {
-        class: true,
+        Class: true,
       },
         
       take: ITEM_PER_PAGE,
