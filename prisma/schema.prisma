@@ -31,7 +31,7 @@ model Assignment {
   endDate   DateTime
   lessonId  Int
   Lesson    Lesson   @relation(fields: [lessonId], references: [id], map: "Assignment_lessonId_fkey")
-  Result    Result[]
+  results    Result[]
 
   @@index([lessonId], map: "Assignment_lessonId_fkey")
 }
@@ -54,9 +54,9 @@ model Class {
   Announcement Announcement[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], map: "Class_gradeId_fkey")
   Teacher      Teacher?       @relation(fields: [supervisorId], references: [id], map: "Class_supervisorId_fkey")
-  Event        Event[]
-  Lesson       Lesson[]
-  Student      Student[]
+  events        Event[]
+  lessons       Lesson[]
+  students      Student[]
 
   @@index([gradeId], map: "Class_gradeId_fkey")
   @@index([supervisorId], map: "Class_supervisorId_fkey")
@@ -82,7 +82,7 @@ model Exam {
   endTime   DateTime
   lessonId  Int
   Lesson    Lesson   @relation(fields: [lessonId], references: [id], map: "Exam_lessonId_fkey")
-  Result    Result[]
+  results    Result[]
 
   @@index([lessonId], map: "Exam_lessonId_fkey")
 }
@@ -104,8 +104,8 @@ model Fee {
 model Grade {
   id      Int      @id @default(autoincrement())
   level   Int      @unique(map: "Grade_level_key")
-  Class   Class[]
-  Student Student[]
+  classes   Class[]
+  students Student[]
 }
 
 model Lesson {
@@ -161,7 +161,7 @@ model Student {
   gradeId    Int
   Attendance Attendance[]
   Fee        Fee[]
-  Result     Result[]
+  results     Result[]
   Class      Class      @relation(fields: [classId], references: [id], map: "Student_classId_fkey")
   Grade      Grade      @relation(fields: [gradeId], references: [id], map: "Student_gradeId_fkey")
 
@@ -173,8 +173,8 @@ model Subject {
   id        Int      @id @default(autoincrement())
   name      String   @unique(map: "Subject_name_key")
   createdAt DateTime @default(now())
-  Lesson    Lesson[]
-  Teacher   Teacher[] @relation("subjecttoteacher")
+  lessons    Lesson[]
+  teachers   Teacher[] @relation("subjecttoteacher")
 }
 
 model Teacher {
@@ -191,9 +191,9 @@ model Teacher {
   createdAt  DateTime  @default(now())
   supervisor Boolean   @default(false)
   dob        DateTime?
-  Class      Class[]
-  Lesson     Lesson[]
-  Subject    Subject[] @relation("subjecttoteacher")
+  classes      Class[]
+  lessons     Lesson[]
+  subjects    Subject[] @relation("subjecttoteacher")
 }
 
 enum FeeTerm {
