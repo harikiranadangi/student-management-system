@@ -7,204 +7,203 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model admin {
+model Admin {
   id        Int      @id @default(autoincrement())
   username  String   @unique(map: "Admin_username_key")
   createdAt DateTime @default(now())
 }
 
-model announcement {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String
-  date         DateTime
-  classId      Int?
-  Renamedclass Renamedclass? @relation(fields: [classId], references: [id], map: "Announcement_classId_fkey")
+model Announcement {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  classId     Int?
+  Class       Class?  @relation(fields: [classId], references: [id], map: "Announcement_classId_fkey")
 
   @@index([classId], map: "Announcement_classId_fkey")
 }
 
-model assignment {
+model Assignment {
   id        Int      @id @default(autoincrement())
   title     String
   startDate DateTime
   endDate   DateTime
   lessonId  Int
-  lesson    lesson   @relation(fields: [lessonId], references: [id], map: "Assignment_lessonId_fkey")
-  result    result[]
+  Lesson    Lesson   @relation(fields: [lessonId], references: [id], map: "Assignment_lessonId_fkey")
+  Result    Result[]
 
   @@index([lessonId], map: "Assignment_lessonId_fkey")
 }
 
-model attendance {
+model Attendance {
   id        Int      @id @default(autoincrement())
   date      DateTime
   present   Boolean
   studentId String
-  student   student  @relation(fields: [studentId], references: [id], map: "Attendance_studentId_fkey")
+  Student   Student  @relation(fields: [studentId], references: [id], map: "Attendance_studentId_fkey")
 
   @@index([studentId], map: "Attendance_studentId_fkey")
 }
 
-/// This model has been renamed to 'Renamedclass' during introspection, because the original name 'class' is reserved.
-model Renamedclass {
+model Class {
   id           Int            @id @default(autoincrement())
   name         String         @unique(map: "Class_name_key")
   supervisorId String?
   gradeId      Int
-  announcement announcement[]
-  grade        grade          @relation(fields: [gradeId], references: [id], map: "Class_gradeId_fkey")
-  teacher      teacher?       @relation(fields: [supervisorId], references: [id], map: "Class_supervisorId_fkey")
-  event        event[]
-  lesson       lesson[]
-  student      student[]
+  Announcement Announcement[]
+  Grade        Grade          @relation(fields: [gradeId], references: [id], map: "Class_gradeId_fkey")
+  Teacher      Teacher?       @relation(fields: [supervisorId], references: [id], map: "Class_supervisorId_fkey")
+  Event        Event[]
+  Lesson       Lesson[]
+  Student      Student[]
 
   @@index([gradeId], map: "Class_gradeId_fkey")
   @@index([supervisorId], map: "Class_supervisorId_fkey")
   @@map("class")
 }
 
-model event {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String
-  startTime    DateTime
-  endTime      DateTime
-  classId      Int?
-  Renamedclass Renamedclass? @relation(fields: [classId], references: [id], map: "Event_classId_fkey")
+model Event {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  classId     Int?
+  Class       Class?  @relation(fields: [classId], references: [id], map: "Event_classId_fkey")
 
   @@index([classId], map: "Event_classId_fkey")
 }
 
-model exam {
+model Exam {
   id        Int      @id @default(autoincrement())
   title     String
   startTime DateTime
   endTime   DateTime
   lessonId  Int
-  lesson    lesson   @relation(fields: [lessonId], references: [id], map: "Exam_lessonId_fkey")
-  result    result[]
+  Lesson    Lesson   @relation(fields: [lessonId], references: [id], map: "Exam_lessonId_fkey")
+  Result    Result[]
 
   @@index([lessonId], map: "Exam_lessonId_fkey")
 }
 
-model fee {
+model Fee {
   id        Int       @id @default(autoincrement())
   studentId String
-  term      fee_term
+  term      FeeTerm
   amount    Decimal
   status    String
   dueDate   DateTime
   paidDate  DateTime?
   createdAt DateTime  @default(now())
-  student   student   @relation(fields: [studentId], references: [id], map: "Fee_studentId_fkey")
+  Student   Student   @relation(fields: [studentId], references: [id], map: "Fee_studentId_fkey")
 
   @@unique([studentId, term], map: "Fee_studentId_term_key")
 }
 
-model grade {
-  id           Int            @id @default(autoincrement())
-  level        Int            @unique(map: "Grade_level_key")
-  Renamedclass Renamedclass[]
-  student      student[]
+model Grade {
+  id      Int      @id @default(autoincrement())
+  level   Int      @unique(map: "Grade_level_key")
+  Class   Class[]
+  Student Student[]
 }
 
-model lesson {
-  id           Int          @id @default(autoincrement())
-  name         String       @unique(map: "Lesson_name_key")
-  day          lesson_day
-  startTime    DateTime
-  endTime      DateTime
-  subjectId    Int
-  classId      Int
-  teacherId    String
-  assignment   assignment[]
-  exam         exam[]
-  Renamedclass Renamedclass @relation(fields: [classId], references: [id], map: "Lesson_classId_fkey")
-  subject      subject      @relation(fields: [subjectId], references: [id], map: "Lesson_subjectId_fkey")
-  teacher      teacher      @relation(fields: [teacherId], references: [id], map: "Lesson_teacherId_fkey")
+model Lesson {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique(map: "Lesson_name_key")
+  day       LessonDay
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  teacherId String
+  Assignment Assignment[]
+  Exam      Exam[]
+  Class     Class     @relation(fields: [classId], references: [id], map: "Lesson_classId_fkey")
+  Subject   Subject   @relation(fields: [subjectId], references: [id], map: "Lesson_subjectId_fkey")
+  Teacher   Teacher   @relation(fields: [teacherId], references: [id], map: "Lesson_teacherId_fkey")
 
   @@index([classId], map: "Lesson_classId_fkey")
   @@index([subjectId], map: "Lesson_subjectId_fkey")
   @@index([teacherId], map: "Lesson_teacherId_fkey")
 }
 
-model result {
+model Result {
   id           Int         @id @default(autoincrement())
   score        Int
   examId       Int?
   assignmentId Int?
   studentId    String
-  assignment   assignment? @relation(fields: [assignmentId], references: [id], map: "Result_assignmentId_fkey")
-  exam         exam?       @relation(fields: [examId], references: [id], map: "Result_examId_fkey")
-  student      student     @relation(fields: [studentId], references: [id], map: "Result_studentId_fkey")
+  Assignment   Assignment? @relation(fields: [assignmentId], references: [id], map: "Result_assignmentId_fkey")
+  Exam         Exam?       @relation(fields: [examId], references: [id], map: "Result_examId_fkey")
+  Student      Student     @relation(fields: [studentId], references: [id], map: "Result_studentId_fkey")
 
   @@index([assignmentId], map: "Result_assignmentId_fkey")
   @@index([examId], map: "Result_examId_fkey")
   @@index([studentId], map: "Result_studentId_fkey")
 }
 
-model student {
-  id           String         @id
-  username     String         @unique(map: "Student_username_key")
-  name         String
-  surname      String
-  parentName   String
-  email        String?        @unique(map: "Student_email_key")
-  phone        String
-  address      String
-  img          String?
-  bloodType    String?
-  gender       student_gender
-  dob          DateTime
-  createdAt    DateTime       @default(now())
-  classId      Int
-  gradeId      Int
-  attendance   attendance[]
-  fee          fee[]
-  result       result[]
-  Renamedclass Renamedclass   @relation(fields: [classId], references: [id], map: "Student_classId_fkey")
-  grade        grade          @relation(fields: [gradeId], references: [id], map: "Student_gradeId_fkey")
+model Student {
+  id         String     @id
+  username   String     @unique(map: "Student_username_key")
+  name       String
+  surname    String
+  parentName String
+  email      String?    @unique(map: "Student_email_key")
+  phone      String
+  address    String
+  img        String?
+  bloodType  String?
+  gender     StudentGender
+  dob        DateTime
+  createdAt  DateTime   @default(now())
+  classId    Int
+  gradeId    Int
+  Attendance Attendance[]
+  Fee        Fee[]
+  Result     Result[]
+  Class      Class      @relation(fields: [classId], references: [id], map: "Student_classId_fkey")
+  Grade      Grade      @relation(fields: [gradeId], references: [id], map: "Student_gradeId_fkey")
 
   @@index([classId], map: "Student_classId_idx")
   @@index([gradeId], map: "Student_gradeId_fkey")
 }
 
-model subject {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique(map: "Subject_name_key")
-  createdAt DateTime  @default(now())
-  lesson    lesson[]
-  teacher   teacher[] @relation("subjecttoteacher")
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique(map: "Subject_name_key")
+  createdAt DateTime @default(now())
+  Lesson    Lesson[]
+  Teacher   Teacher[] @relation("subjecttoteacher")
 }
 
-model teacher {
-  id           String         @id
-  username     String         @unique(map: "Teacher_username_key")
-  name         String
-  surname      String
-  email        String?        @unique(map: "Teacher_email_key")
-  phone        String
-  address      String
-  img          String?
-  bloodType    String?
-  gender       teacher_gender
-  createdAt    DateTime       @default(now())
-  supervisor   Boolean        @default(false)
-  dob          DateTime?
-  Renamedclass Renamedclass[]
-  lesson       lesson[]
-  subject      subject[]      @relation("subjecttoteacher")
+model Teacher {
+  id         String    @id
+  username   String    @unique(map: "Teacher_username_key")
+  name       String
+  surname    String
+  email      String?   @unique(map: "Teacher_email_key")
+  phone      String
+  address    String
+  img        String?
+  bloodType  String?
+  gender     TeacherGender
+  createdAt  DateTime  @default(now())
+  supervisor Boolean   @default(false)
+  dob        DateTime?
+  Class      Class[]
+  Lesson     Lesson[]
+  Subject    Subject[] @relation("subjecttoteacher")
 }
 
-enum fee_term {
+enum FeeTerm {
   TERM1
   TERM2
   TERM3
   TERM4
 }
 
-enum lesson_day {
+enum LessonDay {
   MONDAY
   TUESDAY
   WEDNESDAY
@@ -213,12 +212,12 @@ enum lesson_day {
   SATURDAY
 }
 
-enum teacher_gender {
+enum TeacherGender {
   Male
   Female
 }
 
-enum student_gender {
+enum StudentGender {
   Male
   Female
 }
