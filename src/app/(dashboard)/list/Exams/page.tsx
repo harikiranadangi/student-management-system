@@ -81,7 +81,7 @@ const ExamsList = async ({
   // Initialize Prisma query object
   const query: Prisma.ExamWhereInput = {};
 
-  query.lesson = {};
+  query.Lesson = {};
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -89,14 +89,14 @@ const ExamsList = async ({
       if (value !== undefined) {
         switch (key) {
           case "classId":
-            query.lesson = {classId: parseInt(value)};
+            query.Lesson = {classId: parseInt(value)};
             break;
           case "teacherId":
-            query.lesson = {teacherId: value};
+            query.Lesson = {teacherId: value};
             break;
           case "search":
-            query.lesson = {
-              subject :{
+            query.Lesson = {
+              Subject :{
                 name: {contains:value}
               }
             }
@@ -115,11 +115,11 @@ const ExamsList = async ({
       break;
     
     case "teacher":
-      query.lesson.teacherId = userId!
+      query.Lesson.teacherId = userId!
       break;
       
     case "student":
-      query.lesson.class = {
+      query.Lesson.Class = {
         students: {
           some: {
             id: userId!
@@ -134,11 +134,11 @@ const ExamsList = async ({
     prisma.exam.findMany({
       where: query,
       include: {
-        lesson: {
+        Lesson: {
           select: {
-            subject: { select: { name: true } },
-            teacher: { select: { name: true, surname:true } },
-            class: { select: { name: true } },
+            Subject: { select: { name: true } },
+            Teacher: { select: { name: true, surname:true } },
+            Class: { select: { name: true } },
           }
         }
       },
