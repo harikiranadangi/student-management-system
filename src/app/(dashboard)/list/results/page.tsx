@@ -116,8 +116,8 @@ const ResultsList = async ({
             break;
           case "search":
             query.OR = [
-              { exam: { title: { contains: value } } },
-              { student: { name: { contains: value } } },
+              { Exam: { title: { contains: value } } },
+              { Student: { name: { contains: value } } },
             ];
             break;
           default:
@@ -135,8 +135,8 @@ const ResultsList = async ({
 
     case "teacher":
       query.OR = [
-        { exam: { lesson: { teacherId: userId! } } },
-        { assignment: { lesson: { teacherId: userId! } } }
+        { Exam: { Lesson: { teacherId: userId! } } },
+        { Assignment: { Lesson: { teacherId: userId! } } }
       ];
       break;
 
@@ -152,23 +152,23 @@ const ResultsList = async ({
     prisma.result.findMany({
       where: query,
       include: {
-        student: { select: { name: true, surname: true } },
-        exam: {
+        Student: { select: { name: true, surname: true } },
+        Exam: {
           include: {
-            lesson: {
+            Lesson: {
               select: {
-                class: { select: { name: true } },
-                teacher: { select: { name: true, surname: true } },
+                Class: { select: { name: true } },
+                Teacher: { select: { name: true, surname: true } },
               },
             },
           },
         },
-        assignment: {
+        Assignment: {
           include: {
-            lesson: {
+            Lesson: {
               select: {
-                class: { select: { name: true } },
-                teacher: { select: { name: true, surname: true } },
+                Class: { select: { name: true } },
+                Teacher: { select: { name: true, surname: true } },
               },
             },
           },
@@ -181,7 +181,7 @@ const ResultsList = async ({
   ]);
 
   const data = dataRes.map(item => {
-    const assessment = item.exam || item.assignment
+    const assessment = item.Exam || item.Assignment
 
     if (!assessment) return null;
 
@@ -190,12 +190,12 @@ const ResultsList = async ({
     return {
       id: item.id,
       title: assessment.title,
-      studentName: item.student.name,
-      studentSurname: item.student.surname,
-      teacherName: assessment.lesson.teacher.name,
-      teacherSurname: assessment.lesson.teacher.surname,
+      studentName: item.Student.name,
+      studentSurname: item.Student.surname,
+      teacherName: assessment.Lesson.Teacher.name,
+      teacherSurname: assessment.Lesson.Teacher.surname,
       score: item.score,
-      className: assessment.lesson.class.name,
+      className: assessment.Lesson.Class.name,
       startTime: isExam ? assessment.startTime : assessment.startDate,
     }
   })
