@@ -16,6 +16,7 @@ export const classSchema = z.object({
   name: z.string().min(1, { message: 'Class Name is required!' }),
   supervisorId: z.coerce.string().optional(),
   gradeId: z.coerce.number().min(1, { message: 'gradeId is required!' }),
+  newGrade: z.string().optional(), // ✅ Add this field
 });
 
 // Infer the form data type from schema
