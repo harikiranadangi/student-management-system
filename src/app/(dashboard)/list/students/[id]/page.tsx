@@ -25,7 +25,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
-      class: { include: { _count: { select: { lessons: true } } } },
+      Class: { include: { _count: { select: { lessons: true } } } },
     },
   });
 
@@ -47,7 +47,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
           <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
-                src={student.img || "/profile.png"}
+                src={student.img || "/student.png"}
                 alt=""
                 width={144}
                 height={144}
@@ -67,7 +67,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
 
               </div>
                 <p className="text-sm text-gray-500">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+                  
                 </p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
@@ -114,7 +114,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{student.class.name.charAt(0)}th</h1>
+                <h1 className="text-xl font-semibold">{student.Class.name.charAt(0)}th</h1>
                 <span className="text-sm text-gray-400">Grade</span>
               </div>
             </div>
@@ -128,7 +128,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{student.class._count.lessons}</h1>
+                <h1 className="text-xl font-semibold">{student.Class._count.lessons}</h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
@@ -151,7 +151,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Student&apos;s Schedule</h1>
-          <BigCalendarContainer type="classId" id={student.class.id} />
+          <BigCalendarContainer type="classId" id={student.Class.id} />
         </div>
       </div>
       {/* RIGHT */}
