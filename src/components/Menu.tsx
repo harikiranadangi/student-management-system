@@ -76,10 +76,10 @@ const menuItems = [
         visible: ["admin", "teacher", "student"],
       },
       {
-        icon: "/message.png",
-        label: "Messages",
-        href: "/list/messages",
-        visible: ["admin", "teacher", "student"],
+        icon: "/finance.png",
+        label: "Fees",
+        href: "/list/fees",
+        visible: ["admin"],
       },
       {
         icon: "/homework.png",
