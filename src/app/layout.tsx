@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ["latin"], fallback: ["Arial", "sans-serif"] });
 export const metadata: Metadata = {
   title: "Kotak Salesian School Dashboard",
   description: "SCHOOL MANAGEMENT SYSTEM",
+  icons: {
+    icon: "/logo.png", // This ensures Next.js picks up the favicon
+  },
 };
 
 export default function RootLayout({
@@ -21,10 +24,8 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
-          <div className='layout-container'>
-            <main>
-            {children}
-          </main>
+          <div className="layout-container">
+            <main>{children}</main>
           </div>
           <ToastContainer position="bottom-right" theme="dark" />
         </body>
