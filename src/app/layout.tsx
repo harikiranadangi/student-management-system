@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"], fallback: ["Arial", "sans-serif"] });
 
 export const metadata: Metadata = {
-  title: "Kotak Salesian School Dashboard",
+  title: "Kotak Salesian School",
   description: "SCHOOL MANAGEMENT SYSTEM",
   icons: {
     icon: "/logo.png", // This ensures Next.js picks up the favicon
