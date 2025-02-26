@@ -11,9 +11,6 @@ import Image from "next/image";
 
 type Homeworks = Homework & { class: Class };
 
-
-
-
 const renderRow = (item: Homeworks, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" 
   >
@@ -21,7 +18,7 @@ const renderRow = (item: Homeworks, role: string | null) => (
     <td>{item.class?.name || "-" }</td>
     <td className="hidden md:table-cell">
       {""}
-      {new Intl.DateTimeFormat("en-US").format(item.dueDate)}
+      {new Intl.DateTimeFormat("en-US").format(item.Date)}
     </td>
     <td className="flex items-center gap-4 p-4">
       {item.description}
@@ -42,7 +39,7 @@ const renderRow = (item: Homeworks, role: string | null) => (
   </tr>
 );
 
-const EventsList = async ({
+const HomeworkListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -163,4 +160,4 @@ const EventsList = async ({
   );
 };
 
-export default EventsList;
+export default HomeworkListPage;
