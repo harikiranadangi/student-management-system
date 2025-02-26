@@ -89,19 +89,24 @@ model Exam {
 }
 
 model Fee {
-  id        Int       @id @default(autoincrement())
-  studentId String
-  term      FeeTerm
-  amount    Int
-  status    String    @default("Pending")
-  feesbook  String
-  dueDate   DateTime
-  paidDate  DateTime?
-  createdAt DateTime  @default(now())
-  Student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id         Int       @id @default(autoincrement())
+  studentId  String
+  term       FeeTerm
+  amount     Int // Base term fee (₹6,000 per term)
+  extraFee   Int @default(0) // ₹400 per term for Grades I-IX
+  totalFee   Int // amount + extraFee
+  dueAmount  Int // Computed as totalFee - paidAmount
+  paidAmount Int @default(0) // Amount collected so far
+  status     String @default("Not Paid") // "Not Paid", "1 Term", "2 Terms", "3 Terms", "Total Paid", "RTE"
+  feesbook   String
+  dueDate    DateTime
+  paidDate   DateTime?
+  createdAt  DateTime @default(now())
+  Student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, term], map: "Fee_studentId_term_key")
 }
+
 
 model Grade {
   id      Int     @id @default(autoincrement())
