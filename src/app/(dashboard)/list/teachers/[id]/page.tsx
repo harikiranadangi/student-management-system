@@ -1,5 +1,4 @@
 import Announcements from "@/components/Announcements";
-import BigCalendar from "@/components/BigCalendar";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
@@ -121,7 +120,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
               />
               <div className="">
                 <h1 className="text-xl font-semibold">{teacher._count.subjects}</h1>
-                <span className="text-sm text-gray-400">Branches</span>
+                <span className="text-sm text-gray-400">Subjects</span>
               </div>
             </div>
             {/* CARD */}
