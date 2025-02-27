@@ -8,15 +8,17 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Fee, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 
-type FeesList = Fee & { Student: Student } & { class: Class };
+type FeesList = Fee & { Student: Student & { Class: Class } };
 
 const renderRow = (item: FeesList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td className="p-4">{item.studentId}</td>
     <td>{item.Student?.name || "-"}</td>
-    <td>{item.class?.name || "-"}</td>
-    <td>{item.amount}</td>
+    <td>{item.Student?.Class?.name || "-"}</td>
     <td>{item.feesbook}</td>
+    <td>{item.totalFee}</td>
+    <td>{item.paidAmount}</td>
+    <td>{item.totalFee - item.paidAmount}</td>
     <td>
       <div className="flex items-center gap-2">
         {(role === "admin" || role === "teacher") && (
@@ -42,8 +44,10 @@ const FeesListPage = async ({
     { header: "ID", accessor: "studentId" },
     { header: "Name", accessor: "Student.name" },
     { header: "Class", accessor: "Student.Class.name" },
-    { header: "Amount", accessor: "amount" },
     { header: "Feebook", accessor: "feesbook" },
+    { header: "Fees", accessor: "totalFee" },
+    { header: "Paid", accessor: "paidAmount" },
+    { header: "Due", accessor: "dueAmount" },
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 
