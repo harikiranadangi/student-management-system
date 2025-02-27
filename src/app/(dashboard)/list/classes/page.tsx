@@ -8,7 +8,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type ClassList = Class & { supervisor: Teacher };
+type ClassList = Class & { Teacher: Teacher };
 
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
@@ -16,9 +16,11 @@ const renderRow = (item: ClassList, role: string | null) => (
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.name}</td>
+
     <td className="hidden md:table-cell">
-      {item.supervisor ? `${item.supervisor.name} ${item.supervisor.surname}` : "No Class Teacher"}
+      {item.Teacher ? `${item.Teacher.name} ${item.Teacher.surname}` : "No Class Teacher"}
     </td>
+
     <td className="flex items-center gap-4 p-4">{item.gradeId}</td>
     <td>
       <div className="flex items-center gap-2">
@@ -57,14 +59,14 @@ const ClassesList = async ({
       header: "Grade",
       accessor: "gradeId",
     },
-    
+
     ...(role === "admin"
       ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
       : []),
   ];
 
@@ -99,13 +101,19 @@ const ClassesList = async ({
     prisma.class.findMany({
       where: query,
       include: {
-        Teacher: true,
+        Teacher: {
+          select: {
+            name: true,
+            surname: true,
+          },
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.class.count({ where: query }),
   ]);
+
 
   console.log("User Role:", role);
   console.log("Classes Data:", data);
