@@ -1,26 +1,25 @@
-"use client"
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
-import React, { Dispatch, SetStateAction, startTransition, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { teacherschema, Teacherschema } from "@/lib/formValidationSchemas";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { CldUploadWidget } from 'next-cloudinary';
-import Image from 'next/image';
+import { CldUploadWidget } from "next-cloudinary";
+import Image from "next/image";
 import { createTeacher, updateTeacher } from "@/lib/actions";
-
 
 const TeacherForm = ({
     type,
     data,
     setOpen,
-    relatedData
+    relatedData,
 }: {
     type: "create" | "update";
     data?: any;
-    setOpen: Dispatch<SetStateAction<boolean>>
+    setOpen: Dispatch<SetStateAction<boolean>>;
     relatedData?: any;
 }) => {
     const {
@@ -31,42 +30,44 @@ const TeacherForm = ({
         resolver: zodResolver(teacherschema),
     });
 
-
-    // * AFTER REACT 19 IT'LL BE USE ACTIONSTATE
-
-    const [img, setImg] = useState<any>()
-
-    // Using useActionState with startTransition
-    const [state, formAction] = React.useActionState(
-        type === "create" ? createTeacher : updateTeacher,
-        {
-            success: false,
-            error: false,
-        }
-    );
-
-    const onSubmit = handleSubmit((data) => {
-        console.log("Submitting data:", data); // Debugging
-        startTransition(() => {
-            formAction({ ...data, img: img?.secure_url });
-        });
+    const [img, setImg] = useState<any>();
+    const [state, setState] = useState<{ success: boolean; error: boolean }>({
+        success: false,
+        error: false,
     });
 
+    const router = useRouter();
 
-    const router = useRouter()
+    const formAction = async (formData: any) => {
+        try {
+            const currentState = { success: false, error: false }; // Define an initial state
+    
+            const response = type === "create"
+                ? await createTeacher(currentState, { ...formData, img: img?.secure_url })
+                : await updateTeacher(currentState, { ...formData, img: img?.secure_url });
+    
+            setState({ success: response.success, error: response.error });
+        } catch (err) {
+            console.error("Error in form submission:", err);
+            setState({ success: false, error: true });
+        }
+    };
+    
+
+    const onSubmit = handleSubmit((data) => {
+        console.log("Submitting data:", data);
+        formAction(data);
+    });
 
     useEffect(() => {
         if (state.success) {
             toast(`Teacher has been ${type === "create" ? "created" : "updated"}!`);
             setOpen(false);
-            router.refresh()
+            router.refresh();
         }
-    }, [state]);
+    }, [state.success]);
 
-    const { subjects } = relatedData;
-
-    console.log("Payload being sent to createTeacher:", data);
-
+    const { subjects } = relatedData || { subjects: [] };
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -77,34 +78,22 @@ const TeacherForm = ({
             <span className="text-xs font-medium text-gray-400">Authentication Information</span>
 
             <div className="flex flex-wrap justify-between gap-4">
-
                 <InputField label="Username" name="username" defaultValue={data?.username} register={register} error={errors?.username} />
-
                 <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
-
                 <InputField label="Password" name="password" type="password" defaultValue={data?.password} register={register} error={errors?.password} />
-
             </div>
 
             <span className="text-xs font-medium text-gray-400">Personal Information</span>
 
             <div className="flex flex-wrap justify-between gap-4">
-
-                <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
-
-                <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors.surname} />
-
-                <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
-
-                <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
+                <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors?.name} />
+                <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors?.surname} />
+                <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors?.phone} />
+                <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors?.address} />
 
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
                     <label className="text-xs text-gray-500">Blood Type</label>
-                    <select
-                        className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-                        {...register("bloodType")}
-                        defaultValue={data?.bloodType}
-                    >
+                    <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("bloodType")} defaultValue={data?.bloodType}>
                         <option value="">Select Blood Type</option>
                         <option value="A+">A+</option>
                         <option value="A-">A-</option>
@@ -116,87 +105,51 @@ const TeacherForm = ({
                         <option value="O-">O-</option>
                         <option value="Under Investigation">Under Investigation</option>
                     </select>
-                    {errors.bloodType?.message && (
-                        <p className="text-xs text-red-400">{errors.bloodType.message.toString()}</p>
-                    )}
+                    {errors?.bloodType?.message && <p className="text-xs text-red-400">{errors.bloodType.message}</p>}
                 </div>
 
-                <InputField
-                    label="Birthday"
-                    name="dob"
-                    defaultValue={data?.dob.toISOString().split("T")[0]}
-                    register={register}
-                    error={errors.dob}
-                    type="date"
-                />
+                <InputField label="Birthday" name="dob" defaultValue={data?.dob?.toISOString()?.split("T")[0]} register={register} error={errors?.dob} type="date" />
 
-                {data && (<InputField
-                    label="Id"
-                    name="id"
-                    defaultValue={data?.id}
-                    register={register}
-                    error={errors?.id}
-                    hidden
-                />
-                )}
-
+                {data && <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />}
             </div>
 
             <div className="flex flex-wrap gap-16">
-
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
                     <label className="text-xs text-gray-500">Gender</label>
-                    <select
-                        className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-                        {...register("gender")}
-                        defaultValue={data?.gender}
-                    >
+                    <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("gender")} defaultValue={data?.gender}>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
-                    {errors.gender?.message && (
-                        <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
-                    )}
+                    {errors?.gender?.message && <p className="text-xs text-red-400">{errors.gender.message}</p>}
                 </div>
 
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
                     <label className="text-xs text-gray-500">Subjects</label>
-                    <select
-                        multiple
-                        className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-                        {...register("subjects")}
-                        defaultValue={data?.subjects}
-                    >
+                    <select multiple className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("subjects")} defaultValue={data?.subjects}>
                         {subjects.map((subject: { id: number; name: string }) => (
                             <option value={subject.id} key={subject.id}>
                                 {subject.name}
                             </option>
                         ))}
                     </select>
-                    {errors.subjects?.message && (
-                        <p className="text-xs text-red-500">{errors.subjects.message.toString()}</p>
-                    )}
+                    {errors?.subjects?.message && <p className="text-xs text-red-500">{errors.subjects.message}</p>}
                 </div>
 
                 <CldUploadWidget uploadPreset="school" onSuccess={(result, { widget }) => {
-                    setImg(result.info)
-                    widget.close()
+                    setImg(result.info);
+                    widget.close();
                 }}>
-                    {({ open }) => {
-                        return (
-                            <div
-                                className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
-                                <Image src="/upload.png" alt="" width={28} height={28} />
-                                <span>Upload a photo</span>
-                            </div>
-                        );
-                    }}
+                    {({ open }) => (
+                        <div className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
+                            <Image src="/upload.png" alt="" width={28} height={28} />
+                            <span>Upload a photo</span>
+                        </div>
+                    )}
                 </CldUploadWidget>
             </div>
 
-            {state.error && (
-                <span className="text-red-500">Something went wrong!</span>
-            )}
+            {state?.error && <span className="text-red-500">Something went wrong!</span>}
+
             <button className="p-2 text-white bg-blue-400 rounded-md">
                 {type === "create" ? "Create" : "Update"}
             </button>
