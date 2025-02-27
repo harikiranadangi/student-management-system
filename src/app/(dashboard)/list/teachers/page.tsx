@@ -7,7 +7,6 @@ import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import FormContainer from "@/components/FormContainer";
 import { fetchUserInfo } from "@/lib/utils";
 
