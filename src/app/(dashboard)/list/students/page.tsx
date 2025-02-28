@@ -10,13 +10,15 @@ import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-type StudentList = Student & { class: Class };
+type StudentList = Student & { Class?: { name: string } };
+
 
 const renderRow = (item: StudentList, role: string | null) => (
   <tr
     key={item.id}
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
+    
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
       <Image
@@ -33,7 +35,7 @@ const renderRow = (item: StudentList, role: string | null) => (
     </td>
 
     {/* <td className="hidden md:table-cell">{item.class?.name || "No Class Assigned"}</td> */}
-    <td className="hidden md:table-cell">{item.class ? item.class.name : "N/A"}</td>
+    <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
@@ -54,6 +56,8 @@ const renderRow = (item: StudentList, role: string | null) => (
     </td>
   </tr>
 );
+
+
 
 const StudentListPage = async ({
   searchParams,
@@ -126,6 +130,7 @@ const StudentListPage = async ({
 
   // Debugging: Log the fetched data
   console.log("Student Data:", JSON.stringify(data, null, 2));
+  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
