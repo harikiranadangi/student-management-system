@@ -28,11 +28,9 @@ const renderRow = (item: TeachersList, role: string | null) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name ?? 'No name available'}</h3>
-        <p className="text-xs text-gray-500">{item?.email ?? 'No email available'}</p>
+        <p className="text-xs text-gray-500">{item?.id ?? 'No email available'}</p>
       </div>
     </td>
-    <td className="hidden md:table-cell">{item.id}</td>
-
     {/* Directly use the strings from subjects and classes */}
     <td className="hidden md:table-cell">{item.subjects.map(subject => subject.name).join(", ")}</td>
     <td className="hidden md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
@@ -69,14 +67,10 @@ const TeacherListPage = async ({
   // Define table columns
   const columns = [
     {
-      header: "Info",
+      header: "Name",
       accessor: "info",
     },
-    {
-      header: "Teacher ID",
-      accessor: "teacherId",
-      className: "hidden md:table-cell",
-    },
+    
     {
       header: "Subjects",
       accessor: "subjects",
