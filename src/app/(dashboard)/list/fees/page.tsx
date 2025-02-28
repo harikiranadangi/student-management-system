@@ -12,10 +12,13 @@ type FeesList = Fee & { Student: Student & { Class: Class } };
 
 const renderRow = (item: FeesList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td className="p-4">{item.studentId}</td>
-    <td>{item.Student?.name || "-"}</td>
+
+    <div className="flex flex-col">
+      <h3 className="font-semibold">{item.Student?.name}</h3>
+      <p className="text-xs text-gray-500">{item.studentId}</p>
+      <p className="text-xs text-gray-500">{item.feesbook}</p>
+    </div>
     <td>{item.Student?.Class?.name || "-"}</td>
-    <td>{item.feesbook}</td>
     <td>{item.totalFee}</td>
     <td>{item.paidAmount}</td>
     <td>{item.totalFee - item.paidAmount}</td>
@@ -41,10 +44,8 @@ const FeesListPage = async ({
   const { userId, role } = await fetchUserInfo();
 
   const columns = [
-    { header: "ID", accessor: "studentId" },
     { header: "Name", accessor: "Student.name" },
     { header: "Class", accessor: "Student.Class.name" },
-    { header: "Feebook", accessor: "feesbook" },
     { header: "Fees", accessor: "totalFee" },
     { header: "Paid", accessor: "paidAmount" },
     { header: "Due", accessor: "dueAmount" },
