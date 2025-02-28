@@ -53,7 +53,7 @@ async function main() {
         id: "S1",
         username: "student1",
         name: "John",
-        surname: "", // Explicitly set to null
+        surname: "",
         parentName: "Michael Doe",
         phone: "9876543210",
         address: "123 Street, City",
@@ -65,7 +65,7 @@ async function main() {
         id: "S2",
         username: "student2",
         name: "Emma",
-        surname: "", // Explicitly set to null
+        surname: "",
         parentName: "Sarah Smith",
         phone: "9876543222",
         address: "456 Avenue, City",
@@ -77,7 +77,7 @@ async function main() {
         id: "S3",
         username: "student3",
         name: "Liam",
-        surname: "", // Explicitly set to null
+        surname: "",
         parentName: "David Johnson",
         phone: "9876543233",
         address: "789 Boulevard, City",
@@ -88,10 +88,65 @@ async function main() {
     ],
     skipDuplicates: true,
   });
-  
 
   console.log("✅ Students seeded");
 
+  // Insert Teachers Data
+  await prisma.teacher.createMany({
+    data: [
+      {
+        id: "T1",
+        username: "teacher1",
+        name: "Alice",
+        surname: "Brown",
+        email: "alice@example.com",
+        phone: "9876541111",
+        address: "100 Main St, City",
+        img: null,
+        bloodType: "A+",
+        gender: "Female",
+        createdAt: new Date(),
+        deletedAt: null,
+        supervisor: false,
+        dob: new Date("1985-03-25"),
+      },
+      {
+        id: "T2",
+        username: "teacher2",
+        name: "Robert",
+        surname: "Williams",
+        email: "robert@example.com",
+        phone: "9876542222",
+        address: "200 Elm St, City",
+        img: null,
+        bloodType: "O+",
+        gender: "Male",
+        createdAt: new Date(),
+        deletedAt: null,
+        supervisor: true,
+        dob: new Date("1978-11-15"),
+      },
+      {
+        id: "T3",
+        username: "teacher3",
+        name: "Sophia",
+        surname: "Davis",
+        email: "sophia@example.com",
+        phone: "9876543333",
+        address: "300 Oak St, City",
+        img: null,
+        bloodType: "B+",
+        gender: "Female",
+        createdAt: new Date(),
+        deletedAt: null,
+        supervisor: false,
+        dob: new Date("1990-07-30"),
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log("✅ Teachers seeded");
   console.log("🎉 Seeding completed successfully!");
 }
 
@@ -103,3 +158,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+  // npx tsx prisma/seed.ts
