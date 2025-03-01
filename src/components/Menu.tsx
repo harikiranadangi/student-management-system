@@ -26,6 +26,24 @@ const menuItems = [
         href: "/list/students",
         visible: ["admin", "teacher"],
       },
+      {
+        icon: "/attendance.png",
+        label: "Attendance",
+        href: "/list/attendance",
+        visible: ["admin", "teacher", "student"],
+      },
+      {
+        icon: "/homework.png",
+        label: "Homeworks",
+        href: "/list/homeworks",
+        visible: ["admin", "teacher", "student"],
+      },
+      {
+        icon: "/finance.png",
+        label: "Fees",
+        href: "/list/fees",
+        visible: ["admin"],
+      },
 
       {
         icon: "/subject.png",
@@ -52,21 +70,9 @@ const menuItems = [
         visible: ["admin", "teacher", "student"],
       },
       {
-        icon: "/assignment.png",
-        label: "Assignments",
-        href: "/list/assignments",
-        visible: ["admin", "teacher", "student"],
-      },
-      {
         icon: "/result.png",
         label: "Results",
         href: "/list/results",
-        visible: ["admin", "teacher", "student"],
-      },
-      {
-        icon: "/attendance.png",
-        label: "Attendance",
-        href: "/list/attendance",
         visible: ["admin", "teacher", "student"],
       },
       {
@@ -76,23 +82,17 @@ const menuItems = [
         visible: ["admin", "teacher", "student"],
       },
       {
-        icon: "/finance.png",
-        label: "Fees",
-        href: "/list/fees",
-        visible: ["admin"],
-      },
-      {
-        icon: "/homework.png",
-        label: "Homeworks",
-        href: "/list/homeworks",
-        visible: ["admin", "teacher", "student"],
-      },
-      {
         icon: "/announcement.png",
         label: "Announcements",
         href: "/list/announcements",
         visible: ["admin", "teacher", "student"],
       },
+      // {
+      //   icon: "/assignment.png",
+      //   label: "Assignments",
+      //   href: "/list/assignments",
+      //   visible: ["admin", "teacher", "student"],
+      // },
     ],
   },
   {
