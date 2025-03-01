@@ -5,33 +5,29 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Prisma } from "@prisma/client";
+import { Class, Exam, Prisma, Result, Student, Subject } from "@prisma/client";
 import Image from "next/image";
 
-type Results = {
-  id: number;
-  title: string;
-  studentName: string;
-  studentSurname: string;
-  teacherName: string;
-  teacherSurname: string;
-  score: number;
-  className: string;
-  startTime: Date;
-}
+type ResultWithDetails = Result & {
+  student: Student & { class: Class };
+  exam: Exam;
+  subject: Subject;
+};
 
 
 
 
-const renderRow = (item: Results, role: string | null) => (
+
+
+
+const renderRow = (item: ResultWithDetails, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-    <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td >{item.studentName + " " + item.studentSurname}</td>
+    <td >{item.student.name + " " + item.student.surname}</td>
+    <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td className="hidden md:table-cell">{item.score}</td>
-    <td className="hidden md:table-cell">{item.teacherName + " " + item.teacherSurname}</td>
-    <td className="hidden md:table-cell">{item.className}</td>
+    <td className="hidden md:table-cell">{item.student.class.name}</td>
     <td className="hidden md:table-cell">
-      {new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
+      {new Intl.DateTimeFormat("en-US").format(item.exam.date)}</td>
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" || role === "teacher" && (
@@ -135,8 +131,7 @@ const ResultsList = async ({
 
     case "teacher":
       query.OR = [
-        { Exam: { : { teacherId: userId! } } },
-        { Assignment: { Lesson: { teacherId: userId! } } }
+        { Exam: { Class: { Teacher: { id: userId! } } } }, // Exams linked to the teacher’s class
       ];
       break;
 
@@ -145,28 +140,29 @@ const ResultsList = async ({
       break;
   }
 
+
   // Fetch teachers and include related fields (subjects, classes)
   const [dataRes, count] = await prisma.$transaction([
     prisma.result.findMany({
       where: query,
       include: {
-        Student: { select: { name: true, surname: true } },
-        Exam: {
-          include: {
-            Lesson: {
-              select: {
-                Class: { select: { name: true } },
-                Teacher: { select: { name: true, surname: true } },
-              },
-            },
+        Student: {
+          select: { 
+            name: true, 
+            surname: true 
           },
         },
-        Assignment: {
+        Exam: {
           include: {
-            Lesson: {
+            Class: {
               select: {
-                Class: { select: { name: true } },
-                Teacher: { select: { name: true, surname: true } },
+                name: true,  // Fetching class name
+                Teacher: {   // Fetching teacher details (supervisor of the class)
+                  select: {
+                    name: true,
+                    surname: true,
+                  },
+                },
               },
             },
           },
@@ -177,25 +173,33 @@ const ResultsList = async ({
     }),
     prisma.result.count({ where: query }),
   ]);
+  
 
   const data = dataRes.map(item => {
-    const assessment = item.Exam || item.Assignment
+    const assessment = item.Exam 
 
     if (!assessment) return null;
 
     const isExam = "startTime" in assessment;
 
-    return {
-      id: item.id,
-      title: assessment.title,
-      studentName: item.Student.name,
-      studentSurname: item.Student.surname,
-      teacherName: assessment.Lesson.Teacher.name,
-      teacherSurname: assessment.Lesson.Teacher.surname,
-      score: item.score,
-      className: assessment.Lesson.Class.name,
-      startTime: isExam ? assessment.startTime : assessment.startDate,
-    }
+    const data = dataRes.map(item => {
+      const assessment = item.Exam;
+    
+      if (!assessment) return null;
+    
+      return {
+        id: item.id,
+        title: assessment.title,
+        studentName: item.Student.name,
+        studentSurname: item.Student.surname,
+        teacherName: assessment.Class?.Teacher?.name || "N/A", // Teacher is in Class
+        teacherSurname: assessment.Class?.Teacher?.surname || "N/A",
+        score: item.score,
+        className: assessment.Class?.name || "N/A",
+        startTime: assessment.date, // Exams have 'date', no need for 'startTime' check
+      };
+    }).filter(Boolean); // Remove null values if any
+    
   })
 
   return (
