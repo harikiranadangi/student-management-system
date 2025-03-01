@@ -135,7 +135,7 @@ const ResultsList = async ({
 
     case "teacher":
       query.OR = [
-        { Exam: { Lesson: { teacherId: userId! } } },
+        { Exam: { : { teacherId: userId! } } },
         { Assignment: { Lesson: { teacherId: userId! } } }
       ];
       break;
@@ -143,8 +143,6 @@ const ResultsList = async ({
     case "student":
       query.studentId = userId!;
       break;
-
-
   }
 
   // Fetch teachers and include related fields (subjects, classes)
