@@ -142,7 +142,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold"></h1>
+                <h1 className="text-xl font-semibold">{student.Class.name}</h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
@@ -159,19 +159,19 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
-            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/lessons?classId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/lessons?classId=${student.Class.id}`}>
               Student&apos;s Lessons
             </Link>
-            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${student.Class.id}`}>
               Student&apos;s Teachers
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?classId=${2}`}>
               Student&apos;s Exams
             </Link>
-            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?classId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?classId=${student.Class.id}`}>
               Student&apos;s Assignments
             </Link>
-            <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/results?studentId=${2}`}>
+            <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/results?studentId=${student.id}`}>
               Student&apos;s Results
             </Link>
           </div>

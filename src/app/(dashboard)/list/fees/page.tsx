@@ -8,15 +8,20 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Fee, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 
-type FeesList = Fee & { Student: Student } & { class: Class };
+type FeesList = Fee & { Student: Student & { Class: Class } };
 
 const renderRow = (item: FeesList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td className="p-4">{item.studentId}</td>
-    <td>{item.Student?.name || "-"}</td>
-    <td>{item.class?.name || "-"}</td>
-    <td>{item.amount}</td>
-    <td>{item.feesbook}</td>
+
+    <div className="flex flex-col">
+      <h3 className="font-semibold">{item.Student?.name}</h3>
+      <p className="text-xs text-gray-500">{item.studentId}</p>
+      <p className="text-xs text-gray-500">{item.feesbook}</p>
+    </div>
+    <td>{item.Student?.Class?.name || "-"}</td>
+    <td>{item.totalFee}</td>
+    <td>{item.paidAmount}</td>
+    <td>{item.totalFee - item.paidAmount}</td>
     <td>
       <div className="flex items-center gap-2">
         {(role === "admin" || role === "teacher") && (
@@ -39,11 +44,11 @@ const FeesListPage = async ({
   const { userId, role } = await fetchUserInfo();
 
   const columns = [
-    { header: "ID", accessor: "studentId" },
     { header: "Name", accessor: "Student.name" },
     { header: "Class", accessor: "Student.Class.name" },
-    { header: "Amount", accessor: "amount" },
-    { header: "Feebook", accessor: "feesbook" },
+    { header: "Fees", accessor: "totalFee" },
+    { header: "Paid", accessor: "paidAmount" },
+    { header: "Due", accessor: "dueAmount" },
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 

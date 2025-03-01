@@ -8,15 +8,17 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
 
-type StudentList = Student & { class: Class };
+type StudentList = Student & { Class?: { name: string } };
+
 
 const renderRow = (item: StudentList, role: string | null) => (
-  <tr 
-  key={item.id} 
-  className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  <tr
+    key={item.id}
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
+    
     <td className="flex items-center gap-4 p-4">
       {/* Image display */}
       <Image
@@ -28,11 +30,12 @@ const renderRow = (item: StudentList, role: string | null) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item.id}</p>
+        <p className="text-xs text-gray-500">{item.username}</p>
       </div>
     </td>
-    
-    <td className="hidden md:table-cell">{item.class.name}</td>
+
+    {/* <td className="hidden md:table-cell">{item.class?.name || "No Class Assigned"}</td> */}
+    <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
@@ -54,12 +57,14 @@ const renderRow = (item: StudentList, role: string | null) => (
   </tr>
 );
 
+
+
 const StudentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  
+
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
@@ -67,23 +72,23 @@ const StudentListPage = async ({
 
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
-  
+
 
   const columns = [
     { header: "Student Name", accessor: "name" },
-    { header: "Class", accessor: "class"},
-    { header: "Gender", accessor: "gender"},
-    { header: "Parent Name", accessor: "parentName"},
-    { header: "DOB", accessor: "dob"},
-    { header: "Mobile", accessor: "phone"},
-    ...(role === "admin" ? [ { header: "Actions", accessor: "action", }, ] : []), 
+    { header: "Class", accessor: "class" },
+    { header: "Gender", accessor: "gender" },
+    { header: "Parent Name", accessor: "parentName" },
+    { header: "DOB", accessor: "dob" },
+    { header: "Mobile", accessor: "phone" },
+    ...(role === "admin" ? [{ header: "Actions", accessor: "action", },] : []),
   ];
 
 
 
   // Initialize Prisma query object
   const query: Prisma.StudentWhereInput = {};
-  
+
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -99,7 +104,7 @@ const StudentListPage = async ({
               },
             };
             break;
-            
+
           case "search":
             query.name = { contains: value };
             break;
@@ -115,13 +120,17 @@ const StudentListPage = async ({
     prisma.student.findMany({
       where: query,
       include: {
-        Class: true,   
+        Class: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.student.count({ where: query }),
   ]);
+
+  // Debugging: Log the fetched data
+  console.log("Student Data:", JSON.stringify(data, null, 2));
+  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">

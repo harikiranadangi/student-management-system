@@ -110,7 +110,7 @@ model Fee {
 
 model Grade {
   id      Int     @id @default(autoincrement())
-  level   Int     @unique(map: "Grade_level_key")
+  level   String     @unique(map: "Grade_level_key")
   classes Class[]
 }
 

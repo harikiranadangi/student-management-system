@@ -47,7 +47,7 @@ export const updateSubject = async (
             },
             data: {
                 name: data.name,
-                teachers: {
+                teachers    : {
                     set: data.teachers.map((teacherId) => ({ id: teacherId })),
                 }
             },
@@ -372,7 +372,6 @@ export const createStudent = async (
                 gender: data.gender,
                 img: data.img,
                 bloodType: data.bloodType,
-                gradeId: data.gradeId,
                 classId: data.classId
 
             },
@@ -445,7 +444,6 @@ export const updateStudent = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                gradeId: data.gradeId,
                 classId: data.classId
             },
         });

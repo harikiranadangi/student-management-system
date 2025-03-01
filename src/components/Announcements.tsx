@@ -20,7 +20,7 @@ const Announcements = async () => {
             ...(role !== "admin" && {
                 OR: [
                     { classId: null },
-                    { class: roleConditions[role as keyof typeof roleConditions] || {} },
+                    { Class: roleConditions[role as keyof typeof roleConditions] || {} },
                 ],
             }),
         },

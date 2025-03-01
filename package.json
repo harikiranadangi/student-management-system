@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "rd /s /q .next"
-    },
+  },
   "dependencies": {
     "@chakra-ui/react": "^3.2.3",
     "@clerk/clerk-react": "^5.18.2",
@@ -55,11 +55,10 @@
     "prisma": "^6.4.1",
     "tailwindcss": "^3.4.14",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.7.3"
   },
-
   "prisma": {
-   "seed": "node --loader ts-node/esm prisma/seed.ts"
-}
-
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
+  }
 }
