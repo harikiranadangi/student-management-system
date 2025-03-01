@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteClass, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import { deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,13 +13,15 @@ const deleteActionMap = {
   class: deleteClass,
   teacher: deleteTeacher,
   student: deleteStudent,
-  exam: deleteSubject,
+  exam: deleteExam,
   lesson: deleteSubject,
   assignment: deleteSubject,
   result: deleteSubject,
   attendance: deleteSubject,
   event: deleteSubject,
   announcement: deleteSubject,
+  fees: deleteSubject,
+  homeworks: deleteSubject,
 }
 
 // Dynamically import the form components
@@ -69,13 +71,13 @@ const forms: {
     <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 
-  // exam: (setOpen, type, data, relatedData) => (
-  //   <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  // ),
+  exam: (setOpen, type, data, relatedData) => (
+    <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
 
-  // lesson: (setOpen, type, data, relatedData) => (
-  //   <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  // ),
+  lesson: (setOpen, type, data, relatedData) => (
+    <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
 };
 
 const FormModal = ({
