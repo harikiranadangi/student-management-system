@@ -1,3 +1,5 @@
+"use server";
+
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
