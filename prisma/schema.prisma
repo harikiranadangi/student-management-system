@@ -58,6 +58,7 @@ model Class {
   lessons      Lesson[]
   students     Student[]
   homeworks    Homework[]
+  exams        Exam[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -77,15 +78,14 @@ model Event {
 }
 
 model Exam {
-  id        Int      @id @default(autoincrement())
-  title     String
-  startTime DateTime
-  endTime   DateTime
-  lessonId  Int
-  Lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  results   Result[]
+  id       Int      @id @default(autoincrement())
+  title    String
+  date     DateTime
+  classId  Int
+  results  Result[]
+  Class    Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
 
-  @@index([lessonId], map: "Exam_lessonId_idx")
+  @@index([classId], map: "Exam_classId_idx")
 }
 
 model Fee {
@@ -93,24 +93,23 @@ model Fee {
   studentId  String
   term       FeeTerm
   amount     Int // Base term fee (₹6,000 per term)
-  extraFee   Int @default(0) // ₹400 per term for Grades I-IX
+  extraFee   Int       @default(0) // ₹400 per term for Grades I-IX
   totalFee   Int // amount + extraFee
   dueAmount  Int // Computed as totalFee - paidAmount
-  paidAmount Int @default(0) // Amount collected so far
-  status     String @default("Not Paid") // "Not Paid", "1 Term", "2 Terms", "3 Terms", "Total Paid", "RTE"
+  paidAmount Int       @default(0) // Amount collected so far
+  status     String    @default("Not Paid") // "Not Paid", "1 Term", "2 Terms", "3 Terms", "Total Paid", "RTE"
   feesbook   String
   dueDate    DateTime
   paidDate   DateTime?
-  createdAt  DateTime @default(now())
-  Student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  Student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, term], map: "Fee_studentId_term_key")
 }
 
-
 model Grade {
   id      Int     @id @default(autoincrement())
-  level   String     @unique(map: "Grade_level_key")
+  level   String  @unique(map: "Grade_level_key")
   classes Class[]
 }
 
@@ -139,7 +138,6 @@ model Lesson {
   classId    Int
   teacherId  String
   Assignment Assignment[]
-  Exam       Exam[]
   Class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   Subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   Teacher    Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
