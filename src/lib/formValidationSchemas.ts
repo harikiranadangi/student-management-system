@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { date, z } from "zod";
 
 // Define the schema with zod
 export const subjectSchema = z.object({
@@ -74,9 +74,10 @@ export type Studentschema = z.infer<typeof studentschema>;
 export const examSchema = z.object({
   id: z.coerce.number().optional(),
   title: z.string().min(1, { message: 'Title Name is required!' }),
-  startTime: z.coerce.date({ message: 'Start Time is required!' }),
-  endTime: z.coerce.date({ message: 'End Time is required!' }),
+  date: z.coerce.date({ message: 'Start Time is required!' }),
   lessonId: z.coerce.number({ message: 'Lesson is required!' }),
+  classId: z.coerce.number({ message: 'Class is required!' }),
+
 });
 
 // Infer the form data type from schema
