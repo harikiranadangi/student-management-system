@@ -567,3 +567,78 @@ export const createLesson = async (
 //         return { success: false, error: true };
 //     }
 // };
+
+// * ---------------------------------------------- EXAM SCHEMA --------------------------------------------------------
+
+export const createExam = async (
+    currentState: CurrentState,
+    data: ExamSchema
+) => {
+    try {
+        await prisma.exam.create({
+            data: {
+                title: data.title,
+                date: data.date,
+                lessonId: data.lessonId,  // Directly assign lessonId
+                classId: data.classId,    // Ensure classId is included
+            },
+        });
+
+        console.log(`Created Exam: [Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
+
+        return { success: true, error: false };
+    } catch (err) {
+        console.error("Error creating exam:", err);
+        return { success: false, error: true };
+    }
+};
+
+
+export const updateExam = async (
+    currentState: CurrentState,
+    data: ExamSchema
+) => {
+    try {
+        await prisma.exam.update({
+            where: {
+                id: data.id,
+            },
+            data: {
+                title: data.title,
+                date: data.date,
+                lessonId: data.lessonId,  // Updating the correct Lesson relation
+                classId: data.classId,    // Ensure classId is updated
+            },
+        });
+
+        console.log(`Updated Exam: [ID: ${data.id}, Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
+
+        return { success: true, error: false };
+    } catch (err) {
+        console.error("Error updating exam:", err);
+        return { success: false, error: true };
+    }
+};
+
+
+export const deleteExam = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    try {
+        await prisma.exam.delete({
+            where: {
+                id: parseInt(id)
+            },
+        });
+
+        console.log("Deleted Subject:", data)
+
+        // revalidatePath("/list/subjects")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
