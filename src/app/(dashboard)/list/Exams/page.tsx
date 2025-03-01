@@ -20,7 +20,7 @@ type Exams = Exam & {lesson: {
       <td>{item.lesson.class.name}</td>
       <td className="hidden md:table-cell">{item.lesson.teacher.name + " " + item.lesson.teacher.surname }</td>
       <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(item.startTime) }</td>
+        {new Intl.DateTimeFormat("en-US").format(item.date) }</td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" || role === "teacher" && (
