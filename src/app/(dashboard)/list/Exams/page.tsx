@@ -8,33 +8,35 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type Exams = Exam & {lesson: {
-  subject: Subject,
-  class: Class,
-  teacher: Teacher 
-}}
+type Exams = Exam & {
+  lesson: {
+    subject: Subject,
+    class: Class,
+    teacher: Teacher
+  }
+}
 
-  const renderRow = (item: Exams, role: string | null) => (
-    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
-      <td>{item.lesson.class.name}</td>
-      <td className="hidden md:table-cell">{item.lesson.teacher.name + " " + item.lesson.teacher.surname }</td>
-      <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(item.date) }</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" || role === "teacher" && (
-              <>
-              <FormContainer table="exam" type="update" data={item}/> 
-              <FormContainer table="exam" type="delete"  id={item.id} /> 
-             </>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
+const renderRow = (item: Exams, role: string | null) => (
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
+    <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
+    <td>{item.lesson.class.name}</td>
+    <td className="hidden md:table-cell">{item.lesson.teacher.name + " " + item.lesson.teacher.surname}</td>
+    <td className="hidden md:table-cell">
+      {new Intl.DateTimeFormat("en-US").format(item.date)}</td>
+    <td>
+      <div className="flex items-center gap-2">
+        {role === "admin" || role === "teacher" && (
+          <>
+            <FormContainer table="exam" type="update" data={item} />
+            <FormContainer table="exam" type="delete" id={item.id} />
+          </>
+        )}
+      </div>
+    </td>
+  </tr>
+);
 
-  
+
 const ExamsList = async ({
   searchParams,
 }: {
@@ -62,15 +64,15 @@ const ExamsList = async ({
       header: "Date",
       accessor: "date",
       className: "hidden md:table-cell",
-      },
-      ...(role === "admin" || role === "teacher"
-        ? [
-            {
-              header: "Actions",
-              accessor: "action",
-            },
-          ]
-        : []),
+    },
+    ...(role === "admin" || role === "teacher"
+      ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+      : []),
   ];
 
   // Await the searchParams first
@@ -81,72 +83,99 @@ const ExamsList = async ({
   // Initialize Prisma query object
   const query: Prisma.ExamWhereInput = {};
 
-  query.Lesson = {};
+  query.Class = {};
 
-  // Dynamically add filters based on query parameters
+
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
           case "classId":
-            query.Lesson = {classId: parseInt(value)};
+            query.classId = parseInt(value); // Directly filter by classId
             break;
+
           case "teacherId":
-            query.Lesson = {teacherId: value};
+            query.Class = { Teacher: { id: (value) } }; // ✅ Correct syntax
             break;
+
+
           case "search":
-            query.Lesson = {
-              Subject :{
-                name: {contains:value}
-              }
-            }
+            query.subjects = {
+              some: {
+                Subject: {
+                  name: { contains: value },
+                },
+              },
+            };
             break;
-            default:
-              break;
+
+          default:
+            break;
         }
       }
     }
   }
 
+
   //  * ROLE CONDITIONS
-  
+
   switch (role) {
     case "admin":
+      // Admins can see all exams, so no need to filter.
       break;
-    
+
     case "teacher":
-      query.Lesson.teacherId = userId!
+      query.Class = {
+        Teacher: {
+          id: userId!,
+        },
+      };
+
       break;
-      
+
     case "student":
-      query.Lesson.Class = {
+      query.Class = {
         students: {
           some: {
-            id: userId!
+            id: userId!, // ✅ Correct: Filter classes where the student is enrolled
           },
         },
       };
       break;
   }
 
+
   // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.exam.findMany({
       where: query,
       include: {
-        Lesson: {
+        Class: {  // ✅ Fetch Class name & Teacher details
           select: {
-            Subject: { select: { name: true } },
-            Teacher: { select: { name: true, surname:true } },
-            Class: { select: { name: true } },
-          }
-        }
+            name: true,
+            Teacher: {  // ✅ Fetch Teacher details from Class
+              select: {
+                name: true,
+                surname: true,
+              },
+            },
+          },
+        },
+        subjects: {  // ✅ Fetch Subject details
+          select: {
+            Subject: {
+              select: { name: true },
+            },
+          },
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.exam.count({ where: query }),
   ]);
+  
+  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -162,8 +191,8 @@ const ExamsList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {(role === "admin" || role === "teacher" ) && (
-                <FormContainer table="exam" type="create"/> 
+            {(role === "admin" || role === "teacher") && (
+              <FormContainer table="exam" type="create" />
             )}
           </div>
         </div>
