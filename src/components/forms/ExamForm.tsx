@@ -8,6 +8,7 @@ import { examSchema, ExamSchema, } from "@/lib/formValidationSchemas";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { createExam, updateExam } from "@/lib/actions";
 
 const ExamForm = ({
     type,
@@ -70,19 +71,10 @@ const ExamForm = ({
 
                 <InputField
                     label="Start Date"
-                    name="startTime"
-                    defaultValue={data?.startTime}
+                    name="date"
+                    defaultValue={data?.date}
                     register={register}
-                    error={errors?.startTime}
-                    type="datetime-local"
-                />
-
-                <InputField
-                    label="End Date"
-                    name="endTime"
-                    defaultValue={data?.endTime}
-                    register={register}
-                    error={errors?.endTime}
+                    error={errors?.date}
                     type="datetime-local"
                 />
 
