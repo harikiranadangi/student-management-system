@@ -24,17 +24,7 @@ model Announcement {
   @@index([classId], map: "Announcement_classId_idx")
 }
 
-model Assignment {
-  id        Int      @id @default(autoincrement())
-  title     String
-  startDate DateTime
-  endDate   DateTime
-  lessonId  Int
-  Lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  results   Result[]
 
-  @@index([lessonId], map: "Assignment_lessonId_idx")
-}
 
 model Attendance {
   id        Int      @id @default(autoincrement())
@@ -78,15 +68,29 @@ model Event {
 }
 
 model Exam {
-  id       Int      @id @default(autoincrement())
-  title    String
-  date     DateTime
-  classId  Int
-  results  Result[]
-  Class    Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  id          Int          @id @default(autoincrement())
+  title       String
+  date        DateTime
+  classId     Int
+  Class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjects    ExamSubject[]  // Link exams with subjects
+  results     Result[]      // Store students' marks
 
   @@index([classId], map: "Exam_classId_idx")
 }
+
+model ExamSubject {
+  id        Int     @id @default(autoincrement())
+  examId    Int
+  subjectId Int
+  maxMarks  Int // Example: 100 marks per subject
+
+  Exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, subjectId], map: "ExamSubject_examId_subjectId_key")
+}
+
 
 model Fee {
   id         Int       @id @default(autoincrement())
@@ -137,7 +141,6 @@ model Lesson {
   subjectId  Int
   classId    Int
   teacherId  String
-  Assignment Assignment[]
   Class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   Subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   Teacher    Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
@@ -148,18 +151,19 @@ model Lesson {
 }
 
 model Result {
-  id           Int         @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   score        Float
-  examId       Int?
-  assignmentId Int?
   studentId    String
-  Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  Exam         Exam?       @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Student      Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  examId       Int
+  subjectId    Int
 
-  @@index([assignmentId], map: "Result_assignmentId_idx")
+  Student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Exam         Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Subject      Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
   @@index([examId], map: "Result_examId_idx")
   @@index([studentId], map: "Result_studentId_idx")
+  @@index([subjectId], map: "Result_subjectId_idx")
 }
 
 model Student {
@@ -193,6 +197,8 @@ model Subject {
   lessons   Lesson[]
   teachers  Teacher[]  @relation("TeacherSubject")
   homeworks Homework[]
+  exams     ExamSubject[]
+  results   Result[]
 }
 
 model Teacher {
