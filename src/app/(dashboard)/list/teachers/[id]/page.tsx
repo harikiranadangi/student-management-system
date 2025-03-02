@@ -10,8 +10,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
-  // Fixing destructuring: No need for await
-  const { id } = params;
+  // Await the params to ensure they are resolved before use
+  const { id } = await params; // Await the params
 
   const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
@@ -36,7 +36,6 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
         },
       }
     });
-
 
   if (!teacher) {
     return notFound();
@@ -120,6 +119,8 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
               </div>
             </div>
             {/* CARD */}
+            
+            {/* CARD */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
               <div>
@@ -142,6 +143,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
           <h1>Teacher&apos;s Schedule</h1>
           <BigCalendarContainer type="teacherId" id={teacherData.id} />
         </div>
+        
       </div>
       {/* RIGHT */}
       <div className="flex flex-col w-full gap-4 xl:w-1/3">
