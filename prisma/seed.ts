@@ -1,44 +1,50 @@
 import { PrismaClient } from "@prisma/client";
+import fs from "fs";
+import path from "path";
+import csvParser from "csv-parser";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const prisma = new PrismaClient();
 
 
-
 async function main() {
-
   console.log("🔄 Deleting existing data...");
 
   // Delete in correct order to maintain referential integrity
-  await prisma.teacher.deleteMany({});
-  await prisma.student.deleteMany({});
-  await prisma.class.deleteMany({});
-  await prisma.subject.deleteMany({});
-  await prisma.grade.deleteMany({});
+  await prisma.teacher.deleteMany();
+  // await prisma.student.deleteMany();
+  // await prisma.class.deleteMany();
+  await prisma.subject.deleteMany();
+  // await prisma.grade.deleteMany();
 
   console.log("✅ Existing data deleted");
-  console.log("Seeding data...");
 
-  // Insert Grade Data
-  await prisma.grade.createMany({
-    data: [
-      { id: 1, level: "Pre KG" },
-      { id: 2, level: "LKG" },
-      { id: 3, level: "UKG" },
-      { id: 4, level: "I" },
-      { id: 5, level: "II" },
-      { id: 6, level: "III" },
-      { id: 7, level: "IV" },
-      { id: 8, level: "V" },
-      { id: 9, level: "VI" },
-      { id: 10, level: "VII" },
-      { id: 11, level: "VIII" },
-      { id: 12, level: "IX" },
-      { id: 13, level: "X" },
-    ],
-    skipDuplicates: true,
-  });
+  console.log("📌 Seeding data...");
 
+  // ✅ Seed Grades
+  const gradesData = [
+    { id: 1, level: "Pre KG" },
+    { id: 2, level: "LKG" },
+    { id: 3, level: "UKG" },
+    { id: 4, level: "I" },
+    { id: 5, level: "II" },
+    { id: 6, level: "III" },
+    { id: 7, level: "IV" },
+    { id: 8, level: "V" },
+    { id: 9, level: "VI" },
+    { id: 10, level: "VII" },
+    { id: 11, level: "VIII" },
+    { id: 12, level: "IX" },
+    { id: 13, level: "X" },
+  ];
+  await prisma.grade.createMany({ data: gradesData, skipDuplicates: true });
   console.log("✅ Grades seeded");
+
 
   // Insert Class Data
 await prisma.class.createMany({
@@ -89,56 +95,90 @@ await prisma.class.createMany({
   ],
   skipDuplicates: true,
 });
+console.log("✅ Classes seeded");
+
+console.log("📂 Reading CSV file...");
+
+const studentsFilePath = path.join(__dirname, "../NewFolder/students_cleaned.csv");
+
+// Check if CSV file exists
+if (!fs.existsSync(studentsFilePath)) {
+  console.error(`❌ Error: CSV file not found at ${studentsFilePath}`);
+  process.exit(1);
+}
+
+const students: any[] = [];
+
+// Function to parse DOB safely
+function parseDate(dateString: string | undefined): string | Date {
+  if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
+    return "NA"; // ✅ Store as "NA" instead of null
+  }
+
+  // Check if the date follows DD-MM-YYYY format
+  const parts = dateString.split("-");
+  if (parts.length === 3) {
+    const [day, month, year] = parts.map(Number);
+
+    // Validate parsed numbers
+    if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
+      console.warn(`⚠️ Invalid date: ${dateString}, saving as "NA"`);
+      return "NA";
+    }
+
+    return new Date(`${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`);
+  }
+
+  console.warn(`⚠️ Invalid format: ${dateString}, saving as "NA"`);
+  return "NA";
+}
+
+await new Promise<void>((resolve, reject) => {
+  fs.createReadStream(studentsFilePath)
+    .pipe(csvParser())
+    .on("data", (row) => {
+      const dob = parseDate(row.dob); // ✅ Ensure `dob` is either Date or "NA"
+
+      students.push({
+        id: row.id,
+        username: row.username,
+        name: row.name,
+        surname: row.surname,
+        parentName: row.parentName,
+        phone: row.phone,
+        address: row.address,
+        gender: row.gender,
+        dob, // ✅ Always present (either Date or "NA")
+        classId: Number(row.classId),
+      });
+    })
+    .on("end", async () => {
+      console.log(`📊 Found ${students.length} students in CSV.`);
+
+      if (students.length > 0) {
+        await prisma.student.createMany({
+          data: students.map((s) => ({
+            ...s,
+            dob: s.dob === "NA" ? "NA" : s.dob, // ✅ Ensure "NA" is stored properly
+          })),
+          skipDuplicates: true,
+        });
+        console.log("🎉 Students seeded successfully!");
+      } else {
+        console.warn("⚠️ No valid students to insert!");
+      }
+      resolve();
+    })
+    .on("error", (error) => {
+      console.error("❌ Error reading CSV:", error);
+      reject(error);
+    });
+});
 
 
-  console.log("✅ Classes seeded");
 
-  // Insert Students Data
-  await prisma.student.createMany({
-    data: [
-      {
-        id: "S1",
-        username: "student1",
-        name: "John",
-        surname: "",
-        parentName: "Michael Doe",
-        phone: "9876543210",
-        address: "123 Street, City",
-        gender: "Male",
-        dob: new Date("2015-06-15"),
-        classId: 7,
-      },
-      {
-        id: "S2",
-        username: "student2",
-        name: "Emma",
-        surname: "",
-        parentName: "Sarah Smith",
-        phone: "9876543222",
-        address: "456 Avenue, City",
-        gender: "Female",
-        dob: new Date("2014-05-20"),
-        classId: 8,
-      },
-      {
-        id: "S3",
-        username: "student3",
-        name: "Liam",
-        surname: "",
-        parentName: "David Johnson",
-        phone: "9876543233",
-        address: "789 Boulevard, City",
-        gender: "Male",
-        dob: new Date("2013-09-10"),
-        classId: 9,
-      },
-    ],
-    skipDuplicates: true,
-  });
 
-  console.log("✅ Students seeded");
-
-  // Insert Teachers Data
+  // ✅ Seed Teachers
   await prisma.teacher.createMany({
     data: [
       {
@@ -173,22 +213,6 @@ await prisma.class.createMany({
         supervisor: true,
         dob: new Date("1978-11-15"),
       },
-      {
-        id: "T3",
-        username: "teacher3",
-        name: "Sophia",
-        surname: "Davis",
-        email: "sophia@example.com",
-        phone: "9876543333",
-        address: "300 Oak St, City",
-        img: null,
-        bloodType: "B+",
-        gender: "Female",
-        createdAt: new Date(),
-        deletedAt: null,
-        supervisor: false,
-        dob: new Date("1990-07-30"),
-      },
     ],
     skipDuplicates: true,
   });
@@ -205,4 +229,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-  // npx tsx prisma/seed.ts
