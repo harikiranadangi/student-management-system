@@ -1,4 +1,3 @@
-// src/components/StudentList.tsx
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -12,15 +11,12 @@ import Link from "next/link";
 
 type StudentList = Student & { Class?: { name: string } };
 
-
 const renderRow = (item: StudentList, role: string | null) => (
   <tr
     key={item.id}
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
-    
     <td className="flex items-center gap-4 p-4">
-      {/* Image display */}
       <Image
         src={item.img || "/profile.png"}
         alt={item.name}
@@ -34,7 +30,6 @@ const renderRow = (item: StudentList, role: string | null) => (
       </div>
     </td>
 
-    {/* <td className="hidden md:table-cell">{item.class?.name || "No Class Assigned"}</td> */}
     <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
@@ -48,31 +43,24 @@ const renderRow = (item: StudentList, role: string | null) => (
           </button>
         </Link>
         {role === "admin" && (
-          <>
-            <FormContainer table="student" type="delete" id={item.id} />
-          </>
+          <FormContainer table="student" type="delete" id={item.id} />
         )}
       </div>
     </td>
   </tr>
 );
 
-
-
 const StudentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-
-  // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
-
 
   const columns = [
     { header: "Student Name", accessor: "name" },
@@ -81,14 +69,11 @@ const StudentListPage = async ({
     { header: "Parent Name", accessor: "parentName" },
     { header: "DOB", accessor: "dob" },
     { header: "Mobile", accessor: "phone" },
-    ...(role === "admin" ? [{ header: "Actions", accessor: "action", },] : []),
+    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
-
-
 
   // Initialize Prisma query object
   const query: Prisma.StudentWhereInput = {};
-
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -104,7 +89,6 @@ const StudentListPage = async ({
               },
             };
             break;
-
           case "search":
             query.name = { contains: value };
             break;
@@ -115,12 +99,12 @@ const StudentListPage = async ({
     }
   }
 
-  // Fetch teachers and include related fields (subjects, classes)
+  // Fetch students and include related fields (classes, etc.)
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
       include: {
-        Class: true,
+        Class: true, // Include the class data
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
@@ -130,7 +114,6 @@ const StudentListPage = async ({
 
   // Debugging: Log the fetched data
   console.log("Student Data:", JSON.stringify(data, null, 2));
-  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
