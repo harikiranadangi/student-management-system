@@ -11,7 +11,7 @@ const StudentPage = async () => {
 
   const classItem = await prisma.class.findMany({
     where: {
-      Student: { some: { id: userId! } },
+      students: { some: { id: userId! } },
     },
   });
 
