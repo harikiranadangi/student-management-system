@@ -24,8 +24,6 @@ model Announcement {
   @@index([classId], map: "Announcement_classId_idx")
 }
 
-
-
 model Attendance {
   id        Int      @id @default(autoincrement())
   date      DateTime
@@ -50,6 +48,8 @@ model Class {
   homeworks    Homework[]
   exams        Exam[]
 
+  fees FeesStructure?  @relation() // Only establish the relation, no fields or references
+
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
   @@map("class")
@@ -68,29 +68,28 @@ model Event {
 }
 
 model Exam {
-  id          Int          @id @default(autoincrement())
-  title       String
-  date        DateTime
-  classId     Int
-  Class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  subjects    ExamSubject[]  // Link exams with subjects
-  results     Result[]      // Store students' marks
+  id       Int           @id @default(autoincrement())
+  title    String
+  date     DateTime
+  classId  Int
+  Class    Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjects ExamSubject[] // Link exams with subjects
+  results  Result[] // Store students' marks
 
   @@index([classId], map: "Exam_classId_idx")
 }
 
 model ExamSubject {
-  id        Int     @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   examId    Int
   subjectId Int
   maxMarks  Int // Example: 100 marks per subject
 
-  Exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  Exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@unique([examId, subjectId], map: "ExamSubject_examId_subjectId_key")
 }
-
 
 model Fee {
   id         Int       @id @default(autoincrement())
@@ -109,6 +108,16 @@ model Fee {
   Student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, term], map: "Fee_studentId_term_key")
+}
+
+model FeesStructure {
+  id         Int @id @default(autoincrement())
+  classId    Int @unique
+  totalFees  Int
+  abacusFees Int
+  termFees   Int
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade) // Define fields & references **only here**
 }
 
 model Grade {
@@ -133,17 +142,17 @@ model Homework {
 }
 
 model Lesson {
-  id         Int          @id @default(autoincrement())
-  name       String       @unique(map: "Lesson_name_key")
-  day        LessonDay
-  startTime  DateTime
-  endTime    DateTime
-  subjectId  Int
-  classId    Int
-  teacherId  String
-  Class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  Teacher    Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  id        Int       @id @default(autoincrement())
+  name      String    @unique(map: "Lesson_name_key")
+  day       LessonDay
+  startTime DateTime
+  endTime   DateTime
+  subjectId Int
+  classId   Int
+  teacherId String
+  Class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  Teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@index([classId], map: "Lesson_classId_idx")
   @@index([subjectId], map: "Lesson_subjectId_idx")
@@ -151,15 +160,15 @@ model Lesson {
 }
 
 model Result {
-  id           Int     @id @default(autoincrement())
-  score        Float
-  studentId    String
-  examId       Int
-  subjectId    Int
+  id        Int    @id @default(autoincrement())
+  score     Float
+  studentId String
+  examId    Int
+  subjectId Int
 
-  Student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  Exam         Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Subject      Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  Student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([examId], map: "Result_examId_idx")
   @@index([studentId], map: "Result_studentId_idx")
@@ -167,35 +176,46 @@ model Result {
 }
 
 model Student {
-  id         String       @id
-  username   String       @unique(map: "Student_username_key")
-  name       String
-  surname    String
-  parentName String
-  email      String?      @unique(map: "Student_email_key")
-  phone      String
-  address    String
-  img        String?
-  bloodType  String?
-  gender     Gender
-  dob        DateTime
-  createdAt  DateTime     @default(now())
-  deletedAt  DateTime?
-  classId    Int
-  Attendance Attendance[]
-  Fee        Fee[]
-  results    Result[]
-  Class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  id          String        @id
+  username    String        @unique(map: "Student_username_key")
+  name        String
+  surname     String
+  parentName  String
+  email       String?       @unique(map: "Student_email_key")
+  phone       String
+  address     String
+  img         String?
+  bloodType   String?
+  gender      Gender
+  dob         DateTime
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+  classId     Int
+  Attendance  Attendance[]
+  Fee         Fee[]
+  results     Result[]
+  Class       Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees StudentFees[]
 
   @@index([classId], map: "Student_classId_idx")
 }
 
+model StudentFees {
+  id          Int      @id @default(autoincrement())
+  studentId   String
+  termNumber  Int
+  paidAmount  Int
+  abacusPaid  Boolean  @default(false)
+  paymentDate DateTime @default(now())
+  student     Student  @relation(fields: [studentId], references: [id])
+}
+
 model Subject {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique(map: "Subject_name_key")
-  createdAt DateTime   @default(now())
+  id        Int           @id @default(autoincrement())
+  name      String        @unique(map: "Subject_name_key")
+  createdAt DateTime      @default(now())
   lessons   Lesson[]
-  teachers  Teacher[]  @relation("TeacherSubject")
+  teachers  Teacher[]     @relation("TeacherSubject")
   homeworks Homework[]
   exams     ExamSubject[]
   results   Result[]
