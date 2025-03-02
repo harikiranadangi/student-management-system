@@ -52,3 +52,6 @@ async function deleteAllUsers() {
 
 // Run the function
 deleteAllUsers();
+
+// * Run the above code
+// * node D:\GITHUB\student-management-system\NewFolder\deleteUsers.js
