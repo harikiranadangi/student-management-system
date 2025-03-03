@@ -21,8 +21,8 @@ const renderRow = (item: AttendanceList, role: string | null) => (
       <div className="flex items-center gap-2">
         {role === "admin" || role === "teacher" && (
           <>
-            <FormContainer table="announcement" type="update" data={item} />
-            <FormContainer table="announcement" type="delete" id={item.id} />
+            <FormContainer table="attendance" type="update" data={item} />
+            <FormContainer table="attendance" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -119,7 +119,7 @@ const AttendanceListPage = async ({
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Announcements</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Attendance</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
@@ -129,7 +129,8 @@ const AttendanceListPage = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <FormContainer table="announcement" type="create" />}
+            {role === "admin" && <FormContainer table="attendance" type="create" data={{ classId: "some-class-id" }} />
+          }
           </div>
         </div>
       </div>
