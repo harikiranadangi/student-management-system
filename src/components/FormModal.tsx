@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
+import AttendanceForm from "./forms/AttendanceForm";
 
 const deleteActionMap = {
   subject: deleteSubject,
@@ -44,6 +45,7 @@ const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
+
 // Define the available forms based on the table type
 const forms: {
   [key: string]: (
@@ -77,6 +79,10 @@ const forms: {
 
   lesson: (setOpen, type, data, relatedData) => (
     <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+
+  attendance: (setOpen, type, data, relatedData) => (
+    <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 };
 
