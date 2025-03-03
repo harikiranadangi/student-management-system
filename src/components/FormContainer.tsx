@@ -26,8 +26,11 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
     let relatedData = {}
 
+    console.log("FormContainer received props:", { table, type, data });
+
+
     if (type !== "delete") {
-        
+
         switch (table) {
             case "subject":
 
@@ -75,7 +78,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 break;
 
             case "exam":
-                
+
                 // Fetch user info and role
                 const { userId, role } = await fetchUserInfo();
 
@@ -108,11 +111,33 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers };
                 break;
 
+            case "attendance":
+                if (!data || !data.classId) {
+                    console.error("Missing classId in attendance data:", data);
+                    return;
+                }
+
+                const studentsInClass = await prisma.student.findMany({
+                    where: { classId: data.classId },
+                    select: { id: true, name: true },
+                });
+
+                relatedData = { students: studentsInClass };
+                break;
+
+            
+
+
+
             default:
                 break;
 
+                
+
         }
     }
+
+    
 
 
     return (
