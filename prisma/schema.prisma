@@ -217,7 +217,7 @@ model Subject {
   name      String        @unique(map: "Subject_name_key")
   createdAt DateTime      @default(now())
   lessons   Lesson[]
-  teachers  Teacher[]     @relation("TeacherSubject")
+  teachers  TeacherSubject[]
   homeworks Homework[]
   exams     ExamSubject[]
   results   Result[]
@@ -240,8 +240,19 @@ model Teacher {
   dob        DateTime?
   classes    Class[]
   lessons    Lesson[]
-  subjects   Subject[] @relation("TeacherSubject")
+  subjects   TeacherSubject[]
 }
+
+model TeacherSubject {
+  teacherId String
+  subjectId Int
+
+  Teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, subjectId]) // Composite Primary Key
+}
+
 
 enum FeeTerm {
   TERM1
