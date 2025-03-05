@@ -16,7 +16,7 @@ const renderRow = (item: StudentList, role: string | null) => (
     key={item.id}
     className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
-    <td className="flex items-center gap-4 p-4">
+    <td className="flex items-center gap-2 p-2">
       <Image
         src={item.img || "/profile.png"}
         alt={item.name}
@@ -35,7 +35,7 @@ const renderRow = (item: StudentList, role: string | null) => (
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
     <td className="hidden md:table-cell">{item.phone}</td>
-    <td className="p-4">
+    <td className="p-2">
       <div className="flex items-center gap-2">
         <Link href={`/list/students/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
@@ -76,21 +76,20 @@ const StudentListPage = async ({
   const query: Prisma.StudentWhereInput = {};
 
   // Dynamically add filters based on query parameters
+  // Dynamically add filters based on query parameters
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
-          case "teacherId":
-            query.Class = {
-              lessons: {
-                some: {
-                  teacherId: value,
-                },
-              },
-            };
-            break;
           case "search":
-            query.name = { contains: value };
+            // Search by name or id
+            query.OR = [
+              { name: { contains: value, mode: "insensitive" } },
+              { id: { contains: (value) } },
+            ];
+            break;
+          case "classId":
+            query.Class = { id: parseInt(value) }; // Filter by Class
             break;
           default:
             break;

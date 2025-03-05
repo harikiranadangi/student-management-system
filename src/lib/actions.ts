@@ -579,7 +579,6 @@ export const createExam = async (
             data: {
                 title: data.title,
                 date: data.date,
-                lessonId: data.lessonId,  // Directly assign lessonId
                 classId: data.classId,    // Ensure classId is included
             },
         });
@@ -606,7 +605,6 @@ export const updateExam = async (
             data: {
                 title: data.title,
                 date: data.date,
-                lessonId: data.lessonId,  // Updating the correct Lesson relation
                 classId: data.classId,    // Ensure classId is updated
             },
         });
@@ -641,4 +639,32 @@ export const deleteExam = async (
         console.log(err)
         return { success: false, error: true };
     }
+};
+
+// * ---------------------------------------------- ATTENDANCE SCHEMA --------------------------------------------------------
+
+
+export const markAttendance = async (classId: string, absentees: string[]) => {
+  try {
+    // Fetch all students of the selected class
+    const students = await prisma.student.findMany({
+      where: { classId: parseInt(classId) },
+      select: { id: true },
+    });
+
+    // Create attendance records
+    const attendanceRecords = students.map((student) => ({
+      studentId: student.id,
+      date: new Date(),
+      status: absentees.includes(student.id) ? "Absent" : "Present",
+    }));
+
+    // Insert attendance records into the database
+    await prisma.attendance.createMany({ data: attendanceRecords });
+
+    return { success: true, message: "Attendance marked successfully" };
+  } catch (error) {
+    console.error("Error marking attendance:", error);
+    return { success: false, message: "Failed to mark attendance" };
+  }
 };

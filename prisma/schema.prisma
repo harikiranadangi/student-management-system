@@ -28,9 +28,10 @@ model Attendance {
   id        Int      @id @default(autoincrement())
   date      DateTime
   present   Boolean
+  classId   Int
   studentId String
   Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
   @@index([studentId], map: "Attendance_studentId_idx")
 }
 
@@ -47,6 +48,7 @@ model Class {
   students     Student[]
   homeworks    Homework[]
   exams        Exam[]
+  attendance   Attendance[]
 
   fees FeesStructure?  @relation() // Only establish the relation, no fields or references
 
