@@ -26,7 +26,6 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
     let relatedData = {}
 
-    console.log("FormContainer received props:", { table, type, data });
 
 
     if (type !== "delete") {
