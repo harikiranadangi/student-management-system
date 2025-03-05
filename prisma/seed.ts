@@ -19,7 +19,7 @@ async function main() {
   // await prisma.teacher.deleteMany();
   // await prisma.student.deleteMany();
   // await prisma.class.deleteMany();
-  await prisma.subject.deleteMany();
+  // await prisma.subject.deleteMany();
   // await prisma.grade.deleteMany();
 
   console.log("✅ Existing data deleted");
