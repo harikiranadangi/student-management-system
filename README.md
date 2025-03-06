@@ -72,6 +72,23 @@ student-management-system/
 
 ![image](https://github.com/user-attachments/assets/20119b4c-953a-41fe-8d0d-cebde0173922)
 
+**Admin Dashboard**
+
+![image](https://github.com/user-attachments/assets/f3d8ddfb-91c6-42cc-b25a-6dbbca7c1532)
+
+**Student List**
+
+![image](https://github.com/user-attachments/assets/a7eebaa5-05cf-4bf6-b79c-4aecca2188cd)
+
+**Teachers List**
+
+![image](https://github.com/user-attachments/assets/062d2c83-87a7-44cf-b046-2cd890cef325)
+
+**Class List**
+
+![image](https://github.com/user-attachments/assets/29115dd8-f036-4236-a6c8-d0bd0f2b89e6)
+
+
 ## ❓ Troubleshooting
 **Issue**: `npm: command not found`
 - Ensure Node.js and npm are installed
