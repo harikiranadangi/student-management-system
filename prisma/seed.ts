@@ -47,133 +47,166 @@ async function main() {
 
 
   // Insert Class Data
-await prisma.class.createMany({
-  data: [
-    { id: 1, name: "Pre KG", gradeId: 1 },
-    { id: 2, name: "LKG - A", gradeId: 2 },
-    { id: 3, name: "LKG - B", gradeId: 2 },
-    { id: 4, name: "UKG - A", gradeId: 3 },
-    { id: 5, name: "UKG - B", gradeId: 3 },
-    { id: 6, name: "UKG - C", gradeId: 3 },
-    { id: 7, name: "I - A", gradeId: 4 },
-    { id: 8, name: "I - B", gradeId: 4 },
-    { id: 9, name: "I - C", gradeId: 4 },
-    { id: 10, name: "I - D", gradeId: 4 },
-    { id: 11, name: "II - A", gradeId: 5 },
-    { id: 12, name: "II - B", gradeId: 5 },
-    { id: 13, name: "II - C", gradeId: 5 },
-    { id: 14, name: "II - D", gradeId: 5 },
-    { id: 15, name: "III - A", gradeId: 6 },
-    { id: 16, name: "III - B", gradeId: 6 },
-    { id: 17, name: "III - C", gradeId: 6 },
-    { id: 18, name: "III - D", gradeId: 6 },
-    { id: 19, name: "IV - A", gradeId: 7 },
-    { id: 20, name: "IV - B", gradeId: 7 },
-    { id: 21, name: "IV - C", gradeId: 7 },
-    { id: 22, name: "IV - D", gradeId: 7 },
-    { id: 23, name: "V - A", gradeId: 8 },
-    { id: 24, name: "V - B", gradeId: 8 },
-    { id: 25, name: "V - C", gradeId: 8 },
-    { id: 26, name: "V - D", gradeId: 8 },
-    { id: 27, name: "VI - A", gradeId: 9 },
-    { id: 28, name: "VI - B", gradeId: 9 },
-    { id: 29, name: "VI - C", gradeId: 9 },
-    { id: 30, name: "VI - D", gradeId: 9 },
-    { id: 31, name: "VII - A", gradeId: 10 },
-    { id: 32, name: "VII - B", gradeId: 10 },
-    { id: 33, name: "VII - C", gradeId: 10 },
-    { id: 34, name: "VII - D", gradeId: 10 },
-    { id: 35, name: "VIII - A", gradeId: 11 },
-    { id: 36, name: "VIII - B", gradeId: 11 },
-    { id: 37, name: "VIII - C", gradeId: 11 },
-    { id: 38, name: "IX - A", gradeId: 12 },
-    { id: 39, name: "IX - B", gradeId: 12 },
-    { id: 40, name: "IX - C", gradeId: 12 },
-    { id: 41, name: "X - A", gradeId: 13 },
-    { id: 42, name: "X - B", gradeId: 13 },
-    { id: 43, name: "X - C", gradeId: 13 },
-  ],
-  skipDuplicates: true,
-});
-console.log("✅ Classes seeded");
+  await prisma.class.createMany({
+    data: [
+      { id: 1, name: "Pre KG", gradeId: 1 },
+      { id: 2, name: "LKG - A", gradeId: 2 },
+      { id: 3, name: "LKG - B", gradeId: 2 },
+      { id: 4, name: "UKG - A", gradeId: 3 },
+      { id: 5, name: "UKG - B", gradeId: 3 },
+      { id: 6, name: "UKG - C", gradeId: 3 },
+      { id: 7, name: "I - A", gradeId: 4 },
+      { id: 8, name: "I - B", gradeId: 4 },
+      { id: 9, name: "I - C", gradeId: 4 },
+      { id: 10, name: "I - D", gradeId: 4 },
+      { id: 11, name: "II - A", gradeId: 5 },
+      { id: 12, name: "II - B", gradeId: 5 },
+      { id: 13, name: "II - C", gradeId: 5 },
+      { id: 14, name: "II - D", gradeId: 5 },
+      { id: 15, name: "III - A", gradeId: 6 },
+      { id: 16, name: "III - B", gradeId: 6 },
+      { id: 17, name: "III - C", gradeId: 6 },
+      { id: 18, name: "III - D", gradeId: 6 },
+      { id: 19, name: "IV - A", gradeId: 7 },
+      { id: 20, name: "IV - B", gradeId: 7 },
+      { id: 21, name: "IV - C", gradeId: 7 },
+      { id: 22, name: "IV - D", gradeId: 7 },
+      { id: 23, name: "V - A", gradeId: 8 },
+      { id: 24, name: "V - B", gradeId: 8 },
+      { id: 25, name: "V - C", gradeId: 8 },
+      { id: 26, name: "V - D", gradeId: 8 },
+      { id: 27, name: "VI - A", gradeId: 9 },
+      { id: 28, name: "VI - B", gradeId: 9 },
+      { id: 29, name: "VI - C", gradeId: 9 },
+      { id: 30, name: "VI - D", gradeId: 9 },
+      { id: 31, name: "VII - A", gradeId: 10 },
+      { id: 32, name: "VII - B", gradeId: 10 },
+      { id: 33, name: "VII - C", gradeId: 10 },
+      { id: 34, name: "VII - D", gradeId: 10 },
+      { id: 35, name: "VIII - A", gradeId: 11 },
+      { id: 36, name: "VIII - B", gradeId: 11 },
+      { id: 37, name: "VIII - C", gradeId: 11 },
+      { id: 38, name: "IX - A", gradeId: 12 },
+      { id: 39, name: "IX - B", gradeId: 12 },
+      { id: 40, name: "IX - C", gradeId: 12 },
+      { id: 41, name: "X - A", gradeId: 13 },
+      { id: 42, name: "X - B", gradeId: 13 },
+      { id: 43, name: "X - C", gradeId: 13 },
+    ],
+    skipDuplicates: true,
+  });
+  console.log("✅ Classes seeded");
 
-console.log("📂 Reading CSV file...");
+  console.log("✅ Seeding Subjects");
 
-const studentsFilePath = path.join(__dirname, "../NewFolder/students_cleaned.csv");
+  const subjectsData = [
+    { id: 1, name: "ENGLISH I" },
+    { id: 2, name: "ENGLISH II" },
+    { id: 3, name: "NUMBER WORK" },
+    { id: 4, name: "SPELLINGS" },
+    { id: 5, name: "RHYMES" },
+    { id: 6, name: "ENVIRONMENTAL SCIENCE (EVS)" },
+    { id: 7, name: "DRAWING" },
+    { id: 8, name: "COMPUTER SCIENCE" },
+    { id: 9, name: "TELUGU" },
+    { id: 10, name: "HINDI" },
+    { id: 11, name: "MATHEMATICS" },
+    { id: 12, name: "GENERAL KNOWLEDGE (G.K.)" },
+    { id: 13, name: "SPELLING & HANDWRITING" },
+    { id: 14, name: "MORAL SCIENCE" },
+    { id: 15, name: "READING & RECITATION" },
+    { id: 16, name: "SOCIAL STUDIES" },
+    { id: 17, name: "GENERAL SCIENCE" },
+    { id: 18, name: "PHYSICS" },
+    { id: 19, name: "CHEMISTRY" },
+    { id: 20, name: "BIOLOGY" },
+    { id: 21, name: "HISTORY & CIVICS" },
+    { id: 22, name: "GEOGRAPHY" },
+    { id: 23, name: "SECOND LANGUAGE (TELUGU/HINDI)" },
+    { id: 24, name: "THIRD LANGUAGE (TELUGU/HINDI)" }
+  ];
 
-// Check if CSV file exists
-if (!fs.existsSync(studentsFilePath)) {
-  console.error(`❌ Error: CSV file not found at ${studentsFilePath}`);
-  process.exit(1);
-}
+  await prisma.subject.createMany({ data: subjectsData, skipDuplicates: true });
+  console.log("✅ Subjects seeded");
 
-const students: any[] = [];
 
-// Function to parse DOB safely
-function parseDate(dateString: string | undefined): string | Date {
-  if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
-    return "NA"; // ✅ Store as "NA" instead of null
+  console.log("📂 Reading CSV file...");
+
+  const studentsFilePath = path.join(__dirname, "../NewFolder/students_cleaned.csv");
+
+  // Check if CSV file exists
+  if (!fs.existsSync(studentsFilePath)) {
+    console.error(`❌ Error: CSV file not found at ${studentsFilePath}`);
+    process.exit(1);
   }
 
-  // Check if the date follows DD-MM-YYYY format
-  const parts = dateString.split("-");
-  if (parts.length === 3) {
-    const [day, month, year] = parts.map(Number);
+  const students: any[] = [];
 
-    // Validate parsed numbers
-    if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
-      console.warn(`⚠️ Invalid date: ${dateString}, saving as "NA"`);
-      return "NA";
+  // Function to parse DOB safely
+  function parseDate(dateString: string | undefined): string | Date {
+    if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
+      return "NA"; // ✅ Store as "NA" instead of null
     }
 
-    return new Date(`${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`);
+    // Check if the date follows DD-MM-YYYY format
+    const parts = dateString.split("-");
+    if (parts.length === 3) {
+      const [day, month, year] = parts.map(Number);
+
+      // Validate parsed numbers
+      if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
+        console.warn(`⚠️ Invalid date: ${dateString}, saving as "NA"`);
+        return "NA";
+      }
+
+      return new Date(`${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`);
+    }
+
+    console.warn(`⚠️ Invalid format: ${dateString}, saving as "NA"`);
+    return "NA";
   }
 
-  console.warn(`⚠️ Invalid format: ${dateString}, saving as "NA"`);
-  return "NA";
-}
+  await new Promise<void>((resolve, reject) => {
+    fs.createReadStream(studentsFilePath)
+      .pipe(csvParser())
+      .on("data", (row) => {
+        const dob = parseDate(row.dob); // ✅ Ensure `dob` is either Date or "NA"
 
-await new Promise<void>((resolve, reject) => {
-  fs.createReadStream(studentsFilePath)
-    .pipe(csvParser())
-    .on("data", (row) => {
-      const dob = parseDate(row.dob); // ✅ Ensure `dob` is either Date or "NA"
-
-      students.push({
-        id: row.id,
-        username: row.username,
-        name: row.name,
-        surname: row.surname,
-        parentName: row.parentName,
-        phone: row.phone,
-        address: row.address,
-        gender: row.gender,
-        dob, // ✅ Always present (either Date or "NA")
-        classId: Number(row.classId),
-      });
-    })
-    .on("end", async () => {
-      console.log(`📊 Found ${students.length} students in CSV.`);
-
-      if (students.length > 0) {
-        await prisma.student.createMany({
-          data: students.map((s) => ({
-            ...s,
-            dob: s.dob === "NA" ? "NA" : s.dob, // ✅ Ensure "NA" is stored properly
-          })),
-          skipDuplicates: true,
+        students.push({
+          id: row.id,
+          username: row.username,
+          name: row.name,
+          surname: row.surname,
+          parentName: row.parentName,
+          phone: row.phone,
+          address: row.address,
+          gender: row.gender,
+          dob, // ✅ Always present (either Date or "NA")
+          classId: Number(row.classId),
         });
-        console.log("🎉 Students seeded successfully!");
-      } else {
-        console.warn("⚠️ No valid students to insert!");
-      }
-      resolve();
-    })
-    .on("error", (error) => {
-      console.error("❌ Error reading CSV:", error);
-      reject(error);
-    });
-});
+      })
+      .on("end", async () => {
+        console.log(`📊 Found ${students.length} students in CSV.`);
+
+        if (students.length > 0) {
+          await prisma.student.createMany({
+            data: students.map((s) => ({
+              ...s,
+              dob: s.dob === "NA" ? "NA" : s.dob, // ✅ Ensure "NA" is stored properly
+            })),
+            skipDuplicates: true,
+          });
+          console.log("🎉 Students seeded successfully!");
+        } else {
+          console.warn("⚠️ No valid students to insert!");
+        }
+        resolve();
+      })
+      .on("error", (error) => {
+        console.error("❌ Error reading CSV:", error);
+        reject(error);
+      });
+  });
 
 
 
