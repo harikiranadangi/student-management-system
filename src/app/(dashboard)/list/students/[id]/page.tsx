@@ -5,21 +5,17 @@ import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
-  if (!params?.id) {
-    return <p>Loading...</p>; // ✅ Handles missing params gracefully
-  }
-
-  const id = params.id; // ✅ Extract `id` safely
+  // Await the params to ensure they are resolved before use
+  const { id } = await params; // Await the params
 
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
+  const { role } = await fetchUserInfo();
 
   // Fetch student data from Prisma
   const student = await prisma.student.findUnique({
@@ -35,7 +31,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
 
   console.log("Fetched Student ID:", id);
 
-  
+
 
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
@@ -61,14 +57,19 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                   <FormContainer
                     table="student"
                     type="update"
-                    data={ student }
+                    data={{
+                      ...student,
+                      dob: student.dob ? student.dob.toISOString().split("T")[0] : ""
+                      
+                    }}
                   />
+
                 )}
 
               </div>
-                <p className="text-sm text-gray-500">
-                  
-                </p>
+              <p className="text-sm text-gray-500">
+
+              </p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/blood.png" alt="" width={14} height={14} />
@@ -76,7 +77,9 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>{new Intl.DateTimeFormat("en-GB").format(student.dob)}</span>
+                  <p className="text-sm text-gray-500">
+                    {student.dob ? new Intl.DateTimeFormat("en-GB").format(new Date(student.dob)) : "Date of birth not available"}
+                  </p>
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/mail.png" alt="" width={14} height={14} />
@@ -101,9 +104,9 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 className="w-6 h-6"
               />
               <Suspense fallback="loading...">
-                <StudentAttendanceCard id={student.id}/>
+                <StudentAttendanceCard id={student.id} />
               </Suspense>
-              </div>
+            </div>
             {/* CARD */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image
