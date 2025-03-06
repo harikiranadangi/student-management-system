@@ -67,8 +67,8 @@ student-management-system/
  └── README.md           # Project Documentation
 ```
 
-## 📸 Screenshots (If Available)
-*Include screenshots of the app UI*
+## 📸 Screenshots 
+![image](https://github.com/user-attachments/assets/20119b4c-953a-41fe-8d0d-cebde0173922)
 
 ## ❓ Troubleshooting
 **Issue**: `npm: command not found`
