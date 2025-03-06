@@ -7,7 +7,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { count } from "console";
 
 
 const CountChart = ({ male, female }: { male: number; female: number}) => {
