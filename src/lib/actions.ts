@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import prisma from "./prisma"
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -15,51 +15,132 @@ export const createSubject = async (
     data: SubjectSchema
 ) => {
     try {
-        await prisma.subject.create({
-            data: {
-                name: data.name,
-                teachers: {
-                    connect: data.teachers.map((teacherId) => ({ id: teacherId })),
-                }
-            },
+        console.log("Received Data:", data);
+
+        if (!data || !data.name) {
+            throw new Error("Invalid input: 'name' is required.");
+        }
+
+        const teacherIds = Array.isArray(data.teachers) ? data.teachers : [];
+
+        // Create the subject first
+        const newSubject = await prisma.subject.create({
+            data: { name: data.name },
         });
 
-        console.log("Created Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+        console.log("Created Subject ID:", newSubject.id);
 
-        // revalidatePath("/list/subjects")
+        // Validate teachers before assigning them
+        if (teacherIds.length > 0) {
+            console.log("Validating teachers:", teacherIds);
+
+            const validTeachers = await prisma.teacher.findMany({
+                where: { id: { in: teacherIds } },
+                select: { id: true },
+            });
+
+            const validTeacherIds = validTeachers.map((teacher) => teacher.id);
+            console.log("Valid Teacher IDs:", validTeacherIds);
+
+            // 🚀 Check if validTeacherIds is not empty before `createMany`
+            if (validTeacherIds.length > 0) {
+                const teacherSubjectData = validTeacherIds.map((teacherId) => ({
+                    teacherId,
+                    subjectId: newSubject.id,
+                }));
+
+                console.log("Data for createMany:", teacherSubjectData);
+
+                await prisma.teacherSubject.createMany({
+                    data: teacherSubjectData,
+                    skipDuplicates: true,
+                });
+
+                console.log("Assigned Teachers:", validTeacherIds);
+            } else {
+                console.log("No valid teachers found. Skipping createMany.");
+            }
+        } else {
+            console.log("No teachers assigned.");
+        }
+
         return { success: true, error: false };
     } catch (err) {
-        console.log(err)
+        console.error("Error creating subject:", err);
         return { success: false, error: true };
     }
 };
+
 
 export const updateSubject = async (
     currentState: CurrentState,
     data: SubjectSchema
 ) => {
     try {
+        console.log("Received Update Data:", data);
+
+        if (!data.id || !data.name) {
+            throw new Error("Invalid input: 'id' and 'name' are required.");
+        }
+
+        const teacherIds = Array.isArray(data.teachers) ? data.teachers : [];
+
+        // ✅ Ensure `subjectId` is always a number
+        if (!data.id) {
+            throw new Error("Invalid subject ID");
+        }
+
+        const subjectId = data.id; // Now TypeScript knows subjectId is always defined
+
+        // ✅ Step 1: Update the Subject name
         await prisma.subject.update({
-            where: {
-                id: data.id,
-            },
-            data: {
-                name: data.name,
-                teachers    : {
-                    set: data.teachers.map((teacherId) => ({ id: teacherId })),
-                }
-            },
+            where: { id: subjectId },
+            data: { name: data.name },
         });
 
-        console.log("Updated Subject:", "[" + data.id + ", " + data.name + ", " + data.teachers + "]")
+        console.log("Updated Subject Name:", data.name);
 
-        // revalidatePath("/list/subjects")
+        // ✅ Step 2: Update the Many-to-Many Relationship in `teacherSubject`
+        if (teacherIds.length > 0) {
+            console.log("Updating teachers:", teacherIds);
+
+            // ✅ Delete existing teacher assignments for the subject
+            await prisma.teacherSubject.deleteMany({
+                where: { subjectId },
+            });
+
+            console.log("Removed previous teacher assignments");
+
+            // ✅ Insert new teacher assignments
+            const teacherSubjectData: Prisma.TeacherSubjectCreateManyInput[] = teacherIds.map(
+                (teacherId) => ({
+                    teacherId,
+                    subjectId, // ✅ Ensured `subjectId` is defined
+                })
+            );
+
+            await prisma.teacherSubject.createMany({
+                data: teacherSubjectData,
+                skipDuplicates: true,
+            });
+
+            console.log("Assigned New Teachers:", teacherIds);
+        } else {
+            // ✅ If no teachers are provided, remove all existing assignments
+            await prisma.teacherSubject.deleteMany({
+                where: { subjectId },
+            });
+            console.log("All teacher assignments removed for subject:", subjectId);
+        }
+
         return { success: true, error: false };
     } catch (err) {
-        console.log(err)
+        console.error("Error updating subject:", err);
         return { success: false, error: true };
     }
 };
+
+
 
 export const deleteSubject = async (
     currentState: CurrentState,
