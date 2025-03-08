@@ -15,21 +15,21 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true) // Track loading state
 
   useEffect(() => {
-    // Only proceed if both user and session data are fully loaded
     if (isUserLoaded && isSessionLoaded) {
+      setIsLoading(false) // Ensure loading state updates correctly
+  
       if (isSignedIn && user) {
         const role = user?.publicMetadata?.role
         if (role) {
-          router.push(`/${role}`)
+          router.replace(`/${role}`) // Use `replace` to prevent going back to login page
         } else {
           setError('User role not found.')
         }
-      } else {
-        setError('User not signed in. Please log in.')
-      }
-      setIsLoading(false) // Set loading state to false once data is loaded
+      } 
     }
   }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router])
+  
+  
 
   
 
@@ -60,10 +60,20 @@ export default function Page() {
     }
   }
 
+  
+
   // Show loading indicator until session and user data are fully loaded
-  if (isLoading) {
-    return <div>Loading...</div>
+  if (isLoading || !isUserLoaded || !isSessionLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4 transition-opacity animate-fadeIn">
+        <div className="w-12 h-12 border-4 border-gray-300 rounded-full border-t-blue-500 animate-spin"></div>
+        <div className="text-lg font-semibold text-gray-700">Checking session...</div>
+      </div>
+    )
   }
+  
+  
+  
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-200">
