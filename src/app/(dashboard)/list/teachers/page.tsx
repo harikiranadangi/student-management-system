@@ -11,13 +11,14 @@ import FormContainer from "@/components/FormContainer";
 import { fetchUserInfo } from "@/lib/utils";
 
 // Define types
-type TeachersList = Teacher & { subjects: Subject[] } & { classes: Class[] };
+type TeachersList = Teacher & { subjects: { Subject: Subject }[] } & { classes: Class[] };
 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
+  console.log("Subjects Data:", item.subjects),
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    {/* Info Column */}
 
+    {/* Info Column */}
     <td className="flex items-center gap-4 p-4">
       <Image
         src={item.img || "/teacher.png"}
@@ -31,8 +32,12 @@ const renderRow = (item: TeachersList, role: string | null) => (
         <p className="text-xs text-gray-500">{item?.id ?? 'No email available'}</p>
       </div>
     </td>
+
     {/* Directly use the strings from subjects and classes */}
-    <td className="hidden md:table-cell">{item.subjects.map(subject => subject.name).join(", ")}</td>
+    <td className="hidden md:table-cell">
+      {item.subjects?.map((ts) => ts.Subject.name).join(", ") || "No subjects"}
+    </td>
+
     <td className="hidden md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
     <td className="hidden md:table-cell">{item.phone}</td>
     <td className="hidden md:table-cell">{item.address}</td>
@@ -62,7 +67,7 @@ const TeacherListPage = async ({
 }) => {
 
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
+  const { role } = await fetchUserInfo();
 
   // Define table columns
   const columns = [
@@ -70,7 +75,7 @@ const TeacherListPage = async ({
       header: "Name",
       accessor: "info",
     },
-    
+
     {
       header: "Subjects",
       accessor: "subjects",
@@ -135,7 +140,11 @@ const TeacherListPage = async ({
     prisma.teacher.findMany({
       where: query,
       include: {
-        subjects: true,
+        subjects: {
+          include: {
+            Subject: true, // ✅ Fetch Subject details inside TeacherSubject
+          },
+        },
         classes: true,
       },
       take: ITEM_PER_PAGE,
@@ -143,6 +152,7 @@ const TeacherListPage = async ({
     }),
     prisma.teacher.count({ where: query }),
   ]);
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
