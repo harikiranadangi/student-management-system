@@ -8,100 +8,101 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
+type SubjectList = Subject & { teachers: { Teacher: Teacher }[] };
 
-type SubjectList = Subject & {teachers:Teacher[]}
-
-
-  const renderRow = (item: SubjectList, role: string | null) => (
-    <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-      <td className="flex items-center gap-4 p-4">
+const renderRow = (item: SubjectList, role: string | null) => (
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
+    <td className="flex items-center gap-4 p-4">
       {item.name}
-      </td>
-      <td className="hidden md:table-cell">{item.teachers.map(teacher=>teacher.name).join(", ")}</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" && (
-            <>
-            <FormContainer table="subject" type="update" data={item} /> 
-            <FormContainer table="subject" type="delete" id={item.id}/> 
-            </>
-           )}
-        </div>
-      </td>
-    </tr>
-  );
+    </td>
+    <td className="hidden md:table-cell">
+      {item.teachers.map((teacherSubject) => teacherSubject.Teacher?.name).join(", ")} {/* Access the Teacher name */}
+    </td>
+    <td>
+      <div className="flex items-center gap-2">
+        {role === "admin" && (
+          <>
+            <FormContainer table="subject" type="update" data={item} />
+            <FormContainer table="subject" type="delete" id={item.id} />
+          </>
+        )}
+      </div>
+    </td>
+  </tr>
+);
 
-  const SubjectList = async ({
-    searchParams,
-  }: {
-    searchParams: { [key: string]: string | undefined };
-  }) => {
 
-    // Fetch user info and role
-    const { userId, role } = await fetchUserInfo();
+const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
+  const { userId, role } = await fetchUserInfo();
 
-    const columns = [
-      {
-        header: "Subject Name",
-        accessor: "name",
-      },
-      {
-        header: "Teachers",
-        accessor: "teachers",
-        className: "hidden md:table-cell",
-      },
-      ...(role === "admin"
-        ? [
-            {
-              header: "Actions",
-              accessor: "action",
-            },
-          ]
-        : []),
-    ];
+  const columns = [
+    {
+      header: "Subject Name",
+      accessor: "name",
+    },
+    {
+      header: "Teachers",
+      accessor: "teachers",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
 
-    // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
-    const p = page ? parseInt(page) : 1;
-  
-    // Initialize Prisma query object
-    const query: Prisma.SubjectWhereInput = {};
-  
-    // Dynamically add filters based on query parameters
-    if (queryParams) {
-      for (const [key, value] of Object.entries(queryParams)) {
-        if (value !== undefined) {
-          switch (key) {
-            case "classId":
-              query.lessons = {
-                some: {
-                  classId: parseInt(value),
-                },
-              };
-              break;
-            case "search":
-              query.name = { contains: value };
-              break;
-            default:
-              break;
-          }
+  const p = page ? parseInt(page) : 1;
+
+  const query: Prisma.SubjectWhereInput = {};
+
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId":
+            query.lessons = {
+              some: {
+                classId: parseInt(value),
+              },
+            };
+            break;
+          case "search":
+            query.name = { contains: value };
+            break;
+          default:
+            break;
         }
       }
     }
-  
-    // Fetch teachers and include related fields (subjects, classes)
-    const [data, count] = await prisma.$transaction([
-      prisma.subject.findMany({
-        where: query,
-        include: {
-          teachers: true,  
+  }
+
+  const [data, count] = await prisma.$transaction([
+    prisma.subject.findMany({
+      where: query,
+      include: {
+        teachers: {
+          include: {
+            Teacher: { // Include the Teacher model correctly
+              select: {
+                name: true, // Select the name field of Teacher
+              },
+            },
+          },
         },
-        take: ITEM_PER_PAGE,
-        skip: ITEM_PER_PAGE * (p - 1),
-      }),
-      prisma.subject.count({ where: query }),
-    ]);
+      },
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
+    }),
+    prisma.subject.count({ where: query }),
+  ]);
+  
+  
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -118,15 +119,15 @@ type SubjectList = Subject & {teachers:Teacher[]}
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-                <FormContainer table="subject" type="create"  /> 
+              <FormContainer table="subject" type="create" />
             )}
           </div>
         </div>
       </div>
-      
+
       {/* LIST: Description */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
-      
+
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>
