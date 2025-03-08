@@ -31,6 +31,7 @@
     "next": "^15.1.7",
     "next-cloudinary": "^6.16.0",
     "node-fetch": "^3.3.2",
+    "playcanvas": "^2.5.1",
     "react": "^18.3.1",
     "react-big-calendar": "^1.16.3",
     "react-calendar": "^5.1.0",
