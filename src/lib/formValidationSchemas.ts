@@ -11,14 +11,13 @@ export const subjectSchema = z.object({
 // Infer the form data type from schema
 export type SubjectSchema = z.infer<typeof subjectSchema>;
 
-// Define the schema with zod
 export const classSchema = z.object({
   id: z.coerce.number().optional(),
-  name: z.string().min(1, { message: 'Class Name is required!' }),
-  supervisorId: z.coerce.string().optional(),
-  gradeId: z.coerce.number().min(1, { message: 'gradeId is required!' }),
-  newGrade: z.string().optional(), // ✅ Add this field
+  name: z.string().min(1, { message: "Class Name is required!" }),
+  supervisorId: z.string().nullable().optional(),
+  gradeId: z.coerce.number().min(1, { message: "Grade selection is required!" }),
 });
+
 
 // Infer the form data type from schema
 export type ClassSchema = z.infer<typeof classSchema>;
