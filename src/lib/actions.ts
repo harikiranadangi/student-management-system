@@ -272,11 +272,7 @@ export const createTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                subjects: {
-                    connect: data.subjects?.map((subjectId: string) => ({
-                        id: Number(subjectId), // Ensure correct ID type
-                    })) ?? [], // Use '?? []' to prevent errors if data.subjects is undefined
-                },
+                
                 
             },
         });
@@ -349,11 +345,7 @@ export const updateTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                subjects: {
-                    set: data.subjects?.map((subjectId: string) => ({
-                        id: parseInt(subjectId),
-                    })),
-                },
+                
             },
         });
 
@@ -659,7 +651,7 @@ export const markAttendance = async (classId: string, absentees: string[]) => {
     }));
 
     // Insert attendance records into the database
-    await prisma.attendance.createMany({ data: attendanceRecords });
+    // await prisma.attendance.createMany({ data: attendanceRecords });
 
     return { success: true, message: "Attendance marked successfully" };
   } catch (error) {
