@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS clerk_users (
     username VARCHAR UNIQUE NOT NULL,
     password VARCHAR NOT NULL,
     name VARCHAR NOT NULL,
-    surname VARCHAR,
 	role VARCHAR NOT NULL
 );
 
@@ -34,7 +33,7 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 INSERT INTO clerk_users (id, username, password, name, surname)
 VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
 
-COPY clerk_users(id, username, password, name, surname, role)
+COPY clerk_users(id, username, password, name, role)
 FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
 WITH CSV HEADER DELIMITER ',';
 
