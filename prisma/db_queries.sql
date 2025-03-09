@@ -11,20 +11,40 @@ CREATE TABLE IF NOT EXISTS clerk_users (
     username VARCHAR UNIQUE NOT NULL,
     password VARCHAR NOT NULL,
     name VARCHAR NOT NULL,
-    surname VARCHAR NOT NULL
+    surname VARCHAR,
+	role VARCHAR NOT NULL
 );
 
 SELECT * FROM clerk_users;
--- DROP TABLE IF EXISTS "Users" CASCADE;
+DROP TABLE IF EXISTS "clerk_users" CASCADE;
 
 SELECT username FROM clerk_users WHERE username IN (
-    '9182610410', '8374970989', '9676334505', '8885890911', '9494645918', '9440424287'
+    '14384A_01'
 );
 
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
 
 DELETE FROM clerk_users;
+
+SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'clerk_users';
+
+
+
+INSERT INTO clerk_users (id, username, password, name, surname)
+VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
+
+COPY clerk_users(id, username, password, name, surname, role)
+FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
+WITH CSV HEADER DELIMITER ',';
+
+
+
+
+
+
+
+
 
 
 
