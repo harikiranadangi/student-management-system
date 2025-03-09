@@ -1,6 +1,6 @@
 
 
-export const ITEM_PER_PAGE = 15
+export const ITEM_PER_PAGE = 25
 
 type RouteAccessMap = {
   [key: string]: string[]; // Maps routes to allowed roles
