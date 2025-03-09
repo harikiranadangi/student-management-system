@@ -1,5 +1,5 @@
+import * as dotenv from "dotenv";
 import axios from "axios";
-import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
@@ -70,3 +70,5 @@ async function syncUsersToClerk() {
 
 // Run the sync process
 syncUsersToClerk();
+
+//npx tsx scripts/syncClerkUsers.ts
