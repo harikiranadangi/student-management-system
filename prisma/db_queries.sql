@@ -21,6 +21,11 @@ SELECT * FROM "Announcement";
 -- Retrieve all records from the Student table
 SELECT * FROM "Student";
 
+SELECT * FROM "Student" 
+ORDER BY "classId" ASC, "gender" DESC, "name" ASC;
+
+
+
 -- Retrieve all records from the Grade table
 SELECT * FROM "Grade";
 
@@ -62,3 +67,6 @@ SELECT * FROM "StudentFees";
 
 -- Retrieve all records from the TeacherSubject table
 SELECT * FROM "TeacherSubject";
+
+
+
