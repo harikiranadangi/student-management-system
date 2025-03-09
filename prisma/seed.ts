@@ -271,3 +271,4 @@ main()
 // This will seed the data from the CSV file to the database
 // You can also run the seed script using the following command:
 // npm run seed
+// npx tsx prisma/seed.ts
