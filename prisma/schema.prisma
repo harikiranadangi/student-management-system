@@ -57,6 +57,8 @@ model Class {
   @@map("class")
 }
 
+
+
 model Event {
   id          Int      @id @default(autoincrement())
   title       String
@@ -246,6 +248,14 @@ model TeacherSubject {
   Teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@id([teacherId, subjectId])
+}
+
+model clerk_users {
+  id       String @id @db.VarChar
+  username String @unique @db.VarChar
+  password String @db.VarChar
+  name     String @db.VarChar
+  surname  String @db.VarChar
 }
 
 enum FeeTerm {
