@@ -60,7 +60,7 @@ const StudentListPage = async ({
   const p = page ? parseInt(page) : 1;
 
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
+  const { role } = await fetchUserInfo();
 
   const columns = [
     { header: "Student Name", accessor: "name" },
