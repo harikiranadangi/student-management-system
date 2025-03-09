@@ -255,7 +255,6 @@ model clerk_users {
   username String  @unique @db.VarChar
   password String  @db.VarChar
   name     String  @db.VarChar
-  surname  String?  @db.VarChar
   role     String  @default("student") @db.VarChar
 }
 
