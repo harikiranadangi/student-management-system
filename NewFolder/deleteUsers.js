@@ -1,7 +1,6 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
-// Load environment variables from .env file
 dotenv.config();
 
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
@@ -11,10 +10,13 @@ if (!CLERK_SECRET_KEY) {
     process.exit(1);
 }
 
-async function deleteAllUsers() {
-    try {
-        // Fetch all users from Clerk
-        const usersResponse = await fetch('https://api.clerk.dev/v1/users', {
+async function fetchAllUsers() {
+    let users = [];
+    let offset = 0;
+    const limit = 100; // Clerk allows up to 100 users per request
+
+    while (true) {
+        const response = await fetch(`https://api.clerk.dev/v1/users?limit=${limit}&offset=${offset}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${CLERK_SECRET_KEY}`,
@@ -22,14 +24,28 @@ async function deleteAllUsers() {
             }
         });
 
-        const users = await usersResponse.json();
+        const data = await response.json();
 
-        if (!Array.isArray(users) || users.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
+            break; // No more users left to fetch
+        }
+
+        users = users.concat(data);
+        offset += limit; // Move to the next batch
+    }
+
+    return users;
+}
+
+async function deleteAllUsers() {
+    try {
+        const users = await fetchAllUsers();
+
+        if (users.length === 0) {
             console.log("No users found.");
             return;
         }
 
-        // Loop through each user and delete them
         for (const user of users) {
             const deleteResponse = await fetch(`https://api.clerk.dev/v1/users/${user.id}`, {
                 method: 'DELETE',
@@ -50,8 +66,8 @@ async function deleteAllUsers() {
     }
 }
 
-// Run the function
 deleteAllUsers();
+
 
 // * Run the above code
 // * node D:\GITHUB\student-management-system\NewFolder\deleteUsers.js
