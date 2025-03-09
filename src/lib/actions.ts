@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
-import prisma from "./prisma"
 import { clerkClient } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
 
@@ -167,33 +166,67 @@ export const deleteSubject = async (
 
 // * ---------------------------------------------- CLASS SCHEMA --------------------------------------------------------
 
+
+
+// Initialize Prisma Client
+
+const prisma = new PrismaClient();
+
 export const createClass = async (
-    currentState: CurrentState,
-    data: ClassSchema
+    currentState: { success: boolean; error: boolean },
+    data: { name: string; supervisorId?: string | null; gradeId: number }
 ) => {
     try {
-        await prisma.class.create({
-            data: {
-                name: data.name,
-                supervisorId: data.supervisorId,
-                gradeId: data.gradeId,
-            },
+        console.log("Testing Prisma Connection...");
+        await prisma.$connect();
+        console.log("Prisma is connected!");
+
+        // ✅ Correct relation names
+        const formattedData: any = {
+            name: data.name,
+            Grade: { connect: { id: Number(data.gradeId) } }, // ✅ Corrected "grade" → "Grade"
+        };
+
+        if (data.supervisorId && data.supervisorId.trim() !== "") {
+            formattedData.Teacher = { connect: { id: data.supervisorId } }; // ✅ Corrected "teacher" → "Teacher"
+        }
+
+        console.log("Final Data Before Prisma Create:", JSON.stringify(formattedData, null, 2));
+
+        // ✅ Ensure required fields are present
+        if (!formattedData.name || !formattedData.Grade.connect.id) {
+            throw new Error("Invalid input: Missing required fields");
+        }
+
+        // ✅ Create the class
+        const newClass = await prisma.class.create({
+            data: formattedData,
         });
 
-        // revalidatePath("/list/class")
+        console.log("Class Created Successfully:", newClass);
+
         return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
+    } catch (err: any) {
+        console.error("Create Class Error:", err);
+
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+            console.error("Prisma Error Code:", err.code);
+        }
+
+        return { success: false, error: true, message: err.message };
     }
 };
+
+
 
 export const updateClass = async (
     currentState: CurrentState,
     data: ClassSchema
 ) => {
     try {
+        console.log("Updated Data:", data)
         await prisma.class.update({
+            
             where: { id: data.id },
             data: {
                 name: data.name,
@@ -216,13 +249,14 @@ export const deleteClass = async (
 ) => {
     const id = data.get("id") as string;
     try {
+        console.log("Deleted Data:", data)    
         await prisma.class.delete({
             where: {
                 id: parseInt(id)
             },
         });
 
-        // revalidatePath("/list/class")
+        revalidatePath("/list/class")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
