@@ -227,7 +227,7 @@ export const updateClass = async (
     try {
         console.log("Updated Data:", data)
         await prisma.class.update({
-            
+
             where: { id: data.id },
             data: {
                 name: data.name,
@@ -250,7 +250,7 @@ export const deleteClass = async (
 ) => {
     const id = data.get("id") as string;
     try {
-        console.log("Deleted Data:", data)    
+        console.log("Deleted Data:", data)
         await prisma.class.delete({
             where: {
                 id: parseInt(id)
@@ -307,8 +307,8 @@ export const createTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                
-                
+
+
             },
         });
 
@@ -380,7 +380,7 @@ export const updateTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                
+
             },
         });
 
@@ -464,7 +464,7 @@ export const createStudent = async (
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
-                parentName:data.parentName,
+                parentName: data.parentName,
                 dob: data.dob || new Date(),
                 email: data.email || null,  // If no email, set to null
                 phone: data.phone,
@@ -487,12 +487,12 @@ export const createStudent = async (
         console.error("Error details:", err.message || err);
         console.log("Clerk Error Details:", err.errors);
 
-        return { 
-            success: false, 
-            error: true, 
-            message: err.message || "An unexpected error occurred while creating the student." 
+        return {
+            success: false,
+            error: true,
+            message: err.message || "An unexpected error occurred while creating the student."
         };
-        
+
 
     }
 };
@@ -529,7 +529,7 @@ export const updateStudent = async (
             where: { id: data.id },
         });
 
-        
+
         // Update the student in the database
         await prisma.student.update({
             where: {
@@ -670,28 +670,28 @@ export const deleteExam = async (
 
 
 export const markAttendance = async (classId: string, absentees: string[]) => {
-  try {
-    // Fetch all students of the selected class
-    const students = await prisma.student.findMany({
-      where: { classId: parseInt(classId) },
-      select: { id: true },
-    });
+    try {
+        // Fetch all students of the selected class
+        const students = await prisma.student.findMany({
+            where: { classId: parseInt(classId) },
+            select: { id: true },
+        });
 
-    // Create attendance records
-    const attendanceRecords = students.map((student) => ({
-      studentId: student.id,
-      date: new Date(),
-      status: absentees.includes(student.id) ? "Absent" : "Present",
-    }));
+        // Create attendance records
+        const attendanceRecords = students.map((student) => ({
+            studentId: student.id,
+            date: new Date(),
+            status: absentees.includes(student.id) ? "Absent" : "Present",
+        }));
 
-    // Insert attendance records into the database
-    // await prisma.attendance.createMany({ data: attendanceRecords });
+        // Insert attendance records into the database
+        // await prisma.attendance.createMany({ data: attendanceRecords });
 
-    return { success: true, message: "Attendance marked successfully" };
-  } catch (error) {
-    console.error("Error marking attendance:", error);
-    return { success: false, message: "Failed to mark attendance" };
-  }
+        return { success: true, message: "Attendance marked successfully" };
+    } catch (error) {
+        console.error("Error marking attendance:", error);
+        return { success: false, message: "Failed to mark attendance" };
+    }
 };
 
 
@@ -714,7 +714,8 @@ export const createLesson = async (
                 subjectId: data.subjectId,
                 classId: data.classId,
                 teacherId: data.teacherId,
-        }});
+            }
+        });
 
         console.log("Created Lesson:", "[" + data.id + ", " + data.name + ", " + data.teacherId + "]")
 
