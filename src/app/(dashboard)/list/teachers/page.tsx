@@ -27,35 +27,34 @@ const renderRow = (item: TeachersList, role: string | null) => (
         height={40}
         className="object-cover rounded-full h-15 w-15 md:hidden xl:block"
       />
-      <div className="flex flex-col">
-        <h3 className="font-semibold">{item.name ?? 'No name available'}</h3>
-        <p className="text-xs text-gray-500">{item?.id ?? 'No email available'}</p>
+      <div className="flex flex-col w-1 leading-tight">
+        <h3 className="text-base font-semibold">{item.name ?? 'No name available'}</h3>
+        <p className="text-xs">{item?.username ?? 'No email available'}</p>
       </div>
     </td>
 
-    {/* Directly use the strings from subjects and classes */}
-    <td className="hidden md:table-cell">
-      {item.subjects?.map((ts) => ts.Subject.name).join(", ") || "No subjects"}
-    </td>
+      <td className="px-2 w-36 md:table-cell">{item.phone}</td>
+      {/* Directly use the strings from subjects and classes */}
+      <td className="hidden w-32 md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
+      <td className="hidden w-32 truncate md:table-cell">
+        {item.subjects?.map((ts) => ts.Subject.name).join(", ") || "No subjects"}
+      </td>
 
-    <td className="hidden md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
-    <td className="hidden md:table-cell">{item.phone}</td>
-    <td className="hidden md:table-cell">{item.address}</td>
-    {/* Actions Column */}
-    <td>
-      <div className="flex items-center gap-2">
-        <Link href={`/list/teachers/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
-            <Image src="/view.png" alt="View" width={16} height={16} />
-          </button>
-        </Link>
-        {role === "admin" && (
-          <>
-            <FormContainer table="teacher" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
+      {/* Actions Column */}
+      <td className="flex items-center justify-end gap-2 p-2">
+        <div className="flex items-center gap-2">
+          <Link href={`/list/teachers/${item.id}`}>
+            <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+              <Image src="/view.png" alt="View" width={16} height={16} />
+            </button>
+          </Link>
+          {role === "admin" && (
+            <>
+              <FormContainer table="teacher" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
   </tr>
 );
 
@@ -77,9 +76,9 @@ const TeacherListPage = async ({
     },
 
     {
-      header: "Subjects",
-      accessor: "subjects",
-      className: "hidden md:table-cell",
+      header: "Phone",
+      accessor: "phone",
+      className: "lg:table-cell",
     },
     {
       header: "Classes",
@@ -87,21 +86,22 @@ const TeacherListPage = async ({
       className: "hidden md:table-cell",
     },
     {
-      header: "Phone",
-      accessor: "phone",
-      className: "hidden lg:table-cell",
+      header: "Subjects",
+      accessor: "subjects",
+      className: "hidden md:table-cell",
     },
-    {
-      header: "Address",
-      accessor: "address",
-      className: "hidden lg:table-cell",
-    },
+    // {
+    //   header: "Address",
+    //   accessor: "address",
+    //   className: "hidden lg:table-cell",
+    // },
     ...(role === "admin"
       ? [
         {
           header: "Actions",
           accessor: "action",
-        },
+          className: "text-right justify-end px-4",
+        },      
       ]
       : []),
   ];
