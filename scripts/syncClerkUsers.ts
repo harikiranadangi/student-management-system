@@ -31,7 +31,7 @@ async function createClerkUser(user: any) {
         username: user.username,
         email_addresses: [`${user.username}@example.com`], // Change this if needed
         password: user.password,
-        name: user.full_name,
+        full_name: user.name,
         public_metadata: { role: "student" }, // Assign role in Clerk
       },
       {
