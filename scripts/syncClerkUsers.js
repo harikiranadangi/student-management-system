@@ -81,7 +81,7 @@ function createClerkUser(user) {
                             username: user.username,
                             email_addresses: ["".concat(user.username, "@example.com")], // Change this if needed
                             password: user.password,
-                            name: user.full_name,
+                            full_name: user.name,
                             public_metadata: { role: "student" }, // Assign role in Clerk
                         }, {
                             headers: {
