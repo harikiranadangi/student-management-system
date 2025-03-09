@@ -17,7 +17,7 @@ async function main() {
 
   // Delete in correct order to maintain referential integrity
   // await prisma.teacher.deleteMany();
-  // await prisma.student.deleteMany();
+  await prisma.student.deleteMany();
   // await prisma.class.deleteMany();
   // await prisma.subject.deleteMany();
   // await prisma.grade.deleteMany();
@@ -130,86 +130,89 @@ async function main() {
   console.log("✅ Subjects seeded");
 
 
-  console.log("📂 Reading CSV file...");
+    console.log("📂 Reading CSV file...");
 
-  const studentsFilePath = path.join(__dirname, "../NewFolder/students_cleaned.csv");
+    const studentsFilePath = path.join(__dirname, "../NewFolder/students_cleaned.csv");
 
-  // Check if CSV file exists
-  if (!fs.existsSync(studentsFilePath)) {
-    console.error(`❌ Error: CSV file not found at ${studentsFilePath}`);
-    process.exit(1);
-  }
-
-  const students: any[] = [];
-
-  // Function to parse DOB safely
-  function parseDate(dateString: string | undefined): string | Date {
-    if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
-      return "NA"; // ✅ Store as "NA" instead of null
+    // Check if CSV file exists
+    if (!fs.existsSync(studentsFilePath)) {
+      console.error(`❌ Error: CSV file not found at ${studentsFilePath}`);
+      process.exit(1);
     }
 
-    // Check if the date follows DD-MM-YYYY format
-    const parts = dateString.split("-");
-    if (parts.length === 3) {
-      const [day, month, year] = parts.map(Number);
+    const students: any[] = [];
 
-      // Validate parsed numbers
-      if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
-        console.warn(`⚠️ Invalid date: ${dateString}, saving as "NA"`);
-        return "NA";
+    // Function to parse DOB safely
+    function parseDate(dateString: string | undefined): string | Date {
+      if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
+        return "NA"; // ✅ Store as "NA" instead of null
       }
 
-      return new Date(`${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`);
+      // Check if the date follows DD-MM-YYYY format
+      const parts = dateString.split("-");
+      if (parts.length === 3) {
+        const [day, month, year] = parts.map(Number);
+
+        // Validate parsed numbers
+        if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
+          console.warn(`⚠️ Invalid date: ${dateString}, saving as "NA"`);
+          return "NA";
+        }
+
+        return new Date(`${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`);
+      }
+
+      console.warn(`⚠️ Invalid format: ${dateString}, saving as "NA"`);
+      return "NA";
     }
 
-    console.warn(`⚠️ Invalid format: ${dateString}, saving as "NA"`);
-    return "NA";
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    fs.createReadStream(studentsFilePath)
-      .pipe(csvParser())
-      .on("data", (row) => {
-        const dob = parseDate(row.dob); // ✅ Ensure `dob` is either Date or "NA"
-
-        students.push({
-          id: row.id,
-          username: row.username,
-          name: row.name,
-          surname: row.surname,
-          parentName: row.parentName,
-          phone: row.phone,
-          address: row.address,
-          gender: row.gender,
-          dob, // ✅ Always present (either Date or "NA")
-          classId: Number(row.classId),
-        });
-      })
-      .on("end", async () => {
-        console.log(`📊 Found ${students.length} students in CSV.`);
-
-        if (students.length > 0) {
-          await prisma.student.createMany({
-            data: students.map((s) => ({
-              ...s,
-              dob: s.dob === "NA" ? "NA" : s.dob, // ✅ Ensure "NA" is stored properly
-            })),
-            skipDuplicates: true,
+    await new Promise<void>((resolve, reject) => {
+      fs.createReadStream(studentsFilePath)
+        .pipe(csvParser())
+        .on("data", (row) => {
+          const dob = parseDate(row.dob);
+    
+          students.push({
+            id: row.id,
+            username: row.username,
+            name: row.name,
+            surname: row.surname,
+            parentName: row.parentName,
+            phone: row.phone,
+            address: row.address,
+            gender: row.gender,
+            dob,
+            classId: Number(row.classId),
           });
-          console.log("🎉 Students seeded successfully!");
-        } else {
-          console.warn("⚠️ No valid students to insert!");
-        }
-        resolve();
-      })
-      .on("error", (error) => {
-        console.error("❌ Error reading CSV:", error);
-        reject(error);
-      });
-  });
-
-
-
+        })
+        .on("end", async () => {
+          console.log(`📊 Found ${students.length} students in CSV.`);
+    
+          // ✅ Sort students before inserting into PostgreSQL
+          students.sort((a, b) => {
+            if (a.classId !== b.classId) return a.classId - b.classId; // Sort by classId
+            if (a.gender !== b.gender) return b.gender.localeCompare(a.gender); // Female first
+            return a.name.localeCompare(b.name); // Sort by name (A-Z)
+          });
+    
+          console.log("📌 Sorted student data:", students.slice(0, 5)); // ✅ Debugging
+    
+          if (students.length > 0) {
+            await prisma.student.createMany({
+              data: students,
+              skipDuplicates: true,
+            });
+            console.log("🎉 Students seeded successfully!");
+          } else {
+            console.warn("⚠️ No valid students to insert!");
+          }
+          resolve();
+        })
+        .on("error", (error) => {
+          console.error("❌ Error reading CSV:", error);
+          reject(error);
+        });
+    });
 
   // ✅ Seed Teachers
   await prisma.teacher.createMany({
