@@ -14,18 +14,18 @@ const matchers = Object.keys(routeAccessMap).map((route) => ({
 export default clerkMiddleware(async (auth, req) => {
   // if (isProtectedRoute(req)) auth().protect()
 
-  const { sessionClaims } = await auth();
-
+  const { sessionClaims, sessionId } = await auth(); 
   const role = (sessionClaims?.metadata as {role?:string})?.role
+  
+  console.log("Session ID:", sessionId); // Debugging log
+  console.log("User role detected:", role); // Debugging log
+  
 
   for ( const { matcher, allowedRoles} of matchers){
     if(matcher(req) && !allowedRoles.includes(role!)){
       return NextResponse.redirect(new URL(`/${role}`, req.url));
     }
   }
-
-
-
 });
 
 
