@@ -15,23 +15,28 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true) // Track loading state
 
   useEffect(() => {
-    if (isUserLoaded && isSessionLoaded) {
-      setIsLoading(false) // Ensure loading state updates correctly
+    console.log("Checking authentication state..."); 
+    console.log("isUserLoaded:", isUserLoaded, "isSessionLoaded:", isSessionLoaded);
+    console.log("isSignedIn:", isSignedIn);
+    
+    if (!isUserLoaded || !isSessionLoaded) return; // Wait until both are loaded
   
-      if (isSignedIn && user) {
-        const role = user?.publicMetadata?.role
-        if (role) {
-          router.replace(`/${role}`) // Use `replace` to prevent going back to login page
-        } else {
-          setError('User role not found.')
-        }
-      } 
+    setIsLoading(false);
+    
+    if (isSignedIn && user) {
+      const role = user?.publicMetadata?.role;
+      console.log("User signed in with role:", role); // Debugging log
+  
+      if (role) {
+        console.log(`Redirecting to: /${role}`);
+        router.replace(`/${role}`);
+        return;
+      } else {
+        setError("User role not found.");
+      }
     }
-  }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router])
-  
-  
+  }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router]);
 
-  
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
