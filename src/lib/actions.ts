@@ -404,10 +404,6 @@ export const createStudent = async (
             include: { _count: { select: { students: true } } }
         });
 
-        // if (classItem && classItem.capacity === classItem._count.students) {
-        //     return { success: false, error: true }
-        // }
-
         // Check if username already exists by accessing the 'data' property
         const userListResponse = await client.users.getUserList({
             query: data.username, // Ensure we search by the username
@@ -445,6 +441,9 @@ export const createStudent = async (
 
             },
         });
+
+        // Log success message
+        console.log(`Created Student: [Username: ${data.username}, Name: ${data.name}, Password: ${data.password}, Class ID: ${data.classId}]`);
 
         return { success: true, error: false };
 
