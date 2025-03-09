@@ -37,12 +37,19 @@ const ClassForm = ({
         error: false,
     });
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
+    const onSubmit = handleSubmit((formData) => {
+        console.log("Submitting Form Data:", formData); // Debugging Log
+    
+        if (!formData || typeof formData !== "object") {
+            toast.error("Invalid data submitted!");
+            return;
+        }
+    
         React.startTransition(() => {
-            formAction(data); // Dispatching inside startTransition
+            formAction(formData);
         });
     });
+    
 
     const router = useRouter()
 
