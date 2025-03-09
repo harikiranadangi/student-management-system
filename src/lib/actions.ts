@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
-import prisma from "./prisma"
 import { clerkClient } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
+
 
 
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
@@ -167,33 +167,67 @@ export const deleteSubject = async (
 
 // * ---------------------------------------------- CLASS SCHEMA --------------------------------------------------------
 
+
+
+// Initialize Prisma Client
+
+const prisma = new PrismaClient();
+
 export const createClass = async (
-    currentState: CurrentState,
-    data: ClassSchema
+    currentState: { success: boolean; error: boolean },
+    data: { name: string; supervisorId?: string | null; gradeId: number }
 ) => {
     try {
-        await prisma.class.create({
-            data: {
-                name: data.name,
-                supervisorId: data.supervisorId,
-                gradeId: data.gradeId,
-            },
+        console.log("Testing Prisma Connection...");
+        await prisma.$connect();
+        console.log("Prisma is connected!");
+
+        // ✅ Correct relation names
+        const formattedData: any = {
+            name: data.name,
+            Grade: { connect: { id: Number(data.gradeId) } }, // ✅ Corrected "grade" → "Grade"
+        };
+
+        if (data.supervisorId && data.supervisorId.trim() !== "") {
+            formattedData.Teacher = { connect: { id: data.supervisorId } }; // ✅ Corrected "teacher" → "Teacher"
+        }
+
+        console.log("Final Data Before Prisma Create:", JSON.stringify(formattedData, null, 2));
+
+        // ✅ Ensure required fields are present
+        if (!formattedData.name || !formattedData.Grade.connect.id) {
+            throw new Error("Invalid input: Missing required fields");
+        }
+
+        // ✅ Create the class
+        const newClass = await prisma.class.create({
+            data: formattedData,
         });
 
-        // revalidatePath("/list/class")
+        console.log("Class Created Successfully:", newClass);
+
         return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
+    } catch (err: any) {
+        console.error("Create Class Error:", err);
+
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+            console.error("Prisma Error Code:", err.code);
+        }
+
+        return { success: false, error: true, message: err.message };
     }
 };
+
+
 
 export const updateClass = async (
     currentState: CurrentState,
     data: ClassSchema
 ) => {
     try {
+        console.log("Updated Data:", data)
         await prisma.class.update({
+
             where: { id: data.id },
             data: {
                 name: data.name,
@@ -216,13 +250,14 @@ export const deleteClass = async (
 ) => {
     const id = data.get("id") as string;
     try {
+        console.log("Deleted Data:", data)
         await prisma.class.delete({
             where: {
                 id: parseInt(id)
             },
         });
 
-        // revalidatePath("/list/class")
+        revalidatePath("/list/class")
         return { success: true, error: false };
     } catch (err) {
         console.log(err)
@@ -272,8 +307,8 @@ export const createTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                
-                
+
+
             },
         });
 
@@ -345,7 +380,7 @@ export const updateTeacher = async (
                 gender: data.gender,
                 img: data.img || null,
                 bloodType: data.bloodType || null,
-                
+
             },
         });
 
@@ -429,7 +464,7 @@ export const createStudent = async (
                 username: data.username,
                 name: data.name,
                 surname: data.surname,
-                parentName:data.parentName,
+                parentName: data.parentName,
                 dob: data.dob || new Date(),
                 email: data.email || null,  // If no email, set to null
                 phone: data.phone,
@@ -452,12 +487,12 @@ export const createStudent = async (
         console.error("Error details:", err.message || err);
         console.log("Clerk Error Details:", err.errors);
 
-        return { 
-            success: false, 
-            error: true, 
-            message: err.message || "An unexpected error occurred while creating the student." 
+        return {
+            success: false,
+            error: true,
+            message: err.message || "An unexpected error occurred while creating the student."
         };
-        
+
 
     }
 };
@@ -494,7 +529,7 @@ export const updateStudent = async (
             where: { id: data.id },
         });
 
-        
+
         // Update the student in the database
         await prisma.student.update({
             where: {
@@ -635,28 +670,28 @@ export const deleteExam = async (
 
 
 export const markAttendance = async (classId: string, absentees: string[]) => {
-  try {
-    // Fetch all students of the selected class
-    const students = await prisma.student.findMany({
-      where: { classId: parseInt(classId) },
-      select: { id: true },
-    });
+    try {
+        // Fetch all students of the selected class
+        const students = await prisma.student.findMany({
+            where: { classId: parseInt(classId) },
+            select: { id: true },
+        });
 
-    // Create attendance records
-    const attendanceRecords = students.map((student) => ({
-      studentId: student.id,
-      date: new Date(),
-      status: absentees.includes(student.id) ? "Absent" : "Present",
-    }));
+        // Create attendance records
+        const attendanceRecords = students.map((student) => ({
+            studentId: student.id,
+            date: new Date(),
+            status: absentees.includes(student.id) ? "Absent" : "Present",
+        }));
 
-    // Insert attendance records into the database
-    // await prisma.attendance.createMany({ data: attendanceRecords });
+        // Insert attendance records into the database
+        // await prisma.attendance.createMany({ data: attendanceRecords });
 
-    return { success: true, message: "Attendance marked successfully" };
-  } catch (error) {
-    console.error("Error marking attendance:", error);
-    return { success: false, message: "Failed to mark attendance" };
-  }
+        return { success: true, message: "Attendance marked successfully" };
+    } catch (error) {
+        console.error("Error marking attendance:", error);
+        return { success: false, message: "Failed to mark attendance" };
+    }
 };
 
 
@@ -679,7 +714,8 @@ export const createLesson = async (
                 subjectId: data.subjectId,
                 classId: data.classId,
                 teacherId: data.teacherId,
-        }});
+            }
+        });
 
         console.log("Created Lesson:", "[" + data.id + ", " + data.name + ", " + data.teacherId + "]")
 
