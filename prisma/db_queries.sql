@@ -38,16 +38,9 @@ COPY clerk_users(id, username, password, name, surname, role)
 FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
 WITH CSV HEADER DELIMITER ',';
 
+SELECT * FROM "Student";
 
-
-
-
-
-
-
-
-
-
+SELECT * FROM "clerk_users";
 
 
 SELECT tablename FROM pg_tables WHERE schemaname = 'public';
@@ -86,6 +79,11 @@ SELECT * FROM "Student";
 SELECT * FROM "Student" 
 ORDER BY "classId" ASC, "gender" DESC, "name" ASC;
 
+-- First check the clerk_users table
+SELECT * FROM clerk_users WHERE id = '17159';
+
+-- If not found, check the students table
+SELECT * FROM "Student" WHERE id = '17159';
 
 
 -- Retrieve all records from the Grade table
