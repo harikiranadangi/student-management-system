@@ -194,7 +194,8 @@ model Student {
   results     Result[]
   Class       Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees StudentFees[]
-  clerkUser   ClerkUser?    
+  clerkUser   ClerkUser?
+  clerk_id    String?       @unique    
 
   @@index([classId])
 }
