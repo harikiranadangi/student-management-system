@@ -10,7 +10,7 @@ const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
 async function fetchStudentsFromDB() {
   try {
-    const students = await prisma.clerk_users.findMany({
+    const students = await prisma.clerkUser.findMany({
       where: { role: "student" }, // Fetch only students
     });
     console.log(`📢 Found ${students.length} students to sync.`);
