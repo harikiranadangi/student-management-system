@@ -57,8 +57,6 @@ model Class {
   @@map("class")
 }
 
-
-
 model Event {
   id          Int      @id @default(autoincrement())
   title       String
@@ -251,13 +249,12 @@ model TeacherSubject {
 }
 
 model clerk_users {
-  id       String  @id @db.VarChar
-  username String  @unique @db.VarChar
-  password String  @db.VarChar
-  name     String  @db.VarChar
-  role     String  @default("student") @db.VarChar
+  id        String @id @db.VarChar
+  username  String @unique @db.VarChar
+  password  String @db.VarChar
+  full_name String @db.VarChar
+  role      String @default("student") @db.VarChar
 }
-
 
 enum FeeTerm {
   TERM1
