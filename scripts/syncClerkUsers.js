@@ -140,3 +140,6 @@ function syncUsersToClerk() {
 }
 // Run the sync process
 syncUsersToClerk();
+
+// This script will fetch all students from the database and create Clerk users for them.
+// * npx tsx scripts/syncClerkUsers.ts
