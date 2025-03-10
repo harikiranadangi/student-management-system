@@ -23,15 +23,30 @@ async function fetchStudentsFromDB() {
 
 async function createClerkUser(user: any) {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Prevent rate limits
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Increased delay to 1s
+
+    // Extract first and last names
+    const nameParts = user.full_name.split(" ");
+    const firstName = nameParts[0]; // First word as first name
+    const lastName = nameParts.slice(1).join(" ") || ""; // Remaining as last name
+
+    console.log(`📤 Sending to Clerk:`, {
+      username: user.username,
+      email: `${user.username}@example.com`, // Ensure unique email
+      first_name: firstName,
+      last_name: lastName,
+      full_name: user.full_name,
+    });
 
     const response = await axios.post(
       `${CLERK_API_URL}/users`,
       {
         username: user.username,
-        email_addresses: [`${user.username}@example.com`], // Change this if needed
+        email_addresses: [`${user.username}@example.com`], // Ensure email format
         password: user.password,
-        full_name: user.name,
+        first_name: firstName, // Set first name
+        last_name: lastName, // Set last name
+        full_name: user.full_name, // Ensure full_name is stored
         public_metadata: { role: "student" }, // Assign role in Clerk
       },
       {
@@ -61,6 +76,7 @@ async function syncUsersToClerk() {
   }
 
   for (const student of students) {
+    console.log(`🔍 Syncing student:`, student);
     await createClerkUser(student);
   }
 
@@ -70,4 +86,4 @@ async function syncUsersToClerk() {
 // Run the sync process
 syncUsersToClerk();
 
-//npx tsx scripts/syncClerkUsers.ts
+// Run the script with: npx tsx scripts/syncClerkUsers.ts
