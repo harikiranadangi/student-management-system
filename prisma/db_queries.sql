@@ -18,12 +18,12 @@ SELECT * FROM "ClerkUser";
 DROP TABLE IF EXISTS "ClerkUser" CASCADE;
 
 
-SELECT s.*
+SELECT *
 FROM "Student" s
-JOIN ClerkUser cu ON s.id = cu.id
+JOIN "ClerkUser" cu ON s.id = cu.clerk_id
 WHERE cu.username = 's14384A';
 
-SELECT * FROM ClerkUser WHERE username = 's14384A';
+SELECT * FROM "ClerkUser" WHERE username = 's14384A';
 
 
 
@@ -35,6 +35,7 @@ DELETE FROM ClerkUser;
 
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'ClerkUser';
 
+SELECT id, username, clerk_id FROM "Student" WHERE clerk_id = 'user_2u7uazlBqLYKlsChmAcRyf32DkH';
 
 
 INSERT INTO ClerkUser (id, username, password, full_name, surname)
@@ -46,7 +47,9 @@ WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "Student";
 
-SELECT * FROM "ClerkUser";
+SELECT * FROM "Student" WHERE clerk_id IS NOT  NULL; 
+
+SELECT * FROM "ClerkUser" WHERE user_id IS NOT NULL;
 
 
 SELECT tablename FROM pg_tables WHERE schemaname = 'public';
@@ -55,6 +58,20 @@ SELECT c.*
 FROM class c
 JOIN "Student" s ON s.classId = c.id
 WHERE s.id = 'user_2u6ahhxsTFkUDWxoRuIksBMU69v';
+
+SELECT * FROM "Student" WHERE "id" = '17162';
+
+UPDATE "Student"
+SET "clerk_id" = 'user_2u7ubByZC3lSLGwSUvmNQJ83oFb'
+WHERE "id" = '17152'; -- Replace with the actual student ID
+
+UPDATE "Student" s
+SET clerk_id = c.user_id
+FROM "ClerkUser" c
+WHERE s.id = c.clerk_id;
+
+
+
 
 
 
@@ -107,6 +124,12 @@ SELECT * FROM "Teacher";
 -- Retrieve all records from the Event table
 SELECT * FROM "Event";
 
+INSERT INTO schedule (classId, title, startTime, endTime)
+VALUES 
+(1, 'Math Class', '2025-03-11 09:00:00', '2025-03-11 10:00:00'),
+(1, 'English Class', '2025-03-11 10:30:00', '2025-03-11 11:30:00');
+
+
 -- Retrieve all records from the Exam table
 SELECT * FROM "Exam";
 
@@ -124,6 +147,12 @@ SELECT * FROM "Homework";
 
 -- Retrieve all records from the Lesson table
 SELECT * FROM "Lesson";
+
+INSERT INTO lesson (name, day, classId, subject, startTime, endTime, teacherId)  
+VALUES  
+(1, 'Math', '2025-03-11 09:00:00', '2025-03-11 10:00:00', 5),  
+(1, 'English', '2025-03-11 10:30:00', '2025-03-11 11:30:00', 6);
+
 
 -- Retrieve all records from the Result table
 SELECT * FROM "Result";
