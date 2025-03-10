@@ -10,16 +10,22 @@ CREATE TABLE IF NOT EXISTS clerk_users (
     id VARCHAR PRIMARY KEY,
     username VARCHAR UNIQUE NOT NULL,
     password VARCHAR NOT NULL,
-    name VARCHAR NOT NULL,
+    full_name VARCHAR NOT NULL,
 	role VARCHAR NOT NULL
 );
 
 SELECT * FROM clerk_users;
 DROP TABLE IF EXISTS "clerk_users" CASCADE;
 
+ALTER TABLE clerk_users RENAME COLUMN name TO full_name;
+
+
+
 SELECT username FROM clerk_users WHERE username IN (
     '14384A_01'
 );
+
+
 
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
@@ -30,10 +36,10 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 
 
 
-INSERT INTO clerk_users (id, username, password, name, surname)
+INSERT INTO clerk_users (id, username, password, full_name, surname)
 VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
 
-COPY clerk_users(id, username, password, name, role)
+COPY clerk_users(id, username, password, full_name, role)
 FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
 WITH CSV HEADER DELIMITER ',';
 
@@ -43,6 +49,12 @@ SELECT * FROM "clerk_users";
 
 
 SELECT tablename FROM pg_tables WHERE schemaname = 'public';
+
+SELECT c.* 
+FROM class c
+JOIN "Student" s ON s.classId = c.id
+WHERE s.id = 'user_2u6ahhxsTFkUDWxoRuIksBMU69v';
+
 
 
 -- View all migration records from Prisma's migration table
