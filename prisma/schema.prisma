@@ -194,6 +194,7 @@ model Student {
   results     Result[]
   Class       Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees StudentFees[]
+  clerkUser   ClerkUser?    
 
   @@index([classId])
 }
@@ -248,13 +249,17 @@ model TeacherSubject {
   @@id([teacherId, subjectId])
 }
 
-model clerk_users {
-  id        String @id @db.VarChar
-  username  String @unique @db.VarChar
-  password  String @db.VarChar
-  full_name String @db.VarChar
-  role      String @default("student") @db.VarChar
+model ClerkUser {
+  clerk_id  String  @id @db.VarChar  // Keep as primary key
+  user_id   String? @unique          // New column for Clerk User ID
+  username  String  @unique
+  password  String  @db.VarChar
+  full_name String  @db.VarChar
+  role      String  @default("student") @db.VarChar
+  studentId String? @unique @db.VarChar  // Foreign Key (Optional, in case some users aren't students)
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
 }
+
 
 enum FeeTerm {
   TERM1
