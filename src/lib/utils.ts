@@ -16,12 +16,11 @@ export async function fetchUserInfo(): Promise<{ userId: string | null; role: st
     // Fetch session claims and user ID from the authentication system
     const { sessionClaims, userId } = await auth();
 
-    console.log("User ID fetched:", userId);
-
     // Extract role using the helper function
     const role = getRoleFromSession(sessionClaims);
 
-    console.log("Role fetched:", role);
+    // Return the user ID and role
+    console.log("User Info fetched:", { userId, role });
 
     return { userId, role };
   } catch (error) {
