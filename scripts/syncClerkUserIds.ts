@@ -47,7 +47,11 @@ async function fetchClerkUsers() {
     console.log(`✅ Total Clerk users fetched: ${users.length}`);
     return users;
   } catch (error) {
-    console.error("❌ Error fetching Clerk users:", error.response?.data || error.message);
+    if (axios.isAxiosError(error)) {
+      console.error("❌ Error fetching Clerk users:", error.response?.data || error.message);
+    } else {
+      console.error("❌ Error fetching Clerk users:", error);
+    }
     return [];
   }
 }
