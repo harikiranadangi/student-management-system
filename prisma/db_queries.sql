@@ -6,7 +6,7 @@ SELECT 'SELECT * FROM ' || tablename || ';'
 FROM pg_tables  
 WHERE schemaname = 'public';
 
-CREATE TABLE IF NOT EXISTS clerk_users (
+CREATE TABLE IF NOT EXISTS ClerkUser (
     id VARCHAR PRIMARY KEY,
     username VARCHAR UNIQUE NOT NULL,
     password VARCHAR NOT NULL,
@@ -14,38 +14,39 @@ CREATE TABLE IF NOT EXISTS clerk_users (
 	role VARCHAR NOT NULL
 );
 
-SELECT * FROM clerk_users;
-DROP TABLE IF EXISTS "clerk_users" CASCADE;
-
-ALTER TABLE clerk_users RENAME COLUMN name TO full_name;
+SELECT * FROM "ClerkUser";
+DROP TABLE IF EXISTS "ClerkUser" CASCADE;
 
 
+SELECT s.*
+FROM "Student" s
+JOIN ClerkUser cu ON s.id = cu.id
+WHERE cu.username = 's14384A';
 
-SELECT username FROM clerk_users WHERE username IN (
-    '14384A_01'
-);
+SELECT * FROM ClerkUser WHERE username = 's14384A';
+
 
 
 
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
 
-DELETE FROM clerk_users;
+DELETE FROM ClerkUser;
 
-SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'clerk_users';
+SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'ClerkUser';
 
 
 
-INSERT INTO clerk_users (id, username, password, full_name, surname)
+INSERT INTO ClerkUser (id, username, password, full_name, surname)
 VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
 
-COPY clerk_users(id, username, password, full_name, role)
+COPY "ClerkUser"(clerk_id, username, password, full_name, role)
 FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "Student";
 
-SELECT * FROM "clerk_users";
+SELECT * FROM "ClerkUser";
 
 
 SELECT tablename FROM pg_tables WHERE schemaname = 'public';
@@ -90,8 +91,8 @@ SELECT * FROM "Student";
 SELECT * FROM "Student" 
 ORDER BY "classId" ASC, "gender" DESC, "name" ASC;
 
--- First check the clerk_users table
-SELECT * FROM clerk_users WHERE id = '17159';
+-- First check the ClerkUser table
+SELECT * FROM ClerkUser WHERE id = '17159';
 
 -- If not found, check the students table
 SELECT * FROM "Student" WHERE id = '17159';
