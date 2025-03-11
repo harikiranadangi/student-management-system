@@ -311,11 +311,12 @@ export const createTeacher = async (
 
             },
         });
-
+        
+        console.log(`Created Teacher: [Username: ${data.username}, Name: ${data.name}, Password: ${data.password}]`);
         return { success: true, error: false };
 
     } catch (err: any) {
-        console.error("Error in createTeacher:", err);
+        console.error("Error in createTeacher:", err.errors || err);
         return {
             success: false,
             error: true,
