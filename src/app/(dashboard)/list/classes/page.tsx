@@ -18,7 +18,7 @@ const renderRow = (item: ClassList, role: string | null) => (
     <td className="flex items-center gap-4 p-4">{item.name}</td>
 
     <td className="hidden md:table-cell">
-      {item.Teacher ? `${item.Teacher.name} ${item.Teacher.surname}` : "No Class Teacher"}
+      {item.Teacher ? `${item.Teacher.name} ` : "No Class Teacher"}
     </td>
 
     <td className="flex items-center gap-4 p-4">{item.gradeId}</td>
