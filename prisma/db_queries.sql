@@ -97,8 +97,6 @@ SELECT setval('"class_id_seq"', (SELECT MAX(id) FROM "class"));
 
 SELECT * FROM "teacher" WHERE id = 'user_2u2pXhmNqzsHVzrbD2WbjYYfLsO';
 
-
-
 -- Retrieve all records from the Announcement table (incorrect syntax - should use double quotes)
 SELECT * FROM "Announcement";
 
