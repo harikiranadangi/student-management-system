@@ -1,28 +1,24 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { routeAccessMap } from "./lib/settings";
 import { NextResponse } from "next/server";
-// import { role } from "./lib/data";
 
-// Create matchers for all routes in the access map
+// * Create matchers for all routes in the access map
 const matchers = Object.keys(routeAccessMap).map((route) => ({
   matcher: createRouteMatcher([route]),
   allowedRoles: routeAccessMap[route],
 }));
 
-// console.log("Generated Matchers:", matchers);
-
+// * Middleware
+// This middleware will run on every request
 export default clerkMiddleware(async (auth, req) => {
-  // if (isProtectedRoute(req)) auth().protect()
-
-  const { sessionClaims, sessionId } = await auth(); 
-  const role = (sessionClaims?.metadata as {role?:string})?.role
   
-  console.log("Session ID:", sessionId); // Debugging log
-  console.log("User role detected:", role); // Debugging log
-  
+  // * Get session claims and ID
+  const { sessionClaims } = await auth();
+  const role = (sessionClaims?.metadata as { role?: string })?.role
 
-  for ( const { matcher, allowedRoles} of matchers){
-    if(matcher(req) && !allowedRoles.includes(role!)){
+  // * Check if user is allowed to access the route
+  for (const { matcher, allowedRoles } of matchers) {
+    if (matcher(req) && !allowedRoles.includes(role!)) {
       return NextResponse.redirect(new URL(`/${role}`, req.url));
     }
   }
@@ -30,7 +26,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 
 
-// Middleware configuration
+// * Middleware configuration
 export const config = {
   matcher: [
     // Skip Next.js internals and static files unless found in search params
@@ -40,38 +36,4 @@ export const config = {
   ],
 };
 
-// export default clerkMiddleware(async (auth, req) => {
-//   try {
-//     // Resolve the authentication object
-//     const authObject = await auth();
-//     const sessionClaims = authObject.sessionClaims;
 
-//     // Extract role from session claims metadata
-//     const role = (sessionClaims?.metadata as { role?: string })?.role || "guest";
-
-
-  // console.log("User Role:", role);
-
-//   // Check each matcher to see if the route matches and if the role is allowed
-//   for (const { matcher, allowedRoles } of matchers) {
-//     if (matcher(req)) {
-//       console.log("Matched Route:", req.url);
-
-//       // If the role is not allowed, redirect
-//       if (!allowedRoles.includes(role)) {
-//         const redirectPath = `/${role}`;
-//         console.log(`Unauthorized access. Redirecting to: ${redirectPath}`);
-//         return NextResponse.redirect(new URL(redirectPath, req.url));
-//       }
-//       break; // Stop checking other matchers if one matches
-//     }
-//   }
-
-//   // If no matching route or role restrictions, continue to the next middleware
-//   return NextResponse.next();
-// } catch (error) {
-//   console.error("Middleware Error:", error);
-//   // Handle unexpected errors by redirecting to a generic error or login page
-//   return NextResponse.redirect(new URL("/login", req.url));
-// }
-// });
