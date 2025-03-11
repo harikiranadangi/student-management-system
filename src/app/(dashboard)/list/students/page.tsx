@@ -5,7 +5,7 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Prisma, Student } from "@prisma/client";
+import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,8 +28,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs text-gray-500">{item.username}</p>
       </div>
-    </td>
-  
+    </td> 
 
     <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
