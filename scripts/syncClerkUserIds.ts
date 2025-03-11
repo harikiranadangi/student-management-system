@@ -26,7 +26,7 @@ async function fetchStudentsFromDB() {
 async function fetchClerkUsers() {
   let users: any[] = [];
   let offset = 0; // Start from the first user
-  const limit = 100; // Fetch 100 users per request (max Clerk limit)
+  const limit = 50; // Fetch 100 users per request (max Clerk limit)
 
   try {
     while (true) {
@@ -93,6 +93,7 @@ async function syncClerkUserIds() {
   }
 
   console.log("🎉 User ID sync completed!");
+  console.log("Total students updated:", students.length);
 }
 
 // Run the sync process
