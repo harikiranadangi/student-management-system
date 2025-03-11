@@ -19,7 +19,7 @@ type Assignments = Assignment & {lesson: {
     <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
       <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
       <td>{item.lesson.class.name}</td>
-      <td className="hidden md:table-cell">{item.lesson.teacher.name + " " + item.lesson.teacher.surname}</td>
+      <td className="hidden md:table-cell">{item.lesson.teacher.name}</td>
       <td className="hidden md:table-cell">
         {}
         {new Intl.DateTimeFormat("en-US").format(item.endDate) }
