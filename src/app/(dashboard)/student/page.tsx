@@ -7,34 +7,27 @@ import { fetchUserInfo } from "@/lib/utils";
 const StudentPage = async () => {
   const { userId, role } = await fetchUserInfo();
 
-  console.log("User ID:", userId);
-  console.log("User Role:", role);
 
   if (!userId || role !== "student") {
     return <p className="text-center text-red-500">❌ Unauthorized or no user found.</p>;
   }
 
-  // Fetch student using `clerk_id`
+  // * Fetch student using `clerk_id`
   const student = await prisma.student.findUnique({
     where: { clerk_id: userId },
+    include: { Class: true }, // * Ensure class relation is fetched
   });
+
 
   if (!student) {
     return <p className="text-center text-red-500">⚠️ No student data available.</p>;
   }
 
+ 
   console.log("Student Data:", student);
+  console.log("Class Data from Student:", student?.Class);
 
-  // Fetch class using `student.id`
-  const classItem = await prisma.class.findMany({
-    where: {
-      students: { some: { id: student.id } }, // Now using correct ID
-    },
-  });
-
-  console.log("classItem:", classItem);
-
-  if (classItem.length === 0) {
+  if (!student.Class) {
     return (
       <div className="flex flex-col gap-4 p-4 xl:flex-row">
         <div className="w-full xl:w-2/3">
@@ -55,8 +48,8 @@ const StudentPage = async () => {
     <div className="flex flex-col gap-4 p-4 xl:flex-row">
       <div className="w-full xl:w-2/3">
         <div className="h-full p-4 bg-white rounded-md">
-          <h1 className="text-xl font-semibold">Schedule ({classItem[0]?.name})</h1>
-          <BigCalendarContainer type="classId" id={classItem[0].id} />
+          <h1 className="text-xl font-semibold">Schedule ({student.Class.name})</h1>
+          <BigCalendarContainer type="classId" id={student.Class.id} />
         </div>
       </div>
       <div className="flex flex-col w-full gap-8 xl:w-1/3">
@@ -68,3 +61,4 @@ const StudentPage = async () => {
 };
 
 export default StudentPage;
+
