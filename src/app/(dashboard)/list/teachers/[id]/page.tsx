@@ -69,12 +69,12 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
             <div className="flex flex-col justify-between w-2/3 gap-4">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">
-                  {teacherData.name + " " + teacherData.surname}
+                  {teacherData.name}
                 </h1>
                 {role === "admin" && <FormContainer table="teacher" type="update" data={teacherData} />}
               </div>
-              <p className="text-sm text-gray-500">
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+              <p className="text-sm text-black-500">
+                
               </p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
