@@ -22,7 +22,7 @@ type ResultWithDetails = Result & {
 
 const renderRow = (item: ResultWithDetails, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-    <td >{item.student.name + " " + item.student.surname}</td>
+    <td >{item.student.name}</td>
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td className="hidden md:table-cell">{item.score}</td>
     <td className="hidden md:table-cell">{item.student.class.name}</td>
