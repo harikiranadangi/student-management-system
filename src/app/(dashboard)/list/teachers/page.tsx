@@ -16,6 +16,7 @@ type TeachersList = Teacher & { subjects: { Subject: Subject }[] } & { classes: 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
   console.log("Subjects Data:", item.subjects),
+  console.log("Subjects Data:", item.classes),
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
 
     {/* Info Column */}
@@ -41,7 +42,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
     </td>
 
     {/* Actions Column */}
-    <td className="flex items-center justify-end gap-2 p-2">
+    <td className="p-2">
       <div className="flex items-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
@@ -100,7 +101,6 @@ const TeacherListPage = async ({
         {
           header: "Actions",
           accessor: "action",
-          className: "text-right justify-end px-4",
         },
       ]
       : []),
