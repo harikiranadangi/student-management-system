@@ -5,13 +5,17 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Prisma, Subject, Teacher } from "@prisma/client";
+import { Class, Prisma, Student, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
 import FormContainer from "@/components/FormContainer";
 import { fetchUserInfo } from "@/lib/utils";
 
 // Define types
-type TeachersList = Teacher & { subjects: { Subject: Subject }[] } & { classes: Class[] };
+type TeachersList = Teacher & {
+  subjects: { Subject: Subject }[];
+  classes: (Class & { students: Student[] })[];
+};
+
 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
