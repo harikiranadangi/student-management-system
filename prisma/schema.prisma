@@ -250,6 +250,7 @@ model TeacherSubject {
   @@id([teacherId, subjectId])
 }
 
+
 model ClerkUser {
   clerk_id  String  @id @db.VarChar  // Keep as primary key
   user_id   String? @unique          // New column for Clerk User ID
