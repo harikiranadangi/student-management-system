@@ -141,8 +141,6 @@ export const updateSubject = async (
     }
 };
 
-
-
 export const deleteSubject = async (
     currentState: CurrentState,
     data: FormData
@@ -170,36 +168,39 @@ export const deleteSubject = async (
 
 
 // Initialize Prisma Client
-
 const prisma = new PrismaClient();
 
 export const createClass = async (
     currentState: { success: boolean; error: boolean },
-    data: { name: string; supervisorId?: string | null; gradeId: number }
+    data: ClassSchema
 ) => {
     try {
         console.log("Testing Prisma Connection...");
         await prisma.$connect();
         console.log("Prisma is connected!");
 
-        // ✅ Correct relation names
+        // Log the received data
+        console.log("Received Data:", data);
+
+        // Construct the payload
         const formattedData: any = {
             name: data.name,
-            Grade: { connect: { id: Number(data.gradeId) } }, // ✅ Corrected "grade" → "Grade"
+            Grade: { connect: { id: Number(data.gradeId) } },
         };
 
         if (data.supervisorId && data.supervisorId.trim() !== "") {
-            formattedData.Teacher = { connect: { id: data.supervisorId } }; // ✅ Corrected "teacher" → "Teacher"
+            formattedData.Teacher = { connect: { id: data.supervisorId } };
         }
 
+        // Log the formatted data before creating the class
         console.log("Final Data Before Prisma Create:", JSON.stringify(formattedData, null, 2));
 
-        // ✅ Ensure required fields are present
+        // Ensure required fields are present
         if (!formattedData.name || !formattedData.Grade.connect.id) {
             throw new Error("Invalid input: Missing required fields");
         }
 
-        // ✅ Create the class
+        // Create the class
         const newClass = await prisma.class.create({
             data: formattedData,
         });
