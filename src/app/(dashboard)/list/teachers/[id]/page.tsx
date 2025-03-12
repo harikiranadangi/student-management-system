@@ -11,35 +11,42 @@ import { notFound } from "next/navigation";
 
 const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
   // Await the params to ensure they are resolved before use
-  const { id } = await params; // Await the params
+  const { id } = params; // Await the params
 
   const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  // Fetch teacher with _count and ensure it always has default values
-  const teacher: (Teacher & { _count?: { subjects: number; lessons: number; classes: number } }) | null =
-    await prisma.teacher.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            subjects: true,
-            lessons: true,
-            classes: true,
-          }
+  // Fetch teacher details, including assigned classes and student count
+  const teacher: (Teacher & {
+    _count?: { subjects: number; lessons: number; classes: number };
+    classes: { _count: { students: number } }[]; // Include student count in each class
+  }) | null = await prisma.teacher.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: {
+          subjects: true,
+          lessons: true,
+          classes: true,
         },
-        // Include class and students associated with that class
-        classes: {
-          include: {
-            students: true, // Get students from the class
+      },
+      // Include classes with student count
+      classes: {
+        include: {
+          _count: {
+            select: { students: true }, // Get the number of students in each class
           },
         },
-      }
-    });
+      },
+    },
+  });
 
   if (!teacher) {
     return notFound();
   }
+
+  // Calculate total student count
+  const totalStudents = teacher.classes.reduce((sum, cls) => sum + cls._count.students, 0);
 
   console.log("Fetched Teacher:", JSON.stringify(teacher, null, 2));
 
@@ -74,7 +81,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
                 {role === "admin" && <FormContainer table="teacher" type="update" data={teacherData} />}
               </div>
               <p className="text-sm text-black-500">
-                
+
               </p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
@@ -102,14 +109,36 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
           </div>
           {/* SMALL CARDS */}
           <div className="flex flex-wrap justify-between flex-1 gap-4">
+
             {/* CARD */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6" />
+              <div>
+                <h1 className="text-xl font-semibold">{teacherData._count.classes}</h1>
+                <span className="text-sm text-gray-400">Classes</span>
+
+              </div>
+            </div>
+            {/* CARD */}
+
+            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+              <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6" />
+              <div>
+                <h1 className="text-xl font-semibold">{totalStudents}</h1>
+                <span className="text-sm text-gray-400">Students</span>
+
+              </div>
+            </div>
+
+            {/* CARD */}
+            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+              <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
               <div>
                 <h1 className="text-xl font-semibold">{teacherData._count.subjects}</h1>
                 <span className="text-sm text-gray-400">Subjects</span>
               </div>
             </div>
+
             {/* CARD */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6" />
@@ -117,24 +146,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
                 <h1 className="text-xl font-semibold">{teacherData._count.lessons}</h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
-            </div>
-            {/* CARD */}
-            
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
-              <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
-              <div>
-                <h1 className="text-xl font-semibold">{teacherData._count.classes}</h1>
-                <span className="text-sm text-gray-400">Classes</span>
-              </div>
-            </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
-              <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6" />
-              <div>
-                <h1 className="text-xl font-semibold">{teacherData._count.lessons}</h1>
-                <span className="text-sm text-gray-400">Students</span>
-              </div>
+
             </div>
           </div>
         </div>
@@ -143,7 +155,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
           <h1>Teacher&apos;s Schedule</h1>
           <BigCalendarContainer type="teacherId" id={teacherData.id} />
         </div>
-        
+
       </div>
       {/* RIGHT */}
       <div className="flex flex-col w-full gap-4 xl:w-1/3">
