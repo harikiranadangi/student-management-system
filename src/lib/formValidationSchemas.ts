@@ -18,7 +18,6 @@ export const classSchema = z.object({
   gradeId: z.coerce.number().min(1, { message: "Grade selection is required!" }),
 });
 
-
 // Infer the form data type from schema
 export type ClassSchema = z.infer<typeof classSchema>;
 
