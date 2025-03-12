@@ -12,7 +12,7 @@ async function fetchStudentsFromDB() {
   try {
     const students = await prisma.clerkUser.findMany({
       where: { role: "student" }, // Fetch only students
-      take: 50, // Limit to 10 students for testing
+      take: 50, // Limit to 50 students for testing
     });
     console.log(`📢 Found ${students.length} students to sync.`);
     return students;
