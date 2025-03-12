@@ -54,8 +54,6 @@ const SubjectForm = ({
 
     const router = useRouter();
 
-  
-
     useEffect(() => {
         if (state.success) {
             toast(`Subject has been ${type === "create" ? "created" : "updated"}!`);
