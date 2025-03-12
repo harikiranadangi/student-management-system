@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
-import { classSchema, ClassSchema, } from "@/lib/formValidationSchemas";
+import { classSchema, ClassSchema } from "@/lib/formValidationSchemas";
 import { createClass, updateClass } from "@/lib/actions";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { toast } from "react-toastify";
@@ -18,7 +18,7 @@ const ClassForm = ({
     type: "create" | "update";
     data?: any;
     setOpen: Dispatch<SetStateAction<boolean>>;
-    relatedData?: any
+    relatedData?: any;
 }) => {
     const {
         register,
@@ -49,19 +49,20 @@ const ClassForm = ({
             formAction(formData);
         });
     });
-    
 
-    const router = useRouter()
+    const router = useRouter();
 
     useEffect(() => {
         if (state.success) {
             toast(`Class has been ${type === "create" ? "created" : "updated"}!`);
             setOpen(false);
-            router.refresh()
+            router.refresh();
         }
-    }, [state.success]);
+    }, [state.success, setOpen, router, type]);
 
     const { teachers, grades } = relatedData;
+
+    console.log("Related Data:", relatedData); // Debugging Log
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -77,14 +78,15 @@ const ClassForm = ({
                     error={errors?.name}
                 />
 
-                {data && (<InputField
-                    label="Id"
-                    name="id"
-                    defaultValue={data?.id}
-                    register={register}
-                    error={errors?.id}
-                    hidden
-                />
+                {data && (
+                    <InputField
+                        label="Id"
+                        name="id"
+                        defaultValue={data?.id}
+                        register={register}
+                        error={errors?.id}
+                        hidden
+                    />
                 )}
 
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
@@ -125,7 +127,6 @@ const ClassForm = ({
                         <p className="text-xs text-red-400">{errors.gradeId.message.toString()}</p>
                     )}
                 </div>
-
             </div>
             {state.error && <span className="text-red-500">Something went wrong!</span>}
             <button className="p-2 text-white bg-blue-400 rounded-md">
