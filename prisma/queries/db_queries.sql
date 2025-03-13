@@ -87,12 +87,20 @@ SELECT * FROM Admin;
 -- Retrieve all records from the class table
 SELECT * FROM class;
 
+SELECT column_name FROM information_schema.columns WHERE table_name = 'class';
+
+
 SELECT * FROM "Teacher" WHERE id = 'T1';
 SELECT * FROM "Grade" WHERE id = 1;
 SELECT * FROM "class" ;
 
-INSERT INTO "class" ("name", "gradeId", "supervisorId") 
-VALUES ('test1', 5, 'T2') RETURNING *;
+SELECT "supervisorId" FROM "class" LIMIT 5;
+
+
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'class' AND column_name = 'supervisorId';
+
 
 
 SELECT setval('"class_id_seq"', (SELECT MAX(id) FROM "class"));
@@ -122,11 +130,31 @@ SELECT * FROM "Grade";
 -- Retrieve all records from the Teacher table
 SELECT * FROM "Teacher";
 
+DELETE FROM "Teacher";
 
-COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob)
+
+COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId")
 FROM 'D:/GITHUB/student-management-system/NewFolder/teacher_data.csv'
 DELIMITER ',' 
 CSV HEADER;
+
+SELECT "Teacher"."name", "class"."name"
+FROM "Teacher"
+LEFT JOIN "class" ON "Teacher"."id" = "class"."supervisorId";
+
+SELECT "Teacher"."name", "class"."name"
+FROM "Teacher"
+LEFT JOIN "class" ON "Teacher"."id" = "class"."supervisorId"::text; -- Ensure the data type matches
+
+SELECT "Teacher"."name"
+FROM "Teacher"
+LEFT JOIN "class" ON "Teacher"."id" = "class"."supervisorId"::text
+WHERE "class"."name" IS NULL;
+
+
+
+
+
 
 SELECT column_name FROM information_schema.columns 
 WHERE table_name = 'Teacher';
