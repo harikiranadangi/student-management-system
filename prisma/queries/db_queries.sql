@@ -6,6 +6,9 @@ SELECT 'SELECT * FROM ' || tablename || ';'
 FROM pg_tables  
 WHERE schemaname = 'public';
 
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+
+
 CREATE TABLE IF NOT EXISTS ClerkUser (
     id VARCHAR PRIMARY KEY,
     username VARCHAR UNIQUE NOT NULL,
@@ -118,6 +121,17 @@ SELECT * FROM "Grade";
 
 -- Retrieve all records from the Teacher table
 SELECT * FROM "Teacher";
+
+
+COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob)
+FROM 'D:/GITHUB/student-management-system/NewFolder/teacher_data.csv'
+DELIMITER ',' 
+CSV HEADER;
+
+SELECT column_name FROM information_schema.columns 
+WHERE table_name = 'Teacher';
+
+
 
 -- Retrieve all records from the Event table
 SELECT * FROM "Event";
