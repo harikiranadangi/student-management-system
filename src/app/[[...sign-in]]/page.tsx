@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 export default function Page() {
   const { isLoaded: isUserLoaded, isSignedIn, user } = useUser()
   const { isLoaded: isSignInLoaded, signIn } = useSignIn()
-  const { isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
+  const {  isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
   const router = useRouter()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -15,18 +15,18 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true) // Track loading state
 
   useEffect(() => {
-    console.log("Checking authentication state...");
+    console.log("Checking authentication state..."); 
     console.log("isUserLoaded:", isUserLoaded, "isSessionLoaded:", isSessionLoaded);
     console.log("isSignedIn:", isSignedIn);
-
+    
     if (!isUserLoaded || !isSessionLoaded) return; // Wait until both are loaded
-
+  
     setIsLoading(false);
-
+    
     if (isSignedIn && user) {
       const role = user?.publicMetadata?.role;
       console.log("User signed in with role:", role); // Debugging log
-
+  
       if (role) {
         console.log(`Redirecting to: /${role}`);
         router.replace(`/${role}`);
@@ -65,7 +65,9 @@ export default function Page() {
     }
   }
 
-  // * Show loading indicator until session and user data are fully loaded
+  
+
+  // Show loading indicator until session and user data are fully loaded
   if (isLoading || !isUserLoaded || !isSessionLoaded) {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4 transition-opacity animate-fadeIn">
@@ -74,6 +76,9 @@ export default function Page() {
       </div>
     )
   }
+  
+  
+  
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-200">
