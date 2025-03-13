@@ -215,43 +215,43 @@ async function main() {
     });
 
   // ✅ Seed Teachers
-  // await prisma.teacher.createMany({
-  //   data: [
-  //     {
-  //       id: "T1",
-  //       username: "teacher1",
-  //       name: "Alice",
-  //       surname: "Brown",
-  //       email: "alice@example.com",
-  //       phone: "9876541111",
-  //       address: "100 Main St, City",
-  //       img: null,
-  //       bloodType: "A+",
-  //       gender: "Female",
-  //       createdAt: new Date(),
-  //       deletedAt: null,
-  //       supervisor: false,
-  //       dob: new Date("1985-03-25"),
-  //     },
-  //     {
-  //       id: "T2",
-  //       username: "teacher2",
-  //       name: "Robert",
-  //       surname: "Williams",
-  //       email: "robert@example.com",
-  //       phone: "9876542222",
-  //       address: "200 Elm St, City",
-  //       img: null,
-  //       bloodType: "O+",
-  //       gender: "Male",
-  //       createdAt: new Date(),
-  //       deletedAt: null,
-  //       supervisor: true,
-  //       dob: new Date("1978-11-15"),
-  //     },
-  //   ],
-  //   skipDuplicates: true,
-  // });
+  await prisma.teacher.createMany({
+    data: [
+      {
+        id: "T1",
+        username: "teacher1",
+        name: "Alice",
+        surname: "Brown",
+        email: "alice@example.com",
+        phone: "9876541111",
+        address: "100 Main St, City",
+        img: null,
+        bloodType: "A+",
+        gender: "Female",
+        createdAt: new Date(),
+        deletedAt: null,
+        supervisor: false,
+        dob: new Date("1985-03-25"),
+      },
+      {
+        id: "T2",
+        username: "teacher2",
+        name: "Robert",
+        surname: "Williams",
+        email: "robert@example.com",
+        phone: "9876542222",
+        address: "200 Elm St, City",
+        img: null,
+        bloodType: "O+",
+        gender: "Male",
+        createdAt: new Date(),
+        deletedAt: null,
+        supervisor: true,
+        dob: new Date("1978-11-15"),
+      },
+    ],
+    skipDuplicates: true,
+  });
 
   console.log("✅ Teachers seeded");
   console.log("🎉 Seeding completed successfully!");
