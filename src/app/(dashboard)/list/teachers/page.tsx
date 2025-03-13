@@ -12,9 +12,10 @@ import { fetchUserInfo } from "@/lib/utils";
 
 // Define types
 type TeachersList = Teacher & {
-  subjects: { Subject: Subject }[];
-  classes: (Class & { students: Student[] })[];
+  subjects: { Subject: Subject }[]; // ✅ Fetches Subject details
+  class?: Class & { students: Student[] }| null; // ✅ Fetch multiple classes with students
 };
+
 
 // *If you want to show the students in the class, use this line instead of the one above
 // * type TeachersList = Teacher & {
@@ -24,7 +25,7 @@ type TeachersList = Teacher & {
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
   console.log("Subjects Data:", item.subjects),
-  console.log("Class Data:", item.classes),
+  console.log("Class Data:", item.class),
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
 
     {/* Info Column */}
@@ -48,7 +49,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
 
     {/* Directly use the strings from subjects and classes */}
     <td className="hidden w-32 md:table-cell">
-      {item.classes?.map(classItem => classItem.name) || "No classes"}
+      {item.class ? item.class.name : "No Class Assigned"}
     </td>
 
     <td className="hidden w-32 truncate md:table-cell">
@@ -149,24 +150,26 @@ const TeacherListPage = async ({
     }
   }
 
-  // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
       where: query,
       include: {
         subjects: {
           include: {
-            Subject: true, // ✅ Fetch Subject details inside TeacherSubject
+            Subject: true, // ✅ Fetch Subject details
           },
         },
-        class: true,
+        class: {  // ✅ Fetch multiple classes (Fix this!)
+          include: {
+            students: true, // ✅ Fetch students in the class
+          },
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.teacher.count({ where: query }),
   ]);
-
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
