@@ -16,6 +16,10 @@ type TeachersList = Teacher & {
   classes: (Class & { students: Student[] })[];
 };
 
+// *If you want to show the students in the class, use this line instead of the one above
+// * type TeachersList = Teacher & {
+// *  subjects: { Subject: Subject }[];
+// * <td className="hidden w-32 md:table-cell">{item.classes?.map(classItem => classItem.name)}</td>
 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
@@ -40,7 +44,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
 
     <td className="px-2 w-36 md:table-cell">{item.phone}</td>
     {/* Directly use the strings from subjects and classes */}
-    <td className="hidden w-32 md:table-cell">{item.classes.map(classItem => classItem.name).join(", ")}</td>
+    <td className="hidden w-32 md:table-cell">{item.classes?.map(classItem => classItem.name)}</td>
     <td className="hidden w-32 truncate md:table-cell">
       {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
     </td>
@@ -149,7 +153,7 @@ const TeacherListPage = async ({
             Subject: true, // ✅ Fetch Subject details inside TeacherSubject
           },
         },
-        classes: true,
+        class: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
