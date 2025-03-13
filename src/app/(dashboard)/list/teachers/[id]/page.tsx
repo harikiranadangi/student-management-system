@@ -118,7 +118,7 @@ const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6" />
               <div>
-                <h1 className="text-xl font-semibold">{teacherData.class ? 1 : "No Class"}</h1>
+                <h1 className="text-xl font-semibold">{teacherData.class?.name}</h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
