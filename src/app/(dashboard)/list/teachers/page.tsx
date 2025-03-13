@@ -24,7 +24,7 @@ type TeachersList = Teacher & {
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
   console.log("Subjects Data:", item.subjects),
-  console.log("Subjects Data:", item.classes),
+  console.log("Class Data:", item.classes),
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
 
     {/* Info Column */}
@@ -42,9 +42,15 @@ const renderRow = (item: TeachersList, role: string | null) => (
       </div>
     </td>
 
-    <td className="px-2 w-36 md:table-cell">{item.phone}</td>
+    <td className="px-2 w-36 md:table-cell">
+      {item.phone}
+    </td>
+
     {/* Directly use the strings from subjects and classes */}
-    <td className="hidden w-32 md:table-cell">{item.classes?.map(classItem => classItem.name)}</td>
+    <td className="hidden w-32 md:table-cell">
+      {item.classes?.map(classItem => classItem.name) || "No classes"}
+    </td>
+
     <td className="hidden w-32 truncate md:table-cell">
       {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
     </td>
