@@ -16,9 +16,9 @@ async function main() {
   console.log("🔄 Deleting existing data...");
 
   // Delete in correct order to maintain referential integrity
-   await prisma.teacher.deleteMany();
-  //await prisma.student.deleteMany();
-  // await prisma.class.deleteMany();
+  // await prisma.teacher.deleteMany();
+  // await prisma.student.deleteMany();
+  await prisma.class.deleteMany();
   // await prisma.subject.deleteMany();
   // await prisma.grade.deleteMany();
 
@@ -49,53 +49,55 @@ async function main() {
   // Insert Class Data
   await prisma.class.createMany({
     data: [
-      { id: 1, name: "Pre KG", gradeId: 1 },
-      { id: 2, name: "LKG - A", gradeId: 2 },
-      { id: 3, name: "LKG - B", gradeId: 2 },
-      { id: 4, name: "UKG - A", gradeId: 3 },
-      { id: 5, name: "UKG - B", gradeId: 3 },
-      { id: 6, name: "UKG - C", gradeId: 3 },
-      { id: 7, name: "I - A", gradeId: 4 },
-      { id: 8, name: "I - B", gradeId: 4 },
-      { id: 9, name: "I - C", gradeId: 4 },
-      { id: 10, name: "I - D", gradeId: 4 },
-      { id: 11, name: "II - A", gradeId: 5 },
-      { id: 12, name: "II - B", gradeId: 5 },
-      { id: 13, name: "II - C", gradeId: 5 },
-      { id: 14, name: "II - D", gradeId: 5 },
-      { id: 15, name: "III - A", gradeId: 6 },
-      { id: 16, name: "III - B", gradeId: 6 },
-      { id: 17, name: "III - C", gradeId: 6 },
-      { id: 18, name: "III - D", gradeId: 6 },
-      { id: 19, name: "IV - A", gradeId: 7 },
-      { id: 20, name: "IV - B", gradeId: 7 },
-      { id: 21, name: "IV - C", gradeId: 7 },
-      { id: 22, name: "IV - D", gradeId: 7 },
-      { id: 23, name: "V - A", gradeId: 8 },
-      { id: 24, name: "V - B", gradeId: 8 },
-      { id: 25, name: "V - C", gradeId: 8 },
-      { id: 26, name: "V - D", gradeId: 8 },
-      { id: 27, name: "VI - A", gradeId: 9 },
-      { id: 28, name: "VI - B", gradeId: 9 },
-      { id: 29, name: "VI - C", gradeId: 9 },
-      { id: 30, name: "VI - D", gradeId: 9 },
-      { id: 31, name: "VII - A", gradeId: 10 },
-      { id: 32, name: "VII - B", gradeId: 10 },
-      { id: 33, name: "VII - C", gradeId: 10 },
-      { id: 34, name: "VII - D", gradeId: 10 },
-      { id: 35, name: "VIII - A", gradeId: 11 },
-      { id: 36, name: "VIII - B", gradeId: 11 },
-      { id: 37, name: "VIII - C", gradeId: 11 },
-      { id: 38, name: "IX - A", gradeId: 12 },
-      { id: 39, name: "IX - B", gradeId: 12 },
-      { id: 40, name: "IX - C", gradeId: 12 },
-      { id: 41, name: "X - A", gradeId: 13 },
-      { id: 42, name: "X - B", gradeId: 13 },
-      { id: 43, name: "X - C", gradeId: 13 },
+      { id: 1, name: "Pre KG", gradeId: 1, supervisorId: "staff_ks_063" },
+      { id: 2, name: "LKG - A", gradeId: 2, supervisorId: "staff_ks_001" },
+      { id: 3, name: "LKG - B", gradeId: 2, supervisorId: "staff_ks_002" },
+      { id: 4, name: "UKG - A", gradeId: 3, supervisorId: "staff_ks_003" },
+      { id: 5, name: "UKG - B", gradeId: 3, supervisorId: "staff_ks_004" },
+      { id: 6, name: "UKG - C", gradeId: 3, supervisorId: "staff_ks_005" },
+      { id: 7, name: "I - A", gradeId: 4, supervisorId: "staff_ks_007" },
+      { id: 8, name: "I - B", gradeId: 4, supervisorId: "staff_ks_008" },
+      { id: 9, name: "I - C", gradeId: 4, supervisorId: "staff_ks_009" },
+      { id: 10, name: "I - D", gradeId: 4, supervisorId: "staff_ks_012" },
+      { id: 11, name: "II - A", gradeId: 5, supervisorId: "staff_ks_015" },
+      { id: 12, name: "II - B", gradeId: 5, supervisorId: "staff_ks_016" },
+      { id: 13, name: "II - C", gradeId: 5, supervisorId: "staff_ks_017" },
+      { id: 14, name: "II - D", gradeId: 5, supervisorId: "staff_ks_018" },
+      { id: 15, name: "III - A", gradeId: 6, supervisorId: "staff_ks_019" },
+      { id: 16, name: "III - B", gradeId: 6, supervisorId: "staff_ks_020" },
+      { id: 17, name: "III - C", gradeId: 6, supervisorId: "staff_ks_022" },
+      { id: 18, name: "III - D", gradeId: 6, supervisorId: "staff_ks_025" },
+      { id: 19, name: "IV - A", gradeId: 7, supervisorId: "staff_ks_028" },
+      { id: 20, name: "IV - B", gradeId: 7, supervisorId: "staff_ks_029" },
+      { id: 21, name: "IV - C", gradeId: 7, supervisorId: "staff_ks_030" },
+      { id: 22, name: "IV - D", gradeId: 7, supervisorId: "staff_ks_032" },
+      { id: 23, name: "V - A", gradeId: 8, supervisorId: "staff_ks_033" },
+      { id: 24, name: "V - B", gradeId: 8, supervisorId: "staff_ks_034" },
+      { id: 25, name: "V - C", gradeId: 8, supervisorId: "staff_ks_036" },
+      { id: 26, name: "V - D", gradeId: 8, supervisorId: "staff_ks_037" },
+      { id: 27, name: "VI - A", gradeId: 9, supervisorId: "staff_ks_038" },
+      { id: 28, name: "VI - B", gradeId: 9, supervisorId: "staff_ks_039" },
+      { id: 29, name: "VI - C", gradeId: 9, supervisorId: "staff_ks_040" },
+      { id: 30, name: "VI - D", gradeId: 9, supervisorId: "staff_ks_041" },
+      { id: 31, name: "VII - A", gradeId: 10, supervisorId: "staff_ks_043" },
+      { id: 32, name: "VII - B", gradeId: 10, supervisorId: "staff_ks_044" },
+      { id: 33, name: "VII - C", gradeId: 10, supervisorId: "staff_ks_045" },
+      { id: 34, name: "VII - D", gradeId: 10, supervisorId: "staff_ks_046" },
+      { id: 35, name: "VIII - A", gradeId: 11, supervisorId: "staff_ks_048" },
+      { id: 36, name: "VIII - B", gradeId: 11, supervisorId: "staff_ks_050" },
+      { id: 37, name: "VIII - C", gradeId: 11, supervisorId: "staff_ks_052" },
+      { id: 38, name: "IX - A", gradeId: 12, supervisorId: "staff_ks_054" },
+      { id: 39, name: "IX - B", gradeId: 12, supervisorId: "staff_ks_055" },
+      { id: 40, name: "IX - C", gradeId: 12, supervisorId: "staff_ks_056" },
+      { id: 41, name: "X - A", gradeId: 13, supervisorId: "staff_ks_057" },
+      { id: 42, name: "X - B", gradeId: 13, supervisorId: "staff_ks_061" },
+      { id: 43, name: "X - C", gradeId: 13, supervisorId: "staff_ks_062" },
     ],
     skipDuplicates: true,
   });
-  console.log("✅ Classes seeded");
+  
+  console.log("✅ Classes with teachers seeded");
+  
 
   console.log("✅ Seeding Subjects");
 
@@ -214,47 +216,47 @@ async function main() {
         });
     });
 
-  // ✅ Seed Teachers
-  await prisma.teacher.createMany({
-    data: [
-      {
-        id: "T1",
-        username: "teacher1",
-        name: "Alice",
-        surname: "Brown",
-        email: "alice@example.com",
-        phone: "9876541111",
-        address: "100 Main St, City",
-        img: null,
-        bloodType: "A+",
-        gender: "Female",
-        createdAt: new Date(),
-        deletedAt: null,
-        supervisor: false,
-        dob: new Date("1985-03-25"),
-      },
-      {
-        id: "T2",
-        username: "teacher2",
-        name: "Robert",
-        surname: "Williams",
-        email: "robert@example.com",
-        phone: "9876542222",
-        address: "200 Elm St, City",
-        img: null,
-        bloodType: "O+",
-        gender: "Male",
-        createdAt: new Date(),
-        deletedAt: null,
-        supervisor: true,
-        dob: new Date("1978-11-15"),
-      },
-    ],
-    skipDuplicates: true,
-  });
+  // // ✅ Seed Teachers
+  // await prisma.teacher.createMany({
+  //   data: [
+  //     {
+  //       id: "T1",
+  //       username: "teacher1",
+  //       name: "Alice",
+  //       surname: "Brown",
+  //       email: "alice@example.com",
+  //       phone: "9876541111",
+  //       address: "100 Main St, City",
+  //       img: null,
+  //       bloodType: "A+",
+  //       gender: "Female",
+  //       createdAt: new Date(),
+  //       deletedAt: null,
+  //       supervisor: false,
+  //       dob: new Date("1985-03-25"),
+  //     },
+  //     {
+  //       id: "T2",
+  //       username: "teacher2",
+  //       name: "Robert",
+  //       surname: "Williams",
+  //       email: "robert@example.com",
+  //       phone: "9876542222",
+  //       address: "200 Elm St, City",
+  //       img: null,
+  //       bloodType: "O+",
+  //       gender: "Male",
+  //       createdAt: new Date(),
+  //       deletedAt: null,
+  //       supervisor: true,
+  //       dob: new Date("1978-11-15"),
+  //     },
+  //   ],
+  //   skipDuplicates: true,
+  // });
 
-  console.log("✅ Teachers seeded");
-  console.log("🎉 Seeding completed successfully!");
+  // console.log("✅ Teachers seeded");
+  // console.log("🎉 Seeding completed successfully!");
 }
 
 main()
