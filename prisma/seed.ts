@@ -16,9 +16,9 @@ async function main() {
   console.log("🔄 Deleting existing data...");
 
   // Delete in correct order to maintain referential integrity
+  await prisma.class.deleteMany();
   // await prisma.teacher.deleteMany();
   // await prisma.student.deleteMany();
-  await prisma.class.deleteMany();
   // await prisma.subject.deleteMany();
   // await prisma.grade.deleteMany();
 
