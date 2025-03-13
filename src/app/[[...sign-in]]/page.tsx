@@ -7,24 +7,35 @@ import { useEffect, useState } from 'react'
 export default function Page() {
   const { isLoaded: isUserLoaded, isSignedIn, user } = useUser()
   const { isLoaded: isSignInLoaded, signIn } = useSignIn()
-  const { isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
+  const {  isLoaded: isSessionLoaded } = useSession()  // Use session and check if it's loaded
   const router = useRouter()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [isLoading] = useState(true) // Track loading state
+  const [isLoading, setIsLoading] = useState(true) // Track loading state
 
   useEffect(() => {
-    if (isUserLoaded && isSessionLoaded && isSignedIn) {
+    console.log("Checking authentication state..."); 
+    console.log("isUserLoaded:", isUserLoaded, "isSessionLoaded:", isSessionLoaded);
+    console.log("isSignedIn:", isSignedIn);
+    
+    if (!isUserLoaded || !isSessionLoaded) return; // Wait until both are loaded
+  
+    setIsLoading(false);
+    
+    if (isSignedIn && user) {
       const role = user?.publicMetadata?.role;
+      console.log("User signed in with role:", role); // Debugging log
+  
       if (role) {
+        console.log(`Redirecting to: /${role}`);
         router.replace(`/${role}`);
+        return;
       } else {
         setError("User role not found.");
       }
     }
   }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router]);
-
 
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -43,11 +54,10 @@ export default function Page() {
       })
 
       if (result.status === 'complete') {
-        console.log("Login successful! Redirecting...");
-        router.refresh();
-      }
+        // Refresh the page after successful login
+        window.location.reload()  // This will reload the page
 
-      else {
+      } else {
         setError('Authentication failed. Please check your credentials.')
       }
     } catch (err: any) {
@@ -55,7 +65,7 @@ export default function Page() {
     }
   }
 
-
+  
 
   // Show loading indicator until session and user data are fully loaded
   if (isLoading || !isUserLoaded || !isSessionLoaded) {
@@ -66,9 +76,9 @@ export default function Page() {
       </div>
     )
   }
-
-
-
+  
+  
+  
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-200">
