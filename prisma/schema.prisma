@@ -10,6 +10,9 @@ datasource db {
 model Admin {
   id        Int      @id @default(autoincrement())
   username  String   @unique
+  password  String
+  full_name String
+  role      String   @default("admin")
   createdAt DateTime @default(now())
 }
 
@@ -178,7 +181,7 @@ model Student {
   id          String        @id
   username    String        @unique
   name        String
-  surname     String
+  surname     String?
   parentName  String
   email       String?       @unique
   phone       String
@@ -226,7 +229,7 @@ model Teacher {
   id         String           @id
   username   String           @unique
   name       String
-  surname    String
+  surname    String?
   email      String?          @unique
   phone      String
   address    String
@@ -241,7 +244,8 @@ model Teacher {
   subjects   TeacherSubject[]
   class      Class?           @relation(name: "ClassToTeacher") // Opposite relation defined WITHOUT fields/references
   classId    String? @unique
-  
+  clerkUser  ClerkUser?
+  clerk_id   String?          @unique
 }
 
 model TeacherSubject {
@@ -262,6 +266,8 @@ model ClerkUser {
   role      String   @default("student") @db.VarChar
   studentId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't students)
   student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
+  teacherId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't teachers)
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade) // Inverse Relation
 }
 
 enum FeeTerm {
