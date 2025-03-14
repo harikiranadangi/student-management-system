@@ -9,13 +9,6 @@ WHERE schemaname = 'public';
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 
-CREATE TABLE IF NOT EXISTS ClerkUser (
-    id VARCHAR PRIMARY KEY,
-    username VARCHAR UNIQUE NOT NULL,
-    password VARCHAR NOT NULL,
-    full_name VARCHAR NOT NULL,
-	role VARCHAR NOT NULL
-);
 
 SELECT * FROM "ClerkUser";
 DROP TABLE IF EXISTS "ClerkUser" CASCADE;
@@ -24,13 +17,9 @@ DROP TABLE IF EXISTS "ClerkUser" CASCADE;
 SELECT *
 FROM "Student" s
 JOIN "ClerkUser" cu ON s.id = cu.clerk_id
-WHERE cu.username = 's14384A';
+WHERE cu.username = 'S14384A';
 
 SELECT * FROM "ClerkUser" WHERE username = 's14384A';
-
-
-
-
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
 
