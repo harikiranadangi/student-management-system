@@ -11,9 +11,13 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
+ 
   // Await the params to ensure they are resolved before use
-  const { id } = await params; // Await the params
-
+  const { id } = await params;
+  
+  // Log the student ID
+  console.log("Fetching Student ID:", id);
+ 
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
@@ -29,10 +33,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
     return notFound(); // ✅ Returns 404 if student not found
   }
 
-  console.log("Fetched Student ID:", id);
-
-
-
+  // Return the student data
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
       {/* LEFT */}
@@ -52,7 +53,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
             </div>
             <div className="flex flex-col justify-between w-2/3 gap-4">
               <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">{student.name + " " + student.surname}</h1>
+                <h1 className="text-xl font-semibold">{student.name}</h1>
                 {role === "admin" && (
                   <FormContainer
                     table="student"
@@ -60,7 +61,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                     data={{
                       ...student,
                       dob: student.dob ? student.dob.toISOString().split("T")[0] : ""
-                      
+
                     }}
                   />
 
