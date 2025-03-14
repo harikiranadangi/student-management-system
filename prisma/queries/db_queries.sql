@@ -34,7 +34,7 @@ INSERT INTO ClerkUser (id, username, password, full_name, surname)
 VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
 
 COPY "ClerkUser"(clerk_id, username, password, full_name, role)
-FROM 'D:/GITHUB/student-management-system/NewFolder/data-1741517708840.csv'
+FROM 'D:/GITHUB/student-management-system/data_tables/data-1741517708840.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "Student";
@@ -61,9 +61,6 @@ UPDATE "Student" s
 SET clerk_id = c.user_id
 FROM "ClerkUser" c
 WHERE s.id = c.clerk_id;
-
-
-
 
 
 
