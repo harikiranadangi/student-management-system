@@ -33,7 +33,7 @@ async function createClerkUser(user: any) {
 
     console.log(`📤 Sending to Clerk:`, {
       username: user.username,
-      email: `${user.username}@example.com`, // Ensure unique email
+      email: `${user.username}@ksk.com`, // Ensure unique email
       first_name: firstName,
       last_name: lastName,
       full_name: user.full_name,
