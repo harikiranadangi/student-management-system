@@ -12,7 +12,7 @@ async function fetchStudentsFromDB() {
   try {
     const students = await prisma.clerkUser.findMany({
       where: { role: "student" }, // Fetch only students
-      take: 50, // Limit to 50 students for testing
+      take: 100, // Limit to 50 students for testing
     });
     console.log(`📢 Found ${students.length} students to sync.`);
     return students;
@@ -33,7 +33,7 @@ async function createClerkUser(user: any) {
 
     console.log(`📤 Sending to Clerk:`, {
       username: user.username,
-      email: `${user.username}@ksk.com`, // Ensure unique email
+      email: `${user.username}@kotakschool.com`, // Ensure unique email
       first_name: firstName,
       last_name: lastName,
       full_name: user.full_name,
@@ -43,7 +43,7 @@ async function createClerkUser(user: any) {
       `${CLERK_API_URL}/users`,
       {
         username: user.username,
-        email_addresses: [`${user.username}@example.com`], // Ensure email format
+        email_addresses: [`${user.username}@kotakschool.com`], // Ensure email format
         password: user.password,
         first_name: firstName, // Set first name
         last_name: lastName, // Set last name
