@@ -178,3 +178,13 @@ CREATE TABLE ClerkUser (
         (studentId IS NULL AND teacherId IS NOT NULL)
     )
 );
+
+-- Admin Page
+
+SELECT * FROM "Admin";
+
+INSERT INTO "Admin" (username, full_name,  password, role,address,dob,email,gender, "parentName",phone ) 
+VALUES 
+('harikiran', 'HARI KIRAN ADANGI', '812551', 'admin', 'Gopalapatnam, Visakhpatnam','1996-03-29','hari.myskoolgmail.com','Male','A SRINIVASA RAO', '7801049830')  
+
+DELETE FROM "Admin";

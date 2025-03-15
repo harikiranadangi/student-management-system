@@ -134,7 +134,7 @@ async function main() {
 
   console.log("📂 Reading CSV file...");
 
-  const studentsFilePath = path.join(__dirname, "../data_tables/students_cleaned.csv");
+  const studentsFilePath = path.join(__dirname, "../data/student_data.csv");
 
   // Check if CSV file exists
   if (!fs.existsSync(studentsFilePath)) {
@@ -144,16 +144,27 @@ async function main() {
 
   const students: any[] = [];
 
-  // Function to parse DOB safely
   function parseDate(dateString: string | undefined): string | Date {
     if (!dateString || dateString.trim() === "" || dateString.toUpperCase() === "NA") {
       return "NA"; // ✅ Store as "NA" instead of null
     }
 
+    dateString = dateString.trim(); // ✅ Remove spaces
+
+    // Check if it's in YYYY-MM-DD format (which is valid)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return new Date(dateString);
+    }
+
     // Check if the date follows DD-MM-YYYY format
     const parts = dateString.split("-");
     if (parts.length === 3) {
-      const [day, month, year] = parts.map(Number);
+      let [day, month, year] = parts.map(Number);
+
+      // Handle cases where the year is first
+      if (year < 1000) {
+        [year, month, day] = [day, month, year]; // Swap if wrongly parsed
+      }
 
       // Validate parsed numbers
       if (isNaN(day) || isNaN(month) || isNaN(year) || day > 31 || month > 12 || year < 1900) {
@@ -168,10 +179,12 @@ async function main() {
     return "NA";
   }
 
+
   await new Promise<void>((resolve, reject) => {
     fs.createReadStream(studentsFilePath)
       .pipe(csvParser())
       .on("data", (row) => {
+        console.log(`🔍 Parsing row:`, row); // ✅ Debug each row
         const dob = parseDate(row.dob);
 
         students.push({
@@ -192,14 +205,13 @@ async function main() {
       .on("end", async () => {
         console.log(`📊 Found ${students.length} students in CSV.`);
 
-        // ✅ Sort students before inserting into PostgreSQL
-        students.sort((a, b) => {
-          if (a.classId !== b.classId) return a.classId - b.classId; // Sort by classId
-          if (a.gender !== b.gender) return b.gender.localeCompare(a.gender); // Female first
-          return a.name.localeCompare(b.name); // Sort by name (A-Z)
-        });
-
         console.log("📌 Sorted student data:", students.slice(0, 5)); // ✅ Debugging
+
+        students.forEach((student, index) => {
+          if (!("dob" in student)) {
+            console.warn(`🚨 Missing 'dob' field in record at index ${index}:`, student);
+          }
+        });
 
         if (students.length > 0) {
           await prisma.student.createMany({
