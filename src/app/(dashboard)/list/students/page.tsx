@@ -1,3 +1,4 @@
+import FilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -9,8 +10,10 @@ import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
+// Define types
 type StudentList = Student & { Class?: { name: string } };
 
+// Function to render a table row
 const renderRow = (item: StudentList, role: string | null) => (
   <tr
     key={item.id}
@@ -26,7 +29,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item.username}</p>
+        <p className="text-xs">{item.id}</p>
       </div>
     </td> 
 
@@ -79,7 +82,6 @@ const StudentListPage = async ({
   const query: Prisma.StudentWhereInput = {};
 
   // Dynamically add filters based on query parameters
-  // Dynamically add filters based on query parameters
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -87,8 +89,9 @@ const StudentListPage = async ({
           case "search":
             // Search by name or id
             query.OR = [
-              { name: { contains: value, mode: "insensitive" } },
-              { id: { contains: (value) } },
+              { name: { contains: value, mode: "insensitive" } }, // Search by name
+              { id: { contains: value } }, // Search by ID
+              { Class: { name: { contains: value, mode: "insensitive" } } }, // ✅ Search by Class Name
             ];
             break;
           case "classId":
@@ -100,6 +103,9 @@ const StudentListPage = async ({
       }
     }
   }
+
+  // Fetch classes
+  const classes = await prisma.class.findMany();
 
   // Fetch students and include related fields (classes, etc.)
   const [data, count] = await prisma.$transaction([
@@ -123,6 +129,8 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+        <FilterDropdown classes={classes} />
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
@@ -134,6 +142,7 @@ const StudentListPage = async ({
             {role === "admin" && (
               <FormContainer table="student" type="create" />
             )}
+            </div>
           </div>
         </div>
       </div>
