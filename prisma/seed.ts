@@ -200,6 +200,7 @@ async function main() {
           bloodType: row.bloodType,
           dob,
           classId: Number(row.classId),
+          clerk_id: row.clerk_id,
         });
       })
       .on("end", async () => {
