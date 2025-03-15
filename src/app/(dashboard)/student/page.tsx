@@ -12,10 +12,20 @@ const StudentPage = async () => {
     return <p className="text-center text-red-500">❌ Unauthorized or no user found.</p>;
   }
 
-  // * Fetch student using `clerk_id`
+  // Step 1: Fetch clerk_id from clerkUser using user_id
+  const clerkUser = await prisma.clerkUser.findUnique({
+    where: { user_id: userId }, // userId is provided
+    select: { clerk_id: true }, // Only fetch clerk_id
+  });
+
+  // Step 2: If clerkUser exists, fetch the student using clerk_id
+  if (!clerkUser) {
+    throw new Error("Clerk user not found");
+  }
+
   const student = await prisma.student.findUnique({
-    where: { clerk_id: userId },
-    include: { Class: true }, // * Ensure class relation is fetched
+    where: { clerk_id: clerkUser.clerk_id }, // Use the retrieved clerk_id
+    include: { Class: true }, // Include class relation
   });
 
 
@@ -23,7 +33,7 @@ const StudentPage = async () => {
     return <p className="text-center text-red-500">⚠️ No student data available.</p>;
   }
 
- 
+
   console.log("Student Data:", student);
   console.log("Class Data from Student:", student?.Class);
 
