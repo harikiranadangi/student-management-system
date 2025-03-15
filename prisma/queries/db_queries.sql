@@ -23,19 +23,21 @@ SELECT * FROM "ClerkUser" WHERE username = 's14384A';
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
 
-DELETE FROM ClerkUser;
+
 
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'ClerkUser';
 
 SELECT id, username, clerk_id FROM "Student" WHERE clerk_id = 'user_2u7uazlBqLYKlsChmAcRyf32DkH';
 
-
-INSERT INTO ClerkUser (id, username, password, full_name, surname)
-VALUES ('2', 'testuser1', 'Test@1234', 'Test', 'User');
-
-COPY "ClerkUser"(clerk_id, username, password, full_name, role)
-FROM 'D:/GITHUB/student-management-system/data_tables/data-1741517708840.csv'
+COPY "ClerkUser"(clerk_id, username, password, full_name, role, "studentId","teacherId")
+FROM 'D:/GITHUB/student-management-system/data/clerk_student_data.csv'
 WITH CSV HEADER DELIMITER ',';
+
+SELECT * FROM "ClerkUser";
+
+DELETE FROM "ClerkUser";
+
+-- STUDENTS
 
 SELECT * FROM "Student";
 
