@@ -16,12 +16,6 @@ type TeachersList = Teacher & {
   class?: Class & { students: Student[] }| null; // ✅ Fetch multiple classes with students
 };
 
-
-// *If you want to show the students in the class, use this line instead of the one above
-// * type TeachersList = Teacher & {
-// *  subjects: { Subject: Subject }[];
-// * <td className="hidden w-32 md:table-cell">{item.classes?.map(classItem => classItem.name)}</td>
-
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
   console.log("Subjects Data:", item.subjects),
@@ -29,32 +23,29 @@ const renderRow = (item: TeachersList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
 
     {/* Info Column */}
-    <td className="flex items-center gap-4 p-4">
+    <td className="flex items-center gap-2 p-2">
+      
       <Image
         src={item.img || "/teacher.png"}
         alt={``}
         width={40}
         height={40}
-        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
-      />
+        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"/>
       <div className="flex flex-col ">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs">{item?.username ?? 'No email available'}</p>
+        <p className="text-xs">{item?.id}</p>
       </div>
     </td>
 
-    <td className="px-2 w-36 md:table-cell">
-      {item.phone}
-    </td>
-
     {/* Directly use the strings from subjects and classes */}
-    <td className="hidden w-32 md:table-cell">
-      {item.class ? item.class.name : "No Class Assigned"}
-    </td>
-
+    <td className="hidden w-32 md:table-cell">{item.class ? item.class.name : "No Class"}</td>
+    <td className="px-2 w-36 md:table-cell">{item.phone}</td>
     <td className="hidden w-32 truncate md:table-cell">
       {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
     </td>
+    <td className="hidden md:table-cell">{item.gender}</td>
+    <td className="hidden md:table-cell">{item.dob ? new Date(item.dob).toLocaleDateString() : "N/A"}</td>
+    <td className="hidden md:table-cell">{item.clerk_id ? "Yes" : "No"}</td>
 
     {/* Actions Column */}
     <td className="p-2">
@@ -86,40 +77,16 @@ const TeacherListPage = async ({
 
   // Define table columns
   const columns = [
-    {
-      header: "Name",
-      accessor: "info",
-    },
-
-    {
-      header: "Phone",
-      accessor: "phone",
-      className: "lg:table-cell",
-    },
-    {
-      header: "Classes",
-      accessor: "classes",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Subjects",
-      accessor: "subjects",
-      className: "hidden md:table-cell",
-    },
-    // {
-    //   header: "Address",
-    //   accessor: "address",
-    //   className: "hidden lg:table-cell",
-    // },
-    ...(role === "admin"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
+    { header: "Name", accessor: "info"},
+    { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
+    { header: "Phone", accessor: "phone", className: "lg:table-cell" },
+    { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
+    { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
+    { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
+    { header: "Clerk ID", accessor: "clerk_id", className: "hidden md:table-cell" },
+    // { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
+    ...(role === "admin" ? [ { header: "Actions", accessor: "action", }, ] : []), ];
+  
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
@@ -141,8 +108,12 @@ const TeacherListPage = async ({
             };
             break;
           case "search":
-            query.name = { contains: value };
-            break;
+            query.OR = [
+              { name: { contains: value, mode: "insensitive" } }, // Search by lesson name
+              {  class: { name: { contains: value,  } } }  // Search by class name
+            ];
+            
+            break;  
           default:
             break;
         }
