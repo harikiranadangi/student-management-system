@@ -1,14 +1,42 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { AdminSchema, ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
 
 
+// export const createAdmin = async (
+//     currentState: CurrentState,
+//     data: AdminSchema
+// ) => {
+//         // Ensure required fields are valid
+//         if (!data.username || !data.full_name || !data.email || !data.password) {
+//             throw new Error("Missing required fields: username, full_name, email, or password.");
+//         }
 
+//         // Insert into database
+//         await prisma.admin.create({
+//             data: {
+//                 username: data.username,  // Ensure it's a string
+//                 full_name: data.full_name || "Unknown", // Default to "Unknown" if missing
+//                 email: data.email,  // Ensure valid email
+//                 password: data.password,  // Ensure password is always provided
+//                 parentName: data.parentName || null,  // Optional field
+//                 gender: data.gender || null,
+//                 address: data.address || null,
+//                 dob: data.dob ? new Date(data.dob) : null,  // Convert to Date
+//                 phone: data.phone || "0000000000",  // Default to dummy phone if missing
+//             },
+//         });
+
+//         return { success: true };
+//     // } catch (error) {
+//     //     console.error("Error in createAdmin:", error);
+//     //     return { success: false, error: (error as any).message };
+//     // }
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
 export const createSubject = async (
