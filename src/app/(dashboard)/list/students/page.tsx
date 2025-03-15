@@ -127,7 +127,7 @@ const StudentListPage = async ({
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Students</h1>
+        <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
         <FilterDropdown classes={classes} />
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
