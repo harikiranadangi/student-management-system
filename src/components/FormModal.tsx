@@ -23,6 +23,7 @@ const deleteActionMap = {
   announcement: deleteSubject,
   fees: deleteSubject,
   homeworks: deleteSubject,
+  admin:deleteSubject
 }
 
 // Dynamically import the form components
@@ -44,6 +45,10 @@ const ExamForm = dynamic(() => import("./forms/ExamForm"), {
 const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const AdminForm = dynamic(() => import("./forms/AdminForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+
 
 
 // Define the available forms based on the table type
@@ -84,6 +89,12 @@ const forms: {
   attendance: (setOpen, type, data, relatedData) => (
     <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
+  
+  admin: (setOpen, type, data, relatedData) => (
+    <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+
+
 };
 
 const FormModal = ({

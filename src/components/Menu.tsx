@@ -87,6 +87,12 @@ const menuItems = [
         href: "/list/announcements",
         visible: ["admin", "teacher", "student"],
       },
+      {
+        icon: "/admin.png",
+        label: "Admin",
+        href: "/list/admin",
+        visible: ["admin"],
+      },
       // {
       //   icon: "/assignment.png",
       //   label: "Assignments",

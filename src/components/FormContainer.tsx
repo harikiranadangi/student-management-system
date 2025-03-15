@@ -16,6 +16,7 @@ export type FormContainerProps = {
     | "event"
     | "announcement"
     | "fees"
+    | "admin"
     | "homeworks";
     type: "create" | "update" | "delete";
     data?: any;
@@ -123,6 +124,9 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 relatedData = { students: studentsInClass };
                 break;
+
+            
+            
 
             
 
