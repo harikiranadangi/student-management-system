@@ -45,7 +45,6 @@ const renderRow = (item: TeachersList, role: string | null) => (
     </td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.dob ? new Date(item.dob).toLocaleDateString() : "N/A"}</td>
-    <td className="hidden md:table-cell">{item.clerk_id ? "Yes" : "No"}</td>
 
     {/* Actions Column */}
     <td className="p-2">
@@ -83,7 +82,6 @@ const TeacherListPage = async ({
     { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
     { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
     { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
-    { header: "Clerk ID", accessor: "clerk_id", className: "hidden md:table-cell" },
     // { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
     ...(role === "admin" ? [ { header: "Actions", accessor: "action", }, ] : []), ];
   
