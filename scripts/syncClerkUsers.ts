@@ -107,4 +107,4 @@ async function syncUsersToClerk() {
 // Run the sync process
 syncUsersToClerk();
 
-// Run the script with: npx tsx scripts/syncClerkUsers.ts
+// node scripts\deleteUsers.js npx tsx scripts/syncClerkUsers.ts npx tsx scripts/syncClerkUserIds.ts
