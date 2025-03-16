@@ -10,16 +10,16 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 
 
-SELECT * FROM "ClerkUser";
-DROP TABLE IF EXISTS "ClerkUser" CASCADE;
+SELECT * FROM "ClerkStudents";
+DROP TABLE IF EXISTS "ClerkStudents" CASCADE;
 
 
 SELECT *
 FROM "Student" s
-JOIN "ClerkUser" cu ON s.id = cu.clerk_id
+JOIN "ClerkStudents" cu ON s.id = cu.clerk_id
 WHERE cu.username = 'S14384A';
 
-SELECT * FROM "ClerkUser" WHERE username = 's14384A';
+SELECT * FROM "ClerkStudents" WHERE username = 's14384A';
 
 -- "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d kotakdatabase
 
@@ -29,13 +29,23 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 
 SELECT id, username, clerk_id FROM "Student" WHERE clerk_id = 'user_2u7uazlBqLYKlsChmAcRyf32DkH';
 
-COPY "ClerkUser"(clerk_id, username, password, full_name, role, "studentId","teacherId")
+COPY "ClerkStudents"(clerk_id, username, password, full_name, role, "studentId")
 FROM 'D:/GITHUB/student-management-system/data/clerk_student_data.csv'
 WITH CSV HEADER DELIMITER ',';
 
-SELECT * FROM "ClerkUser";
+SELECT * FROM "ClerkStudents";
 
-DELETE FROM "ClerkUser";
+DELETE FROM "ClerkStudents";
+
+-- Clerk Teachers
+
+COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "studentId")
+FROM 'D:/GITHUB/student-management-system/data/clerk_teacher_data.csv'
+WITH CSV HEADER DELIMITER ',';
+
+SELECT * FROM "ClerkTeachers";
+
+DELETE FROM "ClerkTeachers";
 
 -- STUDENTS
 
@@ -43,7 +53,7 @@ SELECT * FROM "Student";
 
 SELECT * FROM "Student" WHERE clerk_id IS NOT  NULL; 
 
-SELECT * FROM "ClerkUser" WHERE user_id IS NOT NULL;
+SELECT * FROM "ClerkStudents" WHERE user_id IS NOT NULL;
 
 
 SELECT tablename FROM pg_tables WHERE schemaname = 'public';

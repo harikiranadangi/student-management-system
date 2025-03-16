@@ -8,22 +8,21 @@ datasource db {
 }
 
 model Admin {
-  id         Int      @id @default(autoincrement())
-  username   String   @unique
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
   password   String
   full_name  String
-  parentName String?  // Now optional
-  gender     String?  // Now optional
+  parentName String? // Now optional
+  gender     String? // Now optional
   email      String?
-  phone      String?  // Now optional
-  address    String?  // Now optional
+  phone      String? // Now optional
+  address    String? // Now optional
   dob        DateTime?
   img        String?
-  bloodType String?
-  role       String   @default("admin")
-  createdAt  DateTime @default(now())
+  bloodType  String?
+  role       String    @default("admin")
+  createdAt  DateTime  @default(now())
 }
-
 
 model Announcement {
   id          Int      @id @default(autoincrement())
@@ -187,28 +186,28 @@ model Result {
 }
 
 model Student {
-  id          String        @id
-  username    String        @unique
-  name        String
-  surname     String?
-  parentName  String
-  email       String?       @unique
-  phone       String
-  address     String
-  img         String?
-  bloodType   String?
-  gender      Gender
-  dob         DateTime
-  createdAt   DateTime      @default(now())
-  deletedAt   DateTime?
-  classId     Int
-  Attendance  Attendance[]
-  Fee         Fee[]
-  results     Result[]
-  Class       Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentFees StudentFees[]
-  clerkUser   ClerkUser?
-  clerk_id    String?       @unique
+  id           String         @id
+  username     String         @unique
+  name         String
+  surname      String?
+  parentName   String
+  email        String?        @unique
+  phone        String
+  address      String
+  img          String?
+  bloodType    String?
+  gender       Gender
+  dob          DateTime
+  createdAt    DateTime       @default(now())
+  deletedAt    DateTime?
+  classId      Int
+  Attendance   Attendance[]
+  Fee          Fee[]
+  results      Result[]
+  Class        Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees  StudentFees[]
+  clerkStudent ClerkStudents?
+  clerk_id     String?        @unique
 
   @@index([classId])
 }
@@ -235,26 +234,26 @@ model Subject {
 }
 
 model Teacher {
-  id         String           @id
-  username   String           @unique
-  name       String
-  surname    String?
-  email      String?          @unique
-  phone      String
-  address    String
-  img        String?
-  bloodType  String?
-  gender     Gender
-  createdAt  DateTime         @default(now())
-  deletedAt  DateTime?
-  supervisor Boolean          @default(false)
-  dob        DateTime?
-  lessons    Lesson[]
-  subjects   TeacherSubject[]
-  class      Class?           @relation(name: "ClassToTeacher") // Opposite relation defined WITHOUT fields/references
-  classId    String? @unique
-  clerkUser  ClerkUser?
-  clerk_id   String?          @unique
+  id            String           @id
+  username      String           @unique
+  name          String
+  surname       String?
+  email         String?          @unique
+  phone         String
+  address       String
+  img           String?
+  bloodType     String?
+  gender        Gender
+  createdAt     DateTime         @default(now())
+  deletedAt     DateTime?
+  supervisor    Boolean          @default(false)
+  dob           DateTime?
+  lessons       Lesson[]
+  subjects      TeacherSubject[]
+  class         Class?           @relation(name: "ClassToTeacher") // Opposite relation defined WITHOUT fields/references
+  classId       String?          @unique
+  ClerkTeachers ClerkTeachers?
+  clerk_id      String?          @unique
 }
 
 model TeacherSubject {
@@ -266,7 +265,7 @@ model TeacherSubject {
   @@id([teacherId, subjectId])
 }
 
-model ClerkUser {
+model ClerkStudents {
   clerk_id  String   @id @db.VarChar // Keep as primary key
   user_id   String?  @unique // New column for Clerk User ID
   username  String   @unique
@@ -275,6 +274,15 @@ model ClerkUser {
   role      String   @default("student") @db.VarChar
   studentId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't students)
   student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
+}
+
+model ClerkTeachers {
+  clerk_id  String   @id @db.VarChar // Keep as primary key
+  user_id   String?  @unique // New column for Clerk User ID
+  username  String   @unique
+  password  String   @db.VarChar
+  full_name String   @db.VarChar
+  role      String   @default("teacher") @db.VarChar
   teacherId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't teachers)
   teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade) // Inverse Relation
 }
