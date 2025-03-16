@@ -13,7 +13,7 @@ const StudentPage = async () => {
   }
 
   // Step 1: Fetch clerk_id from clerkUser using user_id
-  const clerkUser = await prisma.clerkUser.findUnique({
+  const clerkUser = await prisma.clerkStudents.findUnique({
     where: { user_id: userId }, // userId is provided
     select: { clerk_id: true }, // Only fetch clerk_id
   });
@@ -35,7 +35,6 @@ const StudentPage = async () => {
 
 
   console.log("Student Data:", student);
-  console.log("Class Data from Student:", student?.Class);
 
   if (!student.Class) {
     return (
