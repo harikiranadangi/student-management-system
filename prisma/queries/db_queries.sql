@@ -137,10 +137,16 @@ SELECT * FROM "Teacher";
 DELETE FROM "Teacher";
 
 
-COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId")
-FROM 'D:/GITHUB/student-management-system/NewFolder/teacher_data.csv'
-DELIMITER ',' 
-CSV HEADER;
+COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
+FROM 'D:/GITHUB/student-management-system/data/teachers_data.csv'
+WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
+
+
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'Teacher';
+
+
 
 SELECT "Teacher"."name", "class"."name"
 FROM "Teacher"
