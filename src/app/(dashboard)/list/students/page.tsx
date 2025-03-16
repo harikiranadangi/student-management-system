@@ -31,7 +31,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs">{item.id}</p>
       </div>
-    </td> 
+    </td>
 
     <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
@@ -95,6 +95,9 @@ const StudentListPage = async ({
           case "classId":
             query.Class = { id: parseInt(value) }; // Filter by Class
             break;
+          case "teacherId":
+            query.Class = { supervisorId: value }; // Ensure Class has a supervisorId field in DB
+            break;
           default:
             break;
         }
@@ -127,19 +130,19 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-        <FilterDropdown classes={classes} />
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <TableSearch />
-          <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {role === "admin" && (
-              <FormContainer table="student" type="create" />
-            )}
+          <FilterDropdown classes={classes} />
+          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+            <TableSearch />
+            <div className="flex items-center self-end gap-4">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/filter.png" alt="" width={14} height={14} />
+              </button>
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/sort.png" alt="" width={14} height={14} />
+              </button>
+              {role === "admin" && (
+                <FormContainer table="student" type="create" />
+              )}
             </div>
           </div>
         </div>

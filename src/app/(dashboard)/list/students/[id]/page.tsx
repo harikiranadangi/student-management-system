@@ -25,14 +25,22 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
-      Class: { include: { _count: { select: { lessons: true } } } },
+      Class: {  // Change from "Class" to "class" if needed
+        include: {
+          Teacher: true,  // Ensure it matches your schema
+          _count: { select: { lessons: true } },
+        },
+      },
     },
   });
+  
+  
 
   if (!student) {
     return notFound(); // ✅ Returns 404 if student not found
   }
 
+  
   // Return the student data
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
@@ -118,7 +126,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{student.Class.name.charAt(0)}th</h1>
+                <h1 className="text-xl font-semibold">{student.Class.gradeId}</h1>
                 <span className="text-sm text-gray-400">Grade</span>
               </div>
             </div>
@@ -166,7 +174,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
             <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/lessons?classId=${student.Class.id}`}>
               Student&apos;s Lessons
             </Link>
-            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${student.Class.id}`}>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${(student.Class.id.toString())}`}>
               Student&apos;s Teachers
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?classId=${2}`}>
