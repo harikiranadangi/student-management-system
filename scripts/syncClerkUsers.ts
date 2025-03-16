@@ -10,14 +10,28 @@ const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
 async function fetchStudentsFromDB() {
   try {
-    const students = await prisma.clerkUser.findMany({
+    const students = await prisma.clerkStudents.findMany({
       where: { role: "student" }, // Fetch only students
-      take: 100, // Limit to 50 students for testing
+      take: 57, // Limit to 50 students for testing
     });
     console.log(`📢 Found ${students.length} students to sync.`);
     return students;
   } catch (error) {
     console.error("❌ Error fetching students:", error);
+    return [];
+  }
+}
+
+async function fetchTeachersFromDB() {
+  try {
+    const teachers = await prisma.clerkTeachers.findMany({
+      where: { role: "teacher" },
+      take: 43, // Limit to 50 teachers for testing 
+    });
+    console.log(`📢 Found ${teachers.length} teachers to sync.`);
+    return teachers;
+  } catch (error) {
+    console.error("❌ Error fetching teachers:", error);
     return [];
   }
 }
@@ -48,7 +62,7 @@ async function createClerkUser(user: any) {
         first_name: firstName, // Set first name
         last_name: lastName, // Set last name
         full_name: user.full_name, // Ensure full_name is stored
-        public_metadata: { role: "student" }, // Assign role in Clerk
+        public_metadata: { role: user.role }, // Assign role in Clerk
       },
       {
         headers: {
@@ -70,15 +84,21 @@ async function createClerkUser(user: any) {
 
 async function syncUsersToClerk() {
   const students = await fetchStudentsFromDB();
-  
-  if (students.length === 0) {
-    console.log("❌ No students found to sync.");
+  const teachers = await fetchTeachersFromDB();
+
+  if (students.length === 0 && teachers.length === 0) {
+    console.log("❌ No students or teachers found to sync.");
     return;
   }
 
   for (const student of students) {
     console.log(`🔍 Syncing student:`, student);
     await createClerkUser(student);
+  }
+  
+  for (const teacher of teachers) {
+    console.log(`🔍 Syncing teacher:`, teacher);
+    await createClerkUser(teacher);
   }
 
   console.log("🎉 Bulk user sync completed!");
