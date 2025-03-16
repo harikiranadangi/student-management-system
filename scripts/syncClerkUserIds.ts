@@ -11,11 +11,24 @@ const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 // Fetch all students from the database
 async function fetchStudentsFromDB() {
   try {
-    const students = await prisma.clerkUser.findMany({
+    const students = await prisma.clerkStudents.findMany({
       where: { role: "student" }, // Only students
     });
     console.log(`📢 Found ${students.length} students in DB.`);
     return students;
+  } catch (error) {
+    console.error("❌ Error fetching students:", error);
+    return [];
+  }
+}
+// Fetch all students from the database
+async function fetchTeachersFromDB() {
+  try {
+    const teachers = await prisma.clerkTeachers.findMany({
+      where: { role: "teacher" }, // Only students
+    });
+    console.log(`📢 Found ${teachers.length} teachers in DB.`);
+    return teachers;
   } catch (error) {
     console.error("❌ Error fetching students:", error);
     return [];
@@ -59,10 +72,12 @@ async function fetchClerkUsers() {
 
 // Sync Clerk user IDs with database
 async function syncClerkUserIds() {
+  
+  const teachers = await fetchTeachersFromDB();
   const students = await fetchStudentsFromDB();
   const clerkUsers = await fetchClerkUsers();
 
-  if (students.length === 0 || clerkUsers.length === 0) {
+  if (students.length === 0 || clerkUsers.length === 0 || teachers.length === 0) {
     console.log("❌ No data found to sync.");
     return;
   }
@@ -80,7 +95,7 @@ async function syncClerkUserIds() {
     const clerkId = clerkUserMap[student.username] || null;
 
     // Update user_id column in the database
-    await prisma.clerkUser.updateMany({
+    await prisma.clerkStudents.updateMany({
       where: { username: student.username },
       data: { user_id: clerkId },
     });
@@ -92,8 +107,26 @@ async function syncClerkUserIds() {
     );
   }
 
+  // Update students in the database
+  for (const teacher of teachers) {
+    const clerkId = clerkUserMap[teacher.username] || null;
+
+    // Update user_id column in the database
+    await prisma.clerkTeachers.updateMany({
+      where: { username: teacher.username },
+      data: { user_id: clerkId },
+    });
+
+    console.log(
+      clerkId
+        ? `✅ Synced user_id for ${teacher.username}: ${clerkId}`
+        : `⚠️ No Clerk user found for ${teacher.username}, setting user_id to NULL`
+    );
+  }
+
   console.log("🎉 User ID sync completed!");
   console.log("Total students updated:", students.length);
+  console.log("Total Teachers updated:", teachers.length);
 }
 
 // Run the sync process
