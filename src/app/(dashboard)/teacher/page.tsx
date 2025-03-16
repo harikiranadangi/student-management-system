@@ -1,10 +1,32 @@
 import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
+import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
 
 const TeacherPage = async () => {
+  
+  const { userId, role } = await fetchUserInfo();
 
-  const { userId } = await fetchUserInfo();
+  if (!userId || role !== "teacher") {
+    return <p className="text-center text-red-500">❌ Unauthorized or no user found.</p>;
+  }
+
+  // Step 1: Fetch clerk_id from clerkUser using user_id
+  const clerkUser = await prisma.clerkTeachers.findUnique({
+    where: { user_id: userId }, // userId is provided
+    select: { clerk_id: true }, // Only fetch clerk_id
+  });
+
+  // Step 2: If clerkUser exists, fetch the student using clerk_id
+  if (!clerkUser) {
+    throw new Error("Clerk user not found");
+  }
+
+  const teacher = await prisma.teacher.findUnique({
+    where: { clerk_id: clerkUser.clerk_id }, // Use the retrieved clerk_id
+    include: { class: true }, // Include class relation
+  });
+
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
       {/* LEFT: Description */}
