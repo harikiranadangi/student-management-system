@@ -38,7 +38,6 @@ const renderRow = (item: StudentList, role: string | null) => (
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
     <td className="hidden md:table-cell">{item.phone}</td>
-    <td className="hidden md:table-cell">{item.clerk_id ? "Yes" : "No"}</td>
 
     <td className="p-2">
       <div className="flex items-center gap-2">
@@ -74,7 +73,6 @@ const StudentListPage = async ({
     { header: "Parent Name", accessor: "parentName" },
     { header: "DOB", accessor: "dob" },
     { header: "Mobile", accessor: "phone" },
-    { header: "User ID", accessor: "clerk_id" },
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 
