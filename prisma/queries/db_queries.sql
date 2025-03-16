@@ -39,13 +39,19 @@ DELETE FROM "ClerkStudents";
 
 -- Clerk Teachers
 
-COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "studentId")
+COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
 FROM 'D:/GITHUB/student-management-system/data/clerk_teacher_data.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkTeachers";
 
 DELETE FROM "ClerkTeachers";
+
+SELECT * FROM "Teacher";
+
+SELECT * FROM "Teacher" WHERE clerk_id IS NOT  NULL; 
+
+SELECT * FROM "ClerkTeachers" WHERE user_id IS NOT NULL;
 
 -- STUDENTS
 
