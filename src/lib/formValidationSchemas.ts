@@ -1,21 +1,19 @@
 import { z } from "zod";
 
 export const adminSchema = z.object({
-  id: z.coerce.number().optional(),
-  username: z.string().min(1, { message: 'Username is required!' }),
-  full_name: z.string().min(1, { message: 'Full Name is required!' }),
-  password: z.string().min(5, { message: "Password must be at least 5 characters long!" }).optional()
-    .or(z.literal("")),
-  parentName: z.string().min(1, { message: 'Parent Name is required!' }),
+  id: z.number().optional(),
+  username: z.string().min(1, { message: "Username is required!" }),
+  full_name: z.string().min(1, { message: "Full Name is required!" }),
+  password: z.string().min(5, { message: "Password must be at least 5 characters!" }).optional(),
+  parentName: z.string().optional(),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
-  email: z.string().email({ message: "Invalid email address!" }).optional().nullable(),
-  address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
-  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
-    .default("Under Investigation"),
-  dob: z.union([z.coerce.date(), z.string().length(0)]).optional(),
+  email: z.string().email({ message: "Invalid email!" }).optional(),
+  address: z.string().min(1, { message: "Address is required!" }),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional(),
+  dob: z.coerce.date().optional(),
   img: z.string().optional().nullable(),
-  phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
-})
+  phone: z.string().regex(/^\d{10}$/, { message: "Phone must be 10 digits!" }),
+});
 
 export type AdminSchema = z.infer<typeof adminSchema>;
 
