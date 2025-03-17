@@ -213,6 +213,10 @@ SELECT * FROM "Attendance";
 -- Retrieve all records from the FeesStructure table
 SELECT * FROM "FeesStructure";
 
+COPY "FeesStructure" ("classId", "totalFees", "abacusFees", "termFees")
+FROM 'D:/GITHUB/student-management-system/data/fees_structure.csv'
+WITH CSV HEADER DELIMITER ',';
+
 -- Retrieve all records from the StudentFees table
 SELECT * FROM "StudentFees";
 

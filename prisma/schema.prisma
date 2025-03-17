@@ -62,7 +62,9 @@ model Class {
   lessons      Lesson[]
   students     Student[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation
+  Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
+  payments      Payment[]
+  
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -170,6 +172,18 @@ model Lesson {
   @@index([teacherId])
 }
 
+model Payment {
+  id          Int      @id @default(autoincrement())
+  studentId   String
+  classId     Int
+  amountPaid  Int
+  datePaid    DateTime @default(now())
+
+  Student     Student  @relation(fields: [studentId], references: [id])
+  Class       Class    @relation(fields: [classId], references: [id])
+}
+
+
 model Result {
   id        Int     @id @default(autoincrement())
   score     Float
@@ -208,6 +222,7 @@ model Student {
   studentFees  StudentFees[]
   clerkStudent ClerkStudents?
   clerk_id     String?        @unique
+  payments     Payment[]
 
   @@index([classId])
 }
