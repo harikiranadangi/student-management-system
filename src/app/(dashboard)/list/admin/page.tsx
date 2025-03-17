@@ -28,7 +28,7 @@ const renderRow = (item: AdminList, role: string | null) => (
         <h3 className="font-semibold">{item.full_name}</h3>
         <p className="text-xs text-gray-500">{item.username}</p>
       </div>
-    </td> 
+    </td>
 
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
@@ -37,13 +37,12 @@ const renderRow = (item: AdminList, role: string | null) => (
 
     <td className="p-2">
       <div className="flex items-center gap-2">
-        <Link href={`/list/students/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
-            <Image src="/view.png" alt="View" width={16} height={16} />
-          </button>
-        </Link>
+        
         {role === "admin" && (
-          <FormContainer table="student" type="delete" id={item.id} />
+          <>
+            <FormContainer table="admin" type="update" data={item} />
+            <FormContainer table="admin" type="delete" id={item.id} />
+          </>
         )}
       </div>
     </td>
@@ -96,7 +95,6 @@ const AdminListPage = async ({
   const [data, count] = await prisma.$transaction([
     prisma.admin.findMany({
       where: query,
-      
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
@@ -110,7 +108,7 @@ const AdminListPage = async ({
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Students</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Admins List</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">

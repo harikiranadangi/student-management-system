@@ -17,11 +17,13 @@ export default function DashboardLayout({
           <Image src="/logo.png" alt="logo" width={50} height={50} />
           <span className="hidden font-bold lg:block">Kotak Salesian School</span>
         </Link>
-        <Menu/>
+        <div className="pl-4">
+          <Menu />
+        </div>
       </div>
 
       {/* RIGHT */}
-      <div className='w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll flex flex-col'>
+      <div className='w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll flex flex-col' >
         <Navbar />
         {children}
       </div>
