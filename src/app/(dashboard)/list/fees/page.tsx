@@ -5,29 +5,25 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Fee, Prisma, Student } from "@prisma/client";
+import { Class, FeesStructure, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-type FeesList = Fee & { Student: Student & { Class: Class } };
+type FeesList = Class & {
+  fees: FeesStructure;
+};
+
 
 const renderRow = (item: FeesList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-
-    <div className="flex flex-col">
-      <h3 className="font-semibold">{item.Student?.name}</h3>
-      <p className="text-xs text-gray-500">{item.studentId}</p>
-      <p className="text-xs text-gray-500">{item.feesbook}</p>
-    </div>
-    <td>{item.Student?.Class?.name || "-"}</td>
-    <td>{item.totalFee}</td>
-    <td>{item.paidAmount}</td>
-    <td>{item.totalFee - item.paidAmount}</td>
+    <td>{item.name}</td>
+    <td>{item.fees?.abacusFees}</td>
+    <td>{item.fees?.termFees}</td>
+    <td>{item.fees?.totalFees ?? "N/A"}</td>
     <td>
       <div className="flex items-center gap-2">
-        {(role === "admin" || role === "teacher") && (
+        {(role === "admin") && (
           <>
-            <FormContainer table="fees" type="update" data={item} />
-            <FormContainer table="fees" type="delete" id={item.id} />
+            <FormContainer table="fees_structure" type="update" data={item.fees} />
           </>
         )}
       </div>
@@ -35,54 +31,50 @@ const renderRow = (item: FeesList, role: string | null) => (
   </tr>
 );
 
+
 const FeesListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
-
-  const columns = [
-    { header: "Name", accessor: "Student.name" },
-    { header: "Class", accessor: "Student.Class.name" },
-    { header: "Fees", accessor: "totalFee" },
-    { header: "Paid", accessor: "paidAmount" },
-    { header: "Due", accessor: "dueAmount" },
-    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
-  ];
-
   const params = await searchParams;
   const { page } = params;
   const p = page ? parseInt(page) : 1;
+  
+  // Fetch user info and role
+  const { role } = await fetchUserInfo();
+
+  const columns = [
+    { header: "Class", accessor: "name" },
+    { header: "Abacus Fees", accessor: "fees.abacusFees" },
+    { header: "Term Fees", accessor: "fees.termFees" },
+    { header: "Total Fees", accessor: "fees.totalFees" },
+    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+  ];
+
+
 
   // Initialize Prisma query object
-  const query: Prisma.FeeWhereInput = {};
+  const query: Prisma.FeesStructureWhereInput = {};
 
-  // Fetch fees with related student and class details
+  // Fetch fees with related student, class, and fees structure details
   const [data, count] = await prisma.$transaction([
-    prisma.fee.findMany({
-      where: query,
+    prisma.class.findMany({
       include: {
-        Student: {
-          include: {
-            Class: true,  // Ensure only one class is included
-          },
-        },
+        fees: true, // Include FeesStructure for each class
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
-    prisma.fee.count({ where: query }),
+    prisma.class.count(),
   ]);
 
-
-
+  // Rendering 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+    <div className="flex-1 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Fees Payments</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Fees Structure ({count} Classes)</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">

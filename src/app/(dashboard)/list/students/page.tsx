@@ -130,7 +130,7 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <FilterDropdown classes={classes} />
+          <FilterDropdown classes={classes} basePath="/list/students" />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
             <div className="flex items-center self-end gap-4">
