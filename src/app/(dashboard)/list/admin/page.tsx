@@ -7,7 +7,6 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Admin, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 type AdminList = Admin
 
@@ -17,6 +16,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-2 p-2">
+      
       <Image
         src={item.img || "/profile.png"}
         alt={item.full_name}
@@ -24,10 +24,12 @@ const renderRow = (item: AdminList, role: string | null) => (
         height={40}
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
+
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.full_name}</h3>
         <p className="text-xs text-gray-500">{item.username}</p>
       </div>
+
     </td>
 
     <td className="hidden md:table-cell">{item.gender}</td>
@@ -36,6 +38,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     <td className="hidden md:table-cell">{item.phone}</td>
 
     <td className="p-2">
+
       <div className="flex items-center gap-2">
         
         {role === "admin" && (
@@ -44,8 +47,11 @@ const renderRow = (item: AdminList, role: string | null) => (
             <FormContainer table="admin" type="delete" id={item.id} />
           </>
         )}
+
       </div>
+
     </td>
+    
   </tr>
 );
 
@@ -73,7 +79,6 @@ const AdminListPage = async ({
   // Initialize Prisma query object
   const query: Prisma.AdminWhereInput = {};
 
-  // Dynamically add filters based on query parameters
   // Dynamically add filters based on query parameters
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
@@ -106,28 +111,41 @@ const AdminListPage = async ({
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
+
         <h1 className="hidden text-lg font-semibold md:block">Admins List</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+
           <TableSearch />
+
           <div className="flex items-center self-end gap-4">
+
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
+
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
+
             {role === "admin" && (
               <FormContainer table="admin" type="create" />
             )}
+
           </div>
+
         </div>
+
       </div>
+
       {/* LIST: Description */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
+
     </div>
   );
 };

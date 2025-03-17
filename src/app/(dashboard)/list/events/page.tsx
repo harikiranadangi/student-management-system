@@ -11,9 +11,6 @@ import Image from "next/image";
 
 type Events = Event & { class: Class };
 
-
-
-
 const renderRow = (item: Events, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" 
   >

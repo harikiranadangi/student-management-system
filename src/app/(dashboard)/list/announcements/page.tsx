@@ -62,11 +62,9 @@ const AnnouncementsList = async ({
 }) => {
   
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
-
+  const { role } = await fetchUserInfo();
 
   const columns = getColumns(role);  // Get dynamic columns
-
 
   // Await the searchParams first
   const params = await searchParams;
