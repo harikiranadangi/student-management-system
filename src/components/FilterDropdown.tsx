@@ -4,7 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 type ClassType = { id: number; name: string };
 
-const FilterDropdown = ({ classes }: { classes: ClassType[] }) => {
+interface FilterDropdownProps {
+  classes: ClassType[];
+  basePath: string; // Dynamic base path (e.g., "/list/students" or "/list/teachers")
+}
+
+const FilterDropdown = ({ classes, basePath }: FilterDropdownProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -16,7 +21,7 @@ const FilterDropdown = ({ classes }: { classes: ClassType[] }) => {
     } else {
       params.delete("classId");
     }
-    router.push(`/list/students?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   };
 
   return (
@@ -26,9 +31,7 @@ const FilterDropdown = ({ classes }: { classes: ClassType[] }) => {
         onChange={handleChange}
         defaultValue=""
       >
-        <option value="" >
-          Class
-        </option>
+        <option value="">Class</option>
         {classes.map((cls) => (
           <option key={cls.id} value={cls.id} className="text-gray">
             {cls.name}
@@ -40,7 +43,6 @@ const FilterDropdown = ({ classes }: { classes: ClassType[] }) => {
         🔽 {/* You can replace this with an actual icon */}
       </span>
     </div>
-
   );
 };
 

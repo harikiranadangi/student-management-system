@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import { deleteAdmin, deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -22,8 +22,9 @@ const deleteActionMap = {
   event: deleteSubject,
   announcement: deleteSubject,
   fees: deleteSubject,
+  fees_structure: deleteSubject,
   homeworks: deleteSubject,
-  admin:deleteSubject
+  admin:deleteAdmin
 }
 
 // Dynamically import the form components

@@ -17,6 +17,7 @@ export type FormContainerProps = {
     | "announcement"
     | "fees"
     | "admin"
+    | "fees_structure"
     | "homeworks";
     type: "create" | "update" | "delete";
     data?: any;
