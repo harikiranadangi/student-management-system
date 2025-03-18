@@ -1,41 +1,28 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { AdminSchema, ClassSchema, ExamSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { AdminSchema, ClassSchema, ExamSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { hash } from "crypto";
-import { error } from "console";
 
 type CurrentState = { success: boolean; error: boolean }
 
+// * ---------------------------------------------- HOMEWORK SCHEMA --------------------------------------------------------
 
-export const createAdmin = async (
+export const createHomework = async (
     currentState: CurrentState,
-    data: AdminSchema
+    data: HomeworkSchema
 ) => {
     try {
-        // Ensure required fields are valid
-        if (!data.username || !data.full_name || !data.email || !data.password) {
-            throw new Error("Missing required fields: username, full_name, email, or password.");
-        }
-
         // Insert into database
-        await prisma.admin.create({
+        await prisma.homework.create({
             data: {
-                username: data.username,  // Ensure it's a string
-                full_name: data.full_name || "Unknown", // Default to "Unknown" if missing
-                email: data.email,  // Ensure valid email
-                password: data.password,  // Ensure password is always provided
-                parentName: data.parentName || null,  // Optional field
-                gender: data.gender || null,
-                address: data.address || null,
-                dob: data.dob ,  // Convert to Date
-                phone: data.phone ,  // Default to dummy phone if missing
+                id: data.id,
+                classId: data.classId,
+                description: data.description
             },
         });
-
-        console.log('Admin Created:', data)
+        console.log('Homework Created:', data)
         return { success: true };
     } catch (error) {
         console.error("Error in createAdmin:", error);
@@ -43,63 +30,54 @@ export const createAdmin = async (
     }
 };
 
-
-export const updateAdmin = async (
+export const updateHomework = async (
     currentState: CurrentState,
-    data: AdminSchema
+    data: HomeworkSchema
 ) => {
     try {
+        const id = data.id;
 
-    console.log("Received Update Data:", data);
+        // ✅ Step 1: Check if the homework exists
+        const existingHomework = await prisma.homework.findUnique({
+            where: { id: id },
+        });
 
-    if (!data.id || !data.full_name) {
-        throw new Error("Invalid input: 'id' and 'name' are required.");
+        if (!existingHomework) {
+            return { success: false, error: "Homework not found" };
+        }
+
+        // ✅ Step 2: Update only the fields that are provided
+        const updatedHomework = await prisma.homework.update({
+            where: { id: id },
+            data: {
+                description: data.description ?? existingHomework.description, // Keep old value if not provided
+                classId: data.classId ?? existingHomework.classId, // Keep old value if not provided
+            },
+        });
+
+        console.log("Updated Data:", updatedHomework);
+        return { success: true, data: updatedHomework };
+    } catch (error) {
+        console.error("Error in updateHomework:", error);
+        return { success: false, error: (error as any).message };
     }
-
-    // ✅ Ensure `subjectId` is always a number
-    if (!data.id) {
-        throw new Error("Invalid Admin ID");
-    }
-
-    const adminId = data.id; // Now TypeScript knows subjectId is always defined
-
-    // ✅ Step 1: Update the Subject name
-    await prisma.admin.update({
-        where: { id: adminId },
-        data: {
-            username: data.username,  
-            full_name: data.full_name,
-            email: data.email,  
-            password: data.password,  
-            parentName: data.parentName ,
-            gender: data.gender ,
-            address: data.address ,
-            dob: data.dob ? new Date(data.dob) : null,  // Convert to Date
-            phone: data.phone,
-        },
-    });
-
-    console.log("Updated Data:", data);
-    return { success: true, error: false };
-} catch (error) {
-    console.error("Error in updateAdmin:", error);
-    return { success: false, error: (error as any).message };
-}
 };
 
-export const deleteAdmin = async (
+
+
+export const deleteHomework = async (
     currentState: CurrentState,
     data: FormData
 ) => {
     const id = data.get("id") as string;
+    console.log("Deleted Homework:", data)
+
     try {
-        await prisma.admin.delete({
+        await prisma.homework.delete({
             where: {
                 id: parseInt(id)
             },
         });
-
-        console.log("Deleted Admin:", data)
 
         // revalidatePath("/list/admin")
         return { success: true, error: false };
@@ -108,8 +86,6 @@ export const deleteAdmin = async (
         return { success: false, error: true };
     }
 };
-
-
 
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
@@ -773,28 +749,106 @@ export const deleteExam = async (
 // * ---------------------------------------------- ATTENDANCE SCHEMA --------------------------------------------------------
 
 
-export const markAttendance = async (classId: string, absentees: string[]) => {
+
+
+// * ---------------------------------------------- ADMIN SCHEMA --------------------------------------------------------
+
+export const createAdmin = async (
+    currentState: CurrentState,
+    data: AdminSchema
+) => {
     try {
-        // Fetch all students of the selected class
-        const students = await prisma.student.findMany({
-            where: { classId: parseInt(classId) },
-            select: { id: true },
+        // Ensure required fields are valid
+        if (!data.username || !data.full_name || !data.email || !data.password) {
+            throw new Error("Missing required fields: username, full_name, email, or password.");
+        }
+
+        // Insert into database
+        await prisma.admin.create({
+            data: {
+                username: data.username,  // Ensure it's a string
+                full_name: data.full_name || "Unknown", // Default to "Unknown" if missing
+                email: data.email,  // Ensure valid email
+                password: data.password,  // Ensure password is always provided
+                parentName: data.parentName || null,  // Optional field
+                gender: data.gender || null,
+                address: data.address || null,
+                dob: data.dob,  // Convert to Date
+                phone: data.phone,  // Default to dummy phone if missing
+            },
         });
 
-        // Create attendance records
-        const attendanceRecords = students.map((student) => ({
-            studentId: student.id,
-            date: new Date(),
-            status: absentees.includes(student.id) ? "Absent" : "Present",
-        }));
-
-        // Insert attendance records into the database
-        // await prisma.attendance.createMany({ data: attendanceRecords });
-
-        return { success: true, message: "Attendance marked successfully" };
+        console.log('Admin Created:', data)
+        return { success: true };
     } catch (error) {
-        console.error("Error marking attendance:", error);
-        return { success: false, message: "Failed to mark attendance" };
+        console.error("Error in createAdmin:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+
+export const updateAdmin = async (
+    currentState: CurrentState,
+    data: AdminSchema
+) => {
+    try {
+
+        console.log("Received Update Data:", data);
+
+        if (!data.id || !data.full_name) {
+            throw new Error("Invalid input: 'id' and 'name' are required.");
+        }
+
+        // ✅ Ensure `subjectId` is always a number
+        if (!data.id) {
+            throw new Error("Invalid Admin ID");
+        }
+
+        const adminId = data.id; // Now TypeScript knows subjectId is always defined
+
+        // ✅ Step 1: Update the Subject name
+        await prisma.admin.update({
+            where: { id: adminId },
+            data: {
+                username: data.username,
+                full_name: data.full_name,
+                email: data.email,
+                password: data.password,
+                parentName: data.parentName,
+                gender: data.gender,
+                address: data.address,
+                dob: data.dob ? new Date(data.dob) : null,  // Convert to Date
+                phone: data.phone,
+            },
+        });
+
+        console.log("Updated Data:", data);
+        return { success: true, error: false };
+    } catch (error) {
+        console.error("Error in updateAdmin:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+export const deleteAdmin = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    try {
+        await prisma.admin.delete({
+            where: {
+                id: parseInt(id)
+            },
+        });
+
+        console.log("Deleted Admin:", data)
+
+        // revalidatePath("/list/admin")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
     }
 };
 

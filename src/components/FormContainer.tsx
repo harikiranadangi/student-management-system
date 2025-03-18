@@ -25,6 +25,9 @@ export type FormContainerProps = {
 }
 
 const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => {
+    console.log("Table value received in FormContainer:", table);
+
+
 
     let relatedData = {}
 
@@ -112,36 +115,39 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers };
                 break;
 
-            case "attendance":
-                if (!data || !data.classId) {
-                    console.error("Missing classId in attendance data:", data);
-                    return;
-                }
+            // case "attendance":
+            //     if (!data || !data.classId) {
+            //         console.error("Missing classId in attendance data:", data);
+            //         return;
+            //     }
 
-                const studentsInClass = await prisma.student.findMany({
-                    where: { classId: data.classId },
+            //     const studentsInClass = await prisma.student.findMany({
+            //         where: { classId: data.classId },
+            //         select: { id: true, name: true },
+            //     });
+
+            //     relatedData = { students: studentsInClass };
+            //     break;
+
+            case 'homeworks':
+                const classHomework = await prisma.class.findMany({
                     select: { id: true, name: true },
                 });
 
-                relatedData = { students: studentsInClass };
+                const studentHomework = await prisma.student.findMany({
+                    select: { id: true, name: true },
+                });
+
+                relatedData = { classes: classHomework, students: studentHomework };
                 break;
-
-            
-            
-
-            
-
-
-
             default:
-                break;
 
-                
+
 
         }
     }
 
-    
+
 
 
     return (

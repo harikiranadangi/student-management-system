@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import { AdminSchema, adminSchema } from "@/lib/formValidationSchemas";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -32,7 +32,6 @@ const AdminForm = ({
         register,
         handleSubmit,
         formState: { errors },
-        setValue,
     } = useForm<AdminSchema>({
         resolver: zodResolver(adminSchema),
         defaultValues: data || {}, // Populate form with existing data

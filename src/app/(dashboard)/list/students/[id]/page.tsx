@@ -11,13 +11,13 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
- 
+
   // Await the params to ensure they are resolved before use
   const { id } = await params;
-  
+
   // Log the student ID
   console.log("Fetching Student ID:", id);
- 
+
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
@@ -25,22 +25,22 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
-      Class: {  // Change from "Class" to "class" if needed
+      Class: {
         include: {
-          Teacher: true,  // Ensure it matches your schema
+          Teacher: true,
           _count: { select: { lessons: true } },
         },
       },
     },
   });
-  
-  
+
+
 
   if (!student) {
     return notFound(); // ✅ Returns 404 if student not found
   }
 
-  
+
   // Return the student data
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
@@ -171,13 +171,18 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
-            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/lessons?classId=${student.Class.id}`}>
-              Student&apos;s Lessons
-            </Link>
+            {student.Class.id && (
+              <Link
+                className="p-3 rounded-md bg-LamaYellowLight"
+                href={`/list/homeworks?classId=${student.Class.id}`}>
+                Student&apos;s Homeworks
+              </Link>
+            )}
+
             <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/teachers?classId=${(student.Class.id.toString())}`}>
               Student&apos;s Teachers
             </Link>
-            <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?classId=${2}`}>
+            <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?classId=${student.Class.id}`}>
               Student&apos;s Exams
             </Link>
             <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?classId=${student.Class.id}`}>
@@ -185,6 +190,9 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
             </Link>
             <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/results?studentId=${student.id}`}>
               Student&apos;s Results
+            </Link>
+            <Link className="p-3 rounded-md bg-LamaPurpleLight" href={`/list/lessons?classId=${student.Class.id}`}>
+              Student&apos;s Lessons
             </Link>
           </div>
         </div>

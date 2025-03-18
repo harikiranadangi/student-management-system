@@ -223,5 +223,14 @@ SELECT * FROM "StudentFees";
 -- Retrieve all records from the TeacherSubject table
 SELECT * FROM "TeacherSubject";
 
+-- Retrieve all records from the Homework table
+INSERT INTO "Homework" (description, date, "classId")
+VALUES
+('Maths: Tomorrow Test ','2025-03-18',8),  
+( 'English: Test on Tomorrow', '2025-03-19',43),
+('HOME WORK: %sname% %sclass% %ssection% Dated Mar-18: TOMORROW GK EXAM. PREPARE YOUR CHILD FOR THE EXAM. L/P ON GIVEN PORTION & REV NOTES NOTE: PLEASE BRING THESE BOOKS FROM TOMORROW. ENG I REV NOTES, MATHS REV NOTES, TEST NOTES GK/MS NOTES, GK/TEXT BOOK AND ROUGH NOTES', '2025-03-19',41)
+;
 
+
+SELECT * FROM "Homework";
 

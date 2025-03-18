@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+
 export const adminSchema = z.object({
   id: z.number().optional(),
   username: z.string().min(1, { message: "Username is required!" }),
@@ -119,3 +120,15 @@ export const lessonsSchema = z.object({
 
 // Infer the form data type from the schema
 export type LessonsSchema = z.infer<typeof lessonsSchema>;
+
+// * Homework Schema
+
+export const homeworkSchema = z.object({
+  id: z.number().optional(), // Auto-incremented ID
+  classId: z.number({ message: "Class ID is required!" }),
+  description: z.string().min(1, { message: "Description is required!" }),
+});
+
+// Infer the form data type from the schema
+export type HomeworkSchema = z.infer<typeof homeworkSchema>;
+

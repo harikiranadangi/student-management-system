@@ -1,13 +1,12 @@
 "use client";
 
-import { deleteAdmin, deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import { deleteAdmin, deleteClass, deleteExam, deleteHomework, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
-import AttendanceForm from "./forms/AttendanceForm";
 
 const deleteActionMap = {
   subject: deleteSubject,
@@ -23,9 +22,11 @@ const deleteActionMap = {
   announcement: deleteSubject,
   fees: deleteSubject,
   fees_structure: deleteSubject,
-  homeworks: deleteSubject,
+  homeworks: deleteHomework,
   admin:deleteAdmin
 }
+
+
 
 // Dynamically import the form components
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
@@ -49,6 +50,9 @@ const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
 const AdminForm = dynamic(() => import("./forms/AdminForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
 
 
@@ -60,6 +64,8 @@ const forms: {
     data?: any,
     relatedData?: any
   ) => JSX.Element;
+
+  
 
 } = {
 
@@ -86,17 +92,21 @@ const forms: {
   lesson: (setOpen, type, data, relatedData) => (
     <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
-
-  attendance: (setOpen, type, data, relatedData) => (
-    <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-  
+ 
   admin: (setOpen, type, data, relatedData) => (
     <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 
+  homeworks: (setOpen, type, data, relatedData) => (
+    <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+
 
 };
+
+console.log("Forms Object:", forms);
+
+
 
 const FormModal = ({
   table,

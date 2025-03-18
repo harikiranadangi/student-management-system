@@ -142,16 +142,16 @@ model Grade {
 
 model Homework {
   id          Int      @id @default(autoincrement())
-  title       String
+  // title       String
   description String
-  Date        DateTime
+  date        DateTime @default(now()) // ✅ Set default to current timestamp
   classId     Int
-  subjectId   Int
+  // subjectId   Int
   Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  // Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([classId])
-  @@index([subjectId])
+  // @@index([subjectId])
 }
 
 model Lesson {
@@ -242,7 +242,7 @@ model Subject {
   name      String           @unique
   createdAt DateTime         @default(now())
   exams     ExamSubject[]
-  homeworks Homework[]
+  // homeworks Homework[]
   lessons   Lesson[]
   results   Result[]
   teachers  TeacherSubject[]

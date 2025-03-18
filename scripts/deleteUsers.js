@@ -65,7 +65,7 @@ async function deleteAllUsersExceptAdmins() {
 
             if (deleteResponse.ok) {
                 
-                console.log(`Deleted user: ${user.id}`);
+                console.log(`Deleted user: ${user.id} and ${user.user}`);
             } else {
                 console.error(`Failed to delete user: ${user.id}`);
             }
