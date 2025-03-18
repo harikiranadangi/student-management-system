@@ -1,3 +1,5 @@
+import ClassFilterDropdown, { DateFilter } from "@/components/FilterDropdown";
+import FilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -101,6 +103,11 @@ const HomeworkListPage = async ({
     }
   }
 
+  // Fetch classes
+  const classes = await prisma.class.findMany();
+
+  const grades = await prisma.grade.findMany();
+
   //  * ROLE CONDITIONS
   // * Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
@@ -120,6 +127,9 @@ const HomeworkListPage = async ({
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">Homeworks</h1>
+        <div className="flex items-center gap-4"> 
+      <DateFilter basePath="/list/homeworks" />
+      <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/homeworks" />
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
@@ -129,9 +139,11 @@ const HomeworkListPage = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
+          
             {(role === "admin" || role === "teacher") && (
               <FormContainer table="homeworks" type="create" />
             )}
+            </div>
           </div>
         </div>
       </div>

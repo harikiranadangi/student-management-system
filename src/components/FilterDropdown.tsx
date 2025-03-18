@@ -2,18 +2,22 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 
+// Class Filter Component
 type ClassType = { id: number; name: string };
 
-interface FilterDropdownProps {
+type GradeType = { id: number; level: string };
+
+interface ClassFilterProps {
   classes: ClassType[];
+  grades: GradeType[];
   basePath: string; // Dynamic base path (e.g., "/list/students" or "/list/teachers")
 }
 
-const FilterDropdown = ({ classes, basePath }: FilterDropdownProps) => {
+const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleClassChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newClassId = event.target.value;
     const params = new URLSearchParams(searchParams);
     if (newClassId) {
@@ -24,26 +28,78 @@ const FilterDropdown = ({ classes, basePath }: FilterDropdownProps) => {
     router.push(`${basePath}?${params.toString()}`);
   };
 
-  return (
-    <div className="relative w-full md:w-auto">
-      <select
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        onChange={handleChange}
-        defaultValue=""
-      >
-        <option value="">Class</option>
-        {classes.map((cls) => (
-          <option key={cls.id} value={cls.id} className="text-gray">
-            {cls.name}
-          </option>
-        ))}
-      </select>
+  const handleGradeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newGradeId = event.target.value;
+    const params = new URLSearchParams(searchParams);
+    if (newGradeId) {
+      params.set("gradeId", newGradeId);
+    } else {
+      params.delete("gradeId");
+    }
+    router.push(`${basePath}?${params.toString()}`);
+  };
 
-      <span className="absolute text-gray-400 transform -translate-y-1/2 right-4 top-1/2">
-        🔽 {/* You can replace this with an actual icon */}
-      </span>
+  return (
+    <div className="flex space-x-4">
+      <div className="relative w-full md:w-auto">
+        <select
+          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          onChange={handleGradeChange}
+          defaultValue=""
+        >
+          <option value="">Grade</option>
+          {grades.map((grade) => (
+            <option key={grade.id} value={grade.id} className="text-gray">
+              {grade.level}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="relative w-full md:w-auto">
+        <select
+          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          onChange={handleClassChange}
+          defaultValue=""
+        >
+          <option value="">Class</option>
+          {classes.map((cls) => (
+            <option key={cls.id} value={cls.id} className="text-gray">
+              {cls.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
 
-export default FilterDropdown;
+export default ClassFilterDropdown;
+
+// Date Filter Component
+const DateFilter = ({ basePath }: { basePath: string }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = event.target.value;
+    const params = new URLSearchParams(searchParams);
+    if (newDate) {
+      params.set("date", newDate);
+    } else {
+      params.delete("date");
+    }
+    router.push(`${basePath}?${params.toString()}`);
+  };
+
+  return (
+    <div className="relative w-full md:w-auto">
+      <input
+        type="date"
+        onChange={handleDateChange}
+        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+  );
+};
+
+export { DateFilter };
