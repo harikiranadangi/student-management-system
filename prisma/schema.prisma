@@ -144,7 +144,7 @@ model Homework {
   id          Int      @id @default(autoincrement())
   // title       String
   description String
-  date        DateTime @default(now()) // ✅ Set default to current timestamp
+  date        DateTime @default(now()) @db.Timestamptz // ✅ Store with timezone
   classId     Int
   // subjectId   Int
   Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)

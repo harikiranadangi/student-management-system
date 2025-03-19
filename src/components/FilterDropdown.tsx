@@ -1,10 +1,7 @@
 "use client";
-
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Class Filter Component
 type ClassType = { id: number; name: string };
-
 type GradeType = { id: number; level: string };
 
 interface ClassFilterProps {
@@ -19,47 +16,52 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
 
   const handleClassChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newClassId = event.target.value;
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString()); // Ensure it is up to date
+
     if (newClassId) {
       params.set("classId", newClassId);
     } else {
       params.delete("classId");
     }
-    router.push(`${basePath}?${params.toString()}`);
+
+    router.push(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
   const handleGradeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newGradeId = event.target.value;
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams); // Fix: use `searchParams`
+  
     if (newGradeId) {
-      params.set("gradeId", newGradeId);
+      params.set("gradeId", newGradeId); // Fix: Use correct key
     } else {
       params.delete("gradeId");
     }
-    router.push(`${basePath}?${params.toString()}`);
+  
+    router.push(`${basePath}?${params.toString()}`, { scroll: false });
   };
-
+  
   return (
     <div className="flex space-x-4">
       <div className="relative w-full md:w-auto">
         <select
-          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
           onChange={handleGradeChange}
-          defaultValue=""
+          value={searchParams.get("gradeId") || ""} // Updated to match query parameter
         >
           <option value="">Grade</option>
           {grades.map((grade) => (
-            <option key={grade.id} value={grade.id} className="text-gray">
+            <option key={grade.id} value={grade.id}>
               {grade.level}
             </option>
           ))}
         </select>
       </div>
+
       <div className="relative w-full md:w-auto">
         <select
-          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
           onChange={handleClassChange}
-          defaultValue=""
+          value={searchParams.get("classId") || ""} // Ensure correct selected value
         >
           <option value="">Class</option>
           {classes.map((cls) => (
@@ -74,6 +76,7 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
 };
 
 export default ClassFilterDropdown;
+
 
 // Date Filter Component
 const DateFilter = ({ basePath }: { basePath: string }) => {
@@ -96,7 +99,7 @@ const DateFilter = ({ basePath }: { basePath: string }) => {
       <input
         type="date"
         onChange={handleDateChange}
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
       />
     </div>
   );

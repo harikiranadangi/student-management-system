@@ -104,10 +104,6 @@ const forms: {
 
 };
 
-console.log("Forms Object:", forms);
-
-
-
 const FormModal = ({
   table,
   type,

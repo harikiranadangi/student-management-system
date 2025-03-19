@@ -1,5 +1,6 @@
+import { toZonedTime } from "date-fns-tz";
+import { startOfDay, endOfDay, addMinutes, addHours, subMinutes, subHours } from "date-fns";
 import ClassFilterDropdown, { DateFilter } from "@/components/FilterDropdown";
-import FilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -77,16 +78,24 @@ const HomeworkListPage = async ({
 
   // Await the searchParams first
   const params = await searchParams;
-  const { page, classId, ...queryParams } = params;
+  const { page, classId, date, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-  // Initialize Prisma query object
-  const query: Prisma.HomeworkWhereInput = {};
+  const selectedDate = new Date(date ?? new Date().toISOString().split("T")[0]);
 
-  // Apply classId filter if present in URL
-  if (classId) {
-    query.classId = parseInt(classId);
-  }
+  // Ensure selectedDate is UTC+5:30
+  const selectedDateUTC = new Date(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth(), selectedDate.getUTCDate());
+
+  // Create start and end timestamps
+  const startDate = startOfDay(selectedDateUTC); // Ensures 00:00 UTC
+
+  const endDate = endOfDay(selectedDateUTC); // Ensures 23:59:59 UTC
+
+  // Apply to Prisma Query
+  const query: Prisma.HomeworkWhereInput = {
+    date: { gte: startDate, lt: endDate },
+  };
+
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -122,27 +131,30 @@ const HomeworkListPage = async ({
     prisma.homework.count({ where: query }),
   ]);
 
+  console.log("📌 Received classId:", queryParams.classId);
+
+
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">Homeworks</h1>
-        <div className="flex items-center gap-4"> 
-      <DateFilter basePath="/list/homeworks" />
-      <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/homeworks" />
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <TableSearch />
-          <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-          
-            {(role === "admin" || role === "teacher") && (
-              <FormContainer table="homeworks" type="create" />
-            )}
+        <div className="flex items-center gap-4">
+          <DateFilter basePath="/list/homeworks" />
+          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/homeworks" />
+          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+            <TableSearch />
+            <div className="flex items-center self-end gap-4">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/filter.png" alt="" width={14} height={14} />
+              </button>
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/sort.png" alt="" width={14} height={14} />
+              </button>
+
+              {(role === "admin" || role === "teacher") && (
+                <FormContainer table="homeworks" type="create" />
+              )}
             </div>
           </div>
         </div>

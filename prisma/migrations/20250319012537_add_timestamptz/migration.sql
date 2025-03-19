@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Homework" ALTER COLUMN "date" SET DATA TYPE TIMESTAMPTZ;

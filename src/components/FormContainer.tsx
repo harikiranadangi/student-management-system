@@ -25,9 +25,6 @@ export type FormContainerProps = {
 }
 
 const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => {
-    console.log("Table value received in FormContainer:", table);
-
-
 
     let relatedData = {}
 

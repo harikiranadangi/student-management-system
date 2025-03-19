@@ -61,7 +61,7 @@ const StudentListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const params = await searchParams;
-  const { page, ...queryParams } = params;
+  const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
   // Fetch user info and role
@@ -77,55 +77,48 @@ const StudentListPage = async ({
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 
-  // Initialize Prisma query object
+  // Build the Prisma query based on filters
   const query: Prisma.StudentWhereInput = {};
 
-  // Dynamically add filters based on query parameters
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "search":
-            // Search by name or id
-            query.OR = [
-              { name: { contains: value, mode: "insensitive" } }, // Search by name
-              { id: { contains: value } }, // Search by ID
-              { Class: { name: { contains: value, mode: "insensitive" } } }, // ✅ Search by Class Name
-            ];
-            break;
-          case "classId":
-            query.Class = { id: parseInt(value) }; // Filter by Class
-            break;
-          case "teacherId":
-            query.Class = { supervisorId: value }; // Ensure Class has a supervisorId field in DB
-            break;
-          default:
-            break;
-        }
-      }
-    }
+  // Filter by classId (convert to integer)
+  if (classId) {
+    query.classId = Number(classId);
   }
 
-  // Fetch classes
-  const classes = await prisma.class.findMany();
+  // Filter by gradeId (apply conditionally to Class relation)
+  if (gradeId) {
+    query.Class = { gradeId: Number(gradeId) };
+  }
 
+  // Search logic
+  if (queryParams.search) {
+    query.OR = [
+      { name: { contains: queryParams.search, mode: "insensitive" } },
+      { id: { contains: queryParams.search } },
+      { Class: { name: { contains: queryParams.search, mode: "insensitive" } } },
+    ];
+  }
+
+  // Fetch only classes that belong to the selected grade (if any)
+  const classes = await prisma.class.findMany({
+    where: gradeId ? { gradeId: Number(gradeId) } : {},
+  });
+
+  // Fetch all grades
   const grades = await prisma.grade.findMany();
 
-  // Fetch students and include related fields (classes, etc.)
+  // Fetch students and count
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
-      include: {
-        Class: true, // Include the class data
-      },
+      include: { Class: true },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.student.count({ where: query }),
   ]);
 
-  // Debugging: Log the fetched data
-  console.log("Student Data:", JSON.stringify(data, null, 2));
+  console.log(JSON.stringify(query, null, 2)); // Debugging output
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -133,7 +126,11 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/students" />
+          <ClassFilterDropdown
+            classes={classes}  // ✅ Filtered dynamically based on selected grade
+            grades={grades}
+            basePath="/list/students"
+          />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
             <div className="flex items-center self-end gap-4">

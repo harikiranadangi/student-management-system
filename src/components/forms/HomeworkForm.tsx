@@ -73,18 +73,16 @@ const HomeworkForm = ({
             </h1>
 
             {/* <span className="text-lg font-medium text-gray-400">Homework Details</span> */}
-
-
             {/* <span className="text-xs font-medium text-gray-400">Class & Subject</span> */}
 
             <div className="flex flex-wrap justify-between gap-4">
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
-                    <label className="text-xs text-gray-500">Class</label>
+                    <label className="text-sm font-medium text-gray-500">Class</label>
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                         {...register("classId", { valueAsNumber: true, required: "Class ID is required!" })}
                     >
-                        <option value="" disabled>Select Class</option>
+                        <option value="">Select Class</option>
                         {classes.map((cls: { id: number; name: string }) => (
                             <option key={cls.id} value={cls.id}>{cls.name}</option> // ✅ Ensures value is a number
                         ))}

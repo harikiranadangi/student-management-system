@@ -74,11 +74,10 @@ export const deleteHomework = async (
 
     try {
         await prisma.homework.delete({
-            where: {
-                id: parseInt(id)
-            },
+            where: { id: parseInt(id)},
         });
 
+        console.log('Deleted Homework:', data)
         // revalidatePath("/list/admin")
         return { success: true, error: false };
     } catch (err) {

@@ -95,8 +95,10 @@ SELECT column_name FROM information_schema.columns WHERE table_name = 'class';
 
 
 SELECT * FROM "Teacher" WHERE id = 'T1';
+
 SELECT * FROM "Grade" WHERE id = 1;
 SELECT * FROM "class" ;
+
 
 SELECT "supervisorId" FROM "class" LIMIT 5;
 
@@ -104,6 +106,8 @@ SELECT "supervisorId" FROM "class" LIMIT 5;
 SELECT column_name, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'class' AND column_name = 'supervisorId';
+
+SELECT id, clerk_id, classId FROM student WHERE clerk_id = '13553';
 
 
 
@@ -141,12 +145,9 @@ COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodT
 FROM 'D:/GITHUB/student-management-system/data/teachers_data.csv'
 WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
-
 SELECT column_name, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'Teacher';
-
-
 
 SELECT "Teacher"."name", "class"."name"
 FROM "Teacher"
@@ -160,10 +161,6 @@ SELECT "Teacher"."name"
 FROM "Teacher"
 LEFT JOIN "class" ON "Teacher"."id" = "class"."supervisorId"::text
 WHERE "class"."name" IS NULL;
-
-
-
-
 
 
 SELECT column_name FROM information_schema.columns 
@@ -234,3 +231,20 @@ VALUES
 
 SELECT * FROM "Homework";
 
+SELECT id, date FROM "Homework" WHERE date BETWEEN '2025-03-18' AND '2025-03-20';
+
+SHOW TIMEZONE;
+
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'Homework' AND column_name = 'date';
+
+await prisma.$queryRaw`
+  SELECT * FROM "Homework"
+  WHERE date::date = ${selectedDate};
+`;
+
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'Homework';
+
+
+SELECT * FROM "Homework" WHERE "classId" = 5;
