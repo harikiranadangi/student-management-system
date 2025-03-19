@@ -63,8 +63,7 @@ model Class {
   students     Student[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
-  payments      Payment[]
-  
+  payments     Payment[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -135,9 +134,10 @@ model FeesStructure {
 }
 
 model Grade {
-  id      Int     @id @default(autoincrement())
-  level   String  @unique
-  classes Class[]
+  id       Int        @id @default(autoincrement())
+  level    String     @unique
+  classes  Class[]
+  Homework Homework[]
 }
 
 model Homework {
@@ -149,9 +149,11 @@ model Homework {
   // subjectId   Int
   Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
   // Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  gradeId     Int
+  Grade       Grade    @relation(fields: [gradeId], references: [id]) // ✅ Ensure relation is defined
+  // @@index([subjectId])
 
   @@index([classId])
-  // @@index([subjectId])
 }
 
 model Lesson {
@@ -173,16 +175,15 @@ model Lesson {
 }
 
 model Payment {
-  id          Int      @id @default(autoincrement())
-  studentId   String
-  classId     Int
-  amountPaid  Int
-  datePaid    DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  studentId  String
+  classId    Int
+  amountPaid Int
+  datePaid   DateTime @default(now())
 
-  Student     Student  @relation(fields: [studentId], references: [id])
-  Class       Class    @relation(fields: [classId], references: [id])
+  Student Student @relation(fields: [studentId], references: [id])
+  Class   Class   @relation(fields: [classId], references: [id])
 }
-
 
 model Result {
   id        Int     @id @default(autoincrement())

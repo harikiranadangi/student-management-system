@@ -1,5 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
@@ -43,7 +44,12 @@ const ClassesList = async ({
 }) => {
 
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
+  const { role } = await fetchUserInfo();
+
+  // Get sorting order and column from URL
+  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
+  const sortKey = searchParams.sortKey || "id"; // Default sorting column
+
   // Define columns dynamically based on role
   const columns = [
     {
@@ -99,13 +105,10 @@ const ClassesList = async ({
   // Fetch classes and include related fields (supervisor)
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
+      orderBy: { [sortKey]: sortOrder },
       where: query,
       include: {
-        Teacher: {
-          select: {
-            name: true,
-            surname: true,
-          },
+        Teacher: { select: { name: true, surname: true, },
         },
       },
       take: ITEM_PER_PAGE,
@@ -129,9 +132,8 @@ const ClassesList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
+              {/* Sort by Class ID */}
+            <SortButton sortKey="id" />
             {role === "admin" && <FormContainer table="class" type="create" />}
           </div>
         </div>

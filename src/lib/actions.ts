@@ -19,7 +19,8 @@ export const createHomework = async (
             data: {
                 id: data.id,
                 classId: data.classId,
-                description: data.description
+                description: data.description,
+                gradeId: data.gradeId
             },
         });
         console.log('Homework Created:', data)
@@ -52,6 +53,7 @@ export const updateHomework = async (
             data: {
                 description: data.description ?? existingHomework.description, // Keep old value if not provided
                 classId: data.classId ?? existingHomework.classId, // Keep old value if not provided
+                gradeId: data.gradeId ?? existingHomework.gradeId
             },
         });
 

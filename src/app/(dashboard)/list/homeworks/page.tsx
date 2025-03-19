@@ -42,6 +42,9 @@ const HomeworkListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  const params = await searchParams;
+  const { page, gradeId, classId, date, ...queryParams } = params;
+  const p = page ? parseInt(page) : 1;
 
   // Fetch user info and role
   const { role } = await fetchUserInfo();
@@ -76,10 +79,6 @@ const HomeworkListPage = async ({
       : []),
   ];
 
-  // Await the searchParams first
-  const params = await searchParams;
-  const { page, classId, date, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
 
   const selectedDate = new Date(date ?? new Date().toISOString().split("T")[0]);
 
@@ -96,6 +95,15 @@ const HomeworkListPage = async ({
     date: { gte: startDate, lt: endDate },
   };
 
+  // Filter by classId (convert to integer)
+  if (classId) {
+    query.classId = Number(classId);
+  }
+
+  // Filter by gradeId (apply conditionally to Class relation)
+  if (gradeId) {
+    query.Class = { gradeId: Number(gradeId) };
+  }
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -130,9 +138,6 @@ const HomeworkListPage = async ({
     }),
     prisma.homework.count({ where: query }),
   ]);
-
-  console.log("📌 Received classId:", queryParams.classId);
-
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
