@@ -1,4 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // Centralized interface for session metadata
 interface SessionMetadata {
@@ -28,6 +31,29 @@ export async function fetchUserInfo(): Promise<{ userId: string | null; role: st
     return { userId: null, role: null };
   }
 }
+
+export const getClassIdForRole = async (role: string | null, userId: string | null): Promise<number | null> => {
+  if (!userId) return null;
+
+  if (role === "student") {
+    const clerkStudent = await prisma.clerkStudents.findUnique({
+      where: { user_id: userId },
+      select: { student: { select: { classId: true } } },
+    });
+    return clerkStudent?.student?.classId ?? null;
+  }
+
+  if (role === "teacher") {
+    const clerkTeacher = await prisma.clerkTeachers.findUnique({
+      where: { user_id: userId },
+      select: { teacher: { select: { classId: true } } },
+    });
+    return clerkTeacher?.teacher?.classId ? Number(clerkTeacher.teacher.classId) : null;
+  }
+
+  return null;
+};
+
 
 const currentWorkWeek = (): Date => {
   const today = new Date();

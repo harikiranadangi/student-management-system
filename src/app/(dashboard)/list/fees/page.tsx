@@ -1,5 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
@@ -31,6 +32,13 @@ const renderRow = (item: FeesList, role: string | null) => (
   </tr>
 );
 
+const getColumns = (role: string | null) => [
+  { header: "Class", accessor: "name" },
+  { header: "Term Fees", accessor: "fees.termFees" },
+  { header: "Abacus Fees", accessor: "fees.abacusFees" },
+  { header: "Total Fees", accessor: "fees.totalFees" },
+  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+];
 
 const FeesListPage = async ({
   searchParams,
@@ -44,14 +52,11 @@ const FeesListPage = async ({
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
-  const columns = [
-    { header: "Class", accessor: "name" },
-    { header: "Term Fees", accessor: "fees.termFees" },
-    { header: "Abacus Fees", accessor: "fees.abacusFees" },
-    { header: "Total Fees", accessor: "fees.totalFees" },
-    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
-  ];
+  const columns = getColumns(role);  // Get dynamic columns
 
+  // Get sorting order and column from URL
+  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
+  const sortKey = searchParams.sortKey || "id"; // Default sorting column
 
 
   // Initialize Prisma query object
@@ -60,6 +65,7 @@ const FeesListPage = async ({
   // Fetch fees with related student, class, and fees structure details
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
+      orderBy: { [sortKey]: sortOrder },
       include: {
         fees: true, // Include FeesStructure for each class
       },
@@ -85,9 +91,8 @@ const FeesListPage = async ({
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
 
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
+            {/* Sort by Class ID */}
+            <SortButton sortKey="id" />
 
             {(role === "admin") && (
               <FormContainer table="fees" type="create" />

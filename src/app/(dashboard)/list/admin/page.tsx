@@ -1,5 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
@@ -67,6 +68,10 @@ const AdminListPage = async ({
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
+  // Get sorting order and column from URL
+  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
+  const sortKey = searchParams.sortKey || "id"; // Default sorting column
+
   const columns = [
     { header: "Student Name", accessor: "full_name" },
     { header: "Gender", accessor: "gender" },
@@ -99,6 +104,7 @@ const AdminListPage = async ({
   // Fetch students and include related fields (classes, etc.)
   const [data, count] = await prisma.$transaction([
     prisma.admin.findMany({
+      orderBy: { [sortKey]: sortOrder },
       where: query,
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
@@ -126,9 +132,8 @@ const AdminListPage = async ({
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
 
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
+            {/* Sort by Class ID */}
+            <SortButton sortKey="id" />
 
             {role === "admin" && (
               <FormContainer table="admin" type="create" />

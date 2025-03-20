@@ -49,6 +49,41 @@ const renderRow = (item: Events, role: string | null) => (
   </tr>
 );
 
+const getColumns = (role: string | null) => [
+  {
+    header: "Title",
+    accessor: "title",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Start Time",
+    accessor: "startTime",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "End Time",
+    accessor: "endTime",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "admin"
+    ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : []),
+];
+
 const EventsList = async ({
   searchParams,
 }: {
@@ -58,40 +93,8 @@ const EventsList = async ({
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
 
-  const columns = [
-    {
-      header: "Title",
-      accessor: "title",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Date",
-      accessor: "date",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Start Time",
-      accessor: "startTime",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "End Time",
-      accessor: "endTime",
-      className: "hidden md:table-cell",
-    },
-    ...(role === "admin"
-      ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
-      : []),
-  ];
+  const columns = getColumns(role);  // Get dynamic columns
+
 
   // Await the searchParams first
   const params = await searchParams;

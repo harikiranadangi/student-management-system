@@ -1,5 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
@@ -40,42 +41,46 @@ type SearchParams = {
   page?: string;
 };
 
+const getColumns = (role: string | null) => [
+  {
+    header: "Subject",
+    accessor: "subject",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Teacher",
+    accessor: "teacher",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "admin" || role === "teacher"
+    ? [
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
+    : []),
+];
 
 const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
-
-
-  const columns = [
-    {
-      header: "Subject",
-      accessor: "subject",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Teacher",
-      accessor: "teacher",
-      className: "hidden md:table-cell",
-    },
-    ...(role === "admin" || role === "teacher"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
+  const {  role } = await fetchUserInfo();
+  const columns = getColumns(role);  // Get dynamic columns
 
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
-
+  
+  
+  // Get sorting order and column from URL
+  // const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
+  // const sortKey = searchParams.sortKey || "id"; // Default sorting column
+  
   // Initialize Prisma query object
   const query: Prisma.LessonWhereInput = {};
 
@@ -106,6 +111,7 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
   // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.lesson.findMany({
+      // orderBy: { [sortKey]: sortOrder },
       where: query,
       include: {
         Subject: { select: { name: true } },
@@ -129,9 +135,10 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
+            
+            {/* Sort by Class ID */}
+            <SortButton sortKey="id" />
+            
             {(role === "admin" || role === "teacher") && (<FormContainer 
             table="lesson" type="create" />)}
           </div>

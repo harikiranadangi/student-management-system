@@ -55,6 +55,16 @@ const renderRow = (item: StudentList, role: string | null) => (
   </tr>
 );
 
+const getColumns = (role: string | null) => [
+  { header: "Student Name", accessor: "name" },
+  { header: "Class", accessor: "class" },
+  { header: "Gender", accessor: "gender" },
+  { header: "Parent Name", accessor: "parentName" },
+  { header: "DOB", accessor: "dob" },
+  { header: "Mobile", accessor: "phone" },
+  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+];
+
 const StudentListPage = async ({
   searchParams,
 }: {
@@ -64,22 +74,16 @@ const StudentListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
+  
   // Fetch user info and role
   const { role } = await fetchUserInfo();
+  
+  const columns = getColumns(role);
 
   // Get sorting order and column from URL
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
   const sortKey = params.sortKey || "classId"; // Default sorting column
 
-  const columns = [
-    { header: "Student Name", accessor: "name" },
-    { header: "Class", accessor: "class" },
-    { header: "Gender", accessor: "gender" },
-    { header: "Parent Name", accessor: "parentName" },
-    { header: "DOB", accessor: "dob" },
-    { header: "Mobile", accessor: "phone" },
-    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
-  ];
 
   // Build the Prisma query based on filters
   const query: Prisma.StudentWhereInput = {};

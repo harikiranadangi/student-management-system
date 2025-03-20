@@ -37,6 +37,35 @@ const renderRow = (item: Exams, role: string | null) => (
 );
 
 
+const getColumns = (role: string | null) => [
+  {
+    header: "Subject",
+    accessor: "subject",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Teacher",
+    accessor: "teacher",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "admin" || role === "teacher"
+    ? [
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
+    : []),
+];
+
 const ExamsList = async ({
   searchParams,
 }: {
@@ -46,34 +75,8 @@ const ExamsList = async ({
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
 
-  const columns = [
-    {
-      header: "Subject",
-      accessor: "subject",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Teacher",
-      accessor: "teacher",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Date",
-      accessor: "date",
-      className: "hidden md:table-cell",
-    },
-    ...(role === "admin" || role === "teacher"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
+  const columns = getColumns(role);  // Get dynamic columns
+
 
   // Await the searchParams first
   const params = await searchParams;

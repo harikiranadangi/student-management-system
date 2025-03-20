@@ -36,6 +36,31 @@ const renderRow = (item: ClassList, role: string | null) => (
   </tr>
 );
 
+// Define columns dynamically based on role
+const getColumns = (role: string | null) => [
+  {
+    header: "Class Name",
+    accessor: "name",
+  },
+  {
+    header: "Supervisor",
+    accessor: "supervisor",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Grade",
+    accessor: "gradeId",
+  },
+
+  ...(role === "admin"
+    ? [
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
+    : []),
+];
 
 const ClassesList = async ({
   searchParams,
@@ -46,35 +71,12 @@ const ClassesList = async ({
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
+  const columns = getColumns(role);
+
   // Get sorting order and column from URL
   const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
   const sortKey = searchParams.sortKey || "id"; // Default sorting column
 
-  // Define columns dynamically based on role
-  const columns = [
-    {
-      header: "Class Name",
-      accessor: "name",
-    },
-    {
-      header: "Supervisor",
-      accessor: "supervisor",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Grade",
-      accessor: "gradeId",
-    },
-
-    ...(role === "admin"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
 
   // Await the searchParams first
   const params = await searchParams;
@@ -108,7 +110,8 @@ const ClassesList = async ({
       orderBy: { [sortKey]: sortOrder },
       where: query,
       include: {
-        Teacher: { select: { name: true, surname: true, },
+        Teacher: {
+          select: { name: true, surname: true, },
         },
       },
       take: ITEM_PER_PAGE,
@@ -132,8 +135,10 @@ const ClassesList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
-              {/* Sort by Class ID */}
+            
+            {/* Sort by Class ID */}
             <SortButton sortKey="id" />
+
             {role === "admin" && <FormContainer table="class" type="create" />}
           </div>
         </div>

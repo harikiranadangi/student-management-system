@@ -5,27 +5,26 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Exam, Prisma, Result, Student, Subject } from "@prisma/client";
+import { Class, Exam, Prisma, Result, Student, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type ResultWithDetails = Result & {
-  student: Student & { class: Class };
+type ResultList = Result & {
+  student: Student;
+  class: Class & {
+    teacher: Teacher;
+    students: Student[];
+  };
   exam: Exam;
   subject: Subject;
 };
 
 
-
-
-
-
-
-const renderRow = (item: ResultWithDetails, role: string | null) => (
+const renderRow = (item: ResultList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
     <td >{item.student.name}</td>
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td className="hidden md:table-cell">{item.score}</td>
-    <td className="hidden md:table-cell">{item.student.class.name}</td>
+    <td className="hidden md:table-cell">{item.class.name}</td>
     <td className="hidden md:table-cell">
       {new Intl.DateTimeFormat("en-US").format(item.exam.date)}</td>
     <td>
@@ -41,6 +40,45 @@ const renderRow = (item: ResultWithDetails, role: string | null) => (
   </tr>
 );
 
+const getColumns = (role: string | null) => [
+  {
+    header: "Title",
+    accessor: "title",
+  },
+  {
+    header: "Student",
+    accessor: "student",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Score",
+    accessor: "score",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  // {
+  //   header: "Type",
+  //   accessor: "type",
+  //   className: "hidden md:table-cell",
+  // },
+  ...(role === "admin" || role === "teacher"
+    ? [
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
+    : []),
+];
+
 const ResultsList = async ({
   searchParams,
 }: {
@@ -49,50 +87,8 @@ const ResultsList = async ({
 
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
+  const columns = getColumns(role);
 
-  const columns = [
-    {
-      header: "Title",
-      accessor: "title",
-    },
-    {
-      header: "Student",
-      accessor: "student",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Score",
-      accessor: "score",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Teacher",
-      accessor: "teacher",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Date",
-      accessor: "date",
-      className: "hidden md:table-cell",
-    },
-    // {
-    //   header: "Type",
-    //   accessor: "type",
-    //   className: "hidden md:table-cell",
-    // },
-    ...(role === "admin" || role === "teacher"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
 
   // Await the searchParams first
   const params = await searchParams;
@@ -147,9 +143,9 @@ const ResultsList = async ({
       where: query,
       include: {
         Student: {
-          select: { 
-            name: true, 
-            surname: true 
+          select: {
+            name: true,
+            surname: true
           },
         },
         Exam: {
@@ -173,10 +169,10 @@ const ResultsList = async ({
     }),
     prisma.result.count({ where: query }),
   ]);
-  
+
 
   const data = dataRes.map(item => {
-    const assessment = item.Exam 
+    const assessment = item.Exam
 
     if (!assessment) return null;
 
@@ -184,9 +180,9 @@ const ResultsList = async ({
 
     const data = dataRes.map(item => {
       const assessment = item.Exam;
-    
+
       if (!assessment) return null;
-    
+
       return {
         id: item.id,
         title: assessment.title,
@@ -199,7 +195,7 @@ const ResultsList = async ({
         startTime: assessment.date, // Exams have 'date', no need for 'startTime' check
       };
     }).filter(Boolean); // Remove null values if any
-    
+
   })
 
   return (
