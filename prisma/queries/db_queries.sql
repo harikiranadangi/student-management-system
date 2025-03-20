@@ -97,6 +97,19 @@ SELECT column_name FROM information_schema.columns WHERE table_name = 'class';
 SELECT * FROM "Teacher" WHERE id = 'T1';
 
 SELECT * FROM "Grade" WHERE id = 1;
+
+SELECT * FROM "Student" WHERE "gradeId" = 2;
+
+SELECT s.* 
+FROM "Student" s
+JOIN "Class" c ON s."classId" = c.id
+WHERE c.grade_id = 2;
+
+SELECT * FROM "class" WHERE "gradeId" = 2;
+
+SELECT * FROM "Student" WHERE "classId" IN (SELECT id FROM "class" WHERE "gradeId" = 2);
+
+
 SELECT * FROM "class" ;
 
 
@@ -247,4 +260,7 @@ SELECT column_name, data_type FROM information_schema.columns
 WHERE table_name = 'Homework';
 
 
-SELECT * FROM "Homework" WHERE "classId" = 5;
+SELECT * FROM "Homework";
+
+UPDATE "Homework" SET "gradeId" = 5 WHERE "classId" = 13;
+
