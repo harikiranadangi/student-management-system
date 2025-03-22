@@ -69,8 +69,8 @@ const AdminListPage = async ({
   const { role } = await fetchUserInfo();
 
   // Get sorting order and column from URL
-  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
-  const sortKey = searchParams.sortKey || "id"; // Default sorting column
+  const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  const sortKey = params.sortKey || "id"; // Default sorting column
 
   const columns = [
     { header: "Student Name", accessor: "full_name" },

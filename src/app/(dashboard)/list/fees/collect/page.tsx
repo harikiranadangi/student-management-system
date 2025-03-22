@@ -13,7 +13,6 @@ type FeesList = Class & {
   fees: FeesStructure;
 };
 
-
 const renderRow = (item: FeesList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td>{item.name}</td>
@@ -55,8 +54,8 @@ const FeesListPage = async ({
   const columns = getColumns(role);  // Get dynamic columns
 
   // Get sorting order and column from URL
-  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
-  const sortKey = searchParams.sortKey || "id"; // Default sorting column
+  const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  const sortKey = params.sortKey || "id"; // Default sorting column
 
 
   // Initialize Prisma query object
@@ -81,7 +80,7 @@ const FeesListPage = async ({
       
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Fees Structure ({count} Classes)</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Fees Management ({count} Classes)</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
 
           <TableSearch />

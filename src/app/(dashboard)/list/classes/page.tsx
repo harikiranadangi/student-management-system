@@ -71,17 +71,18 @@ const ClassesList = async ({
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
-  const columns = getColumns(role);
-
-  // Get sorting order and column from URL
-  const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
-  const sortKey = searchParams.sortKey || "id"; // Default sorting column
-
-
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
+  
+  const columns = getColumns(role);
+
+  // Get sorting order and column from URL
+  const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  const sortKey = params.sortKey || "id"; // Default sorting column
+
+
 
   // Initialize Prisma query object
   const query: Prisma.ClassWhereInput = {};

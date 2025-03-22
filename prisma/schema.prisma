@@ -64,6 +64,7 @@ model Class {
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
   payments     Payment[]
+  Fee          StudentFee[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -105,22 +106,27 @@ model ExamSubject {
   @@unique([examId, subjectId])
 }
 
-model Fee {
+model StudentFee {
   id         Int       @id @default(autoincrement())
   studentId  String
+  classId    Int
   term       FeeTerm
   amount     Int
   extraFee   Int       @default(0)
   totalFee   Int
   dueAmount  Int
   paidAmount Int       @default(0)
-  status     String    @default("Not Paid")
+  discount   Int       @default(0)
+  fine       Int       @default(0)
+  status     termspaid  @default(NOT_PAID)
   feesbook   String
   dueDate    DateTime
   paidDate   DateTime?
   createdAt  DateTime  @default(now())
   Student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classes    Class     @relation(fields: [classId], references: [id])
 
+  payments   FeePayment[]  // New: Link payments
   @@unique([studentId, term])
 }
 
@@ -133,6 +139,27 @@ model FeesStructure {
   class      Class @relation(fields: [classId], references: [id], onDelete: Cascade)
 }
 
+model FeePayment {
+  id            Int            @id @default(autoincrement())
+  studentFeeId  Int
+  amount        Int
+  discount      Int            @default(0)
+  fine          Int            @default(0)
+  method        PaymentMethod  @default(CASH)  // Default payment method set to CASH
+  transactionId String?        // For online payments
+  paidDate      DateTime       @default(now())
+
+  studentFee    StudentFee     @relation(fields: [studentFeeId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  BANK_TRANSFER
+  ONLINE
+}
+
+
 model Grade {
   id       Int        @id @default(autoincrement())
   level    String     @unique
@@ -142,15 +169,14 @@ model Grade {
 
 model Homework {
   id          Int      @id @default(autoincrement())
-  // title       String
   description String
   date        DateTime @default(now()) @db.Timestamptz // ✅ Store with timezone
   classId     Int
-  // subjectId   Int
   Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  // Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   gradeId     Int
   Grade       Grade    @relation(fields: [gradeId], references: [id]) // ✅ Ensure relation is defined
+  // subjectId   Int
+  // Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   // @@index([subjectId])
 
   @@index([classId])
@@ -217,7 +243,7 @@ model Student {
   deletedAt    DateTime?
   classId      Int
   Attendance   Attendance[]
-  Fee          Fee[]
+  Fee          StudentFee[]
   results      Result[]
   Class        Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees  StudentFees[]
@@ -242,7 +268,7 @@ model ClerkStudents {
 model StudentFees {
   id          Int      @id @default(autoincrement())
   studentId   String
-  termNumber  Int
+  term        FeeTerm
   paidAmount  Int
   abacusPaid  Boolean  @default(false)
   paymentDate DateTime @default(now())
@@ -292,8 +318,6 @@ model TeacherSubject {
   @@id([teacherId, subjectId])
 }
 
-
-
 model ClerkTeachers {
   clerk_id  String   @id @db.VarChar // Keep as primary key
   user_id   String?  @unique // New column for Clerk User ID
@@ -308,6 +332,7 @@ model ClerkTeachers {
 enum FeeTerm {
   TERM1
   TERM2
+  ABACUS
   TERM3
   TERM4
 }
@@ -324,4 +349,13 @@ enum LessonDay {
 enum Gender {
   Male
   Female
+}
+
+enum termspaid {
+  TERM1
+  TERM2
+  ABACUS
+  TERM3
+  TERM4
+  NOT_PAID
 }

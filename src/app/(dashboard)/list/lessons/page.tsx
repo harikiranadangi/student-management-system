@@ -78,8 +78,8 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
   
   
   // Get sorting order and column from URL
-  // const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
-  // const sortKey = searchParams.sortKey || "id"; // Default sorting column
+  // const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  // const sortKey = params.sortKey || "id"; // Default sorting column
   
   // Initialize Prisma query object
   const query: Prisma.LessonWhereInput = {};
