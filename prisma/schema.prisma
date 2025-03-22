@@ -228,6 +228,17 @@ model Student {
   @@index([classId])
 }
 
+model ClerkStudents {
+  clerk_id  String   @id @db.VarChar // Keep as primary key
+  user_id   String?  @unique // New column for Clerk User ID
+  username  String   @unique
+  password  String   @db.VarChar
+  full_name String   @db.VarChar
+  role      String   @default("student") @db.VarChar
+  studentId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't students)
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
+}
+
 model StudentFees {
   id          Int      @id @default(autoincrement())
   studentId   String
@@ -281,16 +292,7 @@ model TeacherSubject {
   @@id([teacherId, subjectId])
 }
 
-model ClerkStudents {
-  clerk_id  String   @id @db.VarChar // Keep as primary key
-  user_id   String?  @unique // New column for Clerk User ID
-  username  String   @unique
-  password  String   @db.VarChar
-  full_name String   @db.VarChar
-  role      String   @default("student") @db.VarChar
-  studentId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't students)
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
-}
+
 
 model ClerkTeachers {
   clerk_id  String   @id @db.VarChar // Keep as primary key

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
+const SingleStudentFeePage = async ({ params }: { params: { id?: string } }) => {
 
   // Await the params to ensure they are resolved before use
   const { id } = await params;
@@ -173,7 +173,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
               <Link
                 className="p-3 rounded-md bg-LamaYellowLight"
                 href={`/list/homeworks?classId=${student.Class.id}`}>
-                Student&apos;s Homeworks
+                Student&apos;s Ledger
               </Link>
             )}
 
@@ -201,4 +201,4 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
   );
 };
 
-export default SingleStudentPage;
+export default SingleStudentFeePage;
