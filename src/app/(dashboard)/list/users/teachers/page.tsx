@@ -49,7 +49,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
     {/* Actions Column */}
     <td className="p-2">
       <div className="flex items-center gap-2">
-        <Link href={`/list/teachers/${item.id}`}>
+        <Link href={`/list/users/teachers/${item.id}`}>
           <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
           </button>

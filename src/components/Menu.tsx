@@ -13,9 +13,9 @@ const menuItems: MenuItemSection[] = [
         icon: "/profile.png",
         label: "Users",
         href: "#", // Placeholder for dropdown
-        visible: ["admin", "teacher"],
+        visible: ["admin"],
         dropdown: [
-          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["teacher"] },
+          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin"] },
           { icon: '/teacher.png', label: "Teachers", href: "/list/users/teachers", visible: ["admin"] },
           { icon: '/admin.png', label: "Admins", href: "/list/users/admin", visible: ["admin"] },
         ],
@@ -46,7 +46,7 @@ const menuItems: MenuItemSection[] = [
   {
     title: "OTHERS",
     items: [
-      { icon: "/profile.png", label: "Profile", href: "/list/profile", visible: ["teacher", "student"] },
+      { icon: "/profile.png", label: "Profile", href: "/list/profile", visible: ["teacher", "student","admin"] },
       { icon: "/setting.png", label: "Settings", href: "/settings", visible: ["admin", "teacher", "student"] },
       { icon: "/logout.png", label: "Logout", href: "/logout", visible: ["admin", "teacher", "student"] },
     ],
