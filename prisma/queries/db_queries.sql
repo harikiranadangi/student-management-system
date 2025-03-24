@@ -223,9 +223,21 @@ SELECT * FROM "Attendance";
 -- Retrieve all records from the FeesStructure table
 SELECT * FROM "FeesStructure";
 
-COPY "FeesStructure" ("classId", "totalFees", "abacusFees", "termFees")
+INSERT INTO "FeesStructure" 
+("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees", "academicYear")  
+VALUES  
+  (10, 20000, '2025-06-01', '2025-06-15', 1, 400, 5000, '2024-25');
+ 
+
+
+
+
+COPY "FeesStructure" ("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees")
 FROM 'D:/GITHUB/student-management-system/data/fees_structure.csv'
 WITH CSV HEADER DELIMITER ',';
+
+DROP TABLE "FeesStructure" CASCADE;
+
 
 -- Retrieve all records from the StudentFees table
 SELECT * FROM "StudentFees";
