@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteAdmin, deleteClass, deleteExam, deleteHomework, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import { deleteAdmin, deleteClass, deleteExam, deleteFees, deleteHomework, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ const deleteActionMap = {
   attendance: deleteSubject,
   event: deleteSubject,
   announcement: deleteSubject,
-  fees: deleteSubject,
+  fees: deleteFees,
   fees_structure: deleteSubject,
   homeworks: deleteHomework,
   admin:deleteAdmin
@@ -51,6 +51,9 @@ const AdminForm = dynamic(() => import("./forms/AdminForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const FeesManagementForm = dynamic(() => import("./forms/FeesManagementForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -101,6 +104,10 @@ const forms: {
     <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 
+  fees: (setOpen, type, data, relatedData) => (
+    <FeesManagementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+
 
 };
 
@@ -139,6 +146,11 @@ const FormModal = ({
         router.refresh()
       }
     }, [state]);
+
+    useEffect(() => {
+  console.log("FormModal open state:", open);
+}, [open]);
+
 
     return type === "delete" && id ? (
       <form action={formAction} className="flex flex-col gap-4 p-4">

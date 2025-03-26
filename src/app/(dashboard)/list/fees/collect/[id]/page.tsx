@@ -5,7 +5,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
+const SingleStudentFeePage = async ({ params }: { params: { id?: string } }) => {
 
   // Await the params to ensure they are resolved before use
   const { id } = await params;
@@ -15,24 +15,61 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
 
   // Fetch user info and role
   const { role } = await fetchUserInfo();
-
-  // Fetch student data from Prisma
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
       Class: {
         include: {
+          Grade: true,
           Teacher: true,
           _count: { select: { lessons: true } },
+        },
+      },
+      feesCollections: {
+        include: {
+          feesStructure: true,
         },
       },
     },
   });
 
+  // If no student fees, fetch grade-level fees
+if (!student?.feesCollections.length) {
+  const gradeFees = await prisma.feesStructure.findMany({
+    where: { gradeId: student?.Class?.Grade?.id },
+  });
+  console.log("Student Fees Data:", gradeFees);
+}
+
+console.log("Student Fees Data:", student?.feesCollections);
+
+
+  
   if (!student) {
-    return notFound(); // ✅ Returns 404 if student not found
+    console.error("Student not found!");
+    return notFound(); // ✅ Redirects to a 404 page
   }
 
+  
+  console.log("Fetching Student Fees for ID:", student.id);
+  
+  
+  // ✅ Student exists, proceed
+  let fees = student.feesCollections;
+
+  // ✅ If no fees assigned to the student, fetch from their Grade
+  if (!fees.length && student.Class?.Grade) {
+    console.log("No fees found for student. Fetching from Grade:", student.Class.Grade.id);
+
+    fees = await prisma.feesCollection.findMany({
+      where: { gradeId: student.Class.Grade.id },
+      include: {
+        feesStructure: true,
+      },
+    });
+
+    console.log("Grade-based Fees:", fees);
+  }
 
   // Return the student data
   return (
@@ -141,12 +178,46 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
             </div>
           </div>
         </div>
+
         {/* BOTTOM */}
-        
+        <table className="min-w-full border border-collapse border-gray-200 table-auto">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="px-4 py-2 border">Term</th>
+              <th className="px-4 py-2 border">Total Fees</th>
+              <th className="px-4 py-2 border">Paid Amount</th>
+              <th className="px-4 py-2 border">Due Date</th>
+              <th className="px-4 py-2 border">Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {fees.length > 0 ? (
+              fees.map((fee) => (
+                <tr key={fee.id}>
+                  <td>{fee.term}</td>
+                  <td>₹{fee.feesStructure.totalFees}</td>
+                  <td>₹{fee.totalReceivedAmount}</td>
+                  <td>{new Date(fee.dueDate).toLocaleDateString()}</td>
+                  <td className={fee.status === "Paid" ? "text-green-600" : "text-red-600"}>
+                    {fee.status}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center">
+                  No fees assigned.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
       </div>
       {/* RIGHT */}
     </div>
   );
 };
 
-export default SingleStudentPage;
+export default SingleStudentFeePage;

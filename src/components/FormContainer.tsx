@@ -137,6 +137,27 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 relatedData = { classes: classHomework, grades: gradeHomework };
                 break;
+
+            case "fees":
+                // Fetch Grades
+                const gradeFees = await prisma.grade.findMany({
+                    select: { id: true, level: true }, // ✅ Grade ID & Level
+                });
+
+                // Fetch Fees Structure
+                const fees = await prisma.feesStructure.findMany({
+                    select: {
+                        gradeId: true,   // ✅ Link Fees to Grade
+                        totalFees: true,
+                        termFees: true,
+                        abacusFees: true,
+                        startDate: true,
+                        dueDate: true,
+                    },
+                });
+
+                 relatedData = {grades: gradeFees, fees }; 
+                break;
             default:
 
 

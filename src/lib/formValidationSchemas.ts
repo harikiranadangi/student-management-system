@@ -58,7 +58,7 @@ export const teacherschema = z.object({
   email: z.string().email({ message: "Invalid email address!" }).optional().nullable(),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   subjects: z.array(z.string()).optional(), // For related Subject IDs
-  
+
 });
 
 // Infer the form data type from schema
@@ -132,4 +132,20 @@ export const homeworkSchema = z.object({
 
 // Infer the form data type from the schema
 export type HomeworkSchema = z.infer<typeof homeworkSchema>;
+
+// * FeeManagementSchema Schema
+
+export const feesSchema = z.object({
+  id: z.number().optional(), // Auto-incremented ID
+  gradeId: z.number({ message: "Class ID is required!" }),
+  startDate: z.coerce.date({ message: 'Start Date is required!' }),
+  dueDate: z.coerce.date({ message: 'Due Date is required!' }),
+  academicYear: z.string(),
+  termFees: z.coerce.number().min(1, "Term Fees is required!"),
+  abacusFees: z.coerce.number().min(0, "Abacus Fees is required!"),
+  totalFees: z.number({ message: "Abacus is required!" }),
+});
+
+// Infer the form data type from the schema
+export type FeesSchema = z.infer<typeof feesSchema>;
 

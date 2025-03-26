@@ -48,21 +48,20 @@ model Attendance {
 }
 
 model Class {
-  id           Int             @id @default(autoincrement())
-  name         String          @unique(map: "Class_name_key")
-  supervisorId String?         @unique // Ensures one teacher per class
+  id           Int            @id @default(autoincrement())
+  name         String         @unique(map: "Class_name_key")
+  supervisorId String?        @unique // Ensures one teacher per class
   // supervisorId String?  // ❌ Remove @unique here to allow multiple classes to have the same supervisor
   gradeId      Int
   Announcement Announcement[]
   attendance   Attendance[]
   events       Event[]
   exams        Exam[]
-  feestructure FeesStructure[]
   homeworks    Homework[]
   lessons      Lesson[]
   students     Student[]
-  Grade        Grade           @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  Teacher      Teacher?        @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
+  Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
   payments     Payment[]
   Fee          StudentFee[]
 
@@ -131,18 +130,39 @@ model StudentFee {
   @@unique([studentId, term])
 }
 
+model FeesCollection {
+  id                  Int      @id @default(autoincrement())
+  studentId           String
+  gradeId             Int // Matches FeesStructure
+  academicYear        String
+  term                Int // Term 1, 2, 3, 4
+  startDate           DateTime
+  dueDate             DateTime
+  totalFees           Int // Taken from FeesStructure
+  abacusFees          Int? // Optional fees
+  fineAmount          Int?     @default(0)
+  totalReceivedAmount Int      @default(0)
+  totalDiscountAmount Int      @default(0)
+  totalDueAmount      Int      @default(0) // Calculated
+  status              String   @default("Yet to be Paid")
+
+  student       Student       @relation(fields: [studentId], references: [id])
+  feesStructure FeesStructure @relation(fields: [gradeId], references: [gradeId])
+
+  @@unique([studentId, gradeId, term]) // Ensures one record per term per student
+}
+
 model FeesStructure {
-  id           Int      @id @default(autoincrement())
-  classId      Int
+  gradeId      Int      @id // ✅ gradeId is now the primary key
   academicYear String
-  term         Int
   startDate    DateTime
   dueDate      DateTime
   termFees     Int
   abacusFees   Int?
   totalFees    Int
 
-  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  grade          Grade            @relation("GradeToFeesStructure", fields: [gradeId], references: [id])
+  feesCollection FeesCollection[] // ✅ Relation to student payments
 }
 
 model FeePayment {
@@ -166,10 +186,11 @@ enum PaymentMethod {
 }
 
 model Grade {
-  id       Int        @id @default(autoincrement())
-  level    String     @unique
-  classes  Class[]
-  Homework Homework[]
+  id           Int            @id @default(autoincrement())
+  level        String         @unique
+  classes      Class[]
+  Homework     Homework[]
+  feestructure FeesStructure? @relation("GradeToFeesStructure") // ✅ Changed from array to single relation
 }
 
 model Homework {
@@ -232,29 +253,30 @@ model Result {
 }
 
 model Student {
-  id           String         @id
-  username     String         @unique
-  name         String
-  surname      String?
-  parentName   String
-  email        String?        @unique
-  phone        String
-  address      String
-  img          String?
-  bloodType    String?
-  gender       Gender
-  dob          DateTime
-  createdAt    DateTime       @default(now())
-  deletedAt    DateTime?
-  classId      Int
-  Attendance   Attendance[]
-  Fee          StudentFee[]
-  results      Result[]
-  Class        Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentFees  StudentFees[]
-  clerkStudent ClerkStudents?
-  clerk_id     String?        @unique
-  payments     Payment[]
+  id              String           @id
+  username        String           @unique
+  name            String
+  surname         String?
+  parentName      String
+  email           String?          @unique
+  phone           String
+  address         String
+  img             String?
+  bloodType       String?
+  gender          Gender
+  dob             DateTime
+  createdAt       DateTime         @default(now())
+  deletedAt       DateTime?
+  classId         Int
+  Attendance      Attendance[]
+  Fee             StudentFee[]
+  results         Result[]
+  Class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees     StudentFees[]
+  clerkStudent    ClerkStudents?
+  clerk_id        String?          @unique
+  payments        Payment[]
+  feesCollections FeesCollection[] // ✅ Back-reference to FeesCollection
 
   @@index([classId])
 }

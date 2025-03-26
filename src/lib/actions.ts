@@ -1,11 +1,99 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { AdminSchema, ClassSchema, ExamSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { AdminSchema, ClassSchema, ExamSchema, FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
+
+// * ---------------------------------------------- FEES SCHEMA --------------------------------------------------------
+
+export const createFees = async (
+    currentState: CurrentState,
+    data: FeesSchema
+) => {
+    try {
+        await prisma.feesStructure.create({
+            data: {
+                gradeId: data.gradeId, // ✅ gradeId is the primary key
+                startDate: data.startDate,
+                dueDate: data.dueDate,
+                academicYear: data.academicYear,
+                termFees: data.termFees,
+                abacusFees: data.abacusFees,
+                totalFees: data.totalFees,
+            },
+        });
+        console.log('Fees Created:', data);
+        return { success: true };
+    } catch (error) {
+        console.error("Error in creating Fees:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+export const updateFees = async (
+    currentState: CurrentState,
+    data: FeesSchema
+) => {
+    try {
+        const id = data.gradeId;
+
+        // ✅ Step 1: Check if the homework exists
+        const existingFees = await prisma.feesStructure.findUnique({
+            where: { gradeId: id },
+        });
+
+        if (!existingFees) {
+            return { success: false, error: "Fees not found" };
+        }
+
+        // ✅ Step 2: Update only the fields that are provided
+        const updatedFees = await prisma.feesStructure.update({
+            where: { gradeId: id },
+            data: {
+                startDate: data.startDate ?? existingFees.startDate,
+                dueDate: data.dueDate ?? existingFees.dueDate,
+                academicYear: data.academicYear ?? existingFees.academicYear,
+                termFees: data.termFees ?? existingFees.termFees,
+                abacusFees: data.abacusFees ?? existingFees.abacusFees,
+                totalFees: data.totalFees ?? existingFees.totalFees,
+            },
+        });
+
+        console.log("Updated Data:", updatedFees);
+        return { success: true, data: updatedFees };
+    } catch (error) {
+        console.error("Error in update Fees:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+
+
+export const deleteFees = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("gradeId") as string;
+    console.log("Deleted Homework:", data)
+
+    try {
+        await prisma.feesStructure.delete({
+            where: { gradeId: parseInt(id) },
+        });
+
+        console.log('Deleted Fees:', data)
+        // revalidatePath("/list/admin")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
+
+
 
 // * ---------------------------------------------- HOMEWORK SCHEMA --------------------------------------------------------
 
@@ -76,7 +164,7 @@ export const deleteHomework = async (
 
     try {
         await prisma.homework.delete({
-            where: { id: parseInt(id)},
+            where: { id: parseInt(id) },
         });
 
         console.log('Deleted Homework:', data)

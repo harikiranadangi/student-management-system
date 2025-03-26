@@ -227,16 +227,28 @@ INSERT INTO "FeesStructure"
 ("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees", "academicYear")  
 VALUES  
   (10, 20000, '2025-06-01', '2025-06-15', 1, 400, 5000, '2024-25');
- 
 
+SET datestyle = 'DMY';
 
-
-
-COPY "FeesStructure" ("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees")
+COPY "FeesStructure" ( "gradeId", "totalFees", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
 FROM 'D:/GITHUB/student-management-system/data/fees_structure.csv'
 WITH CSV HEADER DELIMITER ',';
 
-DROP TABLE "FeesStructure" CASCADE;
+SET datestyle = 'ISO, MDY';
+
+UPDATE "FeesStructure"
+SET "startDate" = "startDate"::DATE,
+    "dueDate" = "dueDate"::DATE;
+
+
+
+
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'FeesStructure';
+
+
+DELETE FROM "FeesStructure";
 
 
 -- Retrieve all records from the StudentFees table
@@ -276,3 +288,31 @@ SELECT * FROM "Homework";
 
 UPDATE "Homework" SET "gradeId" = 5 WHERE "classId" = 13;
 
+SELECT * FROM "FeesCollection" LIMIT 10;
+
+SELECT * FROM "FeesCollection" WHERE "studentId" = '17159';
+
+SELECT * FROM "FeesCollection" WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
+
+SELECT * FROM "FeesStructure" WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
+
+SELECT * FROM "FeesStructure" WHERE "gradeId" = 1;
+
+INSERT INTO "FeesCollection" ("studentId", "gradeId", "academicYear", "term", "totalFees", "abacusFees", "startDate", "dueDate", "status")
+SELECT '17159', "gradeId", "academicYear", 4, "totalFees", "abacusFees", "startDate", "dueDate", 'Pending'
+FROM "FeesStructure"
+WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
+
+DELETE FROM "FeesCollection"
+WHERE id NOT IN (
+  SELECT MIN(id)
+  FROM "FeesCollection"
+  GROUP BY "studentId", "academicYear", "term"
+);
+
+
+
+
+
+INSERT INTO "FeesCollection" ( "studentId", "gradeId", "term", "totalReceivedAmount", "dueDate", "status")
+VALUES ('STUDENT_ID_HERE', 'FEE_STRUCTURE_ID_HERE', 1, 5000, '2025-04-01', 'Pending');
