@@ -21,10 +21,12 @@ const deleteActionMap = {
   event: deleteSubject,
   announcement: deleteSubject,
   fees: deleteFees,
-  fees_structure: deleteSubject,
+  fees_structure: deleteFees,
   homeworks: deleteHomework,
-  admin:deleteAdmin
+  admin: deleteAdmin
 }
+
+
 
 
 
@@ -68,7 +70,7 @@ const forms: {
     relatedData?: any
   ) => JSX.Element;
 
-  
+
 
 } = {
 
@@ -83,7 +85,7 @@ const forms: {
   teacher: (setOpen, type, data, relatedData) => (
     <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
-  
+
   student: (setOpen, type, data, relatedData) => (
     <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
@@ -95,7 +97,7 @@ const forms: {
   lesson: (setOpen, type, data, relatedData) => (
     <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
- 
+
   admin: (setOpen, type, data, relatedData) => (
     <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
@@ -137,6 +139,9 @@ const FormModal = ({
       error: false,
     });
 
+    console.log("Delete function for", table, ":", deleteActionMap[table]);
+
+
     const router = useRouter();
 
     useEffect(() => {
@@ -148,11 +153,13 @@ const FormModal = ({
     }, [state]);
 
     useEffect(() => {
-  console.log("FormModal open state:", open);
-}, [open]);
+      console.log("FormModal open state:", open);
+    }, [open]);
 
+    console.log("Deleting", table, "with ID:", id);
 
     return type === "delete" && id ? (
+      
       <form action={formAction} className="flex flex-col gap-4 p-4">
         <input
           type="text | number" name="id" value={id || ""} // Use the id value or an empty string if undefined

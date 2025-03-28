@@ -42,14 +42,14 @@ const renderRow = (item: StudentList, role: string | null) => (
 
     <td className="p-2">
       <div className="flex items-center gap-2">
-      <Link href={`collect/${item.id}`}>
-        <button className="px-3 py-1 text-gray-500 rounded bg-LamaPurple hover:bg-LamaSky">
-          Collect Fees
-        </button>
-      </Link>
+        <Link href={`/list/fees/collect/${item.id}`}>
+          <button className="px-3 py-1 text-gray-500 rounded-md bg-LamaSky hover:bg-lamaSky">
+            Collect Fees
+          </button>
+        </Link>
       </div>
     </td>
-  </tr>
+  </tr >
 );
 
 const getColumns = (role: string | null) => [
@@ -71,10 +71,10 @@ const StudentListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-  
+
   // Fetch user info and role
   const { role } = await fetchUserInfo();
-  
+
   const columns = getColumns(role);
 
   // Get sorting order and column from URL
@@ -111,7 +111,7 @@ const StudentListPage = async ({
 
   // Fetch all grades
   const grades = await prisma.grade.findMany();
-  
+
 
   // Fetch students and count
   const [data, count] = await prisma.$transaction([

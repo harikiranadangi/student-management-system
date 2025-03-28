@@ -138,14 +138,27 @@ export type HomeworkSchema = z.infer<typeof homeworkSchema>;
 export const feesSchema = z.object({
   id: z.number().optional(), // Auto-incremented ID
   gradeId: z.number({ message: "Class ID is required!" }),
-  startDate: z.coerce.date({ message: 'Start Date is required!' }),
-  dueDate: z.coerce.date({ message: 'Due Date is required!' }),
+  term: z.enum(["TERM_1", "TERM_2", "TERM_3", "TERM_4"]),
   academicYear: z.string(),
-  termFees: z.coerce.number().min(1, "Term Fees is required!"),
+  startDate: z.coerce.date({ message: "Start Date is required!" }),
+  dueDate: z.coerce.date({ message: "Due Date is required!" }),
+  termFees: z.coerce.number().min(0, "Term Fees is required!"),
   abacusFees: z.coerce.number().min(0, "Abacus Fees is required!"),
-  totalFees: z.number({ message: "Abacus is required!" }),
 });
 
 // Infer the form data type from the schema
 export type FeesSchema = z.infer<typeof feesSchema>;
+
+// * FeeCollectionSchema Schema
+
+export const feecollectionSchema = z.object({
+  id: z.number().optional(), // Auto-incremented ID
+  gradeId: z.number({ message: "Class ID is required!" }),
+  academicYear: z.string(),
+  termFees: z.coerce.number().min(1, "Term Fees is required!"),
+  abacusFees: z.coerce.number().min(0, "Abacus Fees is required!"),
+});
+
+// Infer the form data type from the schema
+export type FeeCollectionSchema = z.infer<typeof feecollectionSchema>;
 

@@ -14,15 +14,16 @@ export const createFees = async (
     data: FeesSchema
 ) => {
     try {
-        await prisma.feesStructure.create({
+        await prisma.feeStructure.create({
             data: {
+                id: data.id,
                 gradeId: data.gradeId, // ✅ gradeId is the primary key
+                term: data.term,
+                academicYear: data.academicYear,
                 startDate: data.startDate,
                 dueDate: data.dueDate,
-                academicYear: data.academicYear,
                 termFees: data.termFees,
                 abacusFees: data.abacusFees,
-                totalFees: data.totalFees,
             },
         });
         console.log('Fees Created:', data);
@@ -38,11 +39,11 @@ export const updateFees = async (
     data: FeesSchema
 ) => {
     try {
-        const id = data.gradeId;
+        const id = data.id;
 
         // ✅ Step 1: Check if the homework exists
-        const existingFees = await prisma.feesStructure.findUnique({
-            where: { gradeId: id },
+        const existingFees = await prisma.feeStructure.findUnique({
+            where: { id: id },
         });
 
         if (!existingFees) {
@@ -50,15 +51,16 @@ export const updateFees = async (
         }
 
         // ✅ Step 2: Update only the fields that are provided
-        const updatedFees = await prisma.feesStructure.update({
-            where: { gradeId: id },
+        const updatedFees = await prisma.feeStructure.update({
+            where: { id: id },
             data: {
+                gradeId: data.gradeId ?? existingFees.gradeId,
+                term: data.term ?? existingFees.term,
+                academicYear: data.academicYear ?? existingFees.academicYear,
                 startDate: data.startDate ?? existingFees.startDate,
                 dueDate: data.dueDate ?? existingFees.dueDate,
-                academicYear: data.academicYear ?? existingFees.academicYear,
                 termFees: data.termFees ?? existingFees.termFees,
                 abacusFees: data.abacusFees ?? existingFees.abacusFees,
-                totalFees: data.totalFees ?? existingFees.totalFees,
             },
         });
 
@@ -70,18 +72,16 @@ export const updateFees = async (
     }
 };
 
-
-
 export const deleteFees = async (
     currentState: CurrentState,
     data: FormData
 ) => {
-    const id = data.get("gradeId") as string;
-    console.log("Deleted Homework:", data)
+    const id = data.get("id") as string;
+    console.log("Receved Fees Id:", data)
 
     try {
-        await prisma.feesStructure.delete({
-            where: { gradeId: parseInt(id) },
+        await prisma.feeStructure.delete({
+            where: { id: parseInt(id) },
         });
 
         console.log('Deleted Fees:', data)
@@ -92,8 +92,6 @@ export const deleteFees = async (
         return { success: false, error: true };
     }
 };
-
-
 
 // * ---------------------------------------------- HOMEWORK SCHEMA --------------------------------------------------------
 

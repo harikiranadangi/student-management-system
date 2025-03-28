@@ -6,49 +6,49 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { FeesStructure, Grade } from "@prisma/client";
+import { FeeStructure, Grade } from "@prisma/client";
 import Image from "next/image";
 
 type FeesList = Grade & {
-  feestructure: FeesStructure | null; // Since 1 Grade has 1 Fee Structure
+  feestructure: FeeStructure[];
 };
 
-const renderRow = (item: FeesList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td>{item.level}</td>
-    <td>{item.feestructure ? item.feestructure.termFees : "-"}</td>
-    <td>{item.feestructure ? item.feestructure.abacusFees : "-"}</td>
-    <td>
-      {item.feestructure?.startDate
-        ? new Intl.DateTimeFormat("en-GB").format(new Date(item.feestructure.startDate))
-        : "-"}
-    </td>
-    <td>
-      {item.feestructure?.dueDate
-        ? new Intl.DateTimeFormat("en-GB").format(new Date(item.feestructure.dueDate))
-        : "-"}
-    </td>
-    <td>{item.feestructure ? item.feestructure.totalFees : "-"}</td>
-    <td>
-      <div className="flex items-center gap-2">
-        {role === "admin" && (
+const renderRow = (item: FeesList, role: string | null) => {
+
+  if (!item.feestructure || item.feestructure.length === 0) {
+    return null; // Skip if no fee structure exists
+  }
+  return item.feestructure.map((fee) => {
+    const termFees = fee.termFees ?? 0;
+    const abacusFees = fee.abacusFees ?? 0;
+    const totalFees = termFees + abacusFees;
+
+    return (
+      <tr key={fee.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
+        <td>{item.level}</td>
+        <td>{fee.term}</td>
+        <td>{totalFees}</td>
+        <td>{fee.startDate ? new Intl.DateTimeFormat("en-GB").format(new Date(fee.startDate)) : "-"}</td>
+        <td>{fee.dueDate ? new Intl.DateTimeFormat("en-GB").format(new Date(fee.dueDate)) : "-"}</td>
+        <td><div className="flex items-center gap-2">{role === "admin" && (
           <>
-            <FormContainer table="fees" type="update" data={item.feestructure} />
+            <FormContainer table="fees" type="update" data={fee} />
+            <FormContainer table="fees" type="delete" id={fee.id} />
           </>
         )}
-      </div>
-    </td>
-  </tr>
-);
-
+        </div>
+        </td>
+      </tr>
+    );
+  });
+};
 
 const getColumns = (role: string | null) => [
   { header: "Grade", accessor: "level" },
-  { header: "Term Fees", accessor: "fees.termFees" },
-  { header: "Abacus Fees", accessor: "fees.abacusFees" },
-  { header: "Start Date", accessor: "fees.startDate" },
-  { header: "Due Date", accessor: "fees.dueDate" },
-  { header: "Total Fees", accessor: "fees.totalFees" },
+  { header: "Term", accessor: "feestructure.term" },
+  { header: "Term Fees", accessor: "feestructure.termFees" },
+  { header: "Start Date", accessor: "feestructure.startDate" },
+  { header: "Due Date", accessor: "feestructure.dueDate" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
@@ -67,13 +67,13 @@ const FeesListPage = async ({
 
   // Get sorting order and column from URL
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = params.sortKey || "id"; // Default sorting by grade level
+  const sortKey = params.sortKey || "id"; // Default sorting by grade id
 
   // Fetch grades with their respective fee structure
   const [data, count] = await prisma.$transaction([
     prisma.grade.findMany({
       include: {
-        feestructure: true, // ✅ 1-to-1 relationship now
+        feestructure: true, // ✅ Ensure multiple fee structures are fetched
       },
       orderBy: { [sortKey]: sortOrder },
       take: ITEM_PER_PAGE,
@@ -81,6 +81,10 @@ const FeesListPage = async ({
     }),
     prisma.grade.count(),
   ]);
+
+
+  console.log("Grades with Fee Structure:", JSON.stringify(data, null, 2));
+
 
   // Rendering
   return (

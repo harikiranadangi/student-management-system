@@ -145,10 +145,9 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 });
 
                 // Fetch Fees Structure
-                const fees = await prisma.feesStructure.findMany({
+                const feesGrades = await prisma.feeStructure.findMany({
                     select: {
                         gradeId: true,   // ✅ Link Fees to Grade
-                        totalFees: true,
                         termFees: true,
                         abacusFees: true,
                         startDate: true,
@@ -156,7 +155,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     },
                 });
 
-                 relatedData = {grades: gradeFees, fees }; 
+                 relatedData = {grades: gradeFees, fees: feesGrades }; 
                 break;
             default:
 

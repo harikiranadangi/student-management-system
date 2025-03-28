@@ -220,23 +220,26 @@ SELECT * FROM "Result";
 -- Retrieve all records from the Attendance table
 SELECT * FROM "Attendance";
 
--- Retrieve all records from the FeesStructure table
-SELECT * FROM "FeesStructure";
+-- Retrieve all records from the FeeStructure table
+SELECT * FROM "FeeStructure";
 
-INSERT INTO "FeesStructure" 
+SELECT * FROM "FeeStructure"
+WHERE "gradeId" NOT IN (SELECT id FROM "Grade");
+
+INSERT INTO "FeeStructure" 
 ("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees", "academicYear")  
 VALUES  
   (10, 20000, '2025-06-01', '2025-06-15', 1, 400, 5000, '2024-25');
 
 SET datestyle = 'DMY';
 
-COPY "FeesStructure" ( "gradeId", "totalFees", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
+COPY "FeeStructure" ( "gradeId", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
 FROM 'D:/GITHUB/student-management-system/data/fees_structure.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SET datestyle = 'ISO, MDY';
 
-UPDATE "FeesStructure"
+UPDATE "FeeStructure"
 SET "startDate" = "startDate"::DATE,
     "dueDate" = "dueDate"::DATE;
 
@@ -248,7 +251,7 @@ FROM information_schema.columns
 WHERE table_name = 'FeesStructure';
 
 
-DELETE FROM "FeesStructure";
+DELETE FROM "FeeStructure";
 
 
 -- Retrieve all records from the StudentFees table
@@ -294,25 +297,54 @@ SELECT * FROM "FeesCollection" WHERE "studentId" = '17159';
 
 SELECT * FROM "FeesCollection" WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
 
-SELECT * FROM "FeesStructure" WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
+SELECT * FROM "FeeStructure";
 
-SELECT * FROM "FeesStructure" WHERE "gradeId" = 1;
+SELECT * FROM "FeeStructure" WHERE "gradeId" = 1;
 
 INSERT INTO "FeesCollection" ("studentId", "gradeId", "academicYear", "term", "totalFees", "abacusFees", "startDate", "dueDate", "status")
 SELECT '17159', "gradeId", "academicYear", 4, "totalFees", "abacusFees", "startDate", "dueDate", 'Pending'
-FROM "FeesStructure"
+FROM "FeeStructure"
 WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
 
-DELETE FROM "FeesCollection"
+INSERT INTO "FeeStructure" ("gradeId", "academicYear", "startDate", "dueDate", "termFees", "abacusFees", "totalFees")
+VALUES
+(1, '2024-25', '2024-06-01', '2025-01-20', 5250, 0, 10500),
+(2, '2024-25', '2024-06-01', '2025-01-20', 6050, 0, 24200),
+(3, '2024-25', '2024-06-01', '2025-01-20', 6050, 0, 24200),
+(4, '2024-25', '2024-06-01', '2025-01-20', 7150, 400, 29000),
+(5, '2024-25', '2024-06-01', '2025-01-20', 7150, 400, 29000),
+(6, '2024-25', '2024-06-01', '2025-01-20', 7425, 400, 30100),
+(7, '2024-25', '2024-06-01', '2025-01-20', 7425, 400, 30100),
+(8, '2024-25', '2024-06-01', '2025-01-20', 7700, 400, 31200),
+(9, '2024-25', '2024-06-01', '2025-01-20', 7700, 400, 31200),
+(10, '2024-25', '2024-06-01', '2025-01-20', 7975, 400, 31900),
+(11, '2024-25', '2024-06-01', '2025-01-20', 9900, 400, 40000),
+(12, '2024-25', '2024-06-01', '2025-01-20', 10450, 400, 42200),
+(13, '2024-25', '2024-06-01', '2024-12-27', 10450, 0, 41800);
+
+DELETE FROM "FeesCollection" WHERE "gradeId" = 1;
+DELETE FROM "FeesCollection" WHERE "gradeId" = 4;  -- Repeat for other affected gradeIds
+
+SELECT * FROM "FeeStructure" WHERE "gradeId" = 1;
+
+DELETE FROM "FeesStructure";
 WHERE id NOT IN (
   SELECT MIN(id)
   FROM "FeesCollection"
   GROUP BY "studentId", "academicYear", "term"
 );
 
+SELECT id, startDate, dueDate FROM "FeesStructure" LIMIT 10;
 
 
+-- Check fees assigned to this student
+SELECT * FROM "FeesCollection" WHERE "studentId" = "16672";
 
+-- Check fees assigned to this grade
+SELECT * FROM "FeesCollection" WHERE "gradeId" = 4;
 
-INSERT INTO "FeesCollection" ( "studentId", "gradeId", "term", "totalReceivedAmount", "dueDate", "status")
-VALUES ('STUDENT_ID_HERE', 'FEE_STRUCTURE_ID_HERE', 1, 5000, '2025-04-01', 'Pending');
+-- Check fees assigned to this grade
+SELECT * FROM "FeesCollection" ;
+
+-- Check fees assigned to this grade
+SELECT * FROM "Payment" ;
