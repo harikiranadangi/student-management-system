@@ -18,6 +18,7 @@ export type FormContainerProps = {
     | "fees"
     | "admin"
     | "fees_structure"
+    | "feecollect"
     | "homeworks";
     type: "create" | "update" | "delete";
     data?: any;
@@ -155,8 +156,26 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     },
                 });
 
-                 relatedData = {grades: gradeFees, fees: feesGrades }; 
+                relatedData = { grades: gradeFees, fees: feesGrades };
                 break;
+
+            case "feecollect":
+                // Fetch Students
+                const students = await prisma.student.findMany({
+                    select: { id: true, name: true, surname: true }, // ✅ Student ID & Name
+                });
+
+                // Fetch Fee Structures
+                const feeStructure = await prisma.feeStructure.findMany({
+                    select: {
+                        id: true, // ✅ Fee Structure ID
+                        termFees: true,
+                        abacusFees: true,
+                        startDate: true,
+                        dueDate: true,
+                    },
+                });
+                relatedData = { students, feeStructure };
             default:
 
 

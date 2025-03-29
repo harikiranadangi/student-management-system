@@ -1,5 +1,4 @@
 import ClassFilterDropdown from "@/components/FilterDropdown";
-import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
@@ -12,10 +11,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 // Define types
-type StudentList = Student & { Class?: { name: string } };
+type StudentFeeList = Student & { Class?: { name: string } };
 
 // Function to render a table row
-const renderRow = (item: StudentList, role: string | null) => (
+const renderRow = (item: StudentFeeList, role: string | null) => (
   <tr
     key={item.id}
     className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
@@ -42,11 +41,13 @@ const renderRow = (item: StudentList, role: string | null) => (
 
     <td className="p-2">
       <div className="flex items-center gap-2">
+        {role === "admin" && (
         <Link href={`/list/fees/collect/${item.id}`}>
           <button className="px-3 py-1 text-gray-500 rounded-md bg-LamaSky hover:bg-lamaSky">
             Collect Fees
           </button>
         </Link>
+        )}
       </div>
     </td>
   </tr >
@@ -62,7 +63,7 @@ const getColumns = (role: string | null) => [
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const StudentListPage = async ({
+const StudentFeeListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -150,9 +151,6 @@ const StudentListPage = async ({
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              {role === "admin" && (
-                <FormContainer table="student" type="create" />
-              )}
             </div>
           </div>
         </div>
@@ -165,4 +163,4 @@ const StudentListPage = async ({
   );
 };
 
-export default StudentListPage;
+export default StudentFeeListPage;

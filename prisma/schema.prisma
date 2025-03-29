@@ -280,8 +280,6 @@ model FeeTransaction {
   fbNumber      String   @unique // ✅ Unique fees book number
   amountPaid    Int
   paymentDate   DateTime @default(now())
-  paymentMode   String // Example: "Cash", "Online", "UPI", "Bank Transfer"
-  referenceId   String? // Optional: Transaction ID (for online payments)
   discountGiven Int      @default(0) // ✅ New: Discount applied in this transaction
   fineCollected Int      @default(0) // ✅ New: Fine collected in this transaction
 
@@ -289,16 +287,18 @@ model FeeTransaction {
 }
 
 model StudentFees {
-  id               Int      @id @default(autoincrement())
+  id               Int         @id @default(autoincrement())
   studentId        String // ✅ Foreign key reference to Student
   feeStructureId   Int // ✅ Foreign key reference to FeeStructure
+  fbNumber         String      @unique // ✅ Unique fees book number
   term             Term
-  paidAmount       Int      @default(0) // Tracks total paid
-  discountAmount   Int      @default(0) // ✅ New: Discounts applied
-  fineAmount       Int      @default(0) // ✅ New: Fines applied
+  paidAmount       Int         @default(0) // Tracks total paid
+  discountAmount   Int         @default(0) // ✅ New: Discounts applied
+  fineAmount       Int         @default(0) // ✅ New: Fines applied
   abacusPaidAmount Int? // ✅ Allows tracking partial Abacus payments
-  recievedDate     DateTime @default(now())
-  recieptDate      DateTime
+  receivedDate     DateTime    @default(now())
+  receiptDate      DateTime
+  paymentMode      PaymentMode @default(CASH) // ✅ New: Payment mode (CASH, ONLINE, UPI, BANK_TRANSFER)
 
   student         Student          @relation(fields: [studentId], references: [id])
   feeStructure    FeeStructure     @relation(fields: [feeStructureId], references: [id]) // ✅ Links to FeeStructure
@@ -306,6 +306,7 @@ model StudentFees {
 
   // ✅ Total Due Calculation (handled in queries)
   // totalDue = termFees - paidAmount - discountAmount + fineAmount
+  @@unique([studentId, term, fbNumber])
 }
 
 enum LessonDay {
@@ -315,13 +316,6 @@ enum LessonDay {
   THURSDAY
   FRIDAY
   SATURDAY
-}
-
-enum PaymentMethod {
-  CASH
-  UPI
-  BANK_TRANSFER
-  ONLINE
 }
 
 enum Gender {
@@ -334,4 +328,11 @@ enum Term {
   TERM_2
   TERM_3
   TERM_4
+}
+
+enum PaymentMode {
+  CASH
+  ONLINE
+  UPI
+  BANK_TRANSFER
 }

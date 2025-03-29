@@ -1,11 +1,141 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { AdminSchema, ClassSchema, ExamSchema, FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { AdminSchema, ClassSchema, ExamSchema, FeeCollectionSchema, FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
+
+// * ---------------------------------------------- FEE COLLECTION SCHEMA --------------------------------------------------------
+
+export const createFeeCollect = async (
+    currentState: CurrentState,
+    data: FeeCollectionSchema
+) => {
+    try {
+        // ✅ Step 1: Get student's grade from their class
+        const student = await prisma.student.findUnique({
+            where: { id: data.studentId },
+            select: { Class: { select: { Grade: true } } }
+        });
+
+        if (!student || !student.Class) {
+            return { success: false, error: "Student's grade not found!" };
+        }
+
+        const studentGrade = student.Class.Grade;
+
+        // ✅ Step 2: Get fee structure for the grade and term
+        const feeStructure = await prisma.feeStructure.findFirst({
+            where: {
+                grade: studentGrade, // Match the grade
+                term: data.term      // Match the term
+            },
+            select: { id: true }
+        });
+
+        if (!feeStructure) {
+            return { success: false, error: "Fee structure not found for this grade!" };
+        }
+
+        // ✅ Step 3: Insert or update fee collection with auto-filled `feeStructureId`
+        const studentFees = await prisma.studentFees.upsert({
+            where: {
+                studentId_term_fbNumber: {
+                    studentId: data.studentId,
+                    term: data.term,
+                    fbNumber: data.fbNumber
+                }
+            },
+            update: {
+                paidAmount: { increment: data.paidAmount },
+                abacusPaidAmount: { increment: data.abacusPaidAmount ?? 0 },
+                discountAmount: { increment: data.discountAmount ?? 0 },
+                fineAmount: { increment: data.fineAmount ?? 0 },
+            },
+            create: {
+                studentId: data.studentId,
+                term: data.term,
+                feeStructureId: feeStructure.id, // ✅ Auto-filled from DB
+                fbNumber: data.fbNumber,
+
+                paidAmount: data.paidAmount,
+                abacusPaidAmount: data.abacusPaidAmount,
+                discountAmount: data.discountAmount,
+                fineAmount: data.fineAmount,
+                paymentMode: data.paymentMode,
+                receivedDate: data.receivedDate,
+                receiptDate: data.receiptDate,
+            },
+        });
+
+        console.log('✅ Fee Collection Recorded:', data);
+        return { success: true };
+    } catch (error) {
+        console.error("❌ Error in Fee Collection:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+export const updateFeeCollect = async (
+    currentState: CurrentState,
+    data: FeesSchema
+) => {
+    try {
+        const id = data.id;
+
+        // ✅ Step 1: Check if the homework exists
+        const existingFees = await prisma.feeStructure.findUnique({
+            where: { id: id },
+        });
+
+        if (!existingFees) {
+            return { success: false, error: "Fees not found" };
+        }
+
+        // ✅ Step 2: Update only the fields that are provided
+        const updatedFees = await prisma.feeStructure.update({
+            where: { id: id },
+            data: {
+                gradeId: data.gradeId ?? existingFees.gradeId,
+                term: data.term ?? existingFees.term,
+                academicYear: data.academicYear ?? existingFees.academicYear,
+                startDate: data.startDate ?? existingFees.startDate,
+                dueDate: data.dueDate ?? existingFees.dueDate,
+                termFees: data.termFees ?? existingFees.termFees,
+                abacusFees: data.abacusFees ?? existingFees.abacusFees,
+            },
+        });
+
+        console.log("Updated Data:", updatedFees);
+        return { success: true, data: updatedFees };
+    } catch (error) {
+        console.error("Error in update Fees:", error);
+        return { success: false, error: (error as any).message };
+    }
+};
+
+export const deleteFeeCollect = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const id = data.get("id") as string;
+    console.log("Receved Fees Id:", data)
+
+    try {
+        await prisma.feeStructure.delete({
+            where: { id: parseInt(id) },
+        });
+
+        console.log('Deleted Fees:', data)
+        // revalidatePath("/list/admin")
+        return { success: true, error: false };
+    } catch (err) {
+        console.log(err)
+        return { success: false, error: true };
+    }
+};
 
 // * ---------------------------------------------- FEES SCHEMA --------------------------------------------------------
 
