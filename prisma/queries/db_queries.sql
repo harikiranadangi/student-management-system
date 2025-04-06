@@ -349,7 +349,7 @@ SELECT * FROM "FeeTransaction" ;
 SELECT * FROM "StudentFees" ;
 
 -- Check fees assigned to this grade
-SELECT * FROM "StudentFees" WHERE "studentId" = '17131';
+SELECT * FROM "StudentFees" WHERE "studentId" = '14355';
 
 SELECT * FROM "StudentFees";
 
@@ -367,6 +367,8 @@ SELECT * FROM "class" WHERE id = 1;
 SELECT * FROM "StudentFees" WHERE "studentId" = '17159' AND term = 'TERM_4';
 
 SELECT * FROM "FeeStructure" ;
+
+SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
 
 
 

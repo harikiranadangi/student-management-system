@@ -20,6 +20,7 @@ interface StudentFees {
   feeStructure: FeeStructure;
   feeTransactions: FeeTransaction[];
   collectedAmount?: number;
+  receiptNo?: string | null;
 }
 
 interface FeesTableProps {
@@ -40,6 +41,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   const [receiptDate, setReceiptDate] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
   const [fine, setFine] = useState<number>(0);
+  const [receiptNo, setReceiptNo] = useState<string>("");
+
 
   const handleCollect = (studentFee: StudentFees) => {
     setCurrentStudentFee(studentFee);
@@ -53,8 +56,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
 
   const handleFormSubmit = async () => {
     if (currentStudentFee) {
-      const updatedPaidAmount = currentStudentFee.paidAmount + amount; // 👈 add the collected amount!
-      // Send API request to update fee in Prisma
+      const updatedPaidAmount = currentStudentFee.paidAmount + amount;
+  
       const updatedFeeData = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
@@ -62,8 +65,9 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
         discountAmount: discount,
         fineAmount: fine,
         receiptDate,
+        receiptNo,
       };
-
+  
       try {
         const response = await fetch("/api/fees/update", {
           method: "POST",
@@ -71,37 +75,42 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedFeeData),
-
         });
-
-
-
+  
         if (response.ok) {
-
-          // Update the rowData in the state with the new paidAmount and other updated values
-          const updatedRow = rowData.map((fee) =>
-            fee.id === currentStudentFee.id
-              ? {
-                ...fee,
-                paidAmount: updatedPaidAmount, // <-- important correction
-                discountAmount: discount,
-                fineAmount: fine,
-                receiptDate,
+          const updatedFees = rowData.map((fee) => {
+            if (fee.studentId === currentStudentFee.studentId) {
+              // 👇 If it's the SAME STUDENT
+              if (fee.term !== currentStudentFee.term && !fee.receiptNo) {
+                // 👇 Only update other terms if receiptNo is EMPTY
+                return { ...fee, receiptNo };
               }
-              : fee
-          );
-
-          setRowData(updatedRow); // Update the table with the new data
-
-          setIsModalOpen(false); // Close the modal
+              if (fee.term === currentStudentFee.term) {
+                // 👇 Update the term you edited with new paidAmount, etc
+                return {
+                  ...fee,
+                  paidAmount: updatedPaidAmount,
+                  discountAmount: discount,
+                  fineAmount: fine,
+                  receiptDate,
+                  receiptNo,
+                };
+              }
+            }
+            return fee;
+          });
+  
+          setRowData(updatedFees);
+          setIsModalOpen(false);
         } else {
-          console.error("Failed to update fee data");
+          console.error("Failed to update fee data.");
         }
       } catch (error) {
-        console.error("Error updating fee data", error);
+        console.error("Error submitting form:", error);
       }
     }
   };
+  
 
   const columns = React.useMemo<ColumnDef<StudentFees>[]>(() => [
     {
@@ -154,6 +163,11 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       },
     },
     {
+      accessorKey: "receiptNo",
+      header: "FB No",
+      cell: ({ getValue }) => (getValue() as string),
+    },
+    {
       accessorKey: "receiptDate",
       header: "Receipt Date",
       cell: ({ getValue }) => formatDate(getValue() as string),
@@ -182,7 +196,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  
+
 
   return (
     <div className="p-2">
@@ -222,7 +236,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
               <p><strong>Total Fees:</strong> ₹{(currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0)}</p>
               <p><strong>Paid Amount:</strong> ₹{currentStudentFee.paidAmount || 0}</p>
               <p><strong>Balance:</strong> ₹{
-                ((currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0) )
+                ((currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0))
                 - (currentStudentFee.paidAmount || 0) - (currentStudentFee.discountAmount || 0)
               }</p>
             </div>
@@ -255,6 +269,16 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   type="number"
                   value={fine}
                   onChange={(e) => setFine(Number(e.target.value))}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">FB No:</label>
+                <input
+                  type="text"
+                  value={receiptNo}
+                  onChange={(e) => setReceiptNo(e.target.value)}
                   className="border p-2 rounded w-full"
                 />
               </div>
@@ -296,11 +320,9 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                 Submit
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

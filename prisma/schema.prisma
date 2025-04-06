@@ -278,7 +278,6 @@ model FeeStructure {
 model FeeTransaction {
   id            Int      @id @default(autoincrement())
   studentFeesId Int // ✅ Links to StudentFees
-  receiptNo      String   
   amountPaid    Int
   paymentDate   DateTime @default(now())
   discountGiven Int      @default(0) // ✅ New: Discount applied in this transaction
@@ -292,6 +291,7 @@ model FeeTransaction {
     studentId        String
     feeStructureId   Int
     academicYear     AcademicYear      // ✅ Academic Year (eg: 2024-25)
+    receiptNo      String?
     term             Term
     paidAmount       Int         @default(0)
     discountAmount   Int         @default(0)

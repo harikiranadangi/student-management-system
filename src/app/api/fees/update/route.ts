@@ -4,23 +4,27 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { studentId, term, paidAmount, discountAmount, fineAmount, receiptDate } = body;
+    const { studentId, term, paidAmount, discountAmount, fineAmount, receiptDate, receiptNo } = body;
 
     const data: any = {
       paidAmount,
       discountAmount,
       fineAmount,
     };
-
-    // 👇 Only add receiptDate if it exists
+    
+    if (receiptNo !== undefined && receiptNo !== null) {
+      data.receiptNo = String(receiptNo);  // 🔥 Important change
+    }
+    
     if (receiptDate) {
       data.receiptDate = new Date(receiptDate);
     }
-
+    
     const updatedFee = await prisma.studentFees.updateMany({
       where: { studentId, term },
       data,
     });
+    
 
     return NextResponse.json(updatedFee, { status: 200 });
   } catch (error) {
