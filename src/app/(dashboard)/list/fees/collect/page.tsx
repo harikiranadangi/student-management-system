@@ -1,4 +1,5 @@
 import ClassFilterDropdown from "@/components/FilterDropdown";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
@@ -11,10 +12,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 // Define types
-type StudentFeeList = Student & { Class?: { name: string } };
+type StudentList = Student & { Class?: { name: string } };
 
 // Function to render a table row
-const renderRow = (item: StudentFeeList, role: string | null) => (
+const renderRow = (item: StudentList, role: string | null) => (
   <tr
     key={item.id}
     className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
@@ -41,16 +42,17 @@ const renderRow = (item: StudentFeeList, role: string | null) => (
 
     <td className="p-2">
       <div className="flex items-center gap-2">
-        {role === "admin" && (
         <Link href={`/list/fees/collect/${item.id}`}>
-          <button className="px-3 py-1 text-gray-500 rounded-md bg-LamaSky hover:bg-lamaSky">
-            Collect Fees
+          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+            <Image src="/view.png" alt="View" width={16} height={16} />
           </button>
         </Link>
+        {role === "admin" && (
+          <FormContainer table="student" type="delete" id={item.id} />
         )}
       </div>
     </td>
-  </tr >
+  </tr>
 );
 
 const getColumns = (role: string | null) => [
@@ -63,7 +65,7 @@ const getColumns = (role: string | null) => [
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const StudentFeeListPage = async ({
+const StudentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -72,10 +74,10 @@ const StudentFeeListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-
+  
   // Fetch user info and role
   const { role } = await fetchUserInfo();
-
+  
   const columns = getColumns(role);
 
   // Get sorting order and column from URL
@@ -112,7 +114,7 @@ const StudentFeeListPage = async ({
 
   // Fetch all grades
   const grades = await prisma.grade.findMany();
-
+  
 
   // Fetch students and count
   const [data, count] = await prisma.$transaction([
@@ -151,6 +153,9 @@ const StudentFeeListPage = async ({
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
+              {role === "admin" && (
+                <FormContainer table="student" type="create" />
+              )}
             </div>
           </div>
         </div>
@@ -163,4 +168,4 @@ const StudentFeeListPage = async ({
   );
 };
 
-export default StudentFeeListPage;
+export default StudentListPage;

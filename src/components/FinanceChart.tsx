@@ -14,12 +14,12 @@ import {
 
 // Example dataset: Payments collected on different days (replace with real data)
 const allData = [
-  { date: "2025-02-01", collected: 180000 },
-  { date: "2025-02-02", collected: 100000 },
-  { date: "2025-02-10", collected: 22000 },
-  { date: "2025-02-15", collected: 80000 },
-  { date: "2025-02-20", collected: 207000 },
-  { date: "2025-02-25", collected: 300000 },
+  { date: "2025-03-05", collected: 180000 },
+  { date: "2025-03-06", collected: 100000 },
+  { date: "2025-03-07", collected: 22000 },
+  { date: "2025-03-08", collected: 80000 },
+  { date: "2025-03-09", collected: 207000 },
+  { date: "2025-03-10", collected: 300000 },
 ];
 
 // Function to get the first and last day of the previous month

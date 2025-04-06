@@ -1,3 +1,4 @@
+import { AcademicYear } from "@prisma/client";
 import { z } from "zod";
 
 
@@ -83,6 +84,7 @@ export const studentschema = z.object({
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
+  academicYear: z.nativeEnum(AcademicYear).optional(),
 });
 
 // Infer the form data type from schema
@@ -152,18 +154,19 @@ export type FeesSchema = z.infer<typeof feesSchema>;
 // * FeeCollectionSchema Schema
 
 export const feecollectionSchema = z.object({
-  id: z.number().optional(), // Auto-incremented ID
-  studentId: z.string({ message: "Student ID is required!" }),
-  feeStructureId: z.number({ message: "Fee Structure ID is required!" }),
-  term: z.enum(["TERM_1", "TERM_2", "TERM_3", "TERM_4"]),
-  paidAmount: z.coerce.number().min(0, "Paid Amount is required!"),
-  abacusPaidAmount: z.coerce.number().min(0, "Abacus Paid Amount is required!").optional(),
-  discountAmount: z.coerce.number().min(0, "Discount Amount is required!").optional(),
-  fineAmount: z.coerce.number().min(0, "Fine Amount is required!").optional(),
-  paymentMode: z.enum(["CASH", "ONLINE", "UPI", "BANK_TRANSFER"]),
-  receivedDate: z.coerce.date({ message: "Received Date is required!" }),
-  receiptDate: z.coerce.date({ message: "Receipt Date is required!" }),
-  fbNumber: z.string({ message: "FB No is required!"}),
+  id: z.number().optional(), // optional for auto-increment
+
+  studentFeesId: z.number({ message: "Student Fees ID is required!" }),
+
+  receiptNo: z.string({ message: "Receipt No is required!" }),
+
+  amountPaid: z.coerce.number().min(1, { message: "Amount Paid is required!" }),
+
+  discountGiven: z.coerce.number().min(0, { message: "Discount Given is required!" }).optional(),
+
+  fineCollected: z.coerce.number().min(0, { message: "Fine Collected is required!" }).optional(),
+
+  paymentDate: z.coerce.date({ message: "Payment Date is required!" }),
 });
 
 // Infer the form data type from the schema

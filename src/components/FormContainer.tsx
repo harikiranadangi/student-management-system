@@ -66,18 +66,38 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: teacherSubjects }
                 break;
 
-            case "student":
-
-                const studentGrades = await prisma.grade.findMany({
-                    select: { id: true, level: true },
-                });
-
-                const studentClasses = await prisma.class.findMany({
-                    include: { _count: { select: { students: true } } },
-                });
-
-                relatedData = { classes: studentClasses, grades: studentGrades }
-                break;
+                case "student":
+                    const studentGrades = await prisma.grade.findMany({
+                        select: { id: true, level: true },
+                    });
+                
+                    const studentClasses = await prisma.class.findMany({
+                        include: {
+                            _count: { select: { students: true } },
+                            Grade: true, // ✅ important
+                        },
+                    });
+                
+                    const studentFees = await prisma.feeStructure.findMany({
+                        select: {
+                            id: true,
+                            gradeId: true,
+                            term: true,
+                            academicYear: true,
+                            startDate: true,
+                            dueDate: true,
+                            termFees: true,
+                            abacusFees: true,
+                        },
+                    });
+                
+                    relatedData = {
+                        classes: studentClasses,
+                        grades: studentGrades,
+                        feeStructures: studentFees, // ✅ added
+                    };
+                    break;
+                
 
             case "exam":
 
@@ -113,20 +133,6 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers };
                 break;
 
-            // case "attendance":
-            //     if (!data || !data.classId) {
-            //         console.error("Missing classId in attendance data:", data);
-            //         return;
-            //     }
-
-            //     const studentsInClass = await prisma.student.findMany({
-            //         where: { classId: data.classId },
-            //         select: { id: true, name: true },
-            //     });
-
-            //     relatedData = { students: studentsInClass };
-            //     break;
-
             case 'homeworks':
                 const classHomework = await prisma.class.findMany({
                     select: { id: true, name: true },
@@ -160,12 +166,11 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 break;
 
             case "feecollect":
-                // Fetch Students
+                // Fetch students and fee structures as you already do
                 const students = await prisma.student.findMany({
                     select: { id: true, name: true, surname: true }, // ✅ Student ID & Name
                 });
 
-                // Fetch Fee Structures
                 const feeStructure = await prisma.feeStructure.findMany({
                     select: {
                         id: true, // ✅ Fee Structure ID
@@ -176,6 +181,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     },
                 });
                 relatedData = { students, feeStructure };
+                break;
             default:
 
 
@@ -188,13 +194,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
     return (
         <div className="">
-            <FormModal
-                table={table}
-                type={type}
-                data={data}
-                id={id}
-                relatedData={relatedData}
-            />
+            <FormModal table={table} type={type} data={data} id={id} relatedData={relatedData} />
         </div>
     );
 };

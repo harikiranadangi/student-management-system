@@ -49,17 +49,17 @@ const StudentForm = ({
     success: false,
     error: null,
   });
-  
+
   const formAction = async (currentState: any, data: any) => {
     console.log("Payload being sent to", type === "update" ? "updateStudent" : "createStudent", data);
-  
+
     try {
       const response = type === "update"
         ? await updateStudent(currentState, data)  // ✅ Use updateStudent for updates
         : await createStudent(currentState, data);
-  
+
       console.log("Response from server:", response);
-  
+
       setState({
         success: response.success,
         error: response.error ? String(response.error) : null,
@@ -69,8 +69,8 @@ const StudentForm = ({
       setState({ success: false, error: String(error) });
     }
   };
-    
-  
+
+
   const onSubmit = handleSubmit((data) => {
     console.log("Form Data Captured:", data);
     startTransition(() => {
@@ -79,7 +79,7 @@ const StudentForm = ({
       formAction(state, payload);
     });
   });
-  
+
 
 
 
@@ -99,24 +99,24 @@ const StudentForm = ({
 
   useEffect(() => {
     console.log("Current Form State:", state);
-    
+
     if (state.success) {
       toast(`Student has been ${type === "create" ? "created" : "updated"}!`);
       setOpen(false);
       router.refresh();
     }
   }, [state.success]);
-  
+
   useEffect(() => {
     if (state.error) {
       console.error("Form submission error:", state.error);
       toast.error(state.error);  // ✅ Show error message in UI
     }
   }, [state.error]);
-  
 
 
-  const { grades, classes } = relatedData;
+
+  const { grades, classes, feeStructures } = relatedData;
 
   console.log("Payload being sent to createStudent:", data);
 
@@ -177,6 +177,21 @@ const StudentForm = ({
       </CldUploadWidget>
 
       <div className="flex flex-wrap justify-between gap-4">
+
+      <div className="flex flex-col w-full gap-2 md:w-1/4">
+          <label className="text-xs text-gray-500">Academic Year</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("academicYear")}
+            defaultValue={data?.academicYear}
+          >
+            <option value="Y2024_2025">2024-25</option>
+            <option value="Y2025_2026">2025-26</option>
+          </select>
+          {errors.academicYear?.message && (
+            <p className="text-xs text-red-400">{errors.academicYear.message.toString()}</p>
+          )}
+        </div>
 
         <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
 
@@ -288,9 +303,6 @@ const StudentForm = ({
             <p className="text-xs text-red-500">{errors.classId.message.toString()}</p>
           )}
         </div>
-
-
-
       </div>
 
       {state.error && (

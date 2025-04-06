@@ -7,111 +7,67 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
 
-// * ---------------------------------------------- FEE COLLECTION SCHEMA --------------------------------------------------------
+// * ---------------------------------------------- ADMIN SCHEMA --------------------------------------------------------
 
-export const createFeeCollect = async (
+export const createFeesCollect = async (
     currentState: CurrentState,
     data: FeeCollectionSchema
 ) => {
     try {
-        // ✅ Step 1: Get student's grade from their class
-        const student = await prisma.student.findUnique({
-            where: { id: data.studentId },
-            select: { Class: { select: { Grade: true } } }
+        
+        // Insert into database
+        await prisma.feeTransaction.create({
+            data: {
+                studentFeesId: data.studentFeesId,
+                receiptNo: data.receiptNo,  // Ensure it's a string
+                amountPaid: data.amountPaid || 0, // Default to "Unknown" if missing
+                discountGiven: data.discountGiven || 0,  // Ensure valid email
+                fineCollected: data.fineCollected || 0,  // Ensure password is always provided
+                paymentDate: data.paymentDate || new Date(),  // Optional field
+                },
         });
 
-        if (!student || !student.Class) {
-            return { success: false, error: "Student's grade not found!" };
-        }
-
-        const studentGrade = student.Class.Grade;
-
-        // ✅ Step 2: Get fee structure for the grade and term
-        const feeStructure = await prisma.feeStructure.findFirst({
-            where: {
-                grade: studentGrade, // Match the grade
-                term: data.term      // Match the term
-            },
-            select: { id: true }
-        });
-
-        if (!feeStructure) {
-            return { success: false, error: "Fee structure not found for this grade!" };
-        }
-
-        // ✅ Step 3: Insert or update fee collection with auto-filled `feeStructureId`
-        const studentFees = await prisma.studentFees.upsert({
-            where: {
-                studentId_term_fbNumber: {
-                    studentId: data.studentId,
-                    term: data.term,
-                    fbNumber: data.fbNumber
-                }
-            },
-            update: {
-                paidAmount: { increment: data.paidAmount },
-                abacusPaidAmount: { increment: data.abacusPaidAmount ?? 0 },
-                discountAmount: { increment: data.discountAmount ?? 0 },
-                fineAmount: { increment: data.fineAmount ?? 0 },
-            },
-            create: {
-                studentId: data.studentId,
-                term: data.term,
-                feeStructureId: feeStructure.id, // ✅ Auto-filled from DB
-                fbNumber: data.fbNumber,
-
-                paidAmount: data.paidAmount,
-                abacusPaidAmount: data.abacusPaidAmount,
-                discountAmount: data.discountAmount,
-                fineAmount: data.fineAmount,
-                paymentMode: data.paymentMode,
-                receivedDate: data.receivedDate,
-                receiptDate: data.receiptDate,
-            },
-        });
-
-        console.log('✅ Fee Collection Recorded:', data);
+        console.log('Fee Transaction Created:', data)
         return { success: true };
     } catch (error) {
-        console.error("❌ Error in Fee Collection:", error);
+        console.error("Error in createfeeTransaction:", error);
         return { success: false, error: (error as any).message };
     }
 };
 
-export const updateFeeCollect = async (
+
+export const updateFeesCollect = async (
     currentState: CurrentState,
-    data: FeesSchema
+    data: FeeCollectionSchema
 ) => {
     try {
-        const id = data.id;
 
-        // ✅ Step 1: Check if the homework exists
-        const existingFees = await prisma.feeStructure.findUnique({
-            where: { id: id },
-        });
+        console.log("Received Update Data:", data);
 
-        if (!existingFees) {
-            return { success: false, error: "Fees not found" };
+        // ✅ Ensure `subjectId` is always a number
+        if (!data.id) {
+            throw new Error("Invalid Fee Transaction ID");
         }
 
-        // ✅ Step 2: Update only the fields that are provided
-        const updatedFees = await prisma.feeStructure.update({
-            where: { id: id },
+        const studentFeesId = data.studentFeesId; // Now TypeScript knows subjectId is always defined
+
+        // Insert into database
+        await prisma.feeTransaction.update({
+            where: { id: data.id },
             data: {
-                gradeId: data.gradeId ?? existingFees.gradeId,
-                term: data.term ?? existingFees.term,
-                academicYear: data.academicYear ?? existingFees.academicYear,
-                startDate: data.startDate ?? existingFees.startDate,
-                dueDate: data.dueDate ?? existingFees.dueDate,
-                termFees: data.termFees ?? existingFees.termFees,
-                abacusFees: data.abacusFees ?? existingFees.abacusFees,
-            },
+                studentFeesId: data.studentFeesId,
+                receiptNo: data.receiptNo,  // Ensure it's a string
+                amountPaid: data.amountPaid || 0, // Default to "Unknown" if missing
+                discountGiven: data.discountGiven || 0,  // Ensure valid email
+                fineCollected: data.fineCollected || 0,  // Ensure password is always provided
+                paymentDate: data.paymentDate || new Date(),  // Optional field
+                },
         });
 
-        console.log("Updated Data:", updatedFees);
-        return { success: true, data: updatedFees };
+        console.log("Updated Fee Transaction:", data);
+        return { success: true, error: false };
     } catch (error) {
-        console.error("Error in update Fees:", error);
+        console.error("Error in updateFeesCollect:", error);
         return { success: false, error: (error as any).message };
     }
 };
@@ -242,7 +198,7 @@ export const createHomework = async (
         console.log('Homework Created:', data)
         return { success: true };
     } catch (error) {
-        console.error("Error in createAdmin:", error);
+        console.error("Error in createHomework:", error);
         return { success: false, error: (error as any).message };
     }
 };
@@ -721,6 +677,7 @@ export const deleteTeacher = async (
     }
 };
 
+
 // * ---------------------------------------------- STUDENT SCHEMA --------------------------------------------------------
 
 export const createStudent = async (
@@ -741,7 +698,6 @@ export const createStudent = async (
             query: data.username, // Ensure we search by the username
         });
 
-        // Check if any user with the same username exists by accessing 'data'
         if (userListResponse.data.length > 0) {
             throw new Error("Username is already taken.");
         }
@@ -754,8 +710,11 @@ export const createStudent = async (
             lastName: data.surname,
         });
 
-        // Create a new teacher record in Prisma
-        await prisma.student.create({
+        // ✨ Ensure academicYear is always filled
+        const academicYear = data.academicYear ?? "Y2024_2025"; // <- ✅ Default if undefined
+
+        // ✨ Create the Student record
+        const student = await prisma.student.create({
             data: {
                 id: user.id,
                 username: data.username,
@@ -763,20 +722,50 @@ export const createStudent = async (
                 surname: data.surname,
                 parentName: data.parentName,
                 dob: data.dob || new Date(),
-                email: data.email || null,  // If no email, set to null
+                email: data.email || null,
                 phone: data.phone,
                 address: data.address,
                 gender: data.gender,
                 img: data.img,
                 bloodType: data.bloodType,
-                classId: data.classId
-
+                classId: data.classId,
+                academicYear: academicYear, // <- ✅ Now always has a value
             },
         });
 
-        // Log success message
-        console.log(`Created Student: [Username: ${data.username}, Name: ${data.name}, Password: ${data.password}, Class ID: ${data.classId}]`);
+        // 💬 After student is created, fetch all matching fee structures
+        const matchingFeeStructures = await prisma.feeStructure.findMany({
+            where: {
+                gradeId: data.gradeId,
+                academicYear: data.academicYear, // <- ✅ Use safe academicYear
+            },
+        });
 
+        
+        console.log("Created Student:", student);
+        console.log("Matching Fee Structures:", matchingFeeStructures);
+
+        // 💬 Now map those fee structures into StudentFees
+        if (matchingFeeStructures.length > 0) {
+            await prisma.studentFees.createMany({
+                data: matchingFeeStructures.map(fee => ({
+                    studentId: student.id,
+                    feeStructureId: fee.id,
+                    academicYear: academicYear, // <- ✅ Use safe academicYear
+                    term: fee.term,
+                    paidAmount: 0,
+                    discountAmount: 0,
+                    fineAmount: 0,
+                    abacusPaidAmount: 0,
+                    receivedDate: new Date(),
+                    receiptDate: new Date(),
+                    paymentMode: "CASH",
+                })),
+            });
+        }
+
+        console.log("Student Fees Created:", matchingFeeStructures);
+        console.log("Student Fees Created Successfully!");
         return { success: true, error: false };
 
     } catch (err: any) {
@@ -789,10 +778,10 @@ export const createStudent = async (
             error: true,
             message: err.message || "An unexpected error occurred while creating the student."
         };
-
-
     }
 };
+
+
 
 
 export const updateStudent = async (

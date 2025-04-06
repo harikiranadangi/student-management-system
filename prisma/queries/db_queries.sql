@@ -299,7 +299,6 @@ SELECT * FROM "FeesCollection" WHERE "gradeId" = (SELECT "gradeId" FROM "Student
 
 SELECT * FROM "FeeStructure";
 
-SELECT * FROM "FeeStructure" WHERE "gradeId" = 1;
 
 INSERT INTO "FeesCollection" ("studentId", "gradeId", "academicYear", "term", "totalFees", "abacusFees", "startDate", "dueDate", "status")
 SELECT '17159', "gradeId", "academicYear", 4, "totalFees", "abacusFees", "startDate", "dueDate", 'Pending'
@@ -344,7 +343,27 @@ SELECT * FROM "FeesCollection" WHERE "studentId" = "16672";
 SELECT * FROM "FeesCollection" WHERE "gradeId" = 4;
 
 -- Check fees assigned to this grade
-SELECT * FROM "FeesCollection" ;
+SELECT * FROM "FeeCollection" ;
 
 -- Check fees assigned to this grade
-SELECT * FROM "Payment" ;
+SELECT * FROM "StudentFees" ;
+
+-- Check fees assigned to this grade
+SELECT * FROM "StudentFees";
+
+DELETE FROM "StudentFees";
+
+
+SELECT column_name, is_nullable, data_type
+FROM information_schema.columns
+WHERE table_name = 'StudentFees' AND column_name = 'fbNumber';
+
+SELECT * FROM "Student" WHERE id = '17159';
+
+SELECT * FROM "class" WHERE id = 1;
+
+SELECT * FROM "StudentFees" WHERE "studentId" = '17159' AND term = 'TERM_4';
+
+
+
+

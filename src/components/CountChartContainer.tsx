@@ -8,7 +8,7 @@ const CountChartContainer = async () => {
         _count: true
     })
 
-    console.log(data)
+    // console.log(data)
 
     const male = data.find( d=> d.gender === "Male")?._count || 0;
     const female = data.find( d=> d.gender === "Female")?._count || 0;

@@ -185,6 +185,7 @@ model Student {
   studentFees  StudentFees[]
   clerkStudent ClerkStudents?
   clerk_id     String?        @unique
+  academicYear AcademicYear @default(Y2024_2025)
 
   @@index([classId])
 }
@@ -277,7 +278,7 @@ model FeeStructure {
 model FeeTransaction {
   id            Int      @id @default(autoincrement())
   studentFeesId Int // ✅ Links to StudentFees
-  fbNumber      String   @unique // ✅ Unique fees book number
+  receiptNo      String   
   amountPaid    Int
   paymentDate   DateTime @default(now())
   discountGiven Int      @default(0) // ✅ New: Discount applied in this transaction
@@ -286,28 +287,27 @@ model FeeTransaction {
   studentFees StudentFees @relation(fields: [studentFeesId], references: [id]) // ✅ Links to StudentFees
 }
 
-model StudentFees {
-  id               Int         @id @default(autoincrement())
-  studentId        String // ✅ Foreign key reference to Student
-  feeStructureId   Int // ✅ Foreign key reference to FeeStructure
-  fbNumber         String      @unique // ✅ Unique fees book number
-  term             Term
-  paidAmount       Int         @default(0) // Tracks total paid
-  discountAmount   Int         @default(0) // ✅ New: Discounts applied
-  fineAmount       Int         @default(0) // ✅ New: Fines applied
-  abacusPaidAmount Int? // ✅ Allows tracking partial Abacus payments
-  receivedDate     DateTime    @default(now())
-  receiptDate      DateTime
-  paymentMode      PaymentMode @default(CASH) // ✅ New: Payment mode (CASH, ONLINE, UPI, BANK_TRANSFER)
+  model StudentFees {
+    id               Int         @id @default(autoincrement())
+    studentId        String
+    feeStructureId   Int
+    academicYear     AcademicYear      // ✅ Academic Year (eg: 2024-25)
+    term             Term
+    paidAmount       Int         @default(0)
+    discountAmount   Int         @default(0)
+    fineAmount       Int         @default(0)
+    abacusPaidAmount Int?
+    receivedDate     DateTime    @default(now())
+    receiptDate      DateTime?
+    paymentMode      PaymentMode @default(CASH)
 
-  student         Student          @relation(fields: [studentId], references: [id])
-  feeStructure    FeeStructure     @relation(fields: [feeStructureId], references: [id]) // ✅ Links to FeeStructure
-  feeTransactions FeeTransaction[] // ✅ One-to-Many: Links fee payments
+    student          Student          @relation(fields: [studentId], references: [id])
+    feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
+    feeTransactions  FeeTransaction[]
 
-  // ✅ Total Due Calculation (handled in queries)
-  // totalDue = termFees - paidAmount - discountAmount + fineAmount
-  @@unique([studentId, term, fbNumber])
-}
+    @@unique([studentId, academicYear, term]) // ✅ Unique per student, per year, per term
+  }
+
 
 enum LessonDay {
   MONDAY
@@ -336,3 +336,9 @@ enum PaymentMode {
   UPI
   BANK_TRANSFER
 }
+
+enum AcademicYear {
+  Y2024_2025
+  Y2025_2026
+}
+

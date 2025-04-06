@@ -5,7 +5,7 @@ const EventList = async ({ dateParam }: { dateParam: string | undefined }) => {
     const date = dateParam ? new Date(dateParam) : new Date()
 
     const data = await prisma.event.findMany({
-        take:3,
+        take:5,
         orderBy: { startTime: "desc"},
         where: {
             startTime: {
