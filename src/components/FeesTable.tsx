@@ -38,53 +38,59 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   const [currentStudentFee, setCurrentStudentFee] = useState<StudentFees | null>(null);
   const [amount, setAmount] = useState<number>(0);
   const [receiptDate, setReceiptDate] = useState<string>("");
-  const [receiptNumber, setReceiptNumber] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
   const [fine, setFine] = useState<number>(0);
 
   const handleCollect = (studentFee: StudentFees) => {
     setCurrentStudentFee(studentFee);
+    setAmount(0); // Reset
+    setDiscount(0); // Reset
+    setFine(0); // Reset
+    setReceiptDate(""); // Reset
     setIsModalOpen(true);
   };
 
+
   const handleFormSubmit = async () => {
     if (currentStudentFee) {
+      const updatedPaidAmount = currentStudentFee.paidAmount + amount; // 👈 add the collected amount!
       // Send API request to update fee in Prisma
       const updatedFeeData = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
-        paidAmount: currentStudentFee.paidAmount + amount - discount + fine,
+        paidAmount: updatedPaidAmount,
         discountAmount: discount,
         fineAmount: fine,
         receiptDate,
-        receiptNumber,
       };
 
       try {
-        const response = await fetch("/api/update-fee", {
+        const response = await fetch("/api/fees/update", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedFeeData),
+
         });
 
+
+
         if (response.ok) {
-          const updatedRowData = await response.json();
 
           // Update the rowData in the state with the new paidAmount and other updated values
           const updatedRow = rowData.map((fee) =>
             fee.id === currentStudentFee.id
               ? {
-                  ...fee,
-                  paidAmount: fee.paidAmount + amount - discount + fine,
-                  discountAmount: discount,
-                  fineAmount: fine,
-                  receiptDate,
-                  receiptNumber,
-                }
+                ...fee,
+                paidAmount: updatedPaidAmount, // <-- important correction
+                discountAmount: discount,
+                fineAmount: fine,
+                receiptDate,
+              }
               : fee
           );
+
           setRowData(updatedRow); // Update the table with the new data
 
           setIsModalOpen(false); // Close the modal
@@ -101,12 +107,6 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
     {
       accessorKey: "term",
       header: "Term",
-    },
-    {
-      accessorFn: (row) => row.feeStructure?.startDate,
-      id: "startDate",
-      header: "Start Date",
-      cell: ({ getValue }) => formatDate(getValue() as string),
     },
     {
       accessorFn: (row) => row.feeStructure?.dueDate,
@@ -145,7 +145,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       cell: ({ row }) => {
         const total = (row.original.feeStructure?.termFees ?? 0) + (row.original.feeStructure?.abacusFees ?? 0);
         const paid = row.original.paidAmount ?? 0;
-        const dueAmount = total - paid;
+        const dueAmount = total - paid - row.original.discountAmount + row.original.fineAmount;
         return (
           <span style={{ color: dueAmount > 0 ? "red" : "green" }}>
             ₹{dueAmount.toFixed(2)}
@@ -182,6 +182,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  
+
   return (
     <div className="p-2">
       <table className="min-w-full divide-y divide-gray-200">
@@ -210,45 +212,97 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       </table>
 
       {isModalOpen && currentStudentFee && (
-        <div className="modal">
-          <h2>Collect Fees for {currentStudentFee.studentId}</h2>
-          <form onSubmit={handleFormSubmit}>
-            <label>Amount:</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(parseFloat(e.target.value))}
-            />
-            <label>Discount:</label>
-            <input
-              type="number"
-              value={discount}
-              onChange={(e) => setDiscount(parseFloat(e.target.value))}
-            />
-            <label>Fine:</label>
-            <input
-              type="number"
-              value={fine}
-              onChange={(e) => setFine(parseFloat(e.target.value))}
-            />
-            <label>Receipt Date:</label>
-            <input
-              type="date"
-              value={receiptDate}
-              onChange={(e) => setReceiptDate(e.target.value)}
-            />
-            <label>Receipt Number:</label>
-            <input
-              type="text"
-              value={receiptNumber}
-              onChange={(e) => setReceiptNumber(e.target.value)}
-            />
-            <button type="submit">Submit</button>
-          </form>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-2xl w-96 space-y-4">
+
+            <h2 className="text-2xl font-bold text-center">Collect Fees</h2>
+
+            {/* Fee Details */}
+            <div className="space-y-1 text-sm">
+              <p><strong>Total Fees:</strong> ₹{(currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0)}</p>
+              <p><strong>Paid Amount:</strong> ₹{currentStudentFee.paidAmount || 0}</p>
+              <p><strong>Balance:</strong> ₹{
+                ((currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0) )
+                - (currentStudentFee.paidAmount || 0) - (currentStudentFee.discountAmount || 0)
+              }</p>
+            </div>
+
+            {/* Input Fields */}
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium">Amount Paying Now:</label>
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Discount:</label>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(Number(e.target.value))}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Fine:</label>
+                <input
+                  type="number"
+                  value={fine}
+                  onChange={(e) => setFine(Number(e.target.value))}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Receipt Date:</label>
+                <input
+                  type="date"
+                  value={receiptDate}
+                  onChange={(e) => setReceiptDate(e.target.value)}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+            </div>
+
+            {/* Remaining Balance after payment */}
+            <div className="text-sm text-blue-700 font-semibold">
+              Remaining after this payment: ₹{Math.max(
+                0,
+                (
+                  ((currentStudentFee.feeStructure?.termFees || 0) + (currentStudentFee.feeStructure?.abacusFees || 0) - discount)
+                  - (currentStudentFee.paidAmount + amount + fine)
+                )
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFormSubmit}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              >
+                Submit
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
+
     </div>
   );
-};
+}
 
 export default FeesTable;

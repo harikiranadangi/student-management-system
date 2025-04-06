@@ -343,12 +343,14 @@ SELECT * FROM "FeesCollection" WHERE "studentId" = "16672";
 SELECT * FROM "FeesCollection" WHERE "gradeId" = 4;
 
 -- Check fees assigned to this grade
-SELECT * FROM "FeeCollection" ;
+SELECT * FROM "FeeTransaction" ;
 
 -- Check fees assigned to this grade
 SELECT * FROM "StudentFees" ;
 
 -- Check fees assigned to this grade
+SELECT * FROM "StudentFees" WHERE "studentId" = '17131';
+
 SELECT * FROM "StudentFees";
 
 DELETE FROM "StudentFees";
@@ -364,6 +366,7 @@ SELECT * FROM "class" WHERE id = 1;
 
 SELECT * FROM "StudentFees" WHERE "studentId" = '17159' AND term = 'TERM_4';
 
+SELECT * FROM "FeeStructure" ;
 
 
 
