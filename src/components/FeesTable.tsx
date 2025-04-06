@@ -181,7 +181,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       header: "Actions",
       cell: ({ row }) => (
         <button
-          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-2 py-1 bg-LamaPurple text-black-500 rounded hover:bg-LamaPurple"
           onClick={() => handleCollect(row.original)}
         >
           Collect
