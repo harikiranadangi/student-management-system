@@ -13,7 +13,7 @@ async function fetchStudentsFromDB() {
   try {
     const students = await prisma.clerkStudents.findMany({
       where: { role: "student" },
-      take:56
+      take:50
     });
     console.log(`📢 Found ${students.length} students in DB.`);
     return students;
@@ -28,7 +28,7 @@ async function fetchTeachersFromDB() {
   try {
     const teachers = await prisma.clerkTeachers.findMany({
       where: { role: "teacher" },
-      take:43
+      take:30
     });
     console.log(`📢 Found ${teachers.length} teachers in DB.`);
     return teachers;

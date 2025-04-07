@@ -164,28 +164,29 @@ model Result {
 // * Student Related Models
 
 model Student {
-  id           String         @id
-  username     String         @unique
-  name         String
-  surname      String?
-  parentName   String
-  email        String?        @unique
-  phone        String
-  address      String
-  img          String?
-  bloodType    String?
-  gender       Gender
-  dob          DateTime
-  createdAt    DateTime       @default(now())
-  deletedAt    DateTime?
-  classId      Int
-  Attendance   Attendance[]
-  results      Result[]
-  Class        Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentFees  StudentFees[]
-  clerkStudent ClerkStudents?
-  clerk_id     String?        @unique
-  academicYear AcademicYear @default(Y2024_2025)
+  id              String              @id
+  username        String              @unique
+  name            String
+  surname         String?
+  parentName      String
+  email           String?             @unique
+  phone           String
+  address         String
+  img             String?
+  bloodType       String?
+  gender          Gender
+  dob             DateTime
+  createdAt       DateTime            @default(now())
+  deletedAt       DateTime?
+  classId         Int
+  Attendance      Attendance[]
+  results         Result[]
+  Class           Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees     StudentFees[]
+  clerkStudent    ClerkStudents?
+  clerk_id        String?             @unique
+  academicYear    AcademicYear        @default(Y2024_2025)
+  feeTransactions NewFeeTransaction[]
 
   @@index([classId])
 }
@@ -275,39 +276,47 @@ model FeeStructure {
   @@unique([gradeId, term, academicYear]) // Ensures a unique fee per term for each grade
 }
 
-model FeeTransaction {
-  id            Int      @id @default(autoincrement())
-  studentFeesId Int // ✅ Links to StudentFees
-  amountPaid    Int
-  paymentDate   DateTime @default(now())
-  discountGiven Int      @default(0) // ✅ New: Discount applied in this transaction
-  fineCollected Int      @default(0) // ✅ New: Fine collected in this transaction
+model NewFeeTransaction {
+  id             Int      @id @default(autoincrement())
+  studentId      String
+  term           String
+  studentFeesId  Int // Link to studentFees
+  amount         Float
+  discountAmount Float
+  fineAmount     Float
+  receiptDate    DateTime
+  receiptNo      String
+  paymentMode    String
+  amountPaid     Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  studentFees StudentFees @relation(fields: [studentFeesId], references: [id]) // ✅ Links to StudentFees
+  student     Student     @relation(fields: [studentId], references: [id])
+  studentFees StudentFees @relation(name: "FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
 }
 
-  model StudentFees {
-    id               Int         @id @default(autoincrement())
-    studentId        String
-    feeStructureId   Int
-    academicYear     AcademicYear      // ✅ Academic Year (eg: 2024-25)
-    receiptNo      String?
-    term             Term
-    paidAmount       Int         @default(0)
-    discountAmount   Int         @default(0)
-    fineAmount       Int         @default(0)
-    abacusPaidAmount Int?
-    receivedDate     DateTime    @default(now())
-    receiptDate      DateTime?
-    paymentMode      PaymentMode @default(CASH)
+model StudentFees {
+  id               Int          @id @default(autoincrement())
+  studentId        String
+  feeStructureId   Int
+  academicYear     AcademicYear
+  receiptNo        String?
+  term             String
+  paidAmount       Int          @default(0)
+  discountAmount   Int          @default(0)
+  fineAmount       Int          @default(0)
+  abacusPaidAmount Int?
+  receivedDate     DateTime     @default(now())
+  receiptDate      DateTime?
+  paymentMode      PaymentMode  @default(CASH)
+  remarks          String? @default("")
 
-    student          Student          @relation(fields: [studentId], references: [id])
-    feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
-    feeTransactions  FeeTransaction[]
+  student         Student             @relation(fields: [studentId], references: [id])
+  feeStructure    FeeStructure        @relation(fields: [feeStructureId], references: [id])
+  feeTransactions NewFeeTransaction[] @relation(name: "FeeTransactionStudentFees")
 
-    @@unique([studentId, academicYear, term]) // ✅ Unique per student, per year, per term
-  }
-
+  @@unique([studentId, academicYear, term])
+}
 
 enum LessonDay {
   MONDAY
@@ -341,4 +350,3 @@ enum AcademicYear {
   Y2024_2025
   Y2025_2026
 }
-

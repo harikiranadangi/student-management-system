@@ -351,9 +351,12 @@ SELECT * FROM "StudentFees" ;
 -- Check fees assigned to this grade
 SELECT * FROM "StudentFees" WHERE "studentId" = '14355';
 
-SELECT * FROM "StudentFees";
+SELECT * FROM "StudentFees";	
 
 DELETE FROM "StudentFees";
+
+-- Reset ID sequence
+ALTER SEQUENCE "StudentFees_id_seq" RESTART WITH 1;
 
 
 SELECT column_name, is_nullable, data_type
@@ -364,11 +367,23 @@ SELECT * FROM "Student" WHERE id = '17159';
 
 SELECT * FROM "class" WHERE id = 1;
 
-SELECT * FROM "StudentFees" WHERE "studentId" = '17159' AND term = 'TERM_4';
+SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
+
+SELECT * FROM "StudentFees" WHERE "studentId" = '17131';
+
+SELECT * FROM "StudentFees" WHERE "id" = 2;
 
 SELECT * FROM "FeeStructure" ;
 
-SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
+SELECT * FROM "StudentFees" WHERE "term" IS NULL;
+
+SELECT * FROM "StudentFees" WHERE term = '';
+
+SELECT DISTINCT "term" FROM "StudentFees";
 
 
+-- Check fees assigned to this grade
+SELECT * FROM "NewFeeTransaction";
 
+
+SELECT * FROM "StudentFees";

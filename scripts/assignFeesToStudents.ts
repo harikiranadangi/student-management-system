@@ -61,7 +61,7 @@ async function assignFeesToExistingStudents() {
                     fineAmount: 0,
                     abacusPaidAmount: 0,
                     receivedDate: new Date(),
-                    receiptDate: new Date(),
+                    receiptDate: null,
                     paymentMode: "CASH",
                 })),
                 skipDuplicates: true, // Avoid creating duplicates if already assigned
