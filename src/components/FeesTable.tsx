@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
 import { FeeStructure, FeeTransaction, PaymentMode } from "@prisma/client";
+import { toast } from "react-toastify";
 
 // Interface for StudentFees (same as before)
 interface StudentFees {
@@ -123,11 +124,15 @@ const handleFormSubmit = async () => {
 
         setRowData(updatedFees);
         setIsModalOpen(false);
+        // ✅ Show success toast
+        toast.success("Fee updated successfully!");
       } else {
         console.error("Failed to update fees:", await response.text());
+        toast.error(`Failed to update fees: ${response.text()}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("Something went wrong while submitting the form.");
     }
   }
 };
@@ -195,14 +200,15 @@ const handleCancel = async (fee: any) => {
       });
 
       setRowData(updatedFees);
-      alert("Fees cancelled successfully!");
+      // ✅ Show success toast
+      toast.success("Fee Cancelled successfully!");
     } else {
       console.error("Failed to cancel fees:", await response.text());
-      alert("Failed to cancel fees. Please try again.");
+      toast.error("Failed to cancel fees. Please try again.");
     }
   } catch (error) {
     console.error("Error cancelling fees:", error);
-    alert("Error cancelling fees. Please try again.");
+    toast.error("Error cancelling fees. Please try again.");
   }
 };
 ;

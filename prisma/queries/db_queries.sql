@@ -369,7 +369,7 @@ SELECT * FROM "class" WHERE id = 1;
 
 SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
 
-SELECT * FROM "StudentFees" WHERE "studentId" = '17131';
+SELECT * FROM "StudentFees" WHERE "studentId" = '16935';
 
 SELECT * FROM "StudentFees" WHERE "id" = 2;
 
@@ -383,6 +383,9 @@ SELECT DISTINCT "term" FROM "StudentFees";
 
 -- Check fees assigned to this grade
 SELECT * FROM "FeeTransaction";
+
+SELECT * FROM "FeeTransaction" ORDER BY id DESC LIMIT 1;
+
 
 DELETE FROM "FeeTransaction";
 
