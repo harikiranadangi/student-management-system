@@ -1,97 +1,12 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { AdminSchema, ClassSchema, ExamSchema, FeeCollectionSchema, FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { AdminSchema, ClassSchema, ExamSchema,  FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
 
-// * ---------------------------------------------- ADMIN SCHEMA --------------------------------------------------------
-
-export const createFeesCollect = async (
-    currentState: CurrentState,
-    data: FeeCollectionSchema
-) => {
-    try {
-        
-        // Insert into database
-        await prisma.feeTransaction.create({
-            data: {
-                studentFeesId: data.studentFeesId,
-                receiptNo: data.receiptNo,  // Ensure it's a string
-                amountPaid: data.amountPaid || 0, // Default to "Unknown" if missing
-                discountGiven: data.discountGiven || 0,  // Ensure valid email
-                fineCollected: data.fineCollected || 0,  // Ensure password is always provided
-                paymentDate: data.paymentDate || new Date(),  // Optional field
-                },
-        });
-
-        console.log('Fee Transaction Created:', data)
-        return { success: true };
-    } catch (error) {
-        console.error("Error in createfeeTransaction:", error);
-        return { success: false, error: (error as any).message };
-    }
-};
-
-
-export const updateFeesCollect = async (
-    currentState: CurrentState,
-    data: FeeCollectionSchema
-) => {
-    try {
-
-        console.log("Received Update Data:", data);
-
-        // ✅ Ensure `subjectId` is always a number
-        if (!data.id) {
-            throw new Error("Invalid Fee Transaction ID");
-        }
-
-        const studentFeesId = data.studentFeesId; // Now TypeScript knows subjectId is always defined
-
-        // Insert into database
-        await prisma.feeTransaction.update({
-            where: { id: data.id },
-            data: {
-                studentFeesId: data.studentFeesId,
-                receiptNo: data.receiptNo,  // Ensure it's a string
-                amountPaid: data.amountPaid || 0, // Default to "Unknown" if missing
-                discountGiven: data.discountGiven || 0,  // Ensure valid email
-                fineCollected: data.fineCollected || 0,  // Ensure password is always provided
-                paymentDate: data.paymentDate || new Date(),  // Optional field
-                },
-        });
-
-        console.log("Updated Fee Transaction:", data);
-        return { success: true, error: false };
-    } catch (error) {
-        console.error("Error in updateFeesCollect:", error);
-        return { success: false, error: (error as any).message };
-    }
-};
-
-export const deleteFeeCollect = async (
-    currentState: CurrentState,
-    data: FormData
-) => {
-    const id = data.get("id") as string;
-    console.log("Receved Fees Id:", data)
-
-    try {
-        await prisma.feeStructure.delete({
-            where: { id: parseInt(id) },
-        });
-
-        console.log('Deleted Fees:', data)
-        // revalidatePath("/list/admin")
-        return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
-    }
-};
 
 // * ---------------------------------------------- FEES SCHEMA --------------------------------------------------------
 
@@ -757,7 +672,7 @@ export const createStudent = async (
                     discountAmount: 0,
                     fineAmount: 0,
                     abacusPaidAmount: 0,
-                    receivedDate: new Date(),
+                    receivedDate: null,
                     receiptDate: new Date(),
                     paymentMode: "CASH",
                 })),

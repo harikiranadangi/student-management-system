@@ -18,7 +18,6 @@ export type FormContainerProps = {
     | "fees"
     | "admin"
     | "fees_structure"
-    | "feecollect"
     | "homeworks";
     type: "create" | "update" | "delete";
     data?: any;
@@ -66,38 +65,38 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: teacherSubjects }
                 break;
 
-                case "student":
-                    const studentGrades = await prisma.grade.findMany({
-                        select: { id: true, level: true },
-                    });
-                
-                    const studentClasses = await prisma.class.findMany({
-                        include: {
-                            _count: { select: { students: true } },
-                            Grade: true, // ✅ important
-                        },
-                    });
-                
-                    const studentFees = await prisma.feeStructure.findMany({
-                        select: {
-                            id: true,
-                            gradeId: true,
-                            term: true,
-                            academicYear: true,
-                            startDate: true,
-                            dueDate: true,
-                            termFees: true,
-                            abacusFees: true,
-                        },
-                    });
-                
-                    relatedData = {
-                        classes: studentClasses,
-                        grades: studentGrades,
-                        feeStructures: studentFees, // ✅ added
-                    };
-                    break;
-                
+            case "student":
+                const studentGrades = await prisma.grade.findMany({
+                    select: { id: true, level: true },
+                });
+
+                const studentClasses = await prisma.class.findMany({
+                    include: {
+                        _count: { select: { students: true } },
+                        Grade: true, // ✅ important
+                    },
+                });
+
+                const studentFees = await prisma.feeStructure.findMany({
+                    select: {
+                        id: true,
+                        gradeId: true,
+                        term: true,
+                        academicYear: true,
+                        startDate: true,
+                        dueDate: true,
+                        termFees: true,
+                        abacusFees: true,
+                    },
+                });
+
+                relatedData = {
+                    classes: studentClasses,
+                    grades: studentGrades,
+                    feeStructures: studentFees, // ✅ added
+                };
+                break;
+
 
             case "exam":
 
@@ -165,23 +164,6 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { grades: gradeFees, fees: feesGrades };
                 break;
 
-            case "feecollect":
-                // Fetch students and fee structures as you already do
-                const students = await prisma.student.findMany({
-                    select: { id: true, name: true, surname: true }, // ✅ Student ID & Name
-                });
-
-                const feeStructure = await prisma.feeStructure.findMany({
-                    select: {
-                        id: true, // ✅ Fee Structure ID
-                        termFees: true,
-                        abacusFees: true,
-                        startDate: true,
-                        dueDate: true,
-                    },
-                });
-                relatedData = { students, feeStructure };
-                break;
             default:
 
 

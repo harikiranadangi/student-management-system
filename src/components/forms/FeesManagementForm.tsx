@@ -88,18 +88,19 @@ const FeesManagementForm = ({
             <div className="flex flex-wrap justify-between gap-4">
                 <div className="flex flex-col w-full gap-2 md:w-1/4">
                     {/* Academic Year Selection Dropdown */}
+
+                    {/* Term Input */}
                     <label className="text-sm font-medium text-gray-500">Academic Year</label>
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-                        {...register("academicYear")}
+                        {...register("academicYear", { required: "Term is required" })}
                         defaultValue={data?.academicYear}
                     >
-                        <option value="">Select Academic Year</option>
-                        {["2024-25", "2025-26"].map((year) => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
+                        <option value="">Academic Year</option>
+                        <option value="Y2024_2025">2024-25</option>
+                        <option value="Y2024_2025">2025-26</option>
                     </select>
-                    {errors?.academicYear && <p className="text-xs text-red-400">{errors.academicYear.message}</p>}
+                    {errors.academicYear && <p className="text-xs text-red-400">{errors.academicYear.message}</p>}
 
                     <label className="text-sm font-medium text-gray-500">Grade</label>
                     <select

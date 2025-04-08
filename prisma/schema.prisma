@@ -12,11 +12,11 @@ model Admin {
   username   String    @unique
   password   String
   full_name  String
-  parentName String? // Now optional
-  gender     String? // Now optional
+  parentName String?
+  gender     String?
   email      String?
-  phone      String? // Now optional
-  address    String? // Now optional
+  phone      String?
+  address    String?
   dob        DateTime?
   img        String?
   bloodType  String?
@@ -27,15 +27,15 @@ model Admin {
 model Grade {
   id           Int            @id @default(autoincrement())
   level        String         @unique
-  classes      Class[]
+  feestructure FeeStructure[] @relation("GradeToFeesStructure")
   Homework     Homework[]
-  feestructure FeeStructure[] @relation("GradeToFeesStructure") // ✅ One-to-many relation
+  classes      Class[]
 }
 
 model Class {
   id           Int            @id @default(autoincrement())
   name         String         @unique(map: "Class_name_key")
-  supervisorId String?        @unique // * Ensures one teacher per class // * ❌ Remove @unique here to allow multiple classes to have the same supervisor
+  supervisorId String?        @unique
   gradeId      Int
   Announcement Announcement[]
   attendance   Attendance[]
@@ -45,7 +45,7 @@ model Class {
   lessons      Lesson[]
   students     Student[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  Teacher      Teacher?       @relation(name: "ClassToTeacher", fields: [supervisorId], references: [id]) // One-to-One relation.
+  Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -69,8 +69,6 @@ model Lesson {
   @@index([subjectId])
   @@index([teacherId])
 }
-
-// * Message Related Models
 
 model Announcement {
   id          Int      @id @default(autoincrement())
@@ -133,15 +131,11 @@ model ExamSubject {
 model Homework {
   id          Int      @id @default(autoincrement())
   description String
-  date        DateTime @default(now()) @db.Timestamptz // ✅ Store with timezone
+  date        DateTime @default(now()) @db.Timestamptz(6)
   classId     Int
-  Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
   gradeId     Int
-  Grade       Grade    @relation(fields: [gradeId], references: [id]) // ✅ Ensure relation is defined
-
-  // subjectId   Int
-  // Subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  // @@index([subjectId])
+  Class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Grade       Grade    @relation(fields: [gradeId], references: [id])
 
   @@index([classId])
 }
@@ -161,45 +155,43 @@ model Result {
   @@index([subjectId])
 }
 
-// * Student Related Models
-
 model Student {
-  id              String              @id
-  username        String              @unique
+  id              String           @id
+  username        String           @unique
   name            String
   surname         String?
   parentName      String
-  email           String?             @unique
+  email           String?          @unique
   phone           String
   address         String
   img             String?
   bloodType       String?
   gender          Gender
   dob             DateTime
-  createdAt       DateTime            @default(now())
+  createdAt       DateTime         @default(now())
   deletedAt       DateTime?
   classId         Int
+  clerk_id        String?          @unique
+  academicYear    AcademicYear     @default(Y2024_2025)
   Attendance      Attendance[]
-  results         Result[]
-  Class           Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentFees     StudentFees[]
   clerkStudent    ClerkStudents?
-  clerk_id        String?             @unique
-  academicYear    AcademicYear        @default(Y2024_2025)
-  feeTransactions NewFeeTransaction[]
+  feeTransactions FeeTransaction[]
+  results         Result[]
+  Class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees     StudentFees[]
 
   @@index([classId])
 }
 
 model ClerkStudents {
-  clerk_id  String   @id @db.VarChar // Keep as primary key
-  user_id   String?  @unique // New column for Clerk User ID
+  clerk_id  String   @id @db.VarChar
+  user_id   String?  @unique
   username  String   @unique
   password  String   @db.VarChar
   full_name String   @db.VarChar
   role      String   @default("student") @db.VarChar
-  studentId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't students)
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade) // Inverse Relation
+  studentId String?  @unique @db.VarChar
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Subject {
@@ -207,13 +199,10 @@ model Subject {
   name      String           @unique
   createdAt DateTime         @default(now())
   exams     ExamSubject[]
-  // homeworks Homework[]
   lessons   Lesson[]
   results   Result[]
   teachers  TeacherSubject[]
 }
-
-// * Teacher Related Models
 
 model Teacher {
   id            String           @id
@@ -230,12 +219,12 @@ model Teacher {
   deletedAt     DateTime?
   supervisor    Boolean          @default(false)
   dob           DateTime?
+  classId       String?          @unique
+  clerk_id      String?          @unique
+  ClerkTeachers ClerkTeachers?
   lessons       Lesson[]
   subjects      TeacherSubject[]
-  class         Class?           @relation(name: "ClassToTeacher") // Opposite relation defined WITHOUT fields/references
-  classId       String?          @unique
-  ClerkTeachers ClerkTeachers?
-  clerk_id      String?          @unique
+  class         Class?           @relation("ClassToTeacher")
 }
 
 model TeacherSubject {
@@ -248,72 +237,66 @@ model TeacherSubject {
 }
 
 model ClerkTeachers {
-  clerk_id  String   @id @db.VarChar // Keep as primary key
-  user_id   String?  @unique // New column for Clerk User ID
+  clerk_id  String   @id @db.VarChar
+  user_id   String?  @unique
   username  String   @unique
   password  String   @db.VarChar
   full_name String   @db.VarChar
   role      String   @default("teacher") @db.VarChar
-  teacherId String?  @unique @db.VarChar // Foreign Key (Optional, in case some users aren't teachers)
-  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade) // Inverse Relation
+  teacherId String?  @unique @db.VarChar
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
-// * Fees Related Models
-
 model FeeStructure {
-  id           Int      @id @default(autoincrement())
-  gradeId      Int // ✅ Foreign key reference to Grade
-  term         Term
-  academicYear String
+  id           Int           @id @default(autoincrement())
+  gradeId      Int
   startDate    DateTime
   dueDate      DateTime
   termFees     Int
   abacusFees   Int?
+  term         Term
+  academicYear AcademicYear  @default(Y2024_2025)
+  grade        Grade         @relation("GradeToFeesStructure", fields: [gradeId], references: [id])
+  studentFees  StudentFees[]
 
-  studentFees StudentFees[] // ✅ One-to-Many: Links fee payments
-  grade       Grade         @relation("GradeToFeesStructure", fields: [gradeId], references: [id]) // ✅ gradeId references Grade
-
-  @@unique([gradeId, term, academicYear]) // Ensures a unique fee per term for each grade
+  @@unique([gradeId, term, academicYear])
 }
 
-model NewFeeTransaction {
-  id             Int      @id @default(autoincrement())
+model FeeTransaction {
+  id             Int         @id @default(autoincrement())
   studentId      String
   term           String
-  studentFeesId  Int // Link to studentFees
-  amount         Float
-  discountAmount Float
-  fineAmount     Float
+  studentFeesId  Int
+  amount         Float       @default(0)
+  discountAmount Float       @default(0)
+  fineAmount     Float       @default(0)
   receiptDate    DateTime
   receiptNo      String
-  paymentMode    String
-  amountPaid     Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  student     Student     @relation(fields: [studentId], references: [id])
-  studentFees StudentFees @relation(name: "FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
+  paymentMode    PaymentMode @default(CASH)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
+  student        Student     @relation(fields: [studentId], references: [id])
 }
 
 model StudentFees {
-  id               Int          @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   studentId        String
+  paidAmount       Int              @default(0)
+  abacusPaidAmount Int?
   feeStructureId   Int
-  academicYear     AcademicYear
+  discountAmount   Int              @default(0)
+  fineAmount       Int              @default(0)
+  receiptDate      DateTime?
+  receivedDate     DateTime?        @default(now())
+  paymentMode      PaymentMode      @default(CASH)
+  academicYear     AcademicYear     @default(Y2024_2025)
   receiptNo        String?
   term             String
-  paidAmount       Int          @default(0)
-  discountAmount   Int          @default(0)
-  fineAmount       Int          @default(0)
-  abacusPaidAmount Int?
-  receivedDate     DateTime     @default(now())
-  receiptDate      DateTime?
-  paymentMode      PaymentMode  @default(CASH)
-  remarks          String? @default("")
-
-  student         Student             @relation(fields: [studentId], references: [id])
-  feeStructure    FeeStructure        @relation(fields: [feeStructureId], references: [id])
-  feeTransactions NewFeeTransaction[] @relation(name: "FeeTransactionStudentFees")
+  remarks          String?          @default("")
+  feeTransactions  FeeTransaction[] @relation("FeeTransactionStudentFees")
+  feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
+  student          Student          @relation(fields: [studentId], references: [id])
 
   @@unique([studentId, academicYear, term])
 }

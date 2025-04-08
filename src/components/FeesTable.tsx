@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
-import { FeeStructure, NewFeeTransaction } from "@prisma/client";
+import { FeeStructure, FeeTransaction, PaymentMode } from "@prisma/client";
 
 // Interface for StudentFees (same as before)
 interface StudentFees {
@@ -18,7 +18,7 @@ interface StudentFees {
   receiptDate: string | null;
   paymentMode: string;
   feeStructure: FeeStructure;
-  feeTransactions: NewFeeTransaction[];
+  feeTransactions: FeeTransaction[];
   collectedAmount?: number;
   receiptNo?: string | null;
   remarks?: string | null;
@@ -57,76 +57,23 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   };
 
 // * * Submit Form **
-  const handleFormSubmit = async () => {
-    if (currentStudentFee) {
-      const updatedPaidAmount = currentStudentFee.paidAmount + amount;
+const handleFormSubmit = async () => {
+  if (currentStudentFee) {
+    const updatedPaidAmount = currentStudentFee.paidAmount + amount;
 
-      const updatedFeeData = {
-        studentId: currentStudentFee.studentId,
-        term: currentStudentFee.term,
-        paidAmount: updatedPaidAmount,
-        discountAmount: discount,
-        fineAmount: fine,
-        receiptDate,
-        receiptNo,
-        remarks,
-      };
-
-      try {
-        const response = await fetch("/api/fees/update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedFeeData),
-        });
-
-        if (response.ok) {
-          const updatedFees = rowData.map((fee) => {
-            if (fee.studentId === currentStudentFee.studentId) {
-              // Update receiptNo for all terms (whether it was empty or already existing)
-              return {
-                ...fee,
-                receiptNo,
-                ...(fee.term === currentStudentFee.term && {
-                  paidAmount: updatedPaidAmount,
-                  discountAmount: discount,
-                  fineAmount: fine,
-                  receiptDate,
-                  remarks,
-                }),
-              };
-            }
-            return fee;
-          });
-
-          setRowData(updatedFees);
-          setIsModalOpen(false);
-        } else {
-          console.error("Failed to update fees:", await response.text());
-        }
-      } catch (error) {
-        console.error("Error submitting form:", error);
-      }
-    }
-  };
-
-  const handleCancel = async (fee: any) => {
-    const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
-    if (!isConfirmed) return;
-  
     const updatedFeeData = {
-      studentId: fee.studentId,
-      term: fee.term,
-      paidAmount: 0,
-      discountAmount: 0,
-      fineAmount: 0,
-      receiptDate: null,
-      receiptNo: null,
-      remarks: "Cancelled",
+      studentId: currentStudentFee.studentId,
+      term: currentStudentFee.term,
+      paidAmount: updatedPaidAmount,
+      discountAmount: discount,
+      fineAmount: fine,
+      receiptDate,
+      receiptNo,
+      remarks,
     };
-  
+
     try {
+      // 1. Update the student fees
       const response = await fetch("/api/fees/update", {
         method: "POST",
         headers: {
@@ -134,35 +81,131 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
         },
         body: JSON.stringify(updatedFeeData),
       });
-  
+
       if (response.ok) {
-        // Update the UI
-        const updatedFees = rowData.map((item) => {
-          if (item.studentId === fee.studentId && item.term === fee.term) {
+        
+        // 2. Create a new FeeTransaction
+        await fetch("/api/fees/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            studentId: currentStudentFee.studentId,
+            term: currentStudentFee.term,
+            studentFeesId: currentStudentFee.id,  // Assuming you have 'id' in currentStudentFee
+            amount,
+            discountAmount: discount,
+            fineAmount: fine,
+            receiptDate,
+            receiptNo,
+            paymentMode: PaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
+          }),
+        });
+        
+        // 3. Update UI state
+        const updatedFees = rowData.map((fee) => {
+          if (fee.studentId === currentStudentFee.studentId) {
             return {
-              ...item,
-              paidAmount: 0,
-              discountAmount: 0,
-              fineAmount: 0,
-              receiptDate: null,
-              receiptNo: null,
-              remarks: "Cancelled",
+              ...fee,
+              receiptNo,
+              ...(fee.term === currentStudentFee.term && {
+                paidAmount: updatedPaidAmount,
+                discountAmount: discount,
+                fineAmount: fine,
+                receiptDate,
+                remarks,
+              }),
             };
           }
-          return item;
+          return fee;
         });
-  
+
         setRowData(updatedFees);
-        alert("Fees cancelled successfully!");
+        setIsModalOpen(false);
       } else {
-        console.error("Failed to cancel fees:", await response.text());
-        alert("Failed to cancel fees. Please try again.");
+        console.error("Failed to update fees:", await response.text());
       }
     } catch (error) {
-      console.error("Error cancelling fees:", error);
-      alert("Error cancelling fees. Please try again.");
+      console.error("Error submitting form:", error);
     }
+  }
+};
+
+
+const handleCancel = async (fee: any) => {
+  const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
+  if (!isConfirmed) return;
+
+  const updatedFeeData = {
+    studentId: fee.studentId,
+    term: fee.term,
+    paidAmount: 0,
+    discountAmount: 0,
+    fineAmount: 0,
+    receiptDate: null,
+    receiptNo: null,
+    remarks: "Cancelled",
   };
+
+  try {
+    // 1. Update the student fees
+    const response = await fetch("/api/fees/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedFeeData),
+    });
+
+    if (response.ok) {
+      // 2. Create a FeeTransaction for the cancellation
+      await fetch("/api/fees/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId: fee.studentId,
+          term: fee.term,
+          studentFeesId: fee.id,          // assuming fee object has id
+          amount: 0,                      // No payment
+          discountAmount: 0,
+          fineAmount: 0,
+          receiptDate: new Date(),         // Use today's date or null
+          receiptNo: `CANCEL-${Date.now()}`, // Unique cancel receipt number (optional)
+          paymentMode: "CANCELLED",        // Special payment mode you can define
+        }),
+      });
+
+      // 3. Update the UI
+      const updatedFees = rowData.map((item) => {
+        if (item.studentId === fee.studentId && item.term === fee.term) {
+          return {
+            ...item,
+            paidAmount: 0,
+            discountAmount: 0,
+            fineAmount: 0,
+            receiptDate: null,
+            receiptNo: null,
+            remarks: "Cancelled",
+          };
+        }
+        return item;
+      });
+
+      setRowData(updatedFees);
+      alert("Fees cancelled successfully!");
+    } else {
+      console.error("Failed to cancel fees:", await response.text());
+      alert("Failed to cancel fees. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error cancelling fees:", error);
+    alert("Error cancelling fees. Please try again.");
+  }
+};
+;
   
   
   

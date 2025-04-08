@@ -60,7 +60,7 @@ async function assignFeesToExistingStudents() {
                     discountAmount: 0,
                     fineAmount: 0,
                     abacusPaidAmount: 0,
-                    receivedDate: new Date(),
+                    receivedDate: undefined,
                     receiptDate: null,
                     paymentMode: "CASH",
                 })),

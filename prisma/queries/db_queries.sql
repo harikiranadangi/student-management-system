@@ -381,9 +381,12 @@ SELECT * FROM "StudentFees" WHERE term = '';
 
 SELECT DISTINCT "term" FROM "StudentFees";
 
-
 -- Check fees assigned to this grade
-SELECT * FROM "NewFeeTransaction";
+SELECT * FROM "FeeTransaction";
 
+DELETE FROM "FeeTransaction";
+
+-- Reset ID sequence
+ALTER SEQUENCE "FeeTransaction_id_seq" RESTART WITH 1;
 
 SELECT * FROM "StudentFees";
