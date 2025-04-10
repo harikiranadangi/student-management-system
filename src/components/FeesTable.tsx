@@ -1,8 +1,9 @@
 "use client";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import React, { useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
-import { FeeStructure, FeeTransaction, PaymentMode } from "@prisma/client";
+import { FeeStructure, FeeTransaction, PaymentMode, Term } from "@prisma/client";
 import { toast } from "react-toastify";
 
 // Interface for StudentFees (same as before)
@@ -49,175 +50,215 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
 
   const handleCollect = (studentFee: StudentFees) => {
     setCurrentStudentFee(studentFee);
-    setAmount(0); // Reset
+    setAmount(studentFee.feeStructure.termFees); // Reset
     setDiscount(0); // Reset
     setFine(0); // Reset
     setReceiptDate(""); // Reset
-    setRemarks("")
+    setReceiptNo(""); // Reset
+    setRemarks(`Collected Fees for ${studentFee.term} on ${new Date().toLocaleDateString()}`); // Properly combine receiptNo and term
     setIsModalOpen(true);
   };
 
-// * * Submit Form **
-const handleFormSubmit = async () => {
-  if (currentStudentFee) {
-    const updatedPaidAmount = currentStudentFee.paidAmount + amount;
+  // * * Submit Form **
+  const handleFormSubmit = async () => {
+    if (currentStudentFee) {
+      const updatedPaidAmount = currentStudentFee.paidAmount + amount;
 
-    const updatedFeeData = {
-      studentId: currentStudentFee.studentId,
-      term: currentStudentFee.term,
-      paidAmount: updatedPaidAmount,
-      discountAmount: discount,
-      fineAmount: fine,
-      receiptDate,
-      receiptNo,
-      remarks,
-    };
+      const updatedFeeData = {
+        studentId: currentStudentFee.studentId,
+        term: currentStudentFee.term,
+        paidAmount: updatedPaidAmount,
+        discountAmount: discount,
+        fineAmount: fine,
+        receiptDate,
+        receiptNo,
+        remarks,
+      };
 
-    try {
-      // 1. Update the student fees
-      const response = await fetch("/api/fees/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedFeeData),
-      });
-
-      if (response.ok) {
-        
-        // 2. Create a new FeeTransaction
-        await fetch("/api/fees/transactions", {
+      try {
+        // 1. Update the student fees
+        const response = await fetch("/api/fees/update", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            studentId: currentStudentFee.studentId,
-            term: currentStudentFee.term,
-            studentFeesId: currentStudentFee.id,  // Assuming you have 'id' in currentStudentFee
-            amount,
-            discountAmount: discount,
-            fineAmount: fine,
-            receiptDate,
-            receiptNo,
-            paymentMode: PaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
-          }),
+          body: JSON.stringify(updatedFeeData),
         });
-        
-        // 3. Update UI state
-        const updatedFees = rowData.map((fee) => {
-          if (fee.studentId === currentStudentFee.studentId) {
-            return {
-              ...fee,
+
+        if (response.ok) {
+
+          // 2. Create a new FeeTransaction
+          await fetch("/api/fees/transactions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              studentId: currentStudentFee.studentId,
+              term: currentStudentFee.term,
+              studentFeesId: currentStudentFee.id,  // Assuming you have 'id' in currentStudentFee
+              amount,
+              discountAmount: discount,
+              fineAmount: fine,
+              receiptDate,
               receiptNo,
-              ...(fee.term === currentStudentFee.term && {
+              paymentMode: PaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
+              remarks
+            }),
+          });
+
+          // 3. Update UI state
+          const updatedFees = rowData.map((fee) => {
+            if (fee.studentId === currentStudentFee.studentId && fee.term === currentStudentFee.term) {
+              return {
+                ...fee,
                 paidAmount: updatedPaidAmount,
                 discountAmount: discount,
                 fineAmount: fine,
                 receiptDate,
+                receiptNo,
                 remarks,
-              }),
+              };
+            }
+            return fee;
+
+          });
+
+          setRowData(updatedFees);
+          setIsModalOpen(false);
+          // ✅ Show success toast
+          toast.success("Payment collected successfully!");
+        } else {
+          const errorMessage = await response.text();
+          toast.error(`Failed to collect fees: ${errorMessage}`);
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toast.error("Something went wrong while submitting the form.");
+      }
+    }
+  };
+
+
+  const handleCancel = async (fee: any) => {
+    const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
+    if (!isConfirmed) return;
+
+    const remarks = `Cancelled Fees for ${fee.term} on ${new Date().toLocaleDateString()}`;
+
+    const updatedFeeData = {
+      studentId: fee.studentId,
+      term: fee.term,
+      paidAmount: 0,
+      discountAmount: 0,
+      fineAmount: 0,
+      receiptDate: null,
+      receiptNo: receiptNo,
+      remarks,
+    };
+
+    try {
+      // 1. Update student fees
+      const response = await fetch("/api/fees/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFeeData),
+      });
+
+      if (response.ok) {
+        // 2. Create a FeeTransaction for cancellation
+        await fetch("/api/fees/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentId: fee.studentId,
+            term: fee.term,
+            studentFeesId: fee.id,
+            amount: 0,
+            discountAmount: 0,
+            fineAmount: 0,
+            receiptDate: new Date(),
+            receiptNo: receiptNo,
+            paymentMode: "CANCELLED",
+            remarks,
+          }),
+        });
+
+        // 3. Update UI
+        const updatedFees = rowData.map((item) => {
+          if (item.studentId === fee.studentId && item.term === fee.term) {
+            return {
+              ...item,
+              paidAmount: 0,
+              discountAmount: 0,
+              fineAmount: 0,
+              receiptDate: null,
+              receiptNo: receiptNo,
+              remarks,
             };
           }
-          return fee;
+          return item;
         });
 
         setRowData(updatedFees);
-        setIsModalOpen(false);
-        // ✅ Show success toast
-        toast.success("Fee updated successfully!");
+        toast.success(`Fees for ${fee.term} cancelled successfully!`);
       } else {
-        console.error("Failed to update fees:", await response.text());
-        toast.error(`Failed to update fees: ${response.text()}`);
+        console.error("Failed to cancel fees:", await response.text());
+        toast.error("Failed to cancel fees. Please try again.");
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
-      toast.error("Something went wrong while submitting the form.");
+      console.error("Error cancelling fees:", error);
+      toast.error("Error cancelling fees. Please try again.");
     }
-  }
-};
-
-
-const handleCancel = async (fee: any) => {
-  const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
-  if (!isConfirmed) return;
-
-  const updatedFeeData = {
-    studentId: fee.studentId,
-    term: fee.term,
-    paidAmount: 0,
-    discountAmount: 0,
-    fineAmount: 0,
-    receiptDate: null,
-    receiptNo: null,
-    remarks: "Cancelled",
   };
 
-  try {
-    // 1. Update the student fees
-    const response = await fetch("/api/fees/update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedFeeData),
-    });
-
-    if (response.ok) {
-      // 2. Create a FeeTransaction for the cancellation
-      await fetch("/api/fees/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          studentId: fee.studentId,
-          term: fee.term,
-          studentFeesId: fee.id,          // assuming fee object has id
-          amount: 0,                      // No payment
-          discountAmount: 0,
-          fineAmount: 0,
-          receiptDate: new Date(),         // Use today's date or null
-          receiptNo: `CANCEL-${Date.now()}`, // Unique cancel receipt number (optional)
-          paymentMode: "CANCELLED",        // Special payment mode you can define
-        }),
-      });
-
-      // 3. Update the UI
-      const updatedFees = rowData.map((item) => {
-        if (item.studentId === fee.studentId && item.term === fee.term) {
-          return {
-            ...item,
-            paidAmount: 0,
-            discountAmount: 0,
-            fineAmount: 0,
-            receiptDate: null,
-            receiptNo: null,
-            remarks: "Cancelled",
-          };
-        }
-        return item;
-      });
-
-      setRowData(updatedFees);
-      // ✅ Show success toast
-      toast.success("Fee Cancelled successfully!");
-    } else {
-      console.error("Failed to cancel fees:", await response.text());
-      toast.error("Failed to cancel fees. Please try again.");
-    }
-  } catch (error) {
-    console.error("Error cancelling fees:", error);
-    toast.error("Error cancelling fees. Please try again.");
-  }
-};
-;
-  
-  
-  
 
   // * * Columns Definition **
   // Define columns for the table using React Table's ColumnDef type
+  function getTotalFees(fee: StudentFees) {
+    const termFees = fee.feeStructure?.termFees ?? 0;
+    const abacusFees = fee.feeStructure?.abacusFees ?? 0;
+    return termFees + abacusFees;
+  }
+
+  function calculateDueAmount(fee: StudentFees) {
+    const totalFees = getTotalFees(fee);
+    const paidAmount = fee.paidAmount ?? 0;
+    const discountAmount = fee.discountAmount ?? 0;
+    const fineAmount = fee.fineAmount ?? 0;
+
+    return totalFees - paidAmount - discountAmount + fineAmount;
+  }
+
+  function getFeeStatus(fee: StudentFees) {
+    const paidAmount = fee.paidAmount ?? 0;
+    const totalFees = getTotalFees(fee);
+
+    const isCollectDisabled = paidAmount >= totalFees;
+    const isZero = paidAmount === 0;
+
+    return { paidAmount, totalFees, isCollectDisabled, isZero };
+  }
+
+
+  // Optional: Separate small button components
+  const CollectButton = ({ onClick }: { onClick: () => void }) => (
+    <button
+      className="px-2 py-1 rounded bg-green-400 text-black hover:bg-green-500 transition-all duration-300"
+      onClick={onClick}
+    >
+      Collect
+    </button>
+  );
+
+  const CancelButton = ({ onClick }: { onClick: () => void }) => (
+    <button
+      className="px-2 py-1 rounded bg-red-400 text-black hover:bg-red-500 transition-all duration-300"
+      onClick={onClick}
+    >
+      Cancel
+    </button>
+  );
 
   const columns = React.useMemo<ColumnDef<StudentFees>[]>(() => [
     {
@@ -228,40 +269,44 @@ const handleCancel = async (fee: any) => {
       accessorFn: (row) => row.feeStructure?.dueDate,
       id: "dueDate",
       header: "Due Date",
-      cell: ({ getValue }) => formatDate(getValue() as string),
+      cell: ({ cell }) => {
+        const value = cell.getValue<string>();
+        return formatDate(value);
+      },
     },
     {
       accessorFn: (row) => {
-        const termFees = row.feeStructure?.termFees ?? 0;
-        const abacusFees = row.feeStructure?.abacusFees ?? 0;
-        return termFees + abacusFees;
+        const { totalFees } = getFeeStatus(row);
+        return totalFees;
       },
       id: "totalFees",
       header: "Total Fees",
-      cell: ({ getValue }) => `₹${(getValue() as number)?.toFixed(2)}`,
+      cell: ({ cell }) => {
+        const value = cell.getValue<number>();
+        return `₹${value.toFixed(2)}`;
+      },
     },
     {
       accessorKey: "paidAmount",
       header: "Paid Amount",
-      cell: ({ getValue }) => `₹${(getValue() as number)?.toFixed(2)}`,
+      cell: ({ cell }) => {
+        const value = cell.getValue<number>();
+        return `₹${value.toFixed(2)}`;
+      },
     },
     {
       accessorKey: "discountAmount",
       header: "Discount",
-      cell: ({ getValue }) => `₹${(getValue() as number)?.toFixed(2)}`,
+      cell: ({ cell }) => {
+        const value = cell.getValue<number>();
+        return `₹${value.toFixed(2)}`;
+      },
     },
-    // {
-    //   accessorKey: "fineAmount",
-    //   header: "Fine",
-    //   cell: ({ getValue }) => `₹${(getValue() as number)?.toFixed(2)}`,
-    // },
     {
       id: "dueAmount",
       header: "Due Amount",
       cell: ({ row }) => {
-        const total = (row.original.feeStructure?.termFees ?? 0) + (row.original.feeStructure?.abacusFees ?? 0);
-        const paid = row.original.paidAmount ?? 0;
-        const dueAmount = total - paid - row.original.discountAmount + row.original.fineAmount;
+        const dueAmount = calculateDueAmount(row.original);
         return (
           <span style={{ color: dueAmount > 0 ? "red" : "green" }}>
             ₹{dueAmount.toFixed(2)}
@@ -272,44 +317,51 @@ const handleCancel = async (fee: any) => {
     {
       accessorKey: "receiptNo",
       header: "FB No",
-      cell: ({ getValue }) => (getValue() as string),
+      cell: ({ cell }) => {
+        const value = cell.getValue<string>();
+        return value;
+      },
     },
     {
-      accessorKey: "receiptDate",
+      accessorFn: (row) => row.receiptDate,
+      id: "receiptDate",
       header: "Receipt Date",
-      cell: ({ getValue }) => formatDate(getValue() as string),
+      cell: ({ cell }) => {
+        const value = cell.getValue<string>();
+        return formatDate(value);
+      },
+    },
+    {
+      accessorKey: "remarks",
+      header: "Remarks",
+      cell: ({ cell }) => {
+        const value = cell.getValue<string>();
+        return value || "-";
+      },
     },
     {
       accessorKey: "paymentMode",
       header: "Payment Mode",
     },
     {
-      accessorKey: "remarks",
-      header: "Remarks",
-    },
-    {
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <button
-            className="px-2 py-1 bg-green-400 text-black-500 rounded hover:bg-green-500"
-            onClick={() => handleCollect(row.original)}
-          >
-            Collect
-          </button>
-          <button
-            className="px-2 py-1 bg-red-400 text-white rounded hover:bg-red-500"
-            onClick={() => handleCancel(row.original)}
-          >
-            Cancel
-          </button>
-        </div>
-      ),
-    }
-    
-    
-  ], [rowData]);
+      cell: ({ row }) => {
+        const { isCollectDisabled, isZero } = getFeeStatus(row.original);
+        return (
+          <div className="flex gap-2">
+            {!isCollectDisabled && (
+              <CollectButton onClick={() => handleCollect(row.original)} />
+            )}
+            {!isZero && (
+              <CancelButton onClick={() => handleCancel(row.original)} />
+            )}
+          </div>
+        );
+      },
+    },
+  ], [handleCollect, handleCancel]);
+
 
   const table = useReactTable({
     data: rowData,
@@ -317,6 +369,7 @@ const handleCancel = async (fee: any) => {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  console.log(rowData);
 
 
   return (
@@ -384,16 +437,6 @@ const handleCancel = async (fee: any) => {
                 />
               </div>
 
-              {/* <div>
-                <label className="block text-sm font-medium">Fine:</label>
-                <input
-                  type="number"
-                  value={fine}
-                  onChange={(e) => setFine(Number(e.target.value))}
-                  className="border p-2 rounded w-full"
-                />
-              </div> */}
-
               <div>
                 <label className="block text-sm font-medium">FB No:</label>
                 <input
@@ -405,12 +448,11 @@ const handleCancel = async (fee: any) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium">Remarks:</label>
-                <input
-                  type="text"
+                <label className="block text-sm">Remarks</label>
+                <textarea
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="border p-2 rounded w-full"
+                  className="w-full border p-3 rounded"
                 />
               </div>
 
@@ -438,16 +480,11 @@ const handleCancel = async (fee: any) => {
 
             {/* Buttons */}
             <div className="flex justify-between mt-4">
-              <button
-                onClick={handleFormSubmit}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-              >
+              <button onClick={handleFormSubmit} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
                 Submit
               </button>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition"
-              >
+
+              <button onClick={() => setIsModalOpen(false)} className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition">
                 Cancel
               </button>
             </div>

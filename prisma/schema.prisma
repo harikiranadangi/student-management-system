@@ -277,6 +277,7 @@ model FeeTransaction {
   updatedAt      DateTime    @updatedAt
   studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
   student        Student     @relation(fields: [studentId], references: [id])
+  remarks        String?
 }
 
 model StudentFees {

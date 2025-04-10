@@ -369,7 +369,7 @@ SELECT * FROM "class" WHERE id = 1;
 
 SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
 
-SELECT * FROM "StudentFees" WHERE "studentId" = '16935';
+SELECT * FROM "StudentFees" WHERE "studentId" = '17159';
 
 SELECT * FROM "StudentFees" WHERE "id" = 2;
 

@@ -65,10 +65,12 @@ export async function POST(req: NextRequest) {
     }
 
     
+    const selectedId = studentFeesRecord.id; // Get the ID of the studentFees record
     const selectedPaymentMode = studentFeesRecord.paymentMode;
     const paidFees = studentFeesRecord.paidAmount; 
     const paiddiscount = studentFeesRecord.discountAmount; 
     const paidFine = studentFeesRecord.fineAmount; 
+    const remark = studentFeesRecord.remarks; 
 
     
     // Step 4: Create a new FeeTransaction linked to studentFees
@@ -76,19 +78,31 @@ export async function POST(req: NextRequest) {
       data: {
         studentId,
         term,
-        studentFeesId: studentFeesRecord.id,
+        studentFeesId: selectedId,
         amount: paidFees,
         discountAmount: paiddiscount,
         fineAmount: paidFine,
         receiptDate: receiptDate ? new Date(receiptDate) : new Date(),
         receiptNo: receiptNo ? String(receiptNo) : "",
         paymentMode: selectedPaymentMode, // Use dynamic payment mode
+        remarks: remark,
+      },
+    });
+
+    await prisma.feeTransaction.updateMany({
+      where: { studentId,
+        receiptNo: "", // Only if receiptNo was blank before
+       },
+      data: {
+        receiptNo: receiptNo ? String(receiptNo) : "",
       },
     });
 
     console.log("FeeTransaction created:", feeTransaction);
 
     return NextResponse.json({ updatedFee, feeTransaction }, { status: 200 });
+    // IMPORTANT: Now update receiptNo for all feeTransactions of the student
+
 
   } catch (error) {
     console.error("API Error:", error);
