@@ -54,7 +54,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
     setDiscount(0); // Reset
     setFine(0); // Reset
     setReceiptDate(""); // Reset
-    setReceiptNo(""); // Reset
+    setReceiptNo(receiptNo); // Reset
     setRemarks(`Collected Fees for ${studentFee.term} on ${new Date().toLocaleDateString()}`); // Properly combine receiptNo and term
     setIsModalOpen(true);
   };

@@ -8,13 +8,13 @@ export async function POST(req: NextRequest) {
     const {
       studentId,
       term,
-      paidAmount,
-      discountAmount,
-      fineAmount,
+      paidAmount = 0,
+      discountAmount = 0,
+      fineAmount = 0,
       receiptDate,
       receiptNo,
       remarks,
-      paymentMode = "CASH", // Default to CASH
+      paymentMode = "CASH",
     } = body;
 
     if (!studentId || !term) {
@@ -51,7 +51,24 @@ export async function POST(req: NextRequest) {
       data: feeDataToUpdate,
     });
 
-    return NextResponse.json({ updatedFee }, { status: 200 });
+    // ✨ Update or Insert into studentTotalFees table
+    const updatedTotalFee = await prisma.studentTotalFees.upsert({
+      where: { studentId: studentId },
+      update: {
+        totalPaidAmount: { increment: paidAmount },
+        totalDiscountAmount: { increment: discountAmount },
+        totalFineAmount: { increment: fineAmount },
+      },
+      create: {
+        studentId: studentId,
+        totalPaidAmount: paidAmount,
+        totalDiscountAmount: discountAmount,
+        totalFineAmount: fineAmount,
+        totalAbacusAmount: 0, // Add this if needed (or manage separately)
+      },
+    });
+
+    return NextResponse.json({ updatedFee, updatedTotalFee }, { status: 200 });
 
   } catch (error) {
     console.error("API Error:", error);

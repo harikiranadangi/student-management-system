@@ -1,59 +1,105 @@
-import ClassFilterDropdown from "@/components/FilterDropdown";
-import FormContainer from "@/components/FormContainer";
+import clsx from 'clsx';
+import ClassFilterDropdown, { StatusFilter } from "@/components/FilterDropdown";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
+import { getGroupedStudentFees } from "@/lib/fees";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Prisma, Student } from "@prisma/client";
+import { getTermStatus } from "@/lib/utils/getTermStatus";
+import { Prisma, Student, StudentFees, StudentTotalFees } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
+type GroupedFee = {
+  studentId: string;
+  totalPaid: number;
+  totalDiscount?: number;
+  totalFine?: number;
+
+};
+
+
 // Define types
-type StudentList = Student & { Class?: { name: string } };
+type StudentList = Student & {
+  Class?: { name: string };
+  studentFees?: StudentFees[];
+  totalFees?: StudentTotalFees | null;
+};
 
-// Function to render a table row
-const renderRow = (item: StudentList, role: string | null) => (
-  <tr
-    key={item.id}
-    className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
-  >
-    <td className="flex items-center gap-2 p-2">
-      <Image
-        src={item.img || "/profile.png"}
-        alt={item.name}
-        width={40}
-        height={40}
-        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
-      />
-      <div className="flex flex-col">
-        <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs">{item.id}</p>
-      </div>
-    </td>
+const rawGroupedFees = await getGroupedStudentFees(); // 👈 call here
 
-    <td>{item.Class?.name ?? "N/A"}</td>
-    <td className="hidden md:table-cell">{item.gender}</td>
-    <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
-    <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
-    <td className="hidden md:table-cell">{item.phone}</td>
+const renderRow = (item: StudentList, role: string | null) => {
+  const studentFee = rawGroupedFees.find(fee => fee.studentId === item.id);
 
-    <td className="p-2">
-      <div className="flex items-center gap-2">
-        <Link href={`/list/fees/collect/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
-            <Image src="/view.png" alt="View" width={16} height={16} />
-          </button>
-        </Link>
-        {role === "admin" && (
-          <FormContainer table="student" type="delete" id={item.id} />
+  const paidAmount = studentFee?.totalPaidAmount ?? 0;
+  const abacusAmount = studentFee?.totalAbacusAmount ?? 0;
+  const totalFeeAmount = studentFee?.totalFeeAmount ?? 0;
+  const discountAmount = item.totalFees?.totalDiscountAmount ?? 0; // Get discount amount
+  const dueAmount = totalFeeAmount - paidAmount - abacusAmount - discountAmount; // Calculate due amount
+  const isPreKg = item.Class?.name?.trim().toLowerCase() === "pre kg";
+
+
+  const { status, termsPaid } = getTermStatus({
+    dueAmount,
+    paidAmount,
+    abacusAmount,
+    totalFeeAmount,
+    isPreKg
+    
+  }); // or item.totalFeeAmount if dynamic // optional if you have expected fee amount
+
+  return (
+    <tr
+      key={item.id}
+      className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    >
+      <td className="flex items-center gap-2 p-2">
+        <Image
+          src={item.img || "/profile.png"}
+          alt={item.name}
+          width={40}
+          height={40}
+          className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
+        />
+        <div className="flex flex-col">
+          <h3 className="font-semibold">{item.name}</h3>
+          <p className="text-xs">{item.id}</p>
+        </div>
+      </td>
+
+      <td>{item.Class?.name ?? "N/A"}</td>
+      <td className="hidden md:table-cell">{item.gender}</td>
+      <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
+      <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
+      <td className="hidden md:table-cell">{item.phone}</td>
+      <td
+        className={clsx(
+          "hidden md:table-cell",
+          status === "Fully Paid" && "text-green-600",
+          status === "Not Paid" && "text-red-600",
+          status.includes("Term") && "text-yellow-500"
         )}
-      </div>
-    </td>
-  </tr>
-);
+      >
+        {status}
+      </td>
+
+
+      <td className="p-2">
+        <div className="flex items-center gap-2">
+          <Link href={`/list/fees/collect/${item.id}`}>
+            <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+              <Image src="/view.png" alt="View" width={16} height={16} />
+            </button>
+          </Link>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
 
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
@@ -62,10 +108,11 @@ const getColumns = (role: string | null) => [
   { header: "Parent Name", accessor: "parentName" },
   { header: "DOB", accessor: "dob" },
   { header: "Mobile", accessor: "phone" },
+  { header: "Status", accessor: "status" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const StudentListPage = async ({
+const StudentFeeListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -74,10 +121,10 @@ const StudentListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-  
+
   // Fetch user info and role
   const { role } = await fetchUserInfo();
-  
+
   const columns = getColumns(role);
 
   // Get sorting order and column from URL
@@ -103,7 +150,7 @@ const StudentListPage = async ({
     query.OR = [
       { name: { contains: queryParams.search, mode: "insensitive" } },
       { id: { contains: queryParams.search } },
-      { Class: { name: { contains: queryParams.search, mode: "insensitive" } } },
+      { Class: { name: { contains: queryParams.search, mode: "insensitive" } },},
     ];
   }
 
@@ -114,7 +161,7 @@ const StudentListPage = async ({
 
   // Fetch all grades
   const grades = await prisma.grade.findMany();
-  
+
 
   // Fetch students and count
   const [data, count] = await prisma.$transaction([
@@ -126,7 +173,10 @@ const StudentListPage = async ({
         { name: "asc" },
       ],
       where: query,
-      include: { Class: true },
+      include: {
+        Class: true,
+        totalFees: true,  // Include student fees for each student
+      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
@@ -141,11 +191,8 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <ClassFilterDropdown
-            classes={classes}  // ✅ Filtered dynamically based on selected grade
-            grades={grades}
-            basePath="/list/students"
-          />
+          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect"/>
+          <StatusFilter basePath="/list/collect" />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
             <div className="flex items-center self-end gap-4">
@@ -153,9 +200,9 @@ const StudentListPage = async ({
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              {role === "admin" && (
+              {/* {role === "admin" && (
                 <FormContainer table="student" type="create" />
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -168,4 +215,4 @@ const StudentListPage = async ({
   );
 };
 
-export default StudentListPage;
+export default StudentFeeListPage;

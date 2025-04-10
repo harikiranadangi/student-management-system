@@ -106,3 +106,40 @@ const DateFilter = ({ basePath }: { basePath: string }) => {
 };
 
 export { DateFilter };
+
+type StatusFilterProps = { basePath: string };
+
+export const StatusFilter = ({ basePath }: StatusFilterProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = event.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newStatus) {
+      params.set("status", newStatus);
+    } else {
+      params.delete("status");
+    }
+
+    router.push(`${basePath}?${params.toString()}`, { scroll: false });
+  };
+
+  return (
+    <div className="relative w-full md:w-auto mt-4 md:mt-0">
+      <select
+        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        onChange={handleStatusChange}
+        value={searchParams.get("status") || ""}
+      >
+        <option value="">Status</option>
+        <option value="Fully Paid">Fully Paid</option>
+        <option value="3 Terms Paid">3 Terms Paid</option>
+        <option value="2 Terms Paid">2 Terms Paid</option>
+        <option value="1 Term Paid">1 Term Paid</option>
+        <option value="Not Paid">Not Paid</option>
+      </select>
+    </div>
+  );
+};

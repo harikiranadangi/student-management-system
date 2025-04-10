@@ -179,6 +179,7 @@ model Student {
   results         Result[]
   Class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees     StudentFees[]
+  totalFees StudentTotalFees[]? 
 
   @@index([classId])
 }
@@ -301,6 +302,18 @@ model StudentFees {
 
   @@unique([studentId, academicYear, term])
 }
+
+model StudentTotalFees {
+  id                Int     @id @default(autoincrement())
+  studentId         String     @unique
+  totalPaidAmount   Float   @default(0)
+  totalDiscountAmount Float @default(0)
+  totalFineAmount   Float   @default(0)
+  totalAbacusAmount Float   @default(0)
+
+  student           Student @relation(fields: [studentId], references: [id])
+}
+
 
 enum LessonDay {
   MONDAY

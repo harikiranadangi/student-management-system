@@ -393,3 +393,5 @@ DELETE FROM "FeeTransaction";
 ALTER SEQUENCE "FeeTransaction_id_seq" RESTART WITH 1;
 
 SELECT * FROM "StudentFees";
+
+SELECT * FROM "StudentTotalFees";
