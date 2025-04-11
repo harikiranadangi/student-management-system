@@ -67,7 +67,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       const updatedFeeData = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
-        paidAmount: updatedPaidAmount,
+        paidAmount: amount,
         discountAmount: discount,
         fineAmount: fine,
         receiptDate,
@@ -112,7 +112,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
             if (fee.studentId === currentStudentFee.studentId && fee.term === currentStudentFee.term) {
               return {
                 ...fee,
-                paidAmount: updatedPaidAmount,
+                paidAmount: amount + fee.paidAmount,
                 discountAmount: discount,
                 fineAmount: fine,
                 receiptDate,
@@ -128,6 +128,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
           setIsModalOpen(false);
           // ✅ Show success toast
           toast.success("Payment collected successfully!");
+          
+
         } else {
           const errorMessage = await response.text();
           toast.error(`Failed to collect fees: ${errorMessage}`);
@@ -143,48 +145,43 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   const handleCancel = async (fee: any) => {
     const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
     if (!isConfirmed) return;
-
+  
     const remarks = `Cancelled Fees for ${fee.term} on ${new Date().toLocaleDateString()}`;
-
-    const updatedFeeData = {
-      studentId: fee.studentId,
-      term: fee.term,
-      paidAmount: 0,
-      discountAmount: 0,
-      fineAmount: 0,
-      receiptDate: null,
-      receiptNo: receiptNo,
-      remarks,
-    };
-
+  
     try {
-      // 1. Update student fees
+      // 1. Cancel all FeeTransactions first
+      const cancelTransactionResponse = await fetch("/api/fees/cancel-transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: fee.studentId,
+          term: fee.term,
+        }),
+      });
+  
+      if (!cancelTransactionResponse.ok) {
+        throw new Error("Failed to cancel fee transactions");
+      }
+  
+      // 2. Update StudentFees
+      const updatedFeeData = {
+        studentId: fee.studentId,
+        term: fee.term,
+        paidAmount: 0,
+        discountAmount: 0,
+        fineAmount: 0,
+        receiptDate: null,
+        receiptNo: null,
+        remarks,
+      };
+  
       const response = await fetch("/api/fees/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFeeData),
       });
-
+  
       if (response.ok) {
-        // 2. Create a FeeTransaction for cancellation
-        await fetch("/api/fees/transactions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            studentId: fee.studentId,
-            term: fee.term,
-            studentFeesId: fee.id,
-            amount: 0,
-            discountAmount: 0,
-            fineAmount: 0,
-            receiptDate: new Date(),
-            receiptNo: receiptNo,
-            paymentMode: "CANCELLED",
-            remarks,
-          }),
-        });
-
-        // 3. Update UI
         const updatedFees = rowData.map((item) => {
           if (item.studentId === fee.studentId && item.term === fee.term) {
             return {
@@ -193,24 +190,27 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
               discountAmount: 0,
               fineAmount: 0,
               receiptDate: null,
-              receiptNo: receiptNo,
+              receiptNo: null,
               remarks,
             };
           }
           return item;
         });
-
+  
         setRowData(updatedFees);
         toast.success(`Fees for ${fee.term} cancelled successfully!`);
+  
       } else {
         console.error("Failed to cancel fees:", await response.text());
         toast.error("Failed to cancel fees. Please try again.");
       }
+  
     } catch (error) {
       console.error("Error cancelling fees:", error);
       toast.error("Error cancelling fees. Please try again.");
     }
   };
+  
 
 
   // * * Columns Definition **
@@ -399,7 +399,9 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
         </tbody>
       </table>
 
+
       {isModalOpen && currentStudentFee && (
+        
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-2xl w-96 space-y-4">
 
@@ -424,7 +426,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="border p-2 rounded w-full"
-                />
+                  />
               </div>
 
               <div>
@@ -434,7 +436,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
                   className="border p-2 rounded w-full"
-                />
+                  />
               </div>
 
               <div>
@@ -444,7 +446,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={receiptNo}
                   onChange={(e) => setReceiptNo(e.target.value)}
                   className="border p-2 rounded w-full"
-                />
+                  />
               </div>
 
               <div>
@@ -453,7 +455,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   className="w-full border p-3 rounded"
-                />
+                  />
               </div>
 
               <div>
@@ -463,7 +465,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={receiptDate}
                   onChange={(e) => setReceiptDate(e.target.value)}
                   className="border p-2 rounded w-full"
-                />
+                  />
               </div>
             </div>
 
@@ -479,15 +481,28 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-between mt-4">
-              <button onClick={handleFormSubmit} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+          <div className="flex justify-between mt-4">
+            {(
+              (currentStudentFee.feeStructure?.termFees || 0) +
+              (currentStudentFee.feeStructure?.abacusFees || 0) -
+              (currentStudentFee.paidAmount || 0) -
+              (currentStudentFee.discountAmount || 0)
+            ) > 0 && (
+              <button
+                onClick={handleFormSubmit}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              >
                 Submit
               </button>
+            )}
 
-              <button onClick={() => setIsModalOpen(false)} className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition">
-                Cancel
-              </button>
-            </div>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition"
+            >
+              Cancel
+            </button>
+          </div>
           </div>
         </div>
       )}
