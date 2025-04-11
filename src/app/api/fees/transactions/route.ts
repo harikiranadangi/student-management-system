@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       receiptDate,
       receiptNo,
       remarks,
-      paymentMode = PaymentMode, // Default to CASH if not provided
+      paymentMode , // Default to CASH if not provided
     } = body;
 
     if (!studentId || !term) {
