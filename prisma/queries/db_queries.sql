@@ -30,7 +30,7 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 SELECT id, username, clerk_id FROM "Student" WHERE clerk_id = 'user_2u7uazlBqLYKlsChmAcRyf32DkH';
 
 COPY "ClerkStudents"(clerk_id, username, password, full_name, role, "studentId")
-FROM 'D:/GITHUB/student-management-system/data/clerk_student_data.csv'
+FROM 'H:/student-management-system/data/clerk_student_data.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkStudents";
@@ -40,7 +40,7 @@ DELETE FROM "ClerkStudents";
 -- Clerk Teachers
 
 COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
-FROM 'D:/GITHUB/student-management-system/data/clerk_teacher_data.csv'
+FROM 'H:/student-management-system/data/clerk_teacher_data.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkTeachers";
@@ -155,7 +155,7 @@ DELETE FROM "Teacher";
 
 
 COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
-FROM 'D:/GITHUB/student-management-system/data/teachers_data.csv'
+FROM 'H:/student-management-system/data/teachers_data.csv'
 WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
 SELECT column_name, data_type 
@@ -234,7 +234,7 @@ VALUES
 SET datestyle = 'DMY';
 
 COPY "FeeStructure" ( "gradeId", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
-FROM 'D:/GITHUB/student-management-system/data/fees_structure.csv'
+FROM 'H:/student-management-system/data/fees_structure.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SET datestyle = 'ISO, MDY';
@@ -369,7 +369,7 @@ SELECT * FROM "class" WHERE id = 1;
 
 SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
 
-SELECT * FROM "StudentFees" WHERE "studentId" = '17159';
+SELECT * FROM "StudentFees" WHERE "studentId" = '13834';
 
 SELECT * FROM "StudentFees" WHERE "id" = 2;
 

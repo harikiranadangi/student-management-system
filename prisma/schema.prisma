@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
@@ -156,30 +157,30 @@ model Result {
 }
 
 model Student {
-  id              String           @id
-  username        String           @unique
+  id              String             @id
+  username        String             @unique
   name            String
   surname         String?
   parentName      String
-  email           String?          @unique
+  email           String?            @unique
   phone           String
   address         String
   img             String?
   bloodType       String?
   gender          Gender
   dob             DateTime
-  createdAt       DateTime         @default(now())
+  createdAt       DateTime           @default(now())
   deletedAt       DateTime?
   classId         Int
-  clerk_id        String?          @unique
-  academicYear    AcademicYear     @default(Y2024_2025)
+  clerk_id        String?            @unique
+  academicYear    AcademicYear       @default(Y2024_2025)
   Attendance      Attendance[]
   clerkStudent    ClerkStudents?
   feeTransactions FeeTransaction[]
   results         Result[]
-  Class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Class           Class              @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees     StudentFees[]
-  totalFees StudentTotalFees[]? 
+  totalFees       StudentTotalFees[]
 
   @@index([classId])
 }
@@ -304,16 +305,18 @@ model StudentFees {
 }
 
 model StudentTotalFees {
-  id                Int     @id @default(autoincrement())
-  studentId         String     @unique
-  totalPaidAmount   Float   @default(0)
-  totalDiscountAmount Float @default(0)
-  totalFineAmount   Float   @default(0)
-  totalAbacusAmount Float   @default(0)
+  id                  Int    @id @default(autoincrement())
+  studentId           String @unique
+  totalPaidAmount     Float  @default(0)
+  totalDiscountAmount Float  @default(0)
+  totalFineAmount     Float  @default(0)
+  totalAbacusAmount   Float  @default(0)
+  totalFeeAmount      Float  @default(0) // ➡️ Added
+  dueAmount           Float  @default(0) // ➡️ Added
+  status              String @default("Not Paid") // ➡️ New
 
-  student           Student @relation(fields: [studentId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
 }
-
 
 enum LessonDay {
   MONDAY
