@@ -482,12 +482,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
 
             {/* Buttons */}
           <div className="flex justify-between mt-4">
-            {(
-              (currentStudentFee.feeStructure?.termFees || 0) +
-              (currentStudentFee.feeStructure?.abacusFees || 0) -
-              (currentStudentFee.paidAmount || 0) -
-              (currentStudentFee.discountAmount || 0)
-            ) > 0 && (
+            {
+              (
               <button
                 onClick={handleFormSubmit}
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
