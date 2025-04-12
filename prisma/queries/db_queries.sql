@@ -369,7 +369,7 @@ SELECT * FROM "class" WHERE id = 1;
 
 SELECT * FROM "StudentFees" WHERE "paidAmount" > 0;
 
-SELECT * FROM "StudentFees" WHERE "studentId" = '13834';
+SELECT * FROM "StudentFees" WHERE "studentId" = '17158';
 
 SELECT * FROM "StudentFees" WHERE "id" = 2;
 
@@ -382,16 +382,20 @@ SELECT * FROM "StudentFees" WHERE term = '';
 SELECT DISTINCT "term" FROM "StudentFees";
 
 -- Check fees assigned to this grade
-SELECT * FROM "FeeTransaction";
+SELECT * FROM "FeeTransaction" ORDER BY id DESC;
 
-SELECT * FROM "FeeTransaction" ORDER BY id DESC LIMIT 1;
-
+SELECT * FROM "FeeTransaction" WHERE "studentId" = '17160';
 
 DELETE FROM "FeeTransaction";
 
 -- Reset ID sequence
 ALTER SEQUENCE "FeeTransaction_id_seq" RESTART WITH 1;
 
-SELECT * FROM "StudentFees";
+-- Check fees assigned to this grade
+SELECT * FROM "FeeTransaction" ORDER BY id DESC;
+
+SELECT * FROM "StudentFees" WHERE "studentId" = '17159' ;
 
 SELECT * FROM "StudentTotalFees";
+
+DELETE FROM "StudentTotalFees";
