@@ -8,7 +8,7 @@ export default function FeesDashboard() {
 
       <div className="mt-4 space-y-2">
         <Link href="/list/fees/collect" className="block text-blue-600 underline">💰 Fee Collection</Link>
-        <Link href="/list/fees/ledger" className="block text-blue-600 underline">📖 Fee Ledger</Link>
+        <Link href="/list/fees/cancel" className="block text-blue-600 underline">📖 Cancel Payment</Link>
         <Link href="/list/fees/feemanagement" className="block text-blue-600 underline">📜 Fee Management</Link>
         <Link href="/list/fees/daywisecollection" className="block text-blue-600 underline">📂 Payment History</Link>
       </div>
