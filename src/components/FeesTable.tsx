@@ -401,24 +401,25 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
 
 
   return (
-    <div className="p-2">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className=" overflow-x-auto">
+      <div className="min-w-full rounded-xl border border-gray-200 shadow-sm">
+      <table className="min-w-full text-sm text-gray-700m">
         <thead className="bg-gray-100">
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
-                <th key={header.id} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-black uppercase tracking-wider bg-LamaSky">
                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               ))}
             </tr>
           ))}
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-300 bg-white">
           {table.getRowModel().rows.map(row => (
             <tr key={row.id}>
               {row.getVisibleCells().map(cell => (
-                <td key={cell.id} className="px-4 py-2 text-sm text-gray-900">
+                <td key={cell.id} className="px-2 py-3 text-sm text-gray-900">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -426,6 +427,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
           ))}
         </tbody>
       </table>
+      </div>
 
 
       {isModalOpen && currentStudentFee && (

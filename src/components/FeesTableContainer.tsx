@@ -82,11 +82,18 @@ const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) 
     };
   });
 
+  // Step 5: Calculate Total Paid Fees
+  // --- Calculations ---
+  const totalFees = feeStructures.reduce((sum, fee) => sum + fee.termFees + (fee.abacusFees || 0), 0);
+  const totalPaid = transformedData.reduce((sum, fee) => sum + fee.paidAmount, 0);
+  const totalDiscount = transformedData.reduce((sum, fee) => sum + fee.discountAmount, 0);
+  const totalDue = totalFees - (totalPaid + totalDiscount);
+
   return (
     <div className="w-full table-fixed border-collapse">
       <h1 className="text-lg font-semibold mb-4">
-        {mode === "collect" ? "Collect Fees" : "Cancel Fees"}
-      </h1>
+        {mode === "collect" ? "Collect Fees" : "Cancel Fees"}</h1>
+      <h1 className="text-xl  mb-4">Total Fees: {totalFees} | Total Paid: {totalPaid} | Total Discount: {totalDiscount} | Total Due: {totalDue}</h1>
       <FeesTable data={transformedData as any}  mode={mode}/>
     </div>
   );
