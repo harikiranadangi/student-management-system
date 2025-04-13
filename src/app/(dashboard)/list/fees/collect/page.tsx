@@ -189,7 +189,7 @@ const StudentFeeListPage = async ({
   // Fetch all grades
   const grades = await prisma.grade.findMany();
 
-
+  console.log("classId:", classId, "gradeId:", gradeId, "query:", query);
   // Fetch students and count
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
@@ -210,7 +210,6 @@ const StudentFeeListPage = async ({
     prisma.student.count({ where: query }),
   ]);
 
-  console.log(JSON.stringify(query, null, 2)); // Debugging output
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">

@@ -1,5 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type ClassType = { id: number; name: string };
 type GradeType = { id: number; level: string };
@@ -10,43 +11,47 @@ interface ClassFilterProps {
   basePath: string; // Dynamic base path (e.g., "/list/students" or "/list/teachers")
 }
 
+
 const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleClassChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newClassId = event.target.value;
-    const params = new URLSearchParams(searchParams.toString()); // Ensure it is up to date
+  const handleGradeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const gradeId = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
 
-    if (newClassId) {
-      params.set("classId", newClassId);
+    if (gradeId) {
+      params.set("gradeId", gradeId);
+      params.delete("classId");
+    } else {
+      params.delete("gradeId");
+      params.delete("classId");
+    }
+
+    router.push(`${basePath}?${params.toString()}`);
+  };
+
+  const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const classId = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (classId) {
+      params.set("classId", classId);
     } else {
       params.delete("classId");
     }
 
-    router.push(`${basePath}?${params.toString()}`, { scroll: false });
+    router.push(`${basePath}?${params.toString()}`);
   };
 
-  const handleGradeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newGradeId = event.target.value;
-    const params = new URLSearchParams(searchParams); // Fix: use `searchParams`
-  
-    if (newGradeId) {
-      params.set("gradeId", newGradeId); // Fix: Use correct key
-    } else {
-      params.delete("gradeId");
-    }
-  
-    router.push(`${basePath}?${params.toString()}`, { scroll: false });
-  };
-  
   return (
     <div className="flex space-x-4">
+      {/* Grade Dropdown */}
       <div className="relative w-full md:w-auto">
         <select
           className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
           onChange={handleGradeChange}
-          value={searchParams.get("gradeId") || ""} // Updated to match query parameter
+          value={searchParams.get("gradeId") || ""}
         >
           <option value="">Grade</option>
           {grades.map((grade) => (
@@ -57,15 +62,16 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
         </select>
       </div>
 
+      {/* Class Dropdown */}
       <div className="relative w-full md:w-auto">
         <select
           className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
           onChange={handleClassChange}
-          value={searchParams.get("classId") || ""} // Ensure correct selected value
+          value={searchParams.get("classId") || ""}
         >
           <option value="">Class</option>
           {classes.map((cls) => (
-            <option key={cls.id} value={cls.id} className="text-gray">
+            <option key={cls.id} value={cls.id}>
               {cls.name}
             </option>
           ))}
@@ -74,6 +80,7 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
     </div>
   );
 };
+
 
 export default ClassFilterDropdown;
 
