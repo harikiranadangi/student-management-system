@@ -18,7 +18,6 @@ type GroupedFee = {
   totalPaid: number;
   totalDiscount?: number;
   totalFine?: number;
-
 };
 
 
