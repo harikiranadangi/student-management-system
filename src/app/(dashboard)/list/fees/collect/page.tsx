@@ -108,15 +108,15 @@ const renderRow = (item: StudentList, role: string | null) => {
         <div className="flex items-center gap-2">
           {/* Collect Fees Button */}
           <Link href={`/list/fees/collect/${item.id}`}>
-            <button className="px-2 py-1 rounded bg-green-400 text-black hover:bg-green-500 transition-all duration-300">
-              Collect
+            <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+              <Image src="/view.png" alt="View" width={16} height={16} />
             </button>
           </Link>
 
           {/* Cancel Fees Button */}
           <Link href={`/list/fees/cancel/${item.id}`}>
-            <button className="px-2 py-1 rounded bg-red-400 text-black hover:bg-red-500 transition-all duration-300">
-              Cancel
+            <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaPurple">
+              <Image src="/delete.png" alt="View" width={16} height={16} />
             </button>
           </Link>
         </div>
@@ -177,7 +177,6 @@ const StudentFeeListPage = async ({
     query.OR = [
       { name: { contains: queryParams.search, mode: "insensitive" } },
       { id: { contains: queryParams.search } },
-      { Class: { name: { contains: queryParams.search, mode: "insensitive" } }, },
     ];
   }
 
@@ -189,7 +188,6 @@ const StudentFeeListPage = async ({
   // Fetch all grades
   const grades = await prisma.grade.findMany();
 
-  console.log("classId:", classId, "gradeId:", gradeId, "query:", query);
   // Fetch students and count
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
@@ -215,7 +213,7 @@ const StudentFeeListPage = async ({
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Fees Collection</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Fees Collection ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect" />
           <StatusFilter basePath="/list/collect" />
