@@ -190,8 +190,8 @@ const StudentFeeListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">Fee Cancellation</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect"/>
-          <StatusFilter basePath="/list/collect" />
+          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/cancel"/>
+          <StatusFilter basePath="/list/cancel" />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
             <div className="flex items-center self-end gap-4">
