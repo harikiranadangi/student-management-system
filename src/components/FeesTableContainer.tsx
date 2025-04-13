@@ -24,8 +24,6 @@ interface FeesTableContainerProps {
   mode: "collect" | "cancel"; // <-- Required here
 }
 
-
-
 const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) => {
   // Step 1: Fetch Student
   const student = await prisma.student.findUnique({
