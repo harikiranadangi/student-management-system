@@ -73,13 +73,27 @@ export async function POST(req: NextRequest) {
       ...(receiptNo && { receiptNo: String(receiptNo) }),
     };
 
-    // 1. Update StudentFees
-    const updatedFee = await prisma.studentFees.update({
+    // 1. Update StudentFees for the specific term
+    const updatedFee = // 1. Update StudentFees for the specific term
+    await prisma.studentFees.update({
       where: { id: studentFee.id },
       data: feeDataToUpdate,
     });
 
-    // 2. Upsert into StudentTotalFees
+    // 2. Update all terms for the student (if receiptNo is provided)
+    if (receiptNo) {
+      await prisma.studentFees.updateMany({
+        where: { studentId },
+        data: { receiptNo: String(receiptNo) },
+      });
+    }
+
+    // 3. 🔥 Fetch latest updated studentFee
+    const updatedStudentFee = await prisma.studentFees.findFirst({
+      where: { studentId, term },
+    });
+
+    // 3. Upsert into StudentTotalFees
     const totalIncrementAmount = paidAmount + discountAmount + fineAmount;
 
     const updatedTotalFee = await prisma.studentTotalFees.upsert({
@@ -100,7 +114,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ updatedFee, updatedTotalFee }, { status: 200 });
+    return NextResponse.json({ updatedStudentFee, updatedFee, updatedTotalFee }, { status: 200 });
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(

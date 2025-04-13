@@ -145,7 +145,7 @@ const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
         </div>
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
-          <FeesTableContainer studentId={student.id} mode="collect"/>
+          <FeesTableContainer studentId={student.id} mode="cancel"/>
         </div>
 
       </div>

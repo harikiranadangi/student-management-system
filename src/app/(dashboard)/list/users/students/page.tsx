@@ -74,66 +74,63 @@ const StudentListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
-  
   // Fetch user info and role
   const { role } = await fetchUserInfo();
-  
+
   const columns = getColumns(role);
 
-  // Get sorting order and column from URL
+  // Sorting
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = params.sortKey || "classId"; // Default sorting column
+  const sortKey = params.sortKey || "classId";
 
-
-  // Build the Prisma query based on filters
+  // ✅ Build query properly
   const query: Prisma.StudentWhereInput = {};
 
-  // Filter by classId (convert to integer)
   if (classId) {
-    query.classId = Number(classId);
+    query.classId = Number(classId);  // ✅ Direct classId filter
   }
 
-  // Filter by gradeId (apply conditionally to Class relation)
   if (gradeId) {
-    query.Class = { gradeId: Number(gradeId) };
+    query.Class = { gradeId: Number(gradeId) };  // ✅ gradeId through Class relation
   }
 
-  // Search logic
+  // ✅ Search logic
   if (queryParams.search) {
     query.OR = [
       { name: { contains: queryParams.search, mode: "insensitive" } },
       { id: { contains: queryParams.search } },
-      { Class: { name: { contains: queryParams.search, mode: "insensitive" } } },
     ];
   }
 
-  // Fetch only classes that belong to the selected grade (if any)
+  // Fetch classes list (for dropdown etc.)
   const classes = await prisma.class.findMany({
     where: gradeId ? { gradeId: Number(gradeId) } : {},
   });
 
-  // Fetch all grades
+  // Fetch grades list
   const grades = await prisma.grade.findMany();
-  
 
-  // Fetch students and count
+  console.log("classId:", classId, "gradeId:", gradeId, "query:", query);
+
+  // Fetch students data + count (Pagination)
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       orderBy: [
-        { [sortKey]: sortOrder },  // Dynamic sorting (based on user selection)
-        { classId: "asc" },  // Default multi-column sorting
+        { [sortKey]: sortOrder },
+        { classId: "asc" },
         { gender: "desc" },
         { name: "asc" },
       ],
       where: query,
-      include: { Class: true },
+      include: {
+        Class: true,
+      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.student.count({ where: query }),
   ]);
 
-  console.log(JSON.stringify(query, null, 2)); // Debugging output
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -144,7 +141,7 @@ const StudentListPage = async ({
           <ClassFilterDropdown
             classes={classes}  // ✅ Filtered dynamically based on selected grade
             grades={grades}
-            basePath="/list/students"
+            basePath="/list/users/students"
           />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />

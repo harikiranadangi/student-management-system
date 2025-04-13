@@ -51,6 +51,7 @@ export default function DailyCollectionReport() {
             <th className="border px-4 py-2">Student ID</th>
             <th className="border px-4 py-2">Class</th>
             <th className="border px-4 py-2">Amount</th>
+            <th className="border px-4 py-2">Receipt No</th>
             <th className="border px-4 py-2">Date</th>
             <th className="border px-4 py-2">Remarks</th>
           </tr>
@@ -63,7 +64,8 @@ export default function DailyCollectionReport() {
               <td className="border px-4 py-2">{txn.student?.id || "-"}</td>
               <td className="border px-4 py-2">{txn.student?.Class?.name || "-"}</td>
               <td className="border px-4 py-2">₹ {txn.amount}</td>
-              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString()}</td>
+              <td className="border px-4 py-2">{txn.receiptNo}</td>
+              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
               <td className="border px-4 py-2">{txn.remarks || "-"}</td>
             </tr>
           ))}
