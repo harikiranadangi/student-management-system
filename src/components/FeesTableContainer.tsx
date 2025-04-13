@@ -93,8 +93,22 @@ const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) 
     <div className="w-full table-fixed border-collapse">
       <h1 className="text-lg font-semibold mb-4">
         {mode === "collect" ? "Collect Fees" : "Cancel Fees"}</h1>
-      <h1 className="text-xl  mb-4">Total Fees: {totalFees} | Total Paid: {totalPaid} | Total Discount: {totalDiscount} | Total Due: {totalDue}</h1>
-      <FeesTable data={transformedData as any}  mode={mode}/>
+      <div className="flex flex-wrap gap-4 mb-4 text-lg font-semibold">
+        <div className="px-4 py-2 rounded-lg bg-blue-100 text-blue-800 shadow">
+          Total Fees: ₹{totalFees}
+        </div>
+        <div className="px-4 py-2 rounded-lg bg-green-100 text-green-800 shadow">
+          Total Paid: ₹{totalPaid}
+        </div>
+        <div className="px-4 py-2 rounded-lg bg-yellow-100 text-yellow-800 shadow">
+          Total Discount: ₹{totalDiscount}
+        </div>
+        <div className="px-4 py-2 rounded-lg bg-red-100 text-red-800 shadow">
+          Total Due: ₹{totalDue}
+        </div>
+      </div>
+
+      <FeesTable data={transformedData as any} mode={mode} />
     </div>
   );
 };
