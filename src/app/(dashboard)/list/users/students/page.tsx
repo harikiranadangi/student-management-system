@@ -110,8 +110,6 @@ const StudentListPage = async ({
   // Fetch grades list
   const grades = await prisma.grade.findMany();
 
-  console.log("classId:", classId, "gradeId:", gradeId, "query:", query);
-
   // Fetch students data + count (Pagination)
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
