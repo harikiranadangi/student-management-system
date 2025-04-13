@@ -99,7 +99,6 @@ const StudentListPage = async ({
     query.OR = [
       { name: { contains: queryParams.search, mode: "insensitive" } },
       { id: { contains: queryParams.search } },
-      { Class: { name: { contains: queryParams.search, mode: "insensitive" } } },
     ];
   }
 
