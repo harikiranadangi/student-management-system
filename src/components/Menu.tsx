@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import {  currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import Dropdown from "./Dropdown";
@@ -27,7 +27,6 @@ const menuItems: MenuItemSection[] = [
         visible: ["admin"],
         dropdown: [
           { icon: "/collection.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
-          { icon: "/ledger.png", label: "Cancel Payment", href: "/list/fees/cancel", visible: ["admin"] },
           { icon: "/structure.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },
           { icon: "/payment.png", label: "Day Wise Collection", href: "/list/fees/daywisecollection", visible: ["admin"] },
         ],
