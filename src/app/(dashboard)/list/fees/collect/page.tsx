@@ -13,14 +13,6 @@ import { Prisma, Student, StudentFees, StudentTotalFees } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-type GroupedFee = {
-  studentId: string;
-  totalPaid: number;
-  totalDiscount?: number;
-  totalFine?: number;
-
-};
-
 
 // Define types
 type StudentList = Student & {
@@ -49,25 +41,6 @@ const renderRow = (item: StudentList, role: string | null) => {
     totalFeeAmount,
     isPreKg
   });
-
-  // Optional: Separate small button components
-  const CollectButton = ({ onClick }: { onClick: () => void }) => (
-    <button
-      className="px-2 py-1 rounded bg-green-400 text-black hover:bg-green-500 transition-all duration-300"
-      onClick={onClick}
-    >
-      Collect
-    </button>
-  );
-
-  const CancelButton = ({ onClick }: { onClick: () => void }) => (
-    <button
-      className="px-2 py-1 rounded bg-red-400 text-black hover:bg-red-500 transition-all duration-300"
-      onClick={onClick}
-    >
-      Cancel
-    </button>
-  );
 
   return (
     <tr
@@ -121,12 +94,9 @@ const renderRow = (item: StudentList, role: string | null) => {
           </Link>
         </div>
       </td>
-
     </tr>
   );
 };
-
-
 
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
