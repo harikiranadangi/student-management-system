@@ -19,7 +19,14 @@ interface StudentFees {
   feeTransactions: FeeTransaction[];
 }
 
-const FeesTableContainer = async ({ studentId }: { studentId: string }) => {
+interface FeesTableContainerProps {
+  studentId: string; // <-- Required here
+  mode: "collect" | "cancel"; // <-- Required here
+}
+
+
+
+const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) => {
   // Step 1: Fetch Student
   const student = await prisma.student.findUnique({
     where: { id: studentId },
@@ -79,8 +86,10 @@ const FeesTableContainer = async ({ studentId }: { studentId: string }) => {
 
   return (
     <div className="w-full table-fixed border-collapse">
-      <h1 className="text-lg font-semibold mb-4">Fee Information</h1>
-      <FeesTable data={transformedData as any} />
+      <h1 className="text-lg font-semibold mb-4">
+        {mode === "collect" ? "Collect Fees" : "Cancel Fees"}
+      </h1>
+      <FeesTable data={transformedData as any}  mode={mode}/>
     </div>
   );
 };

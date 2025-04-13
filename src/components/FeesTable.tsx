@@ -1,6 +1,4 @@
 "use client";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import React, { useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
 import { FeeStructure, FeeTransaction, PaymentMode, Term } from "@prisma/client";
@@ -28,15 +26,27 @@ interface StudentFees {
 
 interface FeesTableProps {
   data: StudentFees[];
+  mode: "collect" | "cancel"; // Add mode prop to determine the action
 }
+
 
 function formatDate(value: string | Date | undefined | null) {
   if (!value) return "-";
+  
   const date = new Date(value);
-  return date.toISOString().split("T")[0];
+
+  // Format the date as dd-mm-yyyy
+  const options: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  };
+
+  return date.toLocaleDateString('en-GB', options).replace(/\//g, '-');; // en-GB returns date as dd/mm/yyyy
 }
 
-const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
+
+const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   const [rowData, setRowData] = useState<StudentFees[]>(data);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStudentFee, setCurrentStudentFee] = useState<StudentFees | null>(null);
@@ -44,18 +54,19 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   const [receiptDate, setReceiptDate] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
   const [fine, setFine] = useState<number>(0);
-  const [receiptNo, setReceiptNo] = useState<string>("");
+  const [receiptNo, setReceiptNo] = useState<string>();
   const [remarks, setRemarks] = useState<string>("");
-
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState<string>("CASH");
+  
 
   const handleCollect = (studentFee: StudentFees) => {
     setCurrentStudentFee(studentFee);
-    setAmount(studentFee.feeStructure.termFees); // Reset
-    setDiscount(0); // Reset
-    setFine(0); // Reset
-    setReceiptDate(""); // Reset
-    setReceiptNo(receiptNo); // Reset
-    setRemarks(`Collected Fees for ${studentFee.term} on ${new Date().toLocaleDateString()}`); // Properly combine receiptNo and term
+    setAmount(studentFee.feeStructure.termFees);
+    setDiscount(0);
+    setFine(0);
+    setReceiptDate("");
+    setReceiptNo(studentFee.receiptNo || studentFee.feeTransactions?.[0]?.receiptNo || ""); 
+    setRemarks(studentFee.remarks || `Collected Fees for ${studentFee.term} on ${formatDate(new Date())}`); // Ensure remarks from DB
     setIsModalOpen(true);
   };
 
@@ -67,11 +78,11 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       const updatedFeeData = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
-        paidAmount: amount,
+        paidAmount: updatedPaidAmount,
         discountAmount: discount,
         fineAmount: fine,
         receiptDate,
-        receiptNo,
+        receiptNo: receiptNo,
         remarks,
       };
 
@@ -121,14 +132,13 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
               };
             }
             return fee;
-
           });
 
           setRowData(updatedFees);
           setIsModalOpen(false);
           // ✅ Show success toast
           toast.success("Payment collected successfully!");
-          
+
 
         } else {
           const errorMessage = await response.text();
@@ -145,9 +155,9 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   const handleCancel = async (fee: any) => {
     const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
     if (!isConfirmed) return;
-  
+
     const remarks = `Cancelled Fees for ${fee.term} on ${new Date().toLocaleDateString()}`;
-  
+
     try {
       // 1. Cancel all FeeTransactions first
       const cancelTransactionResponse = await fetch("/api/fees/cancel-transactions", {
@@ -158,11 +168,11 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
           term: fee.term,
         }),
       });
-  
+
       if (!cancelTransactionResponse.ok) {
         throw new Error("Failed to cancel fee transactions");
       }
-  
+
       // 2. Update StudentFees
       const updatedFeeData = {
         studentId: fee.studentId,
@@ -170,17 +180,17 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
         paidAmount: 0,
         discountAmount: 0,
         fineAmount: 0,
-        receiptDate: null,
-        receiptNo: null,
+        receiptDate,
+        receiptNo,
         remarks,
       };
-  
+
       const response = await fetch("/api/fees/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFeeData),
       });
-  
+
       if (response.ok) {
         const updatedFees = rowData.map((item) => {
           if (item.studentId === fee.studentId && item.term === fee.term) {
@@ -196,22 +206,20 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
           }
           return item;
         });
-  
+
         setRowData(updatedFees);
         toast.success(`Fees for ${fee.term} cancelled successfully!`);
-  
+
       } else {
         console.error("Failed to cancel fees:", await response.text());
         toast.error("Failed to cancel fees. Please try again.");
       }
-  
+
     } catch (error) {
       console.error("Error cancelling fees:", error);
       toast.error("Error cancelling fees. Please try again.");
     }
   };
-  
-
 
   // * * Columns Definition **
   // Define columns for the table using React Table's ColumnDef type
@@ -231,15 +239,16 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
   }
 
   function getFeeStatus(fee: StudentFees) {
+    const dueAmount = calculateDueAmount(fee);
+
     const paidAmount = fee.paidAmount ?? 0;
     const totalFees = getTotalFees(fee);
 
-    const isCollectDisabled = paidAmount >= totalFees;
+    const isCollectDisabled = dueAmount <= 0;
     const isZero = paidAmount === 0;
 
     return { paidAmount, totalFees, isCollectDisabled, isZero };
   }
-
 
   // Optional: Separate small button components
   const CollectButton = ({ onClick }: { onClick: () => void }) => (
@@ -259,6 +268,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       Cancel
     </button>
   );
+
+
 
   const columns = React.useMemo<ColumnDef<StudentFees>[]>(() => [
     {
@@ -315,11 +326,12 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       },
     },
     {
-      accessorKey: "receiptNo",
+      accessorFn: (row) => row.feeTransactions?.[0]?.receiptNo || "",
+      id: "receiptNo",
       header: "FB No",
       cell: ({ cell }) => {
         const value = cell.getValue<string>();
-        return value;
+        return value || "-";
       },
     },
     {
@@ -332,7 +344,8 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
       },
     },
     {
-      accessorKey: "remarks",
+      accessorFn: (row) => row.feeTransactions?.[0]?.remarks || "",
+      id: "remarks",
       header: "Remarks",
       cell: ({ cell }) => {
         const value = cell.getValue<string>();
@@ -342,34 +355,49 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
     {
       accessorKey: "paymentMode",
       header: "Payment Mode",
-    },
+    },   
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
         const { isCollectDisabled, isZero } = getFeeStatus(row.original);
-        return (
-          <div className="flex gap-2">
-            {!isCollectDisabled && (
-              <CollectButton onClick={() => handleCollect(row.original)} />
-            )}
-            {!isZero && (
-              <CancelButton onClick={() => handleCancel(row.original)} />
-            )}
-          </div>
-        );
+    
+        if (mode === "collect") {
+          // When mode is 'collect'
+          return (
+            <div className="flex gap-2">
+              {!isCollectDisabled && (
+                <CollectButton onClick={() => handleCollect(row.original)} />
+              )}
+            </div>
+          );
+        } else if (mode === "cancel") {
+          // When mode is 'cancel'
+          return (
+            <div className="flex gap-2">
+              {!isZero && (
+                <CancelButton onClick={() => handleCancel(row.original)} />
+              )}
+            </div>
+          );
+        }
+    
+        // Default fallback if mode is unknown
+        return null;
       },
     },
-  ], [handleCollect, handleCancel]);
+    
+  ], [handleCollect, handleCancel, mode]);
+
 
 
   const table = useReactTable({
-    data: rowData,
+    data: rowData as StudentFees[],
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
-  console.log(rowData);
+  console.log("Updated Fees Data", rowData);
 
 
   return (
@@ -401,7 +429,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
 
 
       {isModalOpen && currentStudentFee && (
-        
+
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-2xl w-96 space-y-4">
 
@@ -426,7 +454,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="border p-2 rounded w-full"
-                  />
+                />
               </div>
 
               <div>
@@ -436,7 +464,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
                   className="border p-2 rounded w-full"
-                  />
+                />
               </div>
 
               <div>
@@ -446,7 +474,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={receiptNo}
                   onChange={(e) => setReceiptNo(e.target.value)}
                   className="border p-2 rounded w-full"
-                  />
+                />
               </div>
 
               <div>
@@ -455,7 +483,20 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   className="w-full border p-3 rounded"
-                  />
+                />
+              </div>
+
+              <div className="w-full text-sm rounded bg-white border-gray-300 border">
+                <select
+                  value={selectedPaymentMode}
+                  onChange={(e) => setSelectedPaymentMode(e.target.value)}
+                  className="w-full p-2 rounded"
+                >
+                  <option value="CASH">CASH</option>
+                  <option value="UPI">UPI</option>
+                  <option value="ONLINE">CARD</option>
+                  <option value="BANK_TRANSFER">BANK TRANSFER</option>
+                </select>
               </div>
 
               <div>
@@ -465,8 +506,9 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
                   value={receiptDate}
                   onChange={(e) => setReceiptDate(e.target.value)}
                   className="border p-2 rounded w-full"
-                  />
+                />
               </div>
+
             </div>
 
             {/* Remaining Balance after payment */}
@@ -481,24 +523,24 @@ const FeesTable: React.FC<FeesTableProps> = ({ data }) => {
             </div>
 
             {/* Buttons */}
-          <div className="flex justify-between mt-4">
-            {
-              (
-              <button
-                onClick={handleFormSubmit}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-              >
-                Submit
-              </button>
-            )}
+            <div className="flex justify-between mt-4">
+              {
+                (
+                  <button
+                    onClick={handleFormSubmit}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                  >
+                    Submit
+                  </button>
+                )}
 
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition"
-            >
-              Cancel
-            </button>
-          </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-400 px-4 py-2 rounded hover:bg-gray-500 transition"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "studentId and term are required." }, { status: 400 });
     }
 
-    // Step 1: Aggregate total amounts directly from DB (no need to fetch all transactions)
+    // Step 1: Aggregate
     const aggregates = await prisma.feeTransaction.aggregate({
       where: { studentId, term },
       _sum: {
@@ -24,12 +24,15 @@ export async function POST(req: NextRequest) {
     const totalFineAmount = aggregates._sum.fineAmount || 0;
     const totalFeeAmount = totalPaidAmount + totalDiscountAmount + totalFineAmount;
 
-    // Step 2: Delete fee transactions + Update student fees + Update student total fees — in parallel
-    await Promise.all([
-      prisma.feeTransaction.deleteMany({
+    // Step 2: Transaction
+    await prisma.$transaction(async (tx) => {
+      // 2.1 Delete all fee transactions for that student and term
+      await tx.feeTransaction.deleteMany({
         where: { studentId, term },
-      }),
-      prisma.studentFees.updateMany({
+      });
+
+      // 2.2 Update studentFees (individual term fees)
+      await tx.studentFees.updateMany({
         where: { studentId, term },
         data: {
           paidAmount: 0,
@@ -39,25 +42,37 @@ export async function POST(req: NextRequest) {
           receiptNo: null,
           remarks: null,
         },
-      }),
-      // Only update studentTotalFees if there was something collected
-      totalPaidAmount > 0 || totalDiscountAmount > 0 || totalFineAmount > 0
-        ? prisma.studentTotalFees.update({
+      });
+
+      // 2.3 Update studentTotalFees
+      if (totalFeeAmount > 0) {
+        const studentTotal = await tx.studentTotalFees.findUnique({
+          where: { studentId },
+          select: {
+            totalPaidAmount: true,
+            totalDiscountAmount: true,
+            totalFineAmount: true,
+            totalFeeAmount: true,
+          },
+        });
+
+        if (studentTotal) {
+          await tx.studentTotalFees.update({
             where: { studentId },
             data: {
-              totalPaidAmount: { decrement: totalPaidAmount },
-              totalDiscountAmount: { decrement: totalDiscountAmount },
-              totalFineAmount: { decrement: totalFineAmount },
-              totalFeeAmount: { decrement: totalFeeAmount },
+              totalPaidAmount: Math.max(0, (studentTotal.totalPaidAmount || 0) - totalPaidAmount),
+              totalDiscountAmount: Math.max(0, (studentTotal.totalDiscountAmount || 0) - totalDiscountAmount),
+              totalFineAmount: Math.max(0, (studentTotal.totalFineAmount || 0) - totalFineAmount),
+              totalFeeAmount: Math.max(0, (studentTotal.totalFeeAmount || 0) - totalFeeAmount),
             },
-          })
-        : Promise.resolve(),
-    ]);
+          });
+        }
+      }
+    });
 
-    return NextResponse.json({ message: "Transactions cancelled and fees reset successfully" });
-    
-  } catch (error) {
-    console.error("Error cancelling transactions:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ message: "Fee transactions cancelled successfully." });
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json({ message: "Something went wrong.", error: error.message }, { status: 500 });
   }
 }
