@@ -2,38 +2,32 @@
 
 import prisma from "./prisma";
 
-
 export async function getGroupedStudentFees() {
   const students = await prisma.student.findMany({
     include: {
-      studentFees: {
-        include: {
-          feeStructure: true, // get fee details for calculation
-        },
-      },
+      totalFees: true, // Fetch totalFees data
     },
   });
 
   const groupedData = students.map((student) => {
-    let totalPaidAmount = 0;
-    let totalAbacusAmount = 0;
-    let totalFeeAmount = 0;
+    // Make sure there's at least one entry in totalFees array
+    const totalFee = student.totalFees && student.totalFees[0]; // Access first element of the array
 
-    student.studentFees.forEach((fee) => {
-      const termFee = fee.feeStructure?.termFees || 0;
-      const abacusFee = fee.feeStructure?.abacusFees || 0;
-      const paidAmount = fee.paidAmount || 0;
-
-      totalPaidAmount += paidAmount;
-      totalAbacusAmount += abacusFee;
-      totalFeeAmount += termFee + abacusFee;
-    });
+    // Defaulting to 0 if no fee data exists
+    const totalPaidAmount = totalFee?.totalPaidAmount || 0;
+    const totalDiscountAmount = totalFee?.totalDiscountAmount || 0;
+    const totalFeeAmount = totalFee?.totalFeeAmount || 0;
+    const dueAmount = totalFee?.dueAmount || 0;
+    const status = totalFee?.status || "Not Paid";
 
     return {
       studentId: student.id,
+      studentName: student.name,
       totalPaidAmount,
-      totalAbacusAmount,
+      totalDiscountAmount,
       totalFeeAmount,
+      dueAmount,
+      status,
     };
   });
 

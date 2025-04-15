@@ -31,6 +31,17 @@ const menuItems: MenuItemSection[] = [
           { icon: "/payment.png", label: "Day Wise Collection", href: "/list/fees/daywisecollection", visible: ["admin"] },
         ],
       },
+      {
+        icon: "/finance.png",
+        label: "Reports",
+        href: "#", // Placeholder for dropdown
+        visible: ["admin"],
+        dropdown: [
+          { icon: "/collection.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
+          { icon: "/structure.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
+          { icon: "/structure.png", label: "Fees Report", href: "/list/reports/fees-report", visible: ["admin"] },
+        ],
+      },
       { icon: "/attendance.png", label: "Attendance", href: "/list/attendance", visible: ["admin", "teacher", "student"] },
       { icon: "/homework.png", label: "Homeworks", href: "/list/homeworks", visible: ["admin", "teacher", "student"] },
       { icon: "/subject.png", label: "Subjects", href: "/list/subjects", visible: ["admin"] },
