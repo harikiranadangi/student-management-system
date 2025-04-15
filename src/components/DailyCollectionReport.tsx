@@ -1,5 +1,6 @@
 "use client";
 
+import { exportStudentReportToExcel } from "@/lib/utils/exportToExcel";
 import { useEffect, useState } from "react";
 
 type Transaction = {
@@ -16,6 +17,8 @@ type Transaction = {
     } | null;
   } | null;
 };
+
+
 
 export default function DailyCollectionReport() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -40,6 +43,8 @@ export default function DailyCollectionReport() {
   if (loading) {
     return <div>Loading transactions...</div>;
   }
+
+  
 
   return (
     <div className="overflow-x-auto">
