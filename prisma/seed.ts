@@ -17,10 +17,12 @@ async function main() {
 
   // Delete in correct order to maintain referential integrity
   // Delete child tables first
-  // await prisma.feeStructure.deleteMany();
+  await prisma.studentTotalFees.deleteMany();
+  await prisma.studentFees.deleteMany();
+  await prisma.feeStructure.deleteMany();
   // await prisma.grade.deleteMany();
   // await prisma.subject.deleteMany();
-  // await prisma.class.deleteMany();
+  await prisma.class.deleteMany();
   // await prisma.teacher.deleteMany();
   await prisma.student.deleteMany();
 
