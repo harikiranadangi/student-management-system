@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "FeeTransaction" ADD COLUMN     "receivedDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;

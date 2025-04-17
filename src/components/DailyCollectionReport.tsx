@@ -1,6 +1,5 @@
 "use client";
 
-import { exportStudentReportToExcel } from "@/lib/utils/exportToExcel";
 import { useEffect, useState } from "react";
 
 type Transaction = {
@@ -58,6 +57,7 @@ export default function DailyCollectionReport() {
             <th className="border px-4 py-2">Amount</th>
             <th className="border px-4 py-2">Receipt No</th>
             <th className="border px-4 py-2">Date</th>
+            <th className="border px-4 py-2">Receive Date</th>
             <th className="border px-4 py-2">Remarks</th>
           </tr>
         </thead>
@@ -70,6 +70,7 @@ export default function DailyCollectionReport() {
               <td className="border px-4 py-2">{txn.student?.Class?.name || "-"}</td>
               <td className="border px-4 py-2">₹ {txn.amount}</td>
               <td className="border px-4 py-2">{txn.receiptNo}</td>
+              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
               <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
               <td className="border px-4 py-2">{txn.remarks || "-"}</td>
             </tr>

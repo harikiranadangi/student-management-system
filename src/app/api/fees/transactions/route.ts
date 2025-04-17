@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
       receiptDate,
       receiptNo,
       remarks,
-      paymentMode , // Default to CASH if not provided
     } = body;
 
     if (!studentId || !term) {
@@ -86,12 +85,12 @@ export async function POST(req: NextRequest) {
         receiptNo: receiptNo ? String(receiptNo) : "",
         paymentMode: selectedPaymentMode, // Use dynamic payment mode
         remarks: remark,
+        
       },
     });
 
     await prisma.feeTransaction.updateMany({
       where: { studentId,
-        receiptNo: "", // Only if receiptNo was blank before
        },
       data: {
         receiptNo: receiptNo ? String(receiptNo) : "",

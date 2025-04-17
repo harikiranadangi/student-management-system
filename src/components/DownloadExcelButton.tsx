@@ -3,12 +3,10 @@
 import { exportStudentReportToExcel } from '@/lib/utils/exportToExcel';
 import React from 'react';
 
-interface Props {
-  data: any[];
-}
-
-const DownloadExcelButton: React.FC<Props> = ({ data }) => {
-  const handleDownload = () => {
+const DownloadExcelButton = () => {
+  const handleDownload = async () => {
+    const res = await fetch('/api/student-fees-report');
+    const data = await res.json();
     exportStudentReportToExcel(data);
   };
 
