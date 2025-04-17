@@ -39,7 +39,6 @@ const menuItems: MenuItemSection[] = [
         dropdown: [
           { icon: "/collection.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
           { icon: "/structure.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
-          { icon: "/structure.png", label: "Fees Report", href: "/list/reports/fees-report", visible: ["admin"] },
         ],
       },
       { icon: "/attendance.png", label: "Attendance", href: "/list/attendance", visible: ["admin", "teacher", "student"] },
