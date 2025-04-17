@@ -35,7 +35,7 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.477.0",
     "multer": "^1.4.5-lts.1",
-    "next": "^15.2.4",
+    "next": "^15.3.0",
     "next-cloudinary": "^6.16.0",
     "node-fetch": "^3.3.2",
     "playcanvas": "^2.5.1",

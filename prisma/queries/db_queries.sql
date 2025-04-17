@@ -86,7 +86,7 @@ WHERE s.id = c.clerk_id;
 SELECT * FROM _prisma_migrations;
 
 -- Retrieve all records from the Admin table
-SELECT * FROM Admin;
+SELECT * FROM "Admin";
 
 -- Retrieve all records from the class table
 SELECT * FROM class;

@@ -38,13 +38,13 @@ const Announcements = async () => {
             </div>
             <div className='flex flex-col gap-4 mt-4'>
                 {data[0] && <div className='p-4 rounded-md bg-LamaSkyLight'>
-                    <div className='flex items-center justify-between'>
-                        <h2 className="font-medium">{data[0].title}</h2>
-                        <span className="px-1 py-1 text-xs text-gray-400 bg-white rounded-md">
+                    <div className='flex items-center justify-between text-black-800'>
+                        <h2 className="font-medium text-black-800">{data[0].title}</h2>
+                        <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">
                             {new Intl.DateTimeFormat("en-GB").format(data[0].date)}
                         </span>
                     </div>
-                    <p className="mt-1 text-sm text-gray-400">
+                    <p className="mt-1 text-sm text-black-500">
                         {data[0].description}
                     </p>
                 </div>}
@@ -52,25 +52,24 @@ const Announcements = async () => {
                 {data[1] && <div className='p-4 rounded-md bg-LamaPurple'>
                     <div className='flex items-center justify-between'>
                         <h2 className="font-medium">{data[1].title}</h2>
-                        <span className="px-1 py-1 text-xs text-gray-500 bg-white rounded-md">
+                        <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">
                             {new Intl.DateTimeFormat("en-GB").format(data[1].date)}
                         </span>
                     </div>
-                    <p className="mt-1 text-sm text-gray-400">
+                    <p className="mt-1 text-sm text-black-500">
                         {data[1].description}
                     </p>
                 </div>}
 
                 {data[2] && <div className='p-4 rounded-md bg-LamaYellow'>
                     <div className='flex items-center justify-between'>
-                        <h2 className="font-medium">{data[2].title}</h2>
-                        <span className="px-1 py-1 text-xs text-gray-500 bg-white rounded-md">{new Intl.DateTimeFormat("en-GB").format(data[2].date)}</span>
+                        <h2 className="font-medium text-black-500">{data[2].title}</h2>
+                        <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">{new Intl.DateTimeFormat("en-GB").format(data[2].date)}</span>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-black-500">
                         {data[2].description}
                     </p>
                 </div>}
-
             </div>
         </div>
     );
