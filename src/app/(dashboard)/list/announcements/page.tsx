@@ -8,18 +8,20 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-type AnnouncementList = Announcement & { class: Class };
+type AnnouncementList = Announcement & { Class: Class };
 
 const renderRow = (item: AnnouncementList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name || "-"}</td>
     <td className="hidden md:table-cell">
-      {new Intl.DateTimeFormat("en-US").format(item.date)}
+      {new Date(item.date).toLocaleDateString("en-US")}
     </td>
+
+    <td className="hidden md:table-cell">{item.Class?.name}</td>
+    <td className="flex md:table-cell">{item.title}</td>
+    <td className="flex items-left gap-4 p-4">{item.description}</td>
     <td>
       <div className="flex items-center gap-2">
-        {role === "admin" || role === "teacher" && (
+        {(role === "admin" || role === "teacher") && (
           <>
             <FormContainer table="announcement" type="update" data={item} />
             <FormContainer table="announcement" type="delete" id={item.id} />
@@ -30,19 +32,25 @@ const renderRow = (item: AnnouncementList, role: string | null) => (
   </tr>
 );
 
+
 const getColumns = (role: string | null) => [
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class",
+    accessor: "classname",
+  },
   {
     header: "Title",
     accessor: "title",
     className: "hidden md:table-cell",
   },
   {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
+    header: "Description",
+    accessor: "description",
     className: "hidden md:table-cell",
   },
   ...(role === "admin"
@@ -60,7 +68,7 @@ const AnnouncementsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  
+
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 

@@ -1,12 +1,15 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { AdminSchema, ClassSchema, ExamSchema,  FeesSchema, HomeworkSchema, LessonsSchema, Studentschema, SubjectSchema, Teacherschema } from "./formValidationSchemas"
+import { ClassSchema, ExamSchema,  FeesSchema, HomeworkSchema, 
+    LessonsSchema, Studentschema, SubjectSchema, Teacherschema } 
+    from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 type CurrentState = { success: boolean; error: boolean }
-
+// Initialize Prisma Client
+const prisma = new PrismaClient();
 
 // * ---------------------------------------------- FEES SCHEMA --------------------------------------------------------
 
@@ -331,11 +334,6 @@ export const deleteSubject = async (
 
 // * ---------------------------------------------- CLASS SCHEMA --------------------------------------------------------
 
-
-
-// Initialize Prisma Client
-const prisma = new PrismaClient();
-
 export const createClass = async (
     currentState: { success: boolean; error: boolean },
     data: ClassSchema
@@ -603,11 +601,6 @@ export const createStudent = async (
         // Initialize Clerk client
         const client = await clerkClient();
 
-        const classItem = await prisma.class.findUnique({
-            where: { id: data.classId },
-            include: { _count: { select: { students: true } } }
-        });
-
         // Check if username already exists by accessing the 'data' property
         const userListResponse = await client.users.getUserList({
             query: data.username, // Ensure we search by the username
@@ -792,8 +785,6 @@ export const deleteStudent = async (
     }
 };
 
-
-
 // * ---------------------------------------------- EXAM SCHEMA --------------------------------------------------------
 
 export const createExam = async (
@@ -867,114 +858,7 @@ export const deleteExam = async (
     }
 };
 
-// * ---------------------------------------------- ATTENDANCE SCHEMA --------------------------------------------------------
-
-
-
-
-// * ---------------------------------------------- ADMIN SCHEMA --------------------------------------------------------
-
-export const createAdmin = async (
-    currentState: CurrentState,
-    data: AdminSchema
-) => {
-    try {
-        // Ensure required fields are valid
-        if (!data.username || !data.full_name || !data.email || !data.password) {
-            throw new Error("Missing required fields: username, full_name, email, or password.");
-        }
-
-        // Insert into database
-        await prisma.admin.create({
-            data: {
-                username: data.username,  // Ensure it's a string
-                full_name: data.full_name || "Unknown", // Default to "Unknown" if missing
-                email: data.email,  // Ensure valid email
-                password: data.password,  // Ensure password is always provided
-                parentName: data.parentName || null,  // Optional field
-                gender: data.gender || null,
-                address: data.address || null,
-                dob: data.dob,  // Convert to Date
-                phone: data.phone,  // Default to dummy phone if missing
-            },
-        });
-
-        console.log('Admin Created:', data)
-        return { success: true };
-    } catch (error) {
-        console.error("Error in createAdmin:", error);
-        return { success: false, error: (error as any).message };
-    }
-};
-
-
-export const updateAdmin = async (
-    currentState: CurrentState,
-    data: AdminSchema
-) => {
-    try {
-
-        console.log("Received Update Data:", data);
-
-        if (!data.id || !data.full_name) {
-            throw new Error("Invalid input: 'id' and 'name' are required.");
-        }
-
-        // ✅ Ensure `subjectId` is always a number
-        if (!data.id) {
-            throw new Error("Invalid Admin ID");
-        }
-
-        const adminId = data.id; // Now TypeScript knows subjectId is always defined
-
-        // ✅ Step 1: Update the Subject name
-        await prisma.admin.update({
-            where: { id: adminId },
-            data: {
-                username: data.username,
-                full_name: data.full_name,
-                email: data.email,
-                password: data.password,
-                parentName: data.parentName,
-                gender: data.gender,
-                address: data.address,
-                dob: data.dob ? new Date(data.dob) : null,  // Convert to Date
-                phone: data.phone,
-            },
-        });
-
-        console.log("Updated Data:", data);
-        return { success: true, error: false };
-    } catch (error) {
-        console.error("Error in updateAdmin:", error);
-        return { success: false, error: (error as any).message };
-    }
-};
-
-export const deleteAdmin = async (
-    currentState: CurrentState,
-    data: FormData
-) => {
-    const id = data.get("id") as string;
-    try {
-        await prisma.admin.delete({
-            where: {
-                id: parseInt(id)
-            },
-        });
-
-        console.log("Deleted Admin:", data)
-
-        // revalidatePath("/list/admin")
-        return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
-    }
-};
-
-
-// * ---------------------------------------------- LESSON SCHEMA --------------------------------------------------------
+// * ---------------------------------------------- ATTENDANCE SCHEMA --------------------------------------------------------// * ---------------------------------------------- LESSON SCHEMA --------------------------------------------------------
 
 export const createLesson = async (
     currentState: CurrentState,
