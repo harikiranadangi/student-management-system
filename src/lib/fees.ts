@@ -19,11 +19,13 @@ export async function getGroupedStudentFees() {
     const totalFeeAmount = totalFee?.totalFeeAmount || 0;
     const dueAmount = totalFee?.dueAmount || 0;
     const status = totalFee?.status || "Not Paid";
+    const totalAbacusAmount = totalFee?.totalAbacusAmount || 0;
 
     return {
       studentId: student.id,
       studentName: student.name,
       totalPaidAmount,
+      totalAbacusAmount,
       totalDiscountAmount,
       totalFeeAmount,
       dueAmount,
