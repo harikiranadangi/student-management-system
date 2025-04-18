@@ -132,6 +132,12 @@ SELECT * FROM "teacher" WHERE id = 'user_2u2pXhmNqzsHVzrbD2WbjYYfLsO';
 -- Retrieve all records from the Announcement table (incorrect syntax - should use double quotes)
 SELECT * FROM "Announcement";
 
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'Announcement';
+
+
+
 -- Retrieve all records from the Student table
 SELECT * FROM "Student";
 
