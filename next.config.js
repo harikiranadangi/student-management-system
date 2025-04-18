@@ -8,10 +8,15 @@ const nextConfig = {
 
   allowedDevOrigins: ['http://192.168.5.2:3000'],
 
+  turbopack: {
+    // You can add additional configurations if needed here.
+    // For example:
+    // enabled: true,
+  },
+
   experimental: {
-    serverActions: {}, // <- empty object means enabled
-    turbo: {},         // <- empty object means enabled
-    optimizeCss: true, // this one is ok as true
+    serverActions: {}, // <- Empty object means enabled
+    optimizeCss: true, // This is fine as true
   },
 };
 

@@ -8,7 +8,24 @@ WHERE schemaname = 'public';
 
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
+COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
+FROM 'H:/student-management-system/data/teachers_data.csv'
+WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
+-- Clerk Teachers
+COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
+FROM 'H:/student-management-system/data/clerk_teacher_data.csv'
+WITH CSV HEADER DELIMITER ',';
+
+-- Clerk Students
+COPY "ClerkStudents"(clerk_id, username, password, full_name, role, "studentId")
+FROM 'H:/student-management-system/data/clerk_student_data.csv'
+WITH CSV HEADER DELIMITER ',';
+
+-- FeeStructure
+COPY "FeeStructure" ( "gradeId", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
+FROM 'H:/student-management-system/data/fees_structure.csv'
+WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkStudents";
 DROP TABLE IF EXISTS "ClerkStudents" CASCADE;
@@ -29,19 +46,13 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 
 SELECT id, username, clerk_id FROM "Student" WHERE clerk_id = 'user_2u7uazlBqLYKlsChmAcRyf32DkH';
 
-COPY "ClerkStudents"(clerk_id, username, password, full_name, role, "studentId")
-FROM 'H:/student-management-system/data/clerk_student_data.csv'
-WITH CSV HEADER DELIMITER ',';
+
 
 SELECT * FROM "ClerkStudents";
 
 DELETE FROM "ClerkStudents";
 
--- Clerk Teachers
 
-COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
-FROM 'H:/student-management-system/data/clerk_teacher_data.csv'
-WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkTeachers";
 
@@ -160,9 +171,6 @@ SELECT * FROM "Teacher";
 DELETE FROM "Teacher";
 
 
-COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
-FROM 'H:/student-management-system/data/teachers_data.csv'
-WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
 SELECT column_name, data_type 
 FROM information_schema.columns 
@@ -226,22 +234,26 @@ SELECT * FROM "Result";
 -- Retrieve all records from the Attendance table
 SELECT * FROM "Attendance";
 
+SELECT * FROM "Attendance" WHERE present = false ANd "classId" =1  ;
+
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'Attendance';
+
+DELETE FROM "Attendance";
+
+SELECT conname
+FROM pg_constraint
+WHERE conrelid = '"Attendance"'::regclass;
+
 -- Retrieve all records from the FeeStructure table
 SELECT * FROM "FeeStructure";
 
 SELECT * FROM "FeeStructure"
 WHERE "gradeId" NOT IN (SELECT id FROM "Grade");
 
-INSERT INTO "FeeStructure" 
-("classId", "totalFees", "startDate", "dueDate", "term", "abacusFees", "termFees", "academicYear")  
-VALUES  
-  (10, 20000, '2025-06-01', '2025-06-15', 1, 400, 5000, '2024-25');
 
 SET datestyle = 'DMY';
-
-COPY "FeeStructure" ( "gradeId", "abacusFees", "termFees","term","startDate", "dueDate", "academicYear")
-FROM 'H:/student-management-system/data/fees_structure.csv'
-WITH CSV HEADER DELIMITER ',';
 
 SET datestyle = 'ISO, MDY';
 
@@ -265,15 +277,6 @@ SELECT * FROM "StudentFees";
 
 -- Retrieve all records from the TeacherSubject table
 SELECT * FROM "TeacherSubject";
-
--- Retrieve all records from the Homework table
-INSERT INTO "Homework" (description, date, "classId")
-VALUES
-('Maths: Tomorrow Test ','2025-03-18',8),  
-( 'English: Test on Tomorrow', '2025-03-19',43),
-('HOME WORK: %sname% %sclass% %ssection% Dated Mar-18: TOMORROW GK EXAM. PREPARE YOUR CHILD FOR THE EXAM. L/P ON GIVEN PORTION & REV NOTES NOTE: PLEASE BRING THESE BOOKS FROM TOMORROW. ENG I REV NOTES, MATHS REV NOTES, TEST NOTES GK/MS NOTES, GK/TEXT BOOK AND ROUGH NOTES', '2025-03-19',41)
-;
-
 
 SELECT * FROM "Homework";
 
@@ -304,12 +307,6 @@ SELECT * FROM "FeesCollection" WHERE "studentId" = '17159';
 SELECT * FROM "FeesCollection" WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
 
 SELECT * FROM "FeeStructure";
-
-
-INSERT INTO "FeesCollection" ("studentId", "gradeId", "academicYear", "term", "totalFees", "abacusFees", "startDate", "dueDate", "status")
-SELECT '17159', "gradeId", "academicYear", 4, "totalFees", "abacusFees", "startDate", "dueDate", 'Pending'
-FROM "FeeStructure"
-WHERE "gradeId" = (SELECT "gradeId" FROM "Student" WHERE id = '17159');
 
 INSERT INTO "FeeStructure" ("gradeId", "academicYear", "startDate", "dueDate", "termFees", "abacusFees", "totalFees")
 VALUES
