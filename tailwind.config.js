@@ -18,6 +18,7 @@ const config = {
         LamaPurpleLight: "#F1F0FF",
         LamaYellow: "#FAE27C",
         LamaYellowLight: "#FEFCE8",
+        LamaGreen: "#29bf12",
       },
     },
   },

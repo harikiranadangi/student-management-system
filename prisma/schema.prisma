@@ -8,8 +8,6 @@ generator erd {
   output   = "./ERD.svg"
 }
 
-
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -30,7 +28,7 @@ model Admin {
   bloodType  String?
   role       String    @default("admin")
   createdAt  DateTime  @default(now())
-  clerkId String?    @unique
+  clerkId    String?   @unique
 }
 
 model Grade {
@@ -47,7 +45,6 @@ model Class {
   supervisorId String?        @unique
   gradeId      Int
   Announcement Announcement[]
-  attendance   Attendance[]
   events       Event[]
   exams        Exam[]
   homeworks    Homework[]
@@ -55,6 +52,7 @@ model Class {
   students     Student[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
+  attendances  Attendance[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -88,18 +86,6 @@ model Announcement {
   Class       Class?   @relation(fields: [classId], references: [id])
 
   @@index([classId])
-}
-
-model Attendance {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  present   Boolean
-  studentId String
-  classId   Int
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId])
 }
 
 model Event {
@@ -179,16 +165,16 @@ model Student {
   dob             DateTime
   createdAt       DateTime           @default(now())
   deletedAt       DateTime?
-  classId         Int
   clerk_id        String?            @unique
   academicYear    AcademicYear       @default(Y2024_2025)
-  Attendance      Attendance[]
   clerkStudent    ClerkStudents?
   feeTransactions FeeTransaction[]
   results         Result[]
+  classId         Int
   Class           Class              @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentFees     StudentFees[]
   totalFees       StudentTotalFees[]
+  attendances     Attendance[]
 
   @@index([classId])
 }
@@ -281,7 +267,7 @@ model FeeTransaction {
   discountAmount Float       @default(0)
   fineAmount     Float       @default(0)
   receiptDate    DateTime
-  receivedDate     DateTime?        @default(now())
+  receivedDate   DateTime?   @default(now())
   receiptNo      String
   paymentMode    PaymentMode @default(CASH)
   createdAt      DateTime    @default(now())
@@ -325,6 +311,18 @@ model StudentTotalFees {
   status              String @default("Not Paid") // ➡️ New
 
   student Student @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean  @default(true)
+  studentId String
+  classId   Int
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, date])
 }
 
 enum LessonDay {
