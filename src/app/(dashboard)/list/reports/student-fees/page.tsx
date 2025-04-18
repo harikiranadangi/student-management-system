@@ -145,13 +145,6 @@ const StudentListPage = async ({ searchParams }: { searchParams: { [key: string]
     prisma.student.count({ where: query }),
   ]);
 
-  const studentReportData = data.map(calculateStudentFeeReport);
-
-
-  const totalFees = studentReportData.reduce((sum, s) => sum + s.totalFees, 0);
-  const totalPaid = studentReportData.reduce((sum, s) => sum + s.totalPaidAmount, 0);
-  const totalDiscount = studentReportData.reduce((sum, s) => sum + s.totalDiscountAmount, 0);
-  const totalDue = studentReportData.reduce((sum, s) => sum + s.dueAmount, 0);
 
   const columns = getColumns(role);
 
