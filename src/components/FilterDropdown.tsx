@@ -1,6 +1,5 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 type ClassType = { id: number; name: string };
 type GradeType = { id: number; level: string };
