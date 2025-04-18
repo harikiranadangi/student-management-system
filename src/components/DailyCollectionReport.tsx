@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation"; // Import hooks to access query params
+import { DateFilter } from "./FilterDropdown";
 
 type Transaction = {
   id: number;
@@ -17,16 +19,28 @@ type Transaction = {
   } | null;
 };
 
-
-
 export default function DailyCollectionReport() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get the "date" query parameter from URL
+  const receiptDate = searchParams.get("date");
 
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        const res = await fetch("/api/fees/fee-transactions");
+        const params: any = {};
+
+        // Only add receiptDate to query if it's present
+        if (receiptDate) {
+          params.receiptDate = receiptDate;
+        }
+
+        // Convert parameters to query string
+        const queryString = new URLSearchParams(params).toString();
+        const res = await fetch(`/api/fees/fee-transactions?${queryString}`);
         const data = await res.json();
         setTransactions(data);
       } catch (error) {
@@ -36,17 +50,18 @@ export default function DailyCollectionReport() {
       }
     }
 
-    fetchTransactions(); // ✅ fixed here
-  }, []);
+    fetchTransactions();
+  }, [receiptDate]); // Refetch whenever receiptDate changes
 
   if (loading) {
     return <div>Loading transactions...</div>;
   }
 
-  
-
   return (
     <div className="overflow-x-auto">
+      {/* Date Filter */}
+      <DateFilter basePath="/list/reports/daywise-fees" />
+
       <table className="min-w-full bg-white border border-gray-300 rounded shadow">
         <thead className="bg-gray-100">
           <tr>

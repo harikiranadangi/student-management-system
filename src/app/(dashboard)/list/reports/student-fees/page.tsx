@@ -5,7 +5,6 @@ import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { getGroupedStudentFees } from "@/lib/fees";
-import { calculateStudentFeeReport } from "@/lib/feeUtils";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
