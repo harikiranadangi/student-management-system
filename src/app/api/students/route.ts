@@ -10,12 +10,15 @@ export async function GET(req: NextRequest) {
     let students;
 
     if (classId) {
-      // Fetch students based on classId
+      // Fetch students filtered by classId
       students = await prisma.student.findMany({
         where: { classId: Number(classId) },
+        include: {
+          Class: true, // Include Class details if needed
+        },
       });
     } else if (gradeId) {
-      // Fetch students based on gradeId
+      // Fetch students filtered by gradeId through Class relation
       students = await prisma.student.findMany({
         where: {
           Class: {
@@ -27,13 +30,17 @@ export async function GET(req: NextRequest) {
         },
       });
     } else {
-      // Fetch all students when no classId or gradeId is provided
-      students = await prisma.student.findMany();
+      // Fetch all students
+      students = await prisma.student.findMany({
+        include: {
+          Class: true,
+        },
+      });
     }
 
     return NextResponse.json(students);
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error fetching students:", error);
     return NextResponse.json(
       { error: "Failed to fetch students" },
       { status: 500 }

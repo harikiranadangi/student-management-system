@@ -234,7 +234,10 @@ SELECT * FROM "Result";
 -- Retrieve all records from the Attendance table
 SELECT * FROM "Attendance";
 
-SELECT * FROM "Attendance" WHERE present = false ANd "classId" =1  ;
+SELECT * 
+FROM "Attendance" 
+WHERE "studentId" = '13738';
+
 
 SELECT column_name, data_type
 FROM information_schema.columns
