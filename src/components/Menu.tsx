@@ -21,6 +21,16 @@ const menuItems: MenuItemSection[] = [
         ],
       },
       {
+        icon: "/attendance.png",
+        label: "Attendance",
+        href: "#", // Placeholder for dropdown
+        visible: ["admin"],
+        dropdown: [
+          { icon: '/attendance.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin","teacher"] },
+          { icon: '/attendance.png', label: "view", href: "/list/attendance/view", visible: ["admin","teacher"] },
+        ],
+      },
+      {
         icon: "/finance.png",
         label: "Fees",
         href: "#", // Placeholder for dropdown
@@ -28,7 +38,6 @@ const menuItems: MenuItemSection[] = [
         dropdown: [
           { icon: "/collection.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
           { icon: "/structure.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },
-          { icon: "/payment.png", label: "Day Wise Collection", href: "/list/fees/daywisecollection", visible: ["admin"] },
         ],
       },
       {
@@ -41,7 +50,6 @@ const menuItems: MenuItemSection[] = [
           { icon: "/structure.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
         ],
       },
-      { icon: "/attendance.png", label: "Attendance", href: "/list/attendance", visible: ["admin", "teacher", "student"] },
       { icon: "/homework.png", label: "Homeworks", href: "/list/homeworks", visible: ["admin", "teacher", "student"] },
       { icon: "/subject.png", label: "Subjects", href: "/list/subjects", visible: ["admin"] },
       { icon: "/class.png", label: "Classes", href: "/list/classes", visible: ["admin"] },

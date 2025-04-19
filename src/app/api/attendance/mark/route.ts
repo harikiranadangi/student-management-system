@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { toast } from "react-toastify";
 
 export async function POST(req: Request) {
   const data = await req.json();

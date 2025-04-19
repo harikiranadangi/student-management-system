@@ -14,6 +14,7 @@ export default function MarkAttendancePage() {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [attendanceStatus, setAttendanceStatus] = useState<{ [key: string]: boolean }>({});
   const today = new Date().toISOString().split("T")[0];
+  const [allMarkedAbsent, setAllMarkedAbsent] = useState(false);
 
   useEffect(() => {
     fetch("/api/grades")
@@ -35,8 +36,8 @@ export default function MarkAttendancePage() {
     const fetchUrl = selectedClass
       ? `/api/students?classId=${selectedClass}`
       : selectedGrade
-      ? `/api/students?gradeId=${selectedGrade}`
-      : `/api/students`;
+        ? `/api/students?gradeId=${selectedGrade}`
+        : `/api/students`;
 
     fetch(fetchUrl)
       .then((res) => res.json())
@@ -76,11 +77,17 @@ export default function MarkAttendancePage() {
       toast(`Attendance has been submitted`);
       const result = await res.json();
       console.log("Attendance submitted:", result);
+
+      // ✅ Refresh the page after successful submission
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500); // Give time for toast to show before reload
     } catch (error) {
       toast(`Error submitting Attendance`);
       console.error("Error submitting attendance:", error);
     }
   };
+
 
   const handleCheckboxChange = (studentId: string) => {
     setAttendanceStatus((prevStatus) => ({
@@ -131,14 +138,52 @@ export default function MarkAttendancePage() {
       </div>
 
       {students.length > 0 && (
+        <div className="flex gap-4 my-4">
+          {allMarkedAbsent ? (
+            <button
+              type="button"
+              onClick={() => {
+                const updated: { [key: string]: boolean } = {};
+                students.forEach((student) => {
+                  updated[student.id] = true; // Set all students to present
+                });
+                setAttendanceStatus(updated);
+                setAllMarkedAbsent(false); // Toggle state to show "Mark All Absent" next
+              }}
+              className="bg-green-700 text-white px-3 py-1 rounded"
+            >
+              Mark All Present
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                const updated: { [key: string]: boolean } = {};
+                students.forEach((student) => {
+                  updated[student.id] = false; // Set all students to absent
+                });
+                setAttendanceStatus(updated);
+                setAllMarkedAbsent(true); // Toggle state to show "Mark All Present" next
+              }}
+              className="bg-red-700 text-white px-3 py-1 rounded"
+            >
+              Mark All Absent
+            </button>
+          )}
+        </div>
+      )}
+
+
+
+      {students.length > 0 && (
         <div>
           <h3 className="font-bold mt-4">Students</h3>
           <h3 className="mt-2 text-l text-black font-bold">
             {selectedGrade
               ? grades.find((grade) => grade.id === selectedGrade)?.level || "Unknown Grade"
               : selectedClass
-              ? classes.find((cls) => cls.id === selectedClass)?.name || "Unknown Class"
-              : "All Classes"}
+                ? classes.find((cls) => cls.id === selectedClass)?.name || "Unknown Class"
+                : "All Classes"}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {students.map((student) => {
@@ -148,9 +193,8 @@ export default function MarkAttendancePage() {
                 <div
                   key={student.id}
                   onClick={() => handleCheckboxChange(student.id)}
-                  className={`p-2 rounded shadow hover:scale-105 cursor-pointer transition-transform duration-200 ${
-                    isAbsent ? "bg-red-600" : "bg-green-600"
-                  }`}
+                  className={`p-2 rounded shadow hover:scale-105 cursor-pointer transition-transform duration-200 ${isAbsent ? "bg-red-600" : "bg-green-600"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-bold text-white">{student.name}</div>
@@ -168,6 +212,7 @@ export default function MarkAttendancePage() {
           </div>
         </div>
       )}
+
 
       {students.length > 0 && (
         <button
