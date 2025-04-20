@@ -1,0 +1,10 @@
+
+
+npx tsx prisma/seed.ts -- Run prisma seed
+
+npx tsx scripts/assignFeesToStudents.ts --Add Fees to Students
+
+
+node scripts\deleteUsers.js -- delete users from clerk
+
+npx tsx scripts/syncUsersToClerk.ts -- Sync Users To Clerk
