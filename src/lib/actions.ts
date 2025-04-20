@@ -1,8 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import { ClassSchema, ExamSchema,  FeesSchema, HomeworkSchema, 
-    LessonsSchema, Studentschema, SubjectSchema, Teacherschema } 
+import {
+    ClassSchema, ExamSchema, FeesSchema, HomeworkSchema,
+    LessonsSchema, Studentschema, SubjectSchema, Teacherschema
+}
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
@@ -10,6 +12,58 @@ import { Prisma, PrismaClient } from "@prisma/client";
 type CurrentState = { success: boolean; error: boolean }
 // Initialize Prisma Client
 const prisma = new PrismaClient();
+
+
+
+// Example deleteMessages function
+export const deleteMessages = async (prevState: any, formData: FormData) => {
+    const id = formData.get("id")?.toString();
+    if (!id) {
+        return {
+            success: false,
+            error: true,
+            message: "No ID provided",
+        };
+    }
+
+    try {
+        await prisma.messages.delete({ where: { id } });
+        return { success: true, error: false };
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        return {
+            success: false,
+            error: true,
+            message: "Delete failed",
+        };
+    }
+};
+
+// Example deleteMessages function
+export const deleteAnnouncements = async (prevState: any, formData: FormData) => {
+    const id = formData.get("id")?.toString();
+    const numericId = Number(id); // ✅ Convert to number
+
+    if (!numericId || isNaN(numericId)) {
+        return {
+            success: false,
+            error: true,
+            message: "Invalid ID provided",
+        };
+    }
+
+    try {
+        await prisma.announcement.delete({ where: { id: numericId } }); // ✅ Use number
+        return { success: true, error: false };
+    } catch (error) {
+        console.error("Error deleting announcement:", error);
+        return {
+            success: false,
+            error: true,
+            message: "Delete failed",
+        };
+    }
+};
 
 // * ---------------------------------------------- FEES SCHEMA --------------------------------------------------------
 
@@ -649,7 +703,7 @@ export const createStudent = async (
             },
         });
 
-        
+
         console.log("Created Student:", student);
         console.log("Matching Fee Structures:", matchingFeeStructures);
 

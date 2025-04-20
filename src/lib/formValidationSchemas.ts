@@ -2,12 +2,26 @@ import { AcademicYear } from "@prisma/client";
 import { z } from "zod";
 
 
+
+export const messageSchema = z.object({
+  message: z.string().min(1, "Message cannot be empty"),
+  type: z.enum(["ABSENT", "FEE_RELATED", "ANNOUNCEMENT", "GENERAL"]),  // Enum for message types
+  studentId: z.string().optional(),
+  classId: z.number().optional(),
+  gradeId: z.number().optional(),
+  date: z.string().min(1, "Date is required"),
+
+});
+
+export type MessageSchema = z.infer<typeof messageSchema>;
+
+
 export const announcementSchema = z.object({
   id: z.number().optional(),
   title: z.string(),
   description: z.string(),
   date: z.coerce.date({ message: "Date is required!" }),
-  classId: z.coerce.number().optional() 
+  classId: z.coerce.number().optional()
 });
 
 export type AnnouncementSchema = z.infer<typeof announcementSchema>;

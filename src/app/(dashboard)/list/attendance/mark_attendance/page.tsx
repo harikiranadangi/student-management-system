@@ -32,6 +32,12 @@ export default function MarkAttendancePage() {
     }
   }, [selectedGrade]);
 
+  useEffect(() => {
+    // Clear students and status when grade/class changes
+    setStudents([]);
+    setAttendanceStatus({});
+  }, [selectedGrade, selectedClass]);
+
   const fetchStudents = () => {
     const fetchUrl = selectedClass
       ? `/api/students?classId=${selectedClass}`
