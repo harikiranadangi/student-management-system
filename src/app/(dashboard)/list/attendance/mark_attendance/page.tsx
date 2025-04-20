@@ -87,7 +87,7 @@ export default function MarkAttendancePage() {
       // ✅ Refresh the page after successful submission
       setTimeout(() => {
         window.location.reload();
-      }, 1500); // Give time for toast to show before reload
+      }, 500); // Give time for toast to show before reload
     } catch (error) {
       toast(`Error submitting Attendance`);
       console.error("Error submitting attendance:", error);

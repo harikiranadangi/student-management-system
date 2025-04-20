@@ -4,16 +4,16 @@ import { getMessageContent } from "@/lib/utils/messageUtils";
 
 const MessageComponent = () => {
   const [studentName, setStudentName] = useState<string>("");
-  const [grade, setGrade] = useState<string>("");
+  const [className, setClassName] = useState<string>(""); 
   const [announcementType, setAnnouncementType] = useState<MessageType>("ABSENT");
   const [messageContent, setMessageContent] = useState<string>("");
 
   // Update the message content when the type or student details change
   useEffect(() => {
-    const student = { name: studentName, grade };
+    const student = { name: studentName, className };
     const generatedMessage = getMessageContent(announcementType, student);
     setMessageContent(generatedMessage);
-  }, [announcementType, studentName, grade]); // Re-run when any of these dependencies change
+  }, [announcementType, studentName, className]); // Re-run when any of these dependencies change
 
   // Handle form submission for creating a message (this will be connected to your backend API)
   const handleSubmit = async () => {
@@ -64,8 +64,8 @@ const MessageComponent = () => {
         <label>Grade: </label>
         <input
           type="text"
-          value={grade}
-          onChange={(e) => setGrade(e.target.value)}
+          value={className}
+          onChange={(e) => setClassName(e.target.value)}
           placeholder="Enter grade"
           className="border p-2"
         />

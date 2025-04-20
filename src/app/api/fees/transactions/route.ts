@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
-import { PaymentMode } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { getMessageContent } from "@/lib/utils/messageUtils";
+import { MessageType } from "../../../../../types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,13 +38,13 @@ export async function POST(req: NextRequest) {
       feeDataToUpdate.receiptDate = new Date(receiptDate);
     }
 
-    // Step 1: Update studentFees for specific student and term
+    // Step 1: Update studentFees
     const updatedFee = await prisma.studentFees.updateMany({
       where: { studentId, term },
       data: feeDataToUpdate,
     });
 
-    // Step 2: If receiptNo is provided, update it for ALL student's fees (across terms)
+    // Step 2: Update receiptNo for all terms
     if (receiptNo != null) {
       await prisma.studentFees.updateMany({
         where: { studentId },
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Step 3: Find the studentFees record for linking FeeTransaction
+    // Step 3: Get studentFee record
     const studentFeesRecord = await prisma.studentFees.findFirst({
       where: { studentId, term },
     });
@@ -63,16 +64,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    
-    const selectedId = studentFeesRecord.id; // Get the ID of the studentFees record
+    const selectedId = studentFeesRecord.id;
     const selectedPaymentMode = studentFeesRecord.paymentMode;
-    const paidFees = studentFeesRecord.paidAmount; 
-    const paiddiscount = studentFeesRecord.discountAmount; 
-    const paidFine = studentFeesRecord.fineAmount; 
-    const remark = studentFeesRecord.remarks; 
+    const paidFees = studentFeesRecord.paidAmount;
+    const paiddiscount = studentFeesRecord.discountAmount;
+    const paidFine = studentFeesRecord.fineAmount;
+    const remark = studentFeesRecord.remarks;
 
-    
-    // Step 4: Create a new FeeTransaction linked to studentFees
+    // Step 4: Create FeeTransaction
     const feeTransaction = await prisma.feeTransaction.create({
       data: {
         studentId,
@@ -83,25 +82,44 @@ export async function POST(req: NextRequest) {
         fineAmount: paidFine,
         receiptDate: receiptDate ? new Date(receiptDate) : new Date(),
         receiptNo: receiptNo ? String(receiptNo) : "",
-        paymentMode: selectedPaymentMode, // Use dynamic payment mode
+        paymentMode: selectedPaymentMode,
         remarks: remark,
-        
       },
     });
 
     await prisma.feeTransaction.updateMany({
-      where: { studentId,
-       },
+      where: { studentId },
       data: {
         receiptNo: receiptNo ? String(receiptNo) : "",
       },
     });
 
-    console.log("FeeTransaction created:", feeTransaction);
+    // Step 5: Fetch student + class for message
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { Class: true },
+    });
+
+    if (student) {
+      const message = getMessageContent("FEE_COLLECTION" as MessageType, {
+        name: student.name,
+        className: student.Class?.name ?? "Unknown",
+        amount: paidFees,
+        term,
+      });
+
+      await prisma.messages.create({
+        data: {
+          message,
+          type: "FEE_COLLECTION",
+          date: new Date().toISOString(),
+          classId: student.classId ?? null,
+          studentId,
+        },
+      });
+    }
 
     return NextResponse.json({ updatedFee, feeTransaction }, { status: 200 });
-    // IMPORTANT: Now update receiptNo for all feeTransactions of the student
-
 
   } catch (error) {
     console.error("API Error:", error);

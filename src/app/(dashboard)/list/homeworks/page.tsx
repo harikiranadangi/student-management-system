@@ -47,11 +47,6 @@ const getColumns = (role: string | null) => [
     header: "Class",
     accessor: "class",
   },
-  // {
-  //   header: "Title",
-  //   accessor: "title",
-  //   className: "hidden md:table-cell",
-  // },
   {
     header: "Description",
     accessor: "description",
