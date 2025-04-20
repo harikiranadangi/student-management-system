@@ -1,7 +1,9 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
 }
+
+
+
 
 generator erd {
   provider = "prisma-erd-generator"
@@ -53,6 +55,7 @@ model Class {
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
   attendances  Attendance[]
+  messages        Messages[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -86,6 +89,18 @@ model Announcement {
   Class       Class?   @relation(fields: [classId], references: [id])
 
   @@index([classId])
+}
+
+model Messages {
+  id        String       @id @default(cuid())
+  message   String
+  type      MessageType  // Using the MessageType enum here
+  studentId String?
+  date      DateTime
+  classId   Int?
+
+  Class     Class?       @relation(fields: [classId], references: [id])
+  Student   Student?     @relation(fields: [studentId], references: [id])
 }
 
 model Event {
@@ -155,7 +170,7 @@ model Student {
   username        String             @unique
   name            String
   surname         String?
-  parentName      String
+  parentName      String?
   email           String?            @unique
   phone           String
   address         String
@@ -175,6 +190,7 @@ model Student {
   studentFees     StudentFees[]
   totalFees       StudentTotalFees[]
   attendances     Attendance[]
+  messages        Messages[]
 
   @@index([classId])
 }
@@ -356,4 +372,12 @@ enum PaymentMode {
 enum AcademicYear {
   Y2024_2025
   Y2025_2026
+}
+
+enum MessageType {
+  ABSENT
+  FEE_RELATED
+  ANNOUNCEMENT
+  GENERAL
+  // Add any other types you want
 }

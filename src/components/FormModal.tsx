@@ -1,6 +1,6 @@
 "use client";
 
-import {  deleteClass, deleteExam,  deleteFees, deleteHomework, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import {  deleteAnnouncements, deleteClass, deleteExam,  deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,11 +19,12 @@ const deleteActionMap = {
   result: deleteSubject,
   attendance: deleteSubject,
   event: deleteSubject,
-  announcement: deleteSubject,
+  announcement: deleteAnnouncements,
   fees: deleteFees,
   fees_structure: deleteFees,
   homeworks: deleteHomework,
   admin: deleteHomework,
+  messages: deleteMessages
 }
 
 // Dynamically import the form components
@@ -55,6 +56,9 @@ const FeesManagementForm = dynamic(() => import("./forms/FeesManagementForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const MessagesForm = dynamic(() => import("./forms/MessageForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -114,9 +118,9 @@ const forms: {
     <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 
-  
-
- 
+  messages: (setOpen, type, data, relatedData) => (
+    <MessagesForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
 
 };
 

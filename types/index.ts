@@ -49,3 +49,6 @@ export type StudentFeeReportList = {
     };
   };
 };
+
+// types.ts
+export type MessageType = "ABSENT" | "FEE_RELATED" | "ANNOUNCEMENT" | "GENERAL";
