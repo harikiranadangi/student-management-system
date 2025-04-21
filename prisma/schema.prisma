@@ -51,7 +51,7 @@ model Class {
   exams        Exam[]
   homeworks    Homework[]
   lessons      Lesson[]
-  students     Student[]
+  students     Student[] 
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
   attendances  Attendance[]
@@ -100,7 +100,7 @@ model Messages {
   classId   Int?
 
   Class     Class?       @relation(fields: [classId], references: [id])
-  Student   Student?     @relation(fields: [studentId], references: [id])
+  Student   Student?     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Event {
@@ -148,6 +148,7 @@ model Homework {
   Grade       Grade    @relation(fields: [gradeId], references: [id])
 
   @@index([classId])
+  @@index([gradeId])
 }
 
 model Result {
@@ -289,7 +290,7 @@ model FeeTransaction {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
-  student        Student     @relation(fields: [studentId], references: [id])
+  student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   remarks        String?
 }
 
@@ -310,7 +311,7 @@ model StudentFees {
   remarks          String?          @default("")
   feeTransactions  FeeTransaction[] @relation("FeeTransactionStudentFees")
   feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
-  student          Student          @relation(fields: [studentId], references: [id])
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, academicYear, term])
 }
@@ -326,7 +327,19 @@ model StudentTotalFees {
   dueAmount           Float  @default(0) // ➡️ Added
   status              String @default("Not Paid") // ➡️ New
 
-  student Student @relation(fields: [studentId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean  @default(true)
+  studentId String
+  classId   Int
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, date])
 }
 
 model Attendance {
@@ -379,5 +392,6 @@ enum MessageType {
   FEE_RELATED
   ANNOUNCEMENT
   GENERAL
+  FEE_COLLECTION
   // Add any other types you want
 }

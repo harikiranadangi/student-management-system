@@ -8,6 +8,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { getMessageContent } from "@/lib/utils/messageUtils";
+import { string } from "zod";
 
 const useApiRequest = () => {
   const makeRequest = async (url: string, method: string, body: any) => {
@@ -48,7 +49,7 @@ const MessageForm = ({
   });
 
   const [studentName, setStudentName] = useState("");
-  const [grade, setGrade] = useState("");
+  const [Class, setClass] = useState("");
 
   const {
     register,
@@ -85,29 +86,23 @@ const MessageForm = ({
   console.log("Related Data:", relatedData);
 
 
-  // Filter classes based on the selected gradeId
+  // Filter classes based on selected gradeId
   const filteredClasses = selectedGradeId
-    ? classes.filter((cls: any) => cls.gradeId === Number(selectedGradeId)) // Show only classes for the selected grade
-    : classes; // Show all classes if no grade is selected
+    ? classes.filter((cls: any) => cls.gradeId === Number(selectedGradeId))
+    : classes;
 
-  // Filter students based on the selected gradeId (custom logic to match students to grades)
-  const filteredStudents = selectedGradeId
-    ? students.filter((std: any) => std.gradeName === selectedGradeId) // Assuming students have a `gradeName` field to match the grade
-    : students; // Show all students if no grade is selected
-
-  // Filter students based on the selected classId
-  const filteredClassStudents = selectedClassId
-    ? students.filter((std: any) => std.classId === Number(selectedClassId)) // Show only students from the selected class
-    : filteredStudents; // Show all students if no grade is selected
+  // Final filtered students: only from selected class
+  const filteredStudents = selectedClassId
+    ? students.filter((std: any) => std.classId === Number(selectedClassId))
+    : [];
 
   // Debugging: Check the filtered results
   console.log("Filtered Classes:", filteredClasses);
   console.log("Filtered Students by Grade:", filteredStudents);
-  console.log("Filtered Students by Class (if selected):", filteredClassStudents);
 
-  // If no grade or class is selected, display all students
-  console.log("Filtered Students (not selected grade/class):", filteredClassStudents);
-  // If no grade is selected, show all students
+  useEffect(() => {
+    setValue("studentId", "");
+  }, [selectedGradeId, setValue]);
 
   useEffect(() => {
     if (state.success) {
@@ -120,11 +115,12 @@ const MessageForm = ({
   useEffect(() => {
     const generatedMessage = getMessageContent(watch("type"), {
       name: studentName,
-      grade: grade,
+      className: Class,
     });
+    
 
     setValue("message", generatedMessage);
-  }, [studentName, grade, watch("type"), setValue]);
+  }, [studentName, Class, watch("type"), setValue]);
 
   const onSubmit = handleSubmit(async (formData) => {
     if (type === "update" && !data?.id) {
@@ -136,10 +132,13 @@ const MessageForm = ({
       const payload = {
         message: formData.message,
         type: formData.type,
-        studentId: formData.studentId,
+        studentId: formData.studentId || null,
         date: formData.date,
-        classId: formData.classId ?? null,
+        classId: formData.classId || null,
+        gradeId: formData.gradeId || null,
       };
+
+      console.log("Created Message:", payload)
 
       const url = type === "create" ? "/api/message" : `/api/message/${data.id}`;
       const method = type === "create" ? "POST" : "PUT";
@@ -208,16 +207,15 @@ const MessageForm = ({
         <select
           className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
           {...register("studentId", {
-            setValueAs: (v) => (v === "" ? undefined : Number(v)),
+            setValueAs: (v) => (v === "" ? undefined : String(v)), // Convert to string
           })}
         >
           <option value="">Select Student</option>
           {filteredStudents.map((std: { id: number; name: string }) => (
-            <option key={std.id} value={std.id}>
-              {std.name}
-            </option>
+            <option key={std.id} value={std.id}>{std.name}</option>
           ))}
         </select>
+
         {errors?.studentId && (
           <p className="text-xs text-red-400">{errors.studentId.message?.toString()}</p>
         )}
@@ -246,6 +244,7 @@ const MessageForm = ({
         >
           <option value="">Select Type</option>
           <option value="ABSENT">ABSENT</option>
+          <option value="FEE_COLLECTION">FEE COLLECTION</option>
           <option value="FEE_RELATED">FEE RELATED</option>
           <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
           <option value="GENERAL">GENERAL</option>

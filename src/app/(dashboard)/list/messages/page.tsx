@@ -1,28 +1,46 @@
-import { Prisma } from "@prisma/client";
+import { Class, Messages, Prisma, Student } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo, getClassIdForRole } from "@/lib/utils";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
+import { getUserIdentifiersForRole } from "@/lib/utils/getUserIdentifiersForRole";
+import SortButton from "@/components/SortButton";
 
-type MessageList = {
-  id: string;
-  message: string;
-  type: string;
-  studentId: string;
-  date: Date;
-  classId?: string;
-  Student: { name: string };
-  Class: { name: string };
-};
+
+
+type MessageList = Messages & { Student: Student; Class: Class };
 
 const renderRow = (item: MessageList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-    <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString("en-US")}</td>
-    <td>{item.message}</td>
+  <tr
+    key={item.id}
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  >
+    {/* Date */}
+    <td className="hidden md:table-cell">
+      {new Date(item.date).toLocaleDateString("en-US")}
+    </td>
+
+    {/* Type */}
+    <td className="hidden md:table-cell capitalize px-6">{item.type.toLowerCase()}</td>
+
+    {/* Student Name (only for teacher/admin) */}
+    {(role === "teacher" || role === "admin") && (
+      <>
+        <td className="hidden md:table-cell">{item.Student?.name}</td>
+        <td className="hidden md:table-cell">{item.Class?.name}</td>
+      </>
+    )}
+
+    {/* Message */}
+    <td className="p-4 whitespace-pre-line px-2">{item.message}</td>
+
+
+
+    {/* Actions */}
     <td>
       <div className="flex items-center gap-2">
         {(role === "admin" || role === "teacher") && (
@@ -34,6 +52,7 @@ const renderRow = (item: MessageList, role: string | null) => (
       </div>
     </td>
   </tr>
+
 );
 
 const getColumns = (role: string | null) => [
@@ -43,9 +62,31 @@ const getColumns = (role: string | null) => [
     className: "hidden md:table-cell",
   },
   {
+    header: "Type",
+    accessor: "type",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "teacher" || role === "admin"
+    ? [
+        {
+          header: "Student Name",
+          accessor: "student",
+          className: "hidden md:table-cell",
+        },
+        {
+          header: "Class",
+          accessor: "class",
+          className: "hidden md:table-cell",
+        },
+      ]
+    : []),
+  {
     header: "Message",
     accessor: "message",
+    className: "hidden md:table-cell",
   },
+
+
   ...(role === "admin"
     ? [
       {
@@ -62,18 +103,39 @@ const MessagesList = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-  // Fetch user info and role
-  const { role } = await fetchUserInfo();
-
-  const columns = getColumns(role);  // Get dynamic columns
-
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
+  // Fetch user info and role
+  const { userId, role } = await fetchUserInfo();
+  const { classId, studentId } = await getUserIdentifiersForRole(role, userId);
+
+  console.log("Student Id:", studentId)
+
+  const columns = getColumns(role);  // Get dynamic columns
+
+  // Get sorting order and column from URL
+  const sortOrder = params.sort === "asc" ? "asc" : "desc";
+  const sortKey = params.sortKey || "id"; // Default sorting column
+
 
   // Initialize Prisma query object
   const query: Prisma.MessagesWhereInput = {};
+
+  if(studentId) {
+    query.studentId = studentId
+  }
+
+  // Filter by gradeId (apply conditionally to Class relation)
+  const userClassId = await getClassIdForRole(role, userId);
+
+
+  if (userClassId || classId) {
+    query.classId = userClassId ?? Number(classId);
+  }
+  
+
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -93,6 +155,10 @@ const MessagesList = async ({
   // Fetch messages and count
   const [data, count] = await prisma.$transaction([
     prisma.messages.findMany({
+      orderBy: [
+        { [sortKey]: sortOrder },  // Dynamic sorting (based on user selection)
+        { id: "desc" },  // Default multi-column sorting        
+      ],
       where: query,
       include: {
         Class: true,
@@ -115,9 +181,8 @@ const MessagesList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
+            {/* Sort by Class ID */}
+            <SortButton sortKey="id" />
             {role === "admin" && <FormContainer table="messages" type="create" />}
           </div>
         </div>
