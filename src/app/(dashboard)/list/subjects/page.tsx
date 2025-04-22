@@ -8,7 +8,15 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type SubjectList = Subject & { teachers: { Teacher: Teacher }[] };
+type SubjectList = Subject & {
+  teachers: {
+    teacher: {
+      name: string;
+    };
+  }[];
+};
+
+
 
 const renderRow = (item: SubjectList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
@@ -16,7 +24,7 @@ const renderRow = (item: SubjectList, role: string | null) => (
       {item.name}
     </td>
     <td className="hidden md:table-cell">
-      {item.teachers.map((teacherSubject) => teacherSubject.Teacher?.name).join(", ")} {/* Access the Teacher name */}
+      {item.teachers.map((teacherSubject) => teacherSubject.teacher?.name || "Unknown").join(", ")} {/* Access the Teacher name */}
     </td>
     <td>
       <div className="flex items-center gap-2">
@@ -30,6 +38,7 @@ const renderRow = (item: SubjectList, role: string | null) => (
     </td>
   </tr>
 );
+
 
 
 const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
@@ -47,11 +56,11 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
     },
     ...(role === "admin"
       ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
       : []),
   ];
 
@@ -88,9 +97,9 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
       include: {
         teachers: {
           include: {
-            Teacher: { // Include the Teacher model correctly
+            teacher: {
               select: {
-                name: true, // Select the name field of Teacher
+                name: true, // Access teacher's name
               },
             },
           },
@@ -103,6 +112,13 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
   ]);
   
   
+
+
+
+
+
+
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">

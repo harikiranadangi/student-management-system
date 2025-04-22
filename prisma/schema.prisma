@@ -2,9 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
-
-
 generator erd {
   provider = "prisma-erd-generator"
   output   = "./ERD.svg"
@@ -51,11 +48,12 @@ model Class {
   exams        Exam[]
   homeworks    Homework[]
   lessons      Lesson[]
-  students     Student[] 
+  students     Student[]
   Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
   attendances  Attendance[]
-  messages        Messages[]
+  messages     Messages[]
+  subjects     ClassSubject[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -92,15 +90,15 @@ model Announcement {
 }
 
 model Messages {
-  id        String       @id @default(cuid())
+  id        String      @id @default(cuid())
   message   String
-  type      MessageType  // Using the MessageType enum here
+  type      MessageType // Using the MessageType enum here
   studentId String?
   date      DateTime
   classId   Int?
 
-  Class     Class?       @relation(fields: [classId], references: [id])
-  Student   Student?     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Class   Class?   @relation(fields: [classId], references: [id])
+  Student Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Event {
@@ -207,14 +205,25 @@ model ClerkStudents {
   student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
+
+model ClassSubject {
+  classId   Int
+  subjectId Int
+  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([classId, subjectId])
+}
+
 model Subject {
   id        Int              @id @default(autoincrement())
   name      String           @unique
   createdAt DateTime         @default(now())
+  teachers  SubjectTeacher[]       
   exams     ExamSubject[]
   lessons   Lesson[]
   results   Result[]
-  teachers  TeacherSubject[]
+  classes   ClassSubject[]
 }
 
 model Teacher {
@@ -236,17 +245,18 @@ model Teacher {
   clerk_id      String?          @unique
   ClerkTeachers ClerkTeachers?
   lessons       Lesson[]
-  subjects      TeacherSubject[]
+  subjects      SubjectTeacher[]  // Many-to-many relation
   class         Class?           @relation("ClassToTeacher")
 }
 
-model TeacherSubject {
-  teacherId String
+model SubjectTeacher {
+  subject   Subject @relation(fields: [subjectId], references: [id])
   subjectId Int
-  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  Teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
-  @@id([teacherId, subjectId])
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+  teacherId String
+
+  @@id([subjectId, teacherId]) // Composite primary key
 }
 
 model ClerkTeachers {
@@ -328,18 +338,6 @@ model StudentTotalFees {
   status              String @default("Not Paid") // ➡️ New
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-}
-
-model Attendance {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  present   Boolean  @default(true)
-  studentId String
-  classId   Int
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, date])
 }
 
 model Attendance {

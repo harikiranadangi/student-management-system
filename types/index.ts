@@ -52,3 +52,5 @@ export type StudentFeeReportList = {
 
 // types.ts
 export type MessageType = "ABSENT" | "FEE_RELATED" | "ANNOUNCEMENT" | "GENERAL" | "FEE_COLLECTION";
+
+export type CurrentState = { success: boolean; error: boolean }

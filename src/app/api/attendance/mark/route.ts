@@ -9,83 +9,77 @@ export async function POST(req: Request) {
   try {
     const operations: any[] = [];
 
-    // Process each attendance entry
-    await Promise.all(
-      data.map(async (entry: any) => {
-        const existing = await prisma.attendance.findFirst({
-          where: {
-            studentId: entry.studentId,
-            date: new Date(entry.date),
+    for (const entry of data) {
+      const entryDate = new Date(entry.date);
+
+      const existing = await prisma.attendance.findFirst({
+        where: {
+          studentId: entry.studentId,
+          date: entryDate,
+        },
+      });
+
+      if (existing) {
+        operations.push(
+          prisma.attendance.update({
+            where: { id: existing.id },
+            data: {
+              present: entry.present,
+            },
+          })
+        );
+      } else {
+        operations.push(
+          prisma.attendance.create({
+            data: {
+              ...entry,
+              date: entryDate,
+            },
+          })
+        );
+      }
+
+      // 👇 Only send message if student is absent
+      if (!entry.present) {
+        const student = await prisma.student.findUnique({
+          where: { id: entry.studentId },
+          select: {
+            name: true,
+            Class: {
+              select: {
+                name: true,
+                Grade: {
+                  select: { level: true },
+                },
+              },
+            },
           },
         });
 
-        if (existing) {
-          // Update attendance if it already exists
+        if (student) {
+          const studentName = student.name;
+          const className = student.Class?.name || "Unknown";
+
+          const message = getMessageContent("ABSENT" as MessageType, {
+            name: studentName,
+            className,
+          });
+
           operations.push(
-            prisma.attendance.update({
-              where: { id: existing.id },
+            prisma.messages.create({
               data: {
-                present: entry.present,
+                message,
+                type: "ABSENT",
+                date: entryDate.toISOString(),
+                classId: entry.classId,
+                studentId: entry.studentId,
               },
             })
           );
-        } else {
-          // Create new attendance entry
-          operations.push(
-            prisma.attendance.create({
-              data: {
-                ...entry,
-                date: new Date(entry.date),
-              },
-            })
-          );
-
-          // Only send message if student is absent
-          if (!entry.present) {
-            const student = await prisma.student.findUnique({
-              where: { id: entry.studentId },
-              select: {
-                name: true,
-                Class: {
-                  select: {
-                    name: true,
-                    Grade: {
-                      select: {
-                        level: true,
-                      },
-                    },
-                  },
-                },
-              },
-            });
-
-            if (student) {
-              const studentName = student.name;
-              const className = student.Class?.name || "";
-
-              const message = getMessageContent("ABSENT" as MessageType, {
-                name: studentName,
-                className: className || "Unknown",
-              });
-
-              operations.push(
-                prisma.messages.create({
-                  data: {
-                    message,
-                    type: "ABSENT",
-                    date: new Date(entry.date).toISOString(),
-                    classId: entry.classId,
-                    studentId: entry.studentId,
-                  },
-                })
-              );
-            }
-          }
         }
-      })
-    );
+      }
+    }
 
-    // Run all DB operations in one transaction
     await prisma.$transaction(operations);
 
     return NextResponse.json({ success: true });

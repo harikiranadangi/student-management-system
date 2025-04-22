@@ -24,13 +24,17 @@ const renderRow = (item: MessageList, role: string | null) => (
       {new Date(item.date).toLocaleDateString("en-US")}
     </td>
 
-    {/* Type */}
-    <td className="hidden md:table-cell capitalize px-6">{item.type.toLowerCase()}</td>
 
     {/* Student Name (only for teacher/admin) */}
     {(role === "teacher" || role === "admin") && (
       <>
-        <td className="hidden md:table-cell">{item.Student?.name}</td>
+        <td> <div className="flex flex-col">
+          <h3 className="font-semibold">{item.Student.name}</h3>
+          <p className="text-xs">{item.studentId}</p>
+        </div>
+        </td>
+        {/* Type */}
+        <td className="hidden md:table-cell capitalize px-6">{item.type.toLowerCase()}</td>
         <td className="hidden md:table-cell">{item.Class?.name}</td>
       </>
     )}
@@ -68,17 +72,17 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "teacher" || role === "admin"
     ? [
-        {
-          header: "Student Name",
-          accessor: "student",
-          className: "hidden md:table-cell",
-        },
-        {
-          header: "Class",
-          accessor: "class",
-          className: "hidden md:table-cell",
-        },
-      ]
+      {
+        header: "Student Name",
+        accessor: "student",
+        className: "hidden md:table-cell",
+      },
+      {
+        header: "Class",
+        accessor: "class",
+        className: "hidden md:table-cell",
+      },
+    ]
     : []),
   {
     header: "Message",
@@ -123,7 +127,7 @@ const MessagesList = async ({
   // Initialize Prisma query object
   const query: Prisma.MessagesWhereInput = {};
 
-  if(studentId) {
+  if (studentId) {
     query.studentId = studentId
   }
 
@@ -134,23 +138,27 @@ const MessagesList = async ({
   if (userClassId || classId) {
     query.classId = userClassId ?? Number(classId);
   }
+
   
-
-
   // Dynamically add filters based on query parameters
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "search":
-            query.message = { contains: value };
-            break;
-          default:
-            break;
-        }
+if (queryParams) {
+  for (const [key, value] of Object.entries(queryParams)) {
+    if (value !== undefined) {
+      switch (key) {
+        case "search":
+          query.OR = [
+            { message: { contains: value, mode: "insensitive" } },
+            { Student: { name: { contains: value, mode: "insensitive" } } },
+            { Student: { id: { contains: value, mode: "insensitive" } } },
+          ];
+          break;
+        default:
+          break;
       }
     }
   }
+}
+
 
   // Fetch messages and count
   const [data, count] = await prisma.$transaction([

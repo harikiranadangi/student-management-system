@@ -8,14 +8,61 @@ import {
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { CurrentState } from "../../types";
 
-type CurrentState = { success: boolean; error: boolean }
 // Initialize Prisma Client
 const prisma = new PrismaClient();
 
+// * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
 
-// Example deleteMessages function
+
+// export const deleteSubject = async (id: number) => {
+//     const formData = new FormData();
+//     formData.append("id", id.toString());
+  
+//     const res = await fetch("/api/subject/delete", {
+//       method: "POST",
+//       body: formData,
+//     });
+  
+//     const data = await res.json();
+//     if (data.success) {
+//       // refresh list or redirect
+//     } else {
+//       alert(data.message);
+//     }
+//   };
+
+  // * Example deleteMessages function
+export const deleteSubject = async (prevState: any, formData: FormData) => {
+    const id = formData.get("id");
+    const numericId = Number(id);
+    if (!numericId) {
+        return {
+            success: false,
+            error: true,
+            message: "No ID provided",
+        };
+    }
+
+    try {
+        await prisma.subject.delete({ where: { id: numericId } });
+        return { success: true, error: false };
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        return {
+            success: false,
+            error: true,
+            message: "Delete failed",
+        };
+    }
+};
+
+
+
+
+// * Example deleteMessages function
 export const deleteMessages = async (prevState: any, formData: FormData) => {
     const id = formData.get("id")?.toString();
     if (!id) {
@@ -39,7 +86,7 @@ export const deleteMessages = async (prevState: any, formData: FormData) => {
     }
 };
 
-// Example deleteMessages function
+// * Example deleteMessages function
 export const deleteAnnouncements = async (prevState: any, formData: FormData) => {
     const id = formData.get("id")?.toString();
     const numericId = Number(id); // ✅ Convert to number
@@ -232,159 +279,7 @@ export const deleteHomework = async (
     }
 };
 
-// * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
-export const createSubject = async (
-    currentState: CurrentState,
-    data: SubjectSchema
-) => {
-    try {
-        console.log("Received Data:", data);
-
-        if (!data || !data.name) {
-            throw new Error("Invalid input: 'name' is required.");
-        }
-
-        const teacherIds = Array.isArray(data.teachers) ? data.teachers : [];
-
-        // Create the subject first
-        const newSubject = await prisma.subject.create({
-            data: { name: data.name },
-        });
-
-        console.log("Created Subject ID:", newSubject.id);
-
-        // Validate teachers before assigning them
-        if (teacherIds.length > 0) {
-            console.log("Validating teachers:", teacherIds);
-
-            const validTeachers = await prisma.teacher.findMany({
-                where: { id: { in: teacherIds } },
-                select: { id: true },
-            });
-
-            const validTeacherIds = validTeachers.map((teacher) => teacher.id);
-            console.log("Valid Teacher IDs:", validTeacherIds);
-
-            // 🚀 Check if validTeacherIds is not empty before `createMany`
-            if (validTeacherIds.length > 0) {
-                const teacherSubjectData = validTeacherIds.map((teacherId) => ({
-                    teacherId,
-                    subjectId: newSubject.id,
-                }));
-
-                console.log("Data for createMany:", teacherSubjectData);
-
-                await prisma.teacherSubject.createMany({
-                    data: teacherSubjectData,
-                    skipDuplicates: true,
-                });
-
-                console.log("Assigned Teachers:", validTeacherIds);
-            } else {
-                console.log("No valid teachers found. Skipping createMany.");
-            }
-        } else {
-            console.log("No teachers assigned.");
-        }
-
-        return { success: true, error: false };
-    } catch (err) {
-        console.error("Error creating subject:", err);
-        return { success: false, error: true };
-    }
-};
-
-
-export const updateSubject = async (
-    currentState: CurrentState,
-    data: SubjectSchema
-) => {
-    try {
-        console.log("Received Update Data:", data);
-
-        if (!data.id || !data.name) {
-            throw new Error("Invalid input: 'id' and 'name' are required.");
-        }
-
-        const teacherIds = Array.isArray(data.teachers) ? data.teachers : [];
-
-        // ✅ Ensure `subjectId` is always a number
-        if (!data.id) {
-            throw new Error("Invalid subject ID");
-        }
-
-        const subjectId = data.id; // Now TypeScript knows subjectId is always defined
-
-        // ✅ Step 1: Update the Subject name
-        await prisma.subject.update({
-            where: { id: subjectId },
-            data: { name: data.name },
-        });
-
-        console.log("Updated Subject Name:", data.name);
-
-        // ✅ Step 2: Update the Many-to-Many Relationship in `teacherSubject`
-        if (teacherIds.length > 0) {
-            console.log("Updating teachers:", teacherIds);
-
-            // ✅ Delete existing teacher assignments for the subject
-            await prisma.teacherSubject.deleteMany({
-                where: { subjectId },
-            });
-
-            console.log("Removed previous teacher assignments");
-
-            // ✅ Insert new teacher assignments
-            const teacherSubjectData: Prisma.TeacherSubjectCreateManyInput[] = teacherIds.map(
-                (teacherId) => ({
-                    teacherId,
-                    subjectId, // ✅ Ensured `subjectId` is defined
-                })
-            );
-
-            await prisma.teacherSubject.createMany({
-                data: teacherSubjectData,
-                skipDuplicates: true,
-            });
-
-            console.log("Assigned New Teachers:", teacherIds);
-        } else {
-            // ✅ If no teachers are provided, remove all existing assignments
-            await prisma.teacherSubject.deleteMany({
-                where: { subjectId },
-            });
-            console.log("All teacher assignments removed for subject:", subjectId);
-        }
-
-        return { success: true, error: false };
-    } catch (err) {
-        console.error("Error updating subject:", err);
-        return { success: false, error: true };
-    }
-};
-
-export const deleteSubject = async (
-    currentState: CurrentState,
-    data: FormData
-) => {
-    const id = data.get("id") as string;
-    try {
-        await prisma.subject.delete({
-            where: {
-                id: parseInt(id)
-            },
-        });
-
-        console.log("Deleted Subject:", data)
-
-        // revalidatePath("/list/subjects")
-        return { success: true, error: false };
-    } catch (err) {
-        console.log(err)
-        return { success: false, error: true };
-    }
-};
 
 // * ---------------------------------------------- CLASS SCHEMA --------------------------------------------------------
 

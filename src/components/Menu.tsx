@@ -27,7 +27,7 @@ const menuItems: MenuItemSection[] = [
         visible: ["admin"],
         dropdown: [
           { icon: '/attendance.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin","teacher"] },
-          { icon: '/attendance.png', label: "view", href: "/list/attendance/view", visible: ["admin","teacher"] },
+          { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin","teacher"] },
         ],
       },
       {
