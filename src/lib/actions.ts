@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
     ClassSchema, ExamSchema, FeesSchema, HomeworkSchema,
-    LessonsSchema, Studentschema, SubjectSchema, Teacherschema
+    LessonsSchema, Studentschema, Teacherschema
 }
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
@@ -20,12 +20,12 @@ const prisma = new PrismaClient();
 // export const deleteSubject = async (id: number) => {
 //     const formData = new FormData();
 //     formData.append("id", id.toString());
-  
+
 //     const res = await fetch("/api/subject/delete", {
 //       method: "POST",
 //       body: formData,
 //     });
-  
+
 //     const data = await res.json();
 //     if (data.success) {
 //       // refresh list or redirect
@@ -34,7 +34,7 @@ const prisma = new PrismaClient();
 //     }
 //   };
 
-  // * Example deleteMessages function
+// * Example deleteMessages function
 export const deleteSubject = async (prevState: any, formData: FormData) => {
     const id = formData.get("id");
     const numericId = Number(id);
@@ -541,169 +541,6 @@ export const deleteTeacher = async (
 
 
 // * ---------------------------------------------- STUDENT SCHEMA --------------------------------------------------------
-
-export const createStudent = async (
-    currentState: CurrentState,
-    data: Studentschema
-) => {
-    try {
-        // Initialize Clerk client
-        const client = await clerkClient();
-
-        // Check if username already exists by accessing the 'data' property
-        const userListResponse = await client.users.getUserList({
-            query: data.username, // Ensure we search by the username
-        });
-
-        if (userListResponse.data.length > 0) {
-            throw new Error("Username is already taken.");
-        }
-
-        // Create a new user via Clerk
-        const user = await client.users.createUser({
-            username: data.username,
-            password: data.password,
-            firstName: data.name,
-            lastName: data.surname,
-        });
-
-        // ✨ Ensure academicYear is always filled
-        const academicYear = data.academicYear ?? "Y2024_2025"; // <- ✅ Default if undefined
-
-        // ✨ Create the Student record
-        const student = await prisma.student.create({
-            data: {
-                id: user.id,
-                username: data.username,
-                name: data.name,
-                surname: data.surname,
-                parentName: data.parentName,
-                dob: data.dob || new Date(),
-                email: data.email || null,
-                phone: data.phone,
-                address: data.address,
-                gender: data.gender,
-                img: data.img,
-                bloodType: data.bloodType,
-                classId: data.classId,
-                academicYear: academicYear, // <- ✅ Now always has a value
-            },
-        });
-
-        // 💬 After student is created, fetch all matching fee structures
-        const matchingFeeStructures = await prisma.feeStructure.findMany({
-            where: {
-                gradeId: data.gradeId,
-                academicYear: data.academicYear, // <- ✅ Use safe academicYear
-            },
-        });
-
-
-        console.log("Created Student:", student);
-        console.log("Matching Fee Structures:", matchingFeeStructures);
-
-        // 💬 Now map those fee structures into StudentFees
-        if (matchingFeeStructures.length > 0) {
-            await prisma.studentFees.createMany({
-                data: matchingFeeStructures.map(fee => ({
-                    studentId: student.id,
-                    feeStructureId: fee.id,
-                    academicYear: academicYear, // <- ✅ Use safe academicYear
-                    term: fee.term,
-                    paidAmount: 0,
-                    discountAmount: 0,
-                    fineAmount: 0,
-                    abacusPaidAmount: 0,
-                    receivedDate: null,
-                    receiptDate: new Date(),
-                    paymentMode: "CASH",
-                })),
-            });
-        }
-
-        console.log("Student Fees Created:", matchingFeeStructures);
-        console.log("Student Fees Created Successfully!");
-        return { success: true, error: false };
-
-    } catch (err: any) {
-        console.error("Error creating student:", { username: data.username, classId: data.classId, err });
-        console.error("Error details:", err.message || err);
-        console.log("Clerk Error Details:", err.errors);
-
-        return {
-            success: false,
-            error: true,
-            message: err.message || "An unexpected error occurred while creating the student."
-        };
-    }
-};
-
-
-
-
-export const updateStudent = async (
-    currentState: CurrentState,
-    data: Studentschema
-) => {
-    try {
-
-
-        // Initialize Clerk client by awaiting clerkClient()
-        const client = await clerkClient();
-
-        // Ensure the Clerk client has the 'users' API
-        if (!client.users) {
-            throw new Error("Clerk client does not have the 'users' API.");
-        }
-
-        if (!data.id) {
-            return { success: false, error: true };
-        }
-
-        // Update the user in Clerk
-        const user = await client.users.updateUser(data.id, {
-            username: data.username,
-            ...(data.password !== "" && { password: data.password }),
-            firstName: data.name,
-            lastName: data.surname,
-        });
-
-        const existingStudent = await prisma.student.findUnique({
-            where: { id: data.id },
-        });
-
-
-        // Update the student in the database
-        await prisma.student.update({
-            where: {
-                id: data.id,
-            },
-            data: {
-                ...(data.password !== "" && { password: data.password }),  // Ensure password handling is done correctly
-                username: data.username,
-                name: data.name,
-                surname: data.surname,
-                dob: data.dob || existingStudent?.dob, // Use existing value if not provided
-                email: data.email || null,
-                phone: data.phone!,
-                address: data.address!,
-                gender: data.gender,
-                img: data.img || null,
-                bloodType: data.bloodType || null,
-                classId: data.classId
-            },
-        });
-
-        // revalidatePath("/list/students")
-        return { success: true, error: false };
-    } catch (err) {
-        console.error(err);
-        return { success: false, error: true };
-    }
-
-
-};
-
 
 export const deleteStudent = async (
     currentState: CurrentState,

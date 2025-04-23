@@ -122,7 +122,7 @@ const TeacherListPage = async ({
       include: {
         subjects: {
           include: {
-            Subject: true, // ✅ Fetch Subject details
+            subject: true, // ✅ Fetch Subject details
           },
         },
         class: {  // ✅ Fetch multiple classes (Fix this!)

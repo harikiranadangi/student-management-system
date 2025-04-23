@@ -1,7 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import fs from "fs";
-import path from "path";
-import csvParser from "csv-parser";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
