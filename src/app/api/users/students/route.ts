@@ -21,7 +21,6 @@ export async function POST(req: Request) {
       bloodType,
       address,
       img,
-      clerk_id,
     } = body;
 
     console.log('Received data:', body);
@@ -47,6 +46,13 @@ export async function POST(req: Request) {
       lastName: surname,
     });
 
+    await client.users.updateUser(user.id, {
+      publicMetadata: {
+        role: "student"
+      }
+    });
+    
+
     console.log('Created Clerk User:', user.firstName, user.username, user.id);
 
 
@@ -67,12 +73,12 @@ export async function POST(req: Request) {
         bloodType,
         classId,
         academicYear,
-        clerk_id: id
+        clerk_id: user.id,
       },
     });
 
     console.log('Student Created:', student);
-      
+
     const role = 'student'
 
     // Step 5: Create ClerkStudent relation
@@ -88,7 +94,7 @@ export async function POST(req: Request) {
       },
     });
 
-
+    
     console.log('ClerkStudent Created:', clerkStudent);
 
     // Step 6: Fetch gradeId via class relation

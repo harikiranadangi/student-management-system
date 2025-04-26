@@ -3,38 +3,27 @@ import BigCalendarContainer from "@/components/BigCalendarContainer";
 import EventCalendar from "@/components/EventCalendar";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 const StudentPage = async () => {
   const { userId, role } = await fetchUserInfo();
+
+  console.log("👤 Clerk userId:", userId);
 
 
   if (!userId || role !== "student") {
     return <p className="text-center text-red-500">❌ Unauthorized or no user found.</p>;
   }
 
-  // Step 1: Fetch clerk_id from clerkUser using user_id
-  const clerkUser = await prisma.clerkStudents.findUnique({
-    where: { user_id: userId }, // userId is provided
-    select: { clerk_id: true }, // Only fetch clerk_id
-  });
-
-  // Step 2: If clerkUser exists, fetch the student using clerk_id
-  if (!clerkUser) {
-    throw new Error("Clerk user not found");
-  }
-
+  // Directly use userId as clerk_id in student table
   const student = await prisma.student.findUnique({
-    where: { clerk_id: clerkUser.clerk_id }, // Use the retrieved clerk_id
-    include: { Class: true }, // Include class relation
+    where: { clerk_id: userId } as Prisma.StudentWhereUniqueInput,
+    include: { Class: true },
   });
-
 
   if (!student) {
     return <p className="text-center text-red-500">⚠️ No student data available.</p>;
   }
-
-
-  console.log("Student Data:", student);
 
   if (!student.Class) {
     return (
@@ -70,4 +59,3 @@ const StudentPage = async () => {
 };
 
 export default StudentPage;
-

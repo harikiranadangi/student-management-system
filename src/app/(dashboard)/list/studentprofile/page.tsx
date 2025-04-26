@@ -23,7 +23,7 @@ const StudentProfilePage = async () => {
 
   // Step 2: Fetch student using clerk_id
   const student = await prisma.student.findUnique({
-    where: { clerk_id: clerkUser.clerk_id },
+    where: { clerk_id: userId },
     include: {
       Class: {
         include: {

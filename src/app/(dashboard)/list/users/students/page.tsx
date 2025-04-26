@@ -37,7 +37,7 @@ const renderRow = (item: StudentList, role: string | null) => (
     <td>{item.Class?.name ?? "N/A"}</td>
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
-    <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
+    <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, '-')}</td>
     <td className="hidden md:table-cell">{item.phone}</td>
 
     <td className="p-2">

@@ -65,13 +65,13 @@ const getColumns = (role: string | null) => [
     accessor: "date",
     className: "hidden md:table-cell",
   },
-  {
-    header: "Type",
-    accessor: "type",
-    className: "hidden md:table-cell",
-  },
   ...(role === "teacher" || role === "admin"
     ? [
+      {
+        header: "Type",
+        accessor: "type",
+        className: "hidden md:table-cell",
+      },
       {
         header: "Student Name",
         accessor: "student",
