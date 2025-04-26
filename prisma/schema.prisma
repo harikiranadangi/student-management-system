@@ -179,7 +179,7 @@ model Student {
   dob             DateTime
   createdAt       DateTime           @default(now())
   deletedAt       DateTime?
-  clerk_id        String?            @unique
+  clerk_id        String?
   academicYear    AcademicYear       @default(Y2024_2025)
   clerkStudent    ClerkStudents?
   feeTransactions FeeTransaction[]
@@ -205,7 +205,6 @@ model ClerkStudents {
   student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
-
 model ClassSubject {
   classId   Int
   subjectId Int
@@ -219,7 +218,7 @@ model Subject {
   id        Int              @id @default(autoincrement())
   name      String           @unique
   createdAt DateTime         @default(now())
-  teachers  SubjectTeacher[]       
+  teachers  SubjectTeacher[]
   exams     ExamSubject[]
   lessons   Lesson[]
   results   Result[]
@@ -245,7 +244,7 @@ model Teacher {
   clerk_id      String?          @unique
   ClerkTeachers ClerkTeachers?
   lessons       Lesson[]
-  subjects      SubjectTeacher[]  // Many-to-many relation
+  subjects      SubjectTeacher[] // Many-to-many relation
   class         Class?           @relation("ClassToTeacher")
 }
 

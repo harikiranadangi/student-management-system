@@ -20,27 +20,27 @@ const renderRow = (item: MessageList, role: string | null) => (
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     {/* Date */}
-    <td className="hidden md:table-cell">
-      {new Date(item.date).toLocaleDateString("en-US")}
+    <td className="hidden md:table-cell w-24">
+    {new Date(item.date).toLocaleDateString("en-GB").replace(/\//g, '-')}
     </td>
 
 
     {/* Student Name (only for teacher/admin) */}
     {(role === "teacher" || role === "admin") && (
       <>
+      <td className="hidden md:table-cell capitalize w-32">{item.type.toLowerCase()}</td>
         <td> <div className="flex flex-col">
           <h3 className="font-semibold">{item.Student.name}</h3>
           <p className="text-xs">{item.studentId}</p>
         </div>
         </td>
         {/* Type */}
-        <td className="hidden md:table-cell capitalize px-6">{item.type.toLowerCase()}</td>
-        <td className="hidden md:table-cell">{item.Class?.name}</td>
+        <td className="hidden md:table-cell w-24">{item.Class?.name}</td>
       </>
     )}
 
     {/* Message */}
-    <td className="p-4 whitespace-pre-line px-2">{item.message}</td>
+    <td className="p-4 whitespace-pre-line px-0">{item.message}</td>
 
 
 

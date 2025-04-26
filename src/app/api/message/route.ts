@@ -4,23 +4,29 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, type, date, studentId, classId, gradeId } = await req.json();
+    const { message, type, studentId, classId, gradeId } = await req.json();
 
-    const formattedDate = date ? new Date(date).toISOString() : new Date().toISOString();
+    const formattedDate = new Date().toISOString();
 
-    // 1. Send to specific student
-    if (studentId) {
-      const newMessage = await prisma.messages.create({
+    const createMessageForStudent = async (studentId: string, classId: number | null) => {
+      return prisma.messages.create({
         data: {
           message,
           type,
           date: formattedDate,
-          ...(classId && { Class: { connect: { id: Number(classId) } } }),
-          Student: { connect: { id: (studentId) } },
+          ...(classId && { Class: { connect: { id: classId } } }),
+          Student: { connect: { id: studentId } },
         },
       });
+    };
+
+    // 1. Send to specific student
+    if (studentId) {
+      const newMessage = await createMessageForStudent(studentId, classId ? Number(classId) : null);
       return NextResponse.json(
-        { success: true, message: "Message created", data: newMessage, count: 1 }, { status: 201 });
+        { success: true, message: "Message created", data: newMessage, count: 1 },
+        { status: 201 }
+      );
     }
 
     // 2. Send to all students in a class
@@ -31,18 +37,14 @@ export async function POST(req: NextRequest) {
 
       const messages = await Promise.all(
         studentsInClass.map((student) =>
-          prisma.messages.create({
-            data: {
-              message,
-              type,
-              date: formattedDate,
-              Class: { connect: { id: Number(classId) } },
-              Student: { connect: { id: student.id } },
-            },
-          })
+          createMessageForStudent(student.id, student.classId)
         )
       );
-      return NextResponse.json({ success: true, message: "Message sent to all students", count: messages.length }, { status: 201 });
+
+      return NextResponse.json(
+        { success: true, message: "Message sent to all students in class", count: messages.length },
+        { status: 201 }
+      );
     }
 
     // 3. Send to all students in a grade
@@ -60,19 +62,14 @@ export async function POST(req: NextRequest) {
 
       const messages = await Promise.all(
         studentsInGrade.map((student) =>
-          prisma.messages.create({
-            data: {
-              message,
-              type,
-              date: formattedDate,
-              Class: { connect: { id: student.classId } },
-              Student: { connect: { id: student.id } },
-            },
-          })
+          createMessageForStudent(student.id, student.classId)
         )
       );
 
-      return NextResponse.json({ messagessuccess: true, message: "Message sent to all students", count: messages.length }, { status: 201 });
+      return NextResponse.json(
+        { success: true, message: "Message sent to all students in grade", count: messages.length },
+        { status: 201 }
+      );
     }
 
     // 4. Send to all students
@@ -80,22 +77,19 @@ export async function POST(req: NextRequest) {
 
     const messages = await Promise.all(
       allStudents.map((student) =>
-        prisma.messages.create({
-          data: {
-            message,
-            type,
-            date: formattedDate,
-            ...(student.classId && { Class: { connect: { id: student.classId } } }),
-            Student: { connect: { id: student.id } },
-          },
-        })
+        createMessageForStudent(student.id, student.classId)
       )
     );
 
-    return NextResponse.json({ success: true, message: "Message sent to all students", count: messages.length }, { status: 201 });
-
+    return NextResponse.json(
+      { success: true, message: "Message sent to all students", count: messages.length },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating message:", error);
-    return NextResponse.json({ success: false, message: "Failed to create message" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Failed to create message" },
+      { status: 500 }
+    );
   }
 }

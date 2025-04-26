@@ -12,6 +12,10 @@ COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodT
 FROM 'H:/student-management-system/data/teachers_data.csv'
 WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
+COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
+FROM 'H:/student-management-system/data/students_data.csv'
+WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
+
 -- Clerk Teachers
 COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
 FROM 'H:/student-management-system/data/clerk_teacher_data.csv'

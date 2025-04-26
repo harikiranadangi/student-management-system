@@ -77,8 +77,11 @@ const StudentForm = ({
       });
 
       if (!response.ok) {
-        throw new Error('Error in API request');
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(errorData.message || 'Error in API request');
       }
+      
 
       const result = await response.json();
       console.log("Response from server:", result);

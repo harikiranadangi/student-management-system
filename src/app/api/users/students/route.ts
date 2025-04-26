@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       parentName,
       bloodType,
       address,
-      img
+      img,
+      clerk_id,
     } = body;
 
     console.log('Received data:', body);
@@ -36,16 +37,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step 3: Create Clerk user
-    const password = phone;
+    const password = phone
+
+    // Step 2: Create Clerk user
     const user = await client.users.createUser({
-      username,
+      username: username,
       password,
       firstName: name,
-      lastName: '',
+      lastName: surname,
     });
 
-    // Step 4: Create student in Prisma
+    console.log('Created Clerk User:', user.firstName, user.username, user.id);
+
+
+    // Step 3: Create student in Prisma
     const student = await prisma.student.create({
       data: {
         id,
@@ -62,22 +67,27 @@ export async function POST(req: Request) {
         bloodType,
         classId,
         academicYear,
+        clerk_id: id
       },
     });
 
     console.log('Student Created:', student);
+      
+    const role = 'student'
 
     // Step 5: Create ClerkStudent relation
     const clerkStudent = await prisma.clerkStudents.create({
       data: {
-        clerk_id: student.id,
+        clerk_id: user.id,
         username: `s${student.id}`,
         password,
         full_name: `${name} ${surname}`,
-        role: 'student',
+        user_id: user.id, // ✅ ADD COMMA HERE
+        role,
         studentId: student.id,
       },
     });
+
 
     console.log('ClerkStudent Created:', clerkStudent);
 
@@ -102,17 +112,16 @@ export async function POST(req: Request) {
       },
     });
 
-
     console.log('Matching Fee Structures:', matchingFeeStructures);
 
-    // Step 7: Map and create student fee records
+    // Step 8: Map and create student fee records
     if (matchingFeeStructures.length > 0) {
       await prisma.studentFees.createMany({
         data: matchingFeeStructures.map((fee) => ({
           studentId: student.id,
           feeStructureId: fee.id,
           academicYear: academicYear,
-          term: fee.term,
+          term: fee.term, // ✅ uses enum Term directly
           paidAmount: 0,
           discountAmount: 0,
           fineAmount: 0,
