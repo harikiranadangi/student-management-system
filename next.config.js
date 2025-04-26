@@ -1,22 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io", // ImageKit URL
+      },
+    ],
+  },
   reactStrictMode: true,
 
   eslint: {
     ignoreDuringBuilds: true,
   },
 
-  allowedDevOrigins: ['http://192.168.5.2:3000'],
+  allowedDevOrigins: ['http://192.168.5.2:3000'], // Example dev origin, update as necessary
 
   turbopack: {
-    // You can add additional configurations if needed here.
-    // For example:
-    // enabled: true,
+    // Optional config
   },
 
   experimental: {
-    serverActions: {}, // <- Empty object means enabled
-    optimizeCss: true, // This is fine as true
+    serverActions: {}, // Enabled by default
+    optimizeCss: true, // Enable CSS optimization
   },
 };
 
