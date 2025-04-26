@@ -547,26 +547,38 @@ export const deleteStudent = async (
     data: FormData
 ) => {
     const id = data.get("id") as string;
+
     try {
-
-        // Initialize Clerk client by awaiting clerkClient()
-        const client = await clerkClient();
-
-        await client.users.deleteUser(id)
-
-        await prisma.student.delete({
-            where: {
-                id: id
-            },
+        // 1. Fetch clerk_id for the student
+        const student = await prisma.student.findUnique({
+            where: { id },
+            select: { clerk_id: true },
         });
 
-        // Log success message
-        console.log(`User with ID ${id} deleted successfully`);
+        if (!student) {
+            return { success: false, error: true, message: "Student not found in database" };
+        }
 
-        // revalidatePath("/list/student")
+        // 2. Initialize Clerk client
+        const client = await clerkClient();
+
+
+
+        // 3. Delete user from Clerk if clerk_id exists
+        if (student.clerk_id) {
+            await client.users.deleteUser(student.clerk_id);
+        }
+
+        // 4. Delete student from Prisma
+        await prisma.student.delete({
+            where: { id },
+        });
+
+        console.log(`Student with ID ${id} and Clerk ID ${student.clerk_id} deleted successfully`);
+        revalidatePath("/list/users/students")
         return { success: true, error: false, message: 'Deleted user successfully' };
     } catch (err) {
-        console.log(err)
+        console.error("Error deleting student:", err);
         return { success: false, error: true, message: 'An error occurred while deleting the user' };
     }
 };

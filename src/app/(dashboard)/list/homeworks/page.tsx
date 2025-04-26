@@ -14,53 +14,54 @@ import SortButton from "@/components/SortButton";
 type Homeworks = Homework & { Class: Class };
 
 const renderRow = (item: Homeworks, role: string | null) => (
-
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  <tr
+    key={item.id}
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
-    {/* <td className="flex items-center gap-4 p-4">{item.title}</td> */}
-    <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-GB").format(new Date(item.date)).replace(/\//g, "-")}</td>
+    <td className="hidden md:table-cell w-32">
+      {new Intl.DateTimeFormat("en-GB")
+        .format(new Date(item.date))
+        .replace(/\//g, "-")}
+    </td>
 
+    {(role === "admin" || role === "teacher") && (
+      <td className="hidden md:table-cell">
+        {item.Class?.name ?? "N/A"}
+      </td>
+    )}
 
-    <td className="hidden md:table-cell">{item.Class?.name ?? "N/A"}</td>
-    <td className="flex items-center gap-4 p-4 whitespace-pre-line">{item.description}</td>
+    <td className="flex items-center p-4">
+      {item.description}
+    </td>
 
-
-    <td><div className="flex items-center gap-2">
-      {(role === "admin" || role === "teacher") && (
-        <>
+    {(role === "admin" || role === "teacher") && (
+      <td>
+        <div className="flex items-center gap-2">
           <FormContainer table="homeworks" type="update" data={item} />
           <FormContainer table="homeworks" type="delete" id={item.id} />
-        </>
-      )}
-    </div>
-    </td>
+        </div>
+      </td>
+    )}
   </tr>
 );
 
-const getColumns = (role: string | null) => [
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Description",
-    accessor: "description",
-    className: "hidden md:table-cell",
-  },
-  ...(role === "admin" || role === 'teacher'
-    ? [
-      {
-        header: "Actions",
-        accessor: "action",
-      },
-    ]
-    : []),
-];
+
+const getColumns = (role: string | null) => {
+  const baseColumns = [
+    { header: "Date", accessor: "date", className: "hidden md:table-cell" },
+    { header: "Description", accessor: "description", className: "hidden md:table-cell" },
+  ];
+
+  const adminTeacherColumns = [
+    { header: "Class", accessor: "class", className: "hidden md:table-cell" },
+    { header: "Actions", accessor: "action" },
+  ];
+
+  return role === "admin" || role === "teacher"
+    ? [...baseColumns.slice(0, 1), adminTeacherColumns[0], ...baseColumns.slice(1), adminTeacherColumns[1]]
+    : baseColumns;
+};
+
 
 const HomeworkListPage = async ({
   searchParams,

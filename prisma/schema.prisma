@@ -179,7 +179,7 @@ model Student {
   dob             DateTime
   createdAt       DateTime           @default(now())
   deletedAt       DateTime?
-  clerk_id        String?
+  clerk_id        String?            @unique
   academicYear    AcademicYear       @default(Y2024_2025)
   clerkStudent    ClerkStudents?
   feeTransactions FeeTransaction[]
@@ -195,14 +195,15 @@ model Student {
 }
 
 model ClerkStudents {
-  clerk_id  String   @id @db.VarChar
-  user_id   String?  @unique
-  username  String   @unique
-  password  String   @db.VarChar
-  full_name String   @db.VarChar
-  role      String   @default("student") @db.VarChar
-  studentId String?  @unique @db.VarChar
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  clerk_id       String   @id @db.VarChar
+  user_id        String?  @unique
+  username       String   @unique
+  password       String   @db.VarChar
+  full_name      String   @db.VarChar
+  role           String   @default("student") @db.VarChar
+  studentId      String?  @unique @db.VarChar
+  student        Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  publicMetadata Json?    @default("{}") // Default empty object
 }
 
 model ClassSubject {

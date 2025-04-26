@@ -12,9 +12,16 @@ COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodT
 FROM 'H:/student-management-system/data/teachers_data.csv'
 WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
-COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
-FROM 'H:/student-management-system/data/students_data.csv'
-WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
+COPY "Student" ( id,username,name,surname,"parentName",email,phone,address,img,"bloodType",gender,dob,"createdAt","deletedAt","classId",clerk_id,"academicYear"
+)
+FROM 'H:/student-management-system/data/student_data.csv'
+WITH (
+  FORMAT CSV,
+  HEADER,
+  DELIMITER ',',
+  QUOTE '"'
+);
+
 
 -- Clerk Teachers
 COPY "ClerkTeachers"(clerk_id, username, password, full_name, role, "teacherId")
@@ -409,3 +416,6 @@ SELECT * FROM "StudentFees" WHERE "studentId" = '17159' ;
 SELECT * FROM "StudentTotalFees";
 
 DELETE FROM "StudentTotalFees";
+
+SELECT * FROM "Student" WHERE clerk_id = 'user_2wFMzReXZcEfUSOhp7yzJGkhNRw';
+SELECT * FROM "Student";
