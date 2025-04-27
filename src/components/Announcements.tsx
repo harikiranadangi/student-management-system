@@ -3,33 +3,56 @@
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
 
-const Announcements = async () => {
+
+
+const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GENERAL" }) => {
   try {
     const { userId, role } = await fetchUserInfo();
+    console.log("Messages Component Loaded");
     if (!userId || !role) {
       return <div>Error: Could not fetch user info</div>;
     }
 
-    const roleConditions = {
-      teacher: { lessons: { some: { teacherId: userId } } },
-      student: { students: { some: { id: userId } } },
+    let classId: number | null = null;
+
+    // Only if student, get their classId
+    if (role === "student") {
+      const clerkStudent = await prisma.clerkStudents.findUnique({
+        where: { user_id: userId },
+        select: { clerk_id: true },
+      });
+
+      if (!clerkStudent) {
+        return <div>Error: Student not found</div>;
+      }
+
+      const student = await prisma.student.findUnique({
+        where: { clerk_id: clerkStudent.clerk_id },
+        select: { classId: true },
+      });
+
+      classId = student?.classId ?? null;
+    }
+
+    const whereCondition: any = {
+      type,
     };
-    
-    const data = await prisma.announcement.findMany({
+
+    if (role !== "admin") {
+      whereCondition.OR = [
+        { classId: classId }, // student class
+        { classId: null },     // school wide
+      ];
+    }
+
+    const data = await prisma.messages.findMany({
       take: 3,
       orderBy: { date: "desc" },
-      where: {
-        ...(role !== "admin" && {
-          OR: [
-            // Class-specific announcements based on role
-            { Class: roleConditions[role as keyof typeof roleConditions] || {} },
-            // Global announcements
-            { classId: null },
-          ],
-        }),
+      where: whereCondition,
+      include: {
+        Class: true,
       },
     });
-    
 
     if (data.length === 0) {
       return <div>No announcements available</div>;
@@ -42,15 +65,17 @@ const Announcements = async () => {
           <span className="text-xs text-gray-400">View All</span>
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          {data.map((announcement, index) => (
-            <div key={announcement.id} className={`p-4 rounded-md bg-${getColorForIndex(index)}`}>
+          {data.map((messages, index) => (
+            <div key={messages.id} className={`p-4 rounded-md bg-${getColorForIndex(index)}`}>
               <div className="flex items-center justify-between">
-                <h2 className="font-medium">{announcement.title}</h2>
+                <h2 className="font-medium">
+                  {messages.Class?.name ?? (type === "GENERAL" ? "General Message" : "Announcement")}
+                </h2>
                 <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">
-                  {new Intl.DateTimeFormat("en-GB").format(announcement.date)}
+                  {new Intl.DateTimeFormat("en-GB").format(messages.date)}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-black-500">{announcement.description}</p>
+              <p className="mt-1 text-sm text-black-500">{messages.message}</p>
             </div>
           ))}
         </div>
@@ -62,6 +87,8 @@ const Announcements = async () => {
   }
 };
 
+
+
 const getColorForIndex = (index: number) => {
   switch (index) {
     case 0: return "LamaSkyLight";
@@ -71,4 +98,4 @@ const getColorForIndex = (index: number) => {
   }
 };
 
-export default Announcements;
+export default Messages;

@@ -15,25 +15,6 @@ const prisma = new PrismaClient();
 
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
-
-
-// export const deleteSubject = async (id: number) => {
-//     const formData = new FormData();
-//     formData.append("id", id.toString());
-
-//     const res = await fetch("/api/subject/delete", {
-//       method: "POST",
-//       body: formData,
-//     });
-
-//     const data = await res.json();
-//     if (data.success) {
-//       // refresh list or redirect
-//     } else {
-//       alert(data.message);
-//     }
-//   };
-
 // * Example deleteMessages function
 export const deleteSubject = async (prevState: any, formData: FormData) => {
     const id = formData.get("id");
@@ -59,9 +40,7 @@ export const deleteSubject = async (prevState: any, formData: FormData) => {
     }
 };
 
-
-
-
+// * ---------------------------------------------- MESSAGE SCHEMA --------------------------------------------------------
 // * Example deleteMessages function
 export const deleteMessages = async (prevState: any, formData: FormData) => {
     const id = formData.get("id")?.toString();
@@ -85,6 +64,8 @@ export const deleteMessages = async (prevState: any, formData: FormData) => {
         };
     }
 };
+
+// * ---------------------------------------------- ANNOUNCEMENTS SCHEMA --------------------------------------------------------
 
 // * Example deleteMessages function
 export const deleteAnnouncements = async (prevState: any, formData: FormData) => {
@@ -646,7 +627,7 @@ export const deleteExam = async (
             },
         });
 
-        console.log("Deleted Subject:", data)
+        console.log("Deleted Exam:", data)
 
         // revalidatePath("/list/subjects")
         return { success: true, error: false };

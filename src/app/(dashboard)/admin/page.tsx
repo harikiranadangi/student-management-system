@@ -1,5 +1,5 @@
 // app/(dashboard)/admin/page.tsx
-import Announcements from "@/components/Announcements";
+import Messages from "@/components/Announcements";
 import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import CountChartContainer from "@/components/CountChartContainer";
 import EventCalendarContainer from "@/components/EventCalendarContainer";
@@ -49,7 +49,7 @@ const AdminPage = ({ searchParams }: PageProps) => {
       {/* RIGHT */}
       <div className="flex flex-col w-full gap-8 lg:w-1/3">
         <EventCalendarContainer searchParams={searchParams} />
-        <Announcements />
+        <Messages />
       </div>
 
     </div>

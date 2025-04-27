@@ -1,4 +1,5 @@
-import Announcements from "@/components/Announcements";
+
+import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
@@ -180,7 +181,8 @@ const StudentProfilePage = async () => {
             </div>
           </div>
           <Performance />
-          <Announcements />
+          <Messages />
+
         </div>
       </div>
     );

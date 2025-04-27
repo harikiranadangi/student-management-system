@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       data: {
         clerk_id: user.id,
         username: `s${student.id}`,
-        password,
+        password: student.id,
         full_name: `${name} ${surname}`,
         user_id: user.id, // ✅ ADD COMMA HERE
         role,
