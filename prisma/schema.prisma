@@ -39,22 +39,22 @@ model Grade {
   subjects     Subject[]      @relation("SubjectGrades")
 }
 
-
 model Class {
-  id           Int            @id @default(autoincrement())
-  name         String         @unique(map: "Class_name_key")
-  supervisorId String?        @unique
-  gradeId      Int
-  Announcement Announcement[]
-  events       Event[]
-  exams        Exam[]
-  homeworks    Homework[]
-  lessons      Lesson[]
-  students     Student[]
-  Grade        Grade          @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
-  attendances  Attendance[]
-  messages     Messages[]
+  id              Int              @id @default(autoincrement())
+  name            String           @unique(map: "Class_name_key")
+  supervisorId    String?          @unique
+  gradeId         Int
+  Announcement    Announcement[]
+  events          Event[]
+  exams           Exam[]
+  homeworks       Homework[]
+  lessons         Lesson[]
+  students        Student[]
+  Grade           Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  Teacher         Teacher?         @relation("ClassToTeacher", fields: [supervisorId], references: [id])
+  attendances     Attendance[]
+  messages        Messages[]
+  subjectTeachers SubjectTeacher[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -207,16 +207,15 @@ model ClerkStudents {
   publicMetadata Json?    @default("{}") // Default empty object
 }
 
-
 model Subject {
-  id           Int              @id @default(autoincrement())
-  name         String           @unique
-  createdAt    DateTime         @default(now())
-  teachers     SubjectTeacher[] 
-  exams        ExamSubject[]
-  lessons      Lesson[]
-  results      Result[]
-  grades       Grade[]          @relation("SubjectGrades")
+  id        Int              @id @default(autoincrement())
+  name      String           @unique
+  createdAt DateTime         @default(now())
+  teachers  SubjectTeacher[]
+  exams     ExamSubject[]
+  lessons   Lesson[]
+  results   Result[]
+  grades    Grade[]          @relation("SubjectGrades")
 }
 
 model Teacher {
@@ -249,7 +248,10 @@ model SubjectTeacher {
   teacher   Teacher @relation(fields: [teacherId], references: [id])
   teacherId String
 
-  @@id([subjectId, teacherId]) // Composite primary key
+  class   Class @relation(fields: [classId], references: [id])
+  classId Int
+
+  @@id([subjectId, teacherId, classId]) // Composite primary key
 }
 
 model ClerkTeachers {

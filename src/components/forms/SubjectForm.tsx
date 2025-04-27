@@ -41,7 +41,7 @@ const SubjectForm = ({
         ? { name: formData.name, gradeId: formData.gradeId } // include gradeId as an array
         : formData; // include id for update
 
-      const url = type === 'create' ? '/api/subject/create' : '/api/subject/update';
+      const url = type === 'create' ? '/api/subject/' : '/api/subject/update';
 
       const res = await fetch(url, {
         method: type === 'create' ? 'POST' : 'PUT',
