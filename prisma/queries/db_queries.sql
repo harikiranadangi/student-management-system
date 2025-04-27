@@ -224,6 +224,8 @@ SELECT * FROM "ExamSubject";
 -- Retrieve all records from the Subject table
 SELECT * FROM "Subject";
 
+DELETE FROM "Subject" WHERE "gradeId" IS NULL;
+
 -- Retrieve all records from the Fee table
 SELECT * FROM "Fee";
 

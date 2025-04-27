@@ -36,7 +36,9 @@ model Grade {
   feestructure FeeStructure[] @relation("GradeToFeesStructure")
   Homework     Homework[]
   classes      Class[]
+  subjects     Subject[]      @relation("SubjectGrades")
 }
+
 
 model Class {
   id           Int            @id @default(autoincrement())
@@ -53,7 +55,6 @@ model Class {
   Teacher      Teacher?       @relation("ClassToTeacher", fields: [supervisorId], references: [id])
   attendances  Attendance[]
   messages     Messages[]
-  subjects     ClassSubject[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -206,24 +207,16 @@ model ClerkStudents {
   publicMetadata Json?    @default("{}") // Default empty object
 }
 
-model ClassSubject {
-  classId   Int
-  subjectId Int
-  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
-  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([classId, subjectId])
-}
 
 model Subject {
-  id        Int              @id @default(autoincrement())
-  name      String           @unique
-  createdAt DateTime         @default(now())
-  teachers  SubjectTeacher[]
-  exams     ExamSubject[]
-  lessons   Lesson[]
-  results   Result[]
-  classes   ClassSubject[]
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  createdAt    DateTime         @default(now())
+  teachers     SubjectTeacher[] 
+  exams        ExamSubject[]
+  lessons      Lesson[]
+  results      Result[]
+  grades       Grade[]          @relation("SubjectGrades")
 }
 
 model Teacher {

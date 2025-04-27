@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, teachers } = body;
+    const { name, gradeId } = body;
 
     console.log('Received data:', body); // Debugging: Check the received data
 
@@ -22,26 +22,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if all teacher IDs are valid
-    const validTeacherCount = await prisma.teacher.count({
+    // Check if all grade IDs are valid
+    const validGradeCount = await prisma.grade.count({
       where: {
-        id: { in: teachers },
+        id: { in: gradeId },
       },
     });
 
-    console.log('Valid teacher count:', validTeacherCount); // Debugging: Check how many teachers are valid
+    console.log('Valid grade count:', validGradeCount); // Debugging: Check how many grades are valid
 
-    if (validTeacherCount !== teachers.length) {
+    if (validGradeCount !== gradeId.length) {
       return NextResponse.json(
-        { message: 'Some teacher IDs are invalid or do not exist.' },
+        { message: 'Some grade IDs are invalid or do not exist.' },
         { status: 400 }
       );
     }
 
-    // Proceed with creating the new subject
+    // Proceed with creating the new subject and linking it to the grades
     const newSubject = await prisma.subject.create({
       data: {
         name: name.trim(),
+        grades: {
+          connect: gradeId.map((id: number) => ({ id })) // Connect grades by their IDs
+        }
       },
     });
 

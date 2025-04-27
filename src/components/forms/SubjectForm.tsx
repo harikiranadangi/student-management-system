@@ -29,7 +29,7 @@ const SubjectForm = ({
     resolver: zodResolver(subjectSchema),
     defaultValues: {
       name: data?.name || '',
-      teachers: data?.teachers || [],
+      gradeId: data?.gradeId || [], // Default value as an empty array
       id: data?.id || undefined,
     },
   });
@@ -38,11 +38,10 @@ const SubjectForm = ({
     try {
       // Ensure you're NOT including id in the request for 'create' type
       const dataToSend = type === 'create'
-        ? { name: formData.name, teachers: formData.teachers } // no id for create
+        ? { name: formData.name, gradeId: formData.gradeId } // include gradeId as an array
         : formData; // include id for update
 
       const url = type === 'create' ? '/api/subject/create' : '/api/subject/update';
-
 
       const res = await fetch(url, {
         method: type === 'create' ? 'POST' : 'PUT',
@@ -51,7 +50,6 @@ const SubjectForm = ({
           'Content-Type': 'application/json',
         },
       });
-
 
       const result = await res.json();
 
@@ -67,9 +65,7 @@ const SubjectForm = ({
     }
   };
 
-
-
-  const { teachers } = relatedData;
+  const { grades } = relatedData;
 
   return (
     <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
@@ -98,21 +94,21 @@ const SubjectForm = ({
         )}
 
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Teachers</label>
+          <label className="text-xs text-gray-500">Grades</label>
           <select
             multiple
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register('teachers')}
-            defaultValue={data?.teachers || []}
+            {...register('gradeId')}
+            defaultValue={data?.gradeId || []} // Defaulting to the grades already assigned to the subject
           >
-            {teachers?.map((teacher: { id: string; name: string; surname: string }) => (
-              <option value={teacher.id} key={teacher.id}>
-                {teacher.name}
+            {grades?.map((grade: { id: string; level: string }) => (
+              <option value={grade.id} key={grade.id}>
+                {grade.level}
               </option>
             ))}
           </select>
-          {errors?.teachers && (
-            <p className="text-xs text-red-400">{errors.teachers.message}</p>
+          {errors?.gradeId && (
+            <p className="text-xs text-red-400">{errors.gradeId.message}</p>
           )}
         </div>
       </div>

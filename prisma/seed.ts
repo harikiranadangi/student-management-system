@@ -1,138 +1,111 @@
 import { PrismaClient } from "@prisma/client";
+import fs from 'fs';
+import csv from 'csv-parser';
+import path from 'path';
 import { fileURLToPath } from "url";
-import { dirname } from "path";
 
-// Fix for __dirname in ES modules
+// Recreate __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
+
+// Create function to read CSV files
+const readCSVFile = (filePath: string): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', reject);
+  });
+};
 
 const prisma = new PrismaClient();
 
-
 async function main() {
-  console.log("🔄 Deleting existing data...");
-
-  // Delete in correct order to maintain referential integrity
-  // Delete child tables first
-  // await prisma.studentTotalFees.deleteMany();
-  // await prisma.studentFees.deleteMany();
-  // await prisma.feeStructure.deleteMany();
-  // // await prisma.grade.deleteMany();
-  // // await prisma.subject.deleteMany();
-  // await prisma.class.deleteMany();
-  // await prisma.teacher.deleteMany();
-  // await prisma.student.deleteMany();
-
-  console.log("✅ Existing data deleted");
+  
 
   console.log("📌 Seeding data...");
 
-  // ✅ Seed Grades
-  const gradesData = [
-    { id: 1, level: "Pre KG" },
-    { id: 2, level: "LKG" },
-    { id: 3, level: "UKG" },
-    { id: 4, level: "I" },
-    { id: 5, level: "II" },
-    { id: 6, level: "III" },
-    { id: 7, level: "IV" },
-    { id: 8, level: "V" },
-    { id: 9, level: "VI" },
-    { id: 10, level: "VII" },
-    { id: 11, level: "VIII" },
-    { id: 12, level: "IX" },
-    { id: 13, level: "X" },
-  ];
-  await prisma.grade.createMany({ data: gradesData, skipDuplicates: true });
+  const projectRootPath = path.resolve(__dirname, '..');  // Move one level up to the root
+  const gradesFilePath = path.join(projectRootPath, 'data', 'grades.csv');
+  const classesFilePath = path.join(projectRootPath, 'data', 'classes.csv');
+  const subjectsFilePath = path.join(projectRootPath, 'data', 'subjects.csv'); // <- NEW
+  const gradeSubjectsFilePath = path.join(projectRootPath, 'data', 'grade_subjects_data.csv');
+
+  console.log(`Grades CSV Path: ${gradesFilePath}`);
+  console.log(`Classes CSV Path: ${classesFilePath}`);
+  console.log(`Subjects CSV Path: ${subjectsFilePath}`);
+  console.log(`Grade Subjects CSV Path: ${gradeSubjectsFilePath}`);
+
+  // 1. Seed Grades
+  const gradesData = await readCSVFile(gradesFilePath);
+  const formattedGrades = gradesData.map((row: any) => ({
+    id: parseInt(row.id),
+    level: row.level,
+  }));
+
+  await prisma.grade.createMany({ data: formattedGrades, skipDuplicates: true });
   console.log("✅ Grades seeded");
 
+  // 2. Seed Classes
+  const classesData = await readCSVFile(classesFilePath);
+  const formattedClasses = classesData.map((row: any) => ({
+    id: parseInt(row.id),
+    name: row.name,
+    gradeId: parseInt(row.gradeId),
+    supervisorId: row.supervisorId,
+  }));
 
-  // Insert Class Data
-  await prisma.class.createMany({
-    data: [
-      { id: 1, name: "Pre KG", gradeId: 1, supervisorId: "staff_ks_063" },
-      { id: 2, name: "LKG - A", gradeId: 2, supervisorId: "staff_ks_001" },
-      { id: 3, name: "LKG - B", gradeId: 2, supervisorId: "staff_ks_002" },
-      { id: 4, name: "UKG - A", gradeId: 3, supervisorId: "staff_ks_003" },
-      { id: 5, name: "UKG - B", gradeId: 3, supervisorId: "staff_ks_004" },
-      { id: 6, name: "UKG - C", gradeId: 3, supervisorId: "staff_ks_005" },
-      { id: 7, name: "I - A", gradeId: 4, supervisorId: "staff_ks_007" },
-      { id: 8, name: "I - B", gradeId: 4, supervisorId: "staff_ks_008" },
-      { id: 9, name: "I - C", gradeId: 4, supervisorId: "staff_ks_009" },
-      { id: 10, name: "I - D", gradeId: 4, supervisorId: "staff_ks_012" },
-      { id: 11, name: "II - A", gradeId: 5, supervisorId: "staff_ks_015" },
-      { id: 12, name: "II - B", gradeId: 5, supervisorId: "staff_ks_016" },
-      { id: 13, name: "II - C", gradeId: 5, supervisorId: "staff_ks_017" },
-      { id: 14, name: "II - D", gradeId: 5, supervisorId: "staff_ks_018" },
-      { id: 15, name: "III - A", gradeId: 6, supervisorId: "staff_ks_019" },
-      { id: 16, name: "III - B", gradeId: 6, supervisorId: "staff_ks_020" },
-      { id: 17, name: "III - C", gradeId: 6, supervisorId: "staff_ks_022" },
-      { id: 18, name: "III - D", gradeId: 6, supervisorId: "staff_ks_025" },
-      { id: 19, name: "IV - A", gradeId: 7, supervisorId: "staff_ks_028" },
-      { id: 20, name: "IV - B", gradeId: 7, supervisorId: "staff_ks_029" },
-      { id: 21, name: "IV - C", gradeId: 7, supervisorId: "staff_ks_030" },
-      { id: 22, name: "IV - D", gradeId: 7, supervisorId: "staff_ks_032" },
-      { id: 23, name: "V - A", gradeId: 8, supervisorId: "staff_ks_033" },
-      { id: 24, name: "V - B", gradeId: 8, supervisorId: "staff_ks_034" },
-      { id: 25, name: "V - C", gradeId: 8, supervisorId: "staff_ks_036" },
-      { id: 26, name: "V - D", gradeId: 8, supervisorId: "staff_ks_037" },
-      { id: 27, name: "VI - A", gradeId: 9, supervisorId: "staff_ks_038" },
-      { id: 28, name: "VI - B", gradeId: 9, supervisorId: "staff_ks_039" },
-      { id: 29, name: "VI - C", gradeId: 9, supervisorId: "staff_ks_040" },
-      { id: 30, name: "VI - D", gradeId: 9, supervisorId: "staff_ks_041" },
-      { id: 31, name: "VII - A", gradeId: 10, supervisorId: "staff_ks_043" },
-      { id: 32, name: "VII - B", gradeId: 10, supervisorId: "staff_ks_044" },
-      { id: 33, name: "VII - C", gradeId: 10, supervisorId: "staff_ks_045" },
-      { id: 34, name: "VII - D", gradeId: 10, supervisorId: "staff_ks_046" },
-      { id: 35, name: "VIII - A", gradeId: 11, supervisorId: "staff_ks_048" },
-      { id: 36, name: "VIII - B", gradeId: 11, supervisorId: "staff_ks_050" },
-      { id: 37, name: "VIII - C", gradeId: 11, supervisorId: "staff_ks_052" },
-      { id: 38, name: "IX - A", gradeId: 12, supervisorId: "staff_ks_054" },
-      { id: 39, name: "IX - B", gradeId: 12, supervisorId: "staff_ks_055" },
-      { id: 40, name: "IX - C", gradeId: 12, supervisorId: "staff_ks_056" },
-      { id: 41, name: "X - A", gradeId: 13, supervisorId: "staff_ks_057" },
-      { id: 42, name: "X - B", gradeId: 13, supervisorId: "staff_ks_061" },
-      { id: 43, name: "X - C", gradeId: 13, supervisorId: "staff_ks_062" },
-    ],
-    skipDuplicates: true,
-  });
-
+  await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
   console.log("✅ Classes with teachers seeded");
 
+  // 3. Seed Subjects
+  if (!fs.existsSync(subjectsFilePath)) {
+    console.error(`File not found: ${subjectsFilePath}`);
+    return;
+  }
 
-  console.log("✅ Seeding Subjects");
+  const subjectsData = await readCSVFile(subjectsFilePath);
+  
+  const formattedSubjects = subjectsData.map((row: any) => ({
+    name: row.name,  // Assuming CSV has column "name"
+  }));
 
-  const subjectsData = [
-    { id: 1, name: "ENGLISH I" },
-    { id: 2, name: "ENGLISH II" },
-    { id: 3, name: "NUMBER WORK" },
-    { id: 4, name: "SPELLINGS" },
-    { id: 5, name: "RHYMES" },
-    { id: 6, name: "ENVIRONMENTAL SCIENCE (EVS)" },
-    { id: 7, name: "DRAWING" },
-    { id: 8, name: "COMPUTER SCIENCE" },
-    { id: 9, name: "TELUGU" },
-    { id: 10, name: "HINDI" },
-    { id: 11, name: "MATHEMATICS" },
-    { id: 12, name: "GENERAL KNOWLEDGE (G.K.)" },
-    { id: 13, name: "SPELLING & HANDWRITING" },
-    { id: 14, name: "MORAL SCIENCE" },
-    { id: 15, name: "READING & RECITATION" },
-    { id: 16, name: "SOCIAL STUDIES" },
-    { id: 17, name: "GENERAL SCIENCE" },
-    { id: 18, name: "PHYSICS" },
-    { id: 19, name: "CHEMISTRY" },
-    { id: 20, name: "BIOLOGY" },
-    { id: 21, name: "HISTORY & CIVICS" },
-    { id: 22, name: "GEOGRAPHY" },
-    { id: 23, name: "SECOND LANGUAGE (TELUGU/HINDI)" },
-    { id: 24, name: "THIRD LANGUAGE (TELUGU/HINDI)" }
-  ];
-
-  await prisma.subject.createMany({ data: subjectsData, skipDuplicates: true });
+  await prisma.subject.createMany({ data: formattedSubjects, skipDuplicates: true });
   console.log("✅ Subjects seeded");
 
+  // 4. Connect Subjects to Grades
+  if (!fs.existsSync(gradeSubjectsFilePath)) {
+    console.error(`File not found: ${gradeSubjectsFilePath}`);
+    return;
+  }
 
+  const gradeSubjectsData = await readCSVFile(gradeSubjectsFilePath);
+
+  for (const row of gradeSubjectsData) {
+    const { gradeId, subject } = row;
+
+    const subjectEntry = await prisma.subject.findUnique({
+      where: { name: subject },
+    });
+
+    if (!subjectEntry) {
+      console.error(`⚠️ Subject "${subject}" not found. Skipping connection...`);
+      continue;
+    }
+
+    await prisma.subject.update({
+      where: { id: subjectEntry.id },
+      data: {
+        grades: {
+          connect: { id: parseInt(gradeId) },
+        },
+      },
+    });
+  }
+
+  console.log("✅ Subjects connected to grades");
 
   console.log("🌱 Seeding complete!");
 }
@@ -145,10 +118,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
-// Run the seed script using the following command:
-// npx ts-node prisma/seed.ts
-// This will seed the data from the CSV file to the database
-// You can also run the seed script using the following command:
-// npm run seed
-// npx tsx prisma/seed.ts

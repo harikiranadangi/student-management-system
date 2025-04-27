@@ -47,9 +47,9 @@ export type AdminSchema = z.infer<typeof adminSchema>;
 
 
 export const subjectSchema = z.object({
-  id: z.coerce.number().optional(),
-  name: z.string().min(1, { message: 'Subject Name is required!' }),
-  teachers: z.array(z.string().min(1, { message: 'Teacher ID cannot be empty' })).default([]),
+  id: z.coerce.number().optional(), // id is optional for create operation
+  name: z.string().min(1, { message: 'Subject Name is required!' }), // Ensure name is not empty
+  gradeId: z.array(z.coerce.number().min(1, { message: 'Grade ID is required!' })).nonempty({ message: 'At least one grade is required!' }), // Making gradeId an array
 });
 
 // Infer the form data type from schema
