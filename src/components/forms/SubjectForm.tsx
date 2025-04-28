@@ -41,7 +41,10 @@ const SubjectForm = ({
         ? { name: formData.name, gradeId: formData.gradeId } // include gradeId as an array
         : formData; // include id for update
 
-      const url = type === 'create' ? '/api/subject/' : '/api/subject/update';
+        const url = type === 'create' 
+        ? '/api/subject' 
+        : `/api/subject/${formData.id}`; // dynamically insert the id
+      
 
       const res = await fetch(url, {
         method: type === 'create' ? 'POST' : 'PUT',
@@ -65,7 +68,7 @@ const SubjectForm = ({
     }
   };
 
-  const { grades } = relatedData;
+  const { grades, teachers } = relatedData;
 
   return (
     <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
@@ -73,7 +76,7 @@ const SubjectForm = ({
         {type === 'create' ? 'Create a new subject' : 'Update the subject'}
       </h1>
 
-      <div className="flex flex-wrap justify-between gap-4">
+      <div className="flex flex-wrap justify-between gap-4 p-4">
         <InputField
           label="Subject Name"
           name="name"

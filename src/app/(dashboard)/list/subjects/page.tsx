@@ -1,3 +1,4 @@
+import ClassFilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -25,9 +26,6 @@ const renderRow = (item: SubjectListType, role: string | null) => {
       <td className="hidden md:table-cell">
         {gradeLevels}
       </td>
-      <td className="hidden md:table-cell">
-        {teacherNames || "No Teachers"}
-      </td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" && (
@@ -43,7 +41,7 @@ const renderRow = (item: SubjectListType, role: string | null) => {
 };
 
 const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
-  const { userId, role } = await fetchUserInfo();
+  const { role } = await fetchUserInfo();
 
   const columns = [
     {
@@ -51,13 +49,8 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
       accessor: "name",
     },
     {
-      header: "Grade",
-      accessor: "level",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Teachers",
-      accessor: "teachers",
+      header: "Grades",
+      accessor: "grades",
       className: "hidden md:table-cell",
     },
     ...(role === "admin"
@@ -71,10 +64,37 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
   ];
 
   const params = await searchParams;
-  const { page, ...queryParams } = params;
+  const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
 
   const query: Prisma.SubjectWhereInput = {};
+
+
+// Filter by gradeId directly on the subjects
+if (gradeId) {
+  query.grades = { some: { id: Number(gradeId) } }; // Filter subjects where related grade has the given gradeId
+}
+
+// Filter by classId through the grades model
+if (classId) {
+  query.grades = {
+    some: {
+      classes: {
+        some: {
+          id: Number(classId), // Filter grades where the related class matches the given classId
+        },
+      },
+    },
+  };
+}
+
+  // Fetch classes list (for dropdown etc.)
+  const classes = await prisma.class.findMany({
+    where: gradeId ? { gradeId: Number(gradeId) } : {},
+  });
+
+  // Fetch grades list
+  const grades = await prisma.grade.findMany();
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
@@ -97,32 +117,39 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
     }
   }
 
-  const [data, count] = await prisma.$transaction([
-    prisma.subject.findMany({
-      where: query,
-      include: {
-        grades: true, // Include related grades for the subject
-        teachers: {
-          include: {
-            teacher: {
-              select: {
-                name: true, // Access teacher's name
-              },
+  // Fetch data with the updated query
+const [data, count] = await prisma.$transaction([
+  prisma.subject.findMany({
+    where: query,
+    include: {
+      grades: {
+        include: {
+          classes: true, // Include classes to help with filtering
+        },
+      },
+      teachers: {
+        include: {
+          teacher: {
+            select: {
+              name: true, // Include teacher names
             },
           },
         },
       },
-      take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
-    }),
-    prisma.subject.count({ where: query }),
-  ]);
+    },
+    take: ITEM_PER_PAGE,
+    skip: ITEM_PER_PAGE * (p - 1),
+  }),
+  prisma.subject.count({ where: query }),
+]);
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Subjects ({count})</h1>
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+        <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/subjects"/>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <div className="flex items-center self-end gap-4">
@@ -135,6 +162,7 @@ const SubjectList = async ({ searchParams }: { searchParams: { [key: string]: st
             {role === "admin" && (
               <FormContainer table="subject" type="create" />
             )}
+            </div>
           </div>
         </div>
       </div>
