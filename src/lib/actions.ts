@@ -566,53 +566,53 @@ export const deleteStudent = async (
 
 // * ---------------------------------------------- EXAM SCHEMA --------------------------------------------------------
 
-export const createExam = async (
-    currentState: CurrentState,
-    data: ExamSchema
-) => {
-    try {
-        await prisma.exam.create({
-            data: {
-                title: data.title,
-                date: data.date,
-                classId: data.classId,    // Ensure classId is included
-            },
-        });
+// export const createExam = async (
+//     currentState: CurrentState,
+//     data: ExamSchema
+// ) => {
+//     try {
+//         await prisma.exam.create({
+//             data: {
+//                 title: data.title,
+//                 date: data.date,
+//                 classId: data.classId,    // Ensure classId is included
+//             },
+//         });
 
-        console.log(`Created Exam: [Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
+//         console.log(`Created Exam: [Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
 
-        return { success: true, error: false };
-    } catch (err) {
-        console.error("Error creating exam:", err);
-        return { success: false, error: true };
-    }
-};
+//         return { success: true, error: false };
+//     } catch (err) {
+//         console.error("Error creating exam:", err);
+//         return { success: false, error: true };
+//     }
+// };
 
 
-export const updateExam = async (
-    currentState: CurrentState,
-    data: ExamSchema
-) => {
-    try {
-        await prisma.exam.update({
-            where: {
-                id: data.id,
-            },
-            data: {
-                title: data.title,
-                date: data.date,
-                classId: data.classId,    // Ensure classId is updated
-            },
-        });
+// export const updateExam = async (
+//     currentState: CurrentState,
+//     data: ExamSchema
+// ) => {
+//     try {
+//         await prisma.exam.update({
+//             where: {
+//                 id: data.id,
+//             },
+//             data: {
+//                 title: data.title,
+//                 date: data.date,
+//                 classId: data.classId,    // Ensure classId is updated
+//             },
+//         });
 
-        console.log(`Updated Exam: [ID: ${data.id}, Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
+//         console.log(`Updated Exam: [ID: ${data.id}, Title: ${data.title}, Date: ${data.date}, Lesson ID: ${data.lessonId}, Class ID: ${data.classId}]`);
 
-        return { success: true, error: false };
-    } catch (err) {
-        console.error("Error updating exam:", err);
-        return { success: false, error: true };
-    }
-};
+//         return { success: true, error: false };
+//     } catch (err) {
+//         console.error("Error updating exam:", err);
+//         return { success: false, error: true };
+//     }
+// };
 
 
 export const deleteExam = async (

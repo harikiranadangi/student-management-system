@@ -1,3 +1,4 @@
+import ClassFilterDropdown, { DateFilter } from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -5,56 +6,64 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
+import { Exam, Prisma, ExamGradeSubject, Grade, Subject } from "@prisma/client";
+import { endOfDay, startOfDay } from "date-fns";
 import Image from "next/image";
 
+// Extended Exam type
 type Exams = Exam & {
-  lesson: {
-    subject: Subject,
-    class: Class,
-    teacher: Teacher
-  }
-}
+  examGradeSubjects: (ExamGradeSubject & {
+    Grade: Grade;
+    Subject: Subject;
+  })[];
+};
 
-const renderRow = (item: Exams, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" >
-    <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
-    <td>{item.lesson.class.name}</td>
-    <td className="hidden md:table-cell">{item.lesson.teacher.name }</td>
-    <td className="hidden md:table-cell">
-      {new Intl.DateTimeFormat("en-US").format(item.date)}</td>
-    <td>
-      <div className="flex items-center gap-2">
-        {role === "admin" || role === "teacher" && (
-          <>
-            <FormContainer table="exam" type="update" data={item} />
-            <FormContainer table="exam" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
-  </tr>
-);
-
+const renderRow = (item: Exams, role: string | null) =>
+  item.examGradeSubjects.map((egs, idx) => (
+    <tr
+      key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`} // or use egs.id if it exists
+      className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    >
+      <td className="p-4">{item.title}</td>
+      <td className="hidden md:table-cell">
+        {new Intl.DateTimeFormat("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(egs.date))}
+      </td>
+      <td className="p-4">{egs.Grade.level}</td>
+      <td className="p-4">{egs.Subject.name}</td>
+      <td className="p-4">{egs.maxMarks}</td>
+      <td>
+        <div className="flex items-center gap-2">
+          {(role === "admin" || role === "teacher") && (
+            <>
+              <FormContainer table="exam" type="update" data={item} />
+              <FormContainer table="exam" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  ));
 
 const getColumns = (role: string | null) => [
   {
-    header: "Subject",
-    accessor: "subject",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
+    header: "Title",
+    accessor: "title",
   },
   {
     header: "Date",
     accessor: "date",
     className: "hidden md:table-cell",
+  },
+  {
+    header: "Grade",
+    accessor: "grade",
+  },
+  {
+    header: "Subject",
+    accessor: "subject",
   },
   ...(role === "admin" || role === "teacher"
     ? [
@@ -71,104 +80,96 @@ const ExamsList = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-
-  // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
-
-  const columns = getColumns(role);  // Get dynamic columns
-
-
-  // Await the searchParams first
   const params = await searchParams;
-  const { page, ...queryParams } = params;
+  const { page, date, gradeId, ...queryParams } = params;
   const p = page ? parseInt(page) : 1;
+  const { role } = await fetchUserInfo();
+  const columns = getColumns(role);
 
-  // Initialize Prisma query object
-  const query: Prisma.ExamWhereInput = {};
-
-  query.Class = {};
-
-
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "classId":
-            query.classId = parseInt(value); // Directly filter by classId
-            break;
-
-          case "teacherId":
-            query.Class = { Teacher: { id: (value) } }; // ✅ Correct syntax
-            break;
+  // Get sorting order and column from URL
+  const sortOrder = params.sort === "asc" ? "asc" : "desc";
+  const sortKey = params.sortKey || "date";
 
 
-          case "search":
-            query.subjects = {
-              some: {
-                Subject: {
-                  name: { contains: value },
-                },
-              },
-            };
-            break;
+  // Initialize exam query
+  let query: Prisma.ExamWhereInput = {};
 
-          default:
-            break;
-        }
-      }
-    }
+  // Title filter
+  if (queryParams.title) {
+    query.title = {
+      contains: queryParams.title,
+      mode: "insensitive",
+    };
   }
 
+  
+  let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
 
-  //  * ROLE CONDITIONS
+  // Apply date filter
+  if (date) {
+    const selectedDate = new Date(date);
+    const selectedDateUTC = new Date(
+      selectedDate.getUTCFullYear(),
+      selectedDate.getUTCMonth(),
+      selectedDate.getUTCDate()
+    );
 
-  switch (role) {
-    case "admin":
-      // Admins can see all exams, so no need to filter.
-      break;
+    const startDate = startOfDay(selectedDateUTC);
+    const endDate = endOfDay(selectedDateUTC);
 
-    case "teacher":
-      query.Class = {
-        Teacher: {
-          id: userId!,
-        },
-      };
+    examGradeSubjectsFilter.date = {
+      gte: startDate,
+      lt: endDate,
+    };
+  }
 
-      break;
-
-    case "student":
-      query.Class = {
-        students: {
-          some: {
-            id: userId!, // ✅ Correct: Filter classes where the student is enrolled
+  // Apply search filter (by subject or grade level)
+  if (queryParams.search) {
+    examGradeSubjectsFilter.OR = [
+      {
+        Subject: {
+          name: {
+            contains: queryParams.search,
+            mode: "insensitive",
           },
         },
-      };
-      break;
+      },
+      {
+        Grade: {
+          level: {
+            contains: queryParams.search,
+            mode: "insensitive",
+          },
+        },
+      },
+    ];
   }
 
+  // Apply grade filter
+  if (gradeId) {
+    examGradeSubjectsFilter.gradeId = Number(gradeId);
+  }
 
-  // Fetch teachers and include related fields (subjects, classes)
-  const [data, count] = await prisma.$transaction([
+  // Merge all filters under examGradeSubjects.some
+  if (Object.keys(examGradeSubjectsFilter).length > 0) {
+    query.examGradeSubjects = {
+      some: examGradeSubjectsFilter,
+    };
+  }
+
+  // Fetch exams and count
+  const [exams, count] = await prisma.$transaction([
     prisma.exam.findMany({
       where: query,
+      orderBy: [
+        { [sortKey]: sortOrder },  // Dynamic sorting (based on user selection)
+        { id: "desc" },  // Default multi-column sorting        
+      ],
       include: {
-        Class: {  // ✅ Fetch Class name & Teacher details
-          select: {
-            name: true,
-            Teacher: {  // ✅ Fetch Teacher details from Class
-              select: {
-                name: true,
-                surname: true,
-              },
-            },
-          },
-        },
-        subjects: {  // ✅ Fetch Subject details
-          select: {
-            Subject: {
-              select: { name: true },
-            },
+        examGradeSubjects: {
+          include: {
+            Grade: true,
+            Subject: true,
           },
         },
       },
@@ -177,32 +178,49 @@ const ExamsList = async ({
     }),
     prisma.exam.count({ where: query }),
   ]);
-  
-  
+
+  // Fetch dropdown data
+  const classes = await prisma.class.findMany();
+  const grades = await prisma.grade.findMany();
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* TOP: Description */}
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Exams</h1>
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <TableSearch />
-          <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {(role === "admin" || role === "teacher") && (
-              <FormContainer table="exam" type="create" />
-            )}
+        <div className="flex items-center gap-4">
+          <DateFilter basePath="/list/exams" />
+          {(role === "admin" || role === "teacher") && (
+            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/exams" />
+          )}
+          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+            <TableSearch />
+            <div className="flex items-center self-end gap-4">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/filter.png" alt="Filter" width={14} height={14} />
+              </button>
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                <Image src="/sort.png" alt="Sort" width={14} height={14} />
+              </button>
+              {(role === "admin" || role === "teacher") && (
+                <FormContainer table="exam" type="create" />
+              )}
+            </div>
           </div>
         </div>
       </div>
-      {/* LIST: Description */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
-      {/* PAGINATION: Description */}
+
+      {/* TABLE */}
+      <div className="space-y-6">
+        <Table
+          columns={columns}
+          renderRow={(item) => renderRow(item, role)}
+          data={exams}
+        />
+      </div>
+
+      {/* PAGINATION */}
       <Pagination page={p} count={count} />
     </div>
   );

@@ -31,12 +31,13 @@ model Admin {
 }
 
 model Grade {
-  id           Int            @id @default(autoincrement())
-  level        String         @unique
-  feestructure FeeStructure[] @relation("GradeToFeesStructure")
-  Homework     Homework[]
-  classes      Class[]
-  subjects     Subject[]      @relation("SubjectGrades")
+  id                Int                @id @default(autoincrement())
+  level             String             @unique
+  feestructure      FeeStructure[]     @relation("GradeToFeesStructure")
+  Homework          Homework[]
+  classes           Class[]
+  subjects          Subject[]          @relation("SubjectGrades")
+  examGradeSubjects ExamGradeSubject[]
 }
 
 model Class {
@@ -46,7 +47,6 @@ model Class {
   gradeId         Int
   Announcement    Announcement[]
   events          Event[]
-  exams           Exam[]
   homeworks       Homework[]
   lessons         Lesson[]
   students        Student[]
@@ -115,26 +115,26 @@ model Event {
 }
 
 model Exam {
-  id       Int           @id @default(autoincrement())
-  title    String
-  date     DateTime
-  classId  Int
-  Class    Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
-  subjects ExamSubject[]
-  results  Result[]
-
-  @@index([classId])
+  id                Int                @id @default(autoincrement())
+  title             String
+  date              DateTime
+  results           Result[]
+  examGradeSubjects ExamGradeSubject[]
 }
 
-model ExamSubject {
-  id        Int     @id @default(autoincrement())
+model ExamGradeSubject {
+  id        Int      @id @default(autoincrement())
   examId    Int
+  gradeId   Int
   subjectId Int
+  date      DateTime // ✅ Allows multiple exams on the same day with time
+  startTime String
   maxMarks  Int
-  Exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  Exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Grade     Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  Subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@unique([examId, subjectId])
+  @@unique([examId, gradeId, subjectId]) // Ensures no duplicates
 }
 
 model Homework {
@@ -151,18 +151,19 @@ model Homework {
 }
 
 model Result {
-  id        Int     @id @default(autoincrement())
-  score     Float
+  id        Int    @id @default(autoincrement())
+  marks     Int
   studentId String
   examId    Int
   subjectId Int
-  Exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  Subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@index([examId])
-  @@index([studentId])
-  @@index([subjectId])
+  Student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, examId, subjectId]) // No duplicate entries
 }
 
 model Student {
@@ -208,14 +209,14 @@ model ClerkStudents {
 }
 
 model Subject {
-  id        Int              @id @default(autoincrement())
-  name      String           @unique
-  createdAt DateTime         @default(now())
-  teachers  SubjectTeacher[]
-  exams     ExamSubject[]
-  lessons   Lesson[]
-  results   Result[]
-  grades    Grade[]          @relation("SubjectGrades")
+  id                Int                @id @default(autoincrement())
+  name              String             @unique
+  createdAt         DateTime           @default(now())
+  teachers          SubjectTeacher[]
+  examGradeSubjects ExamGradeSubject[]
+  lessons           Lesson[]
+  results           Result[]
+  grades            Grade[]            @relation("SubjectGrades")
 }
 
 model Teacher {

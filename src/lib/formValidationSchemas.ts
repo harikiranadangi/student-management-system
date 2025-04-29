@@ -118,14 +118,14 @@ export type Studentschema = z.infer<typeof studentschema>;
 // Define the schema with zod
 export const examSchema = z.object({
   id: z.coerce.number().optional(),
-  title: z.string().min(1, { message: 'Title Name is required!' }),
-  date: z.coerce.date({ message: 'Start Time is required!' }),
-  lessonId: z.coerce.number({ message: 'Lesson is required!' }),
-  classId: z.coerce.number({ message: 'Class is required!' }),
-
+  title: z.string().min(1, { message: 'Title is required!' }),
+  examDate: z.coerce.date({ message: 'Exam Date is required!' }),
+  startTime: z.string().min(1, { message: 'Start Time is required!' }),
+  gradeId: z.coerce.number({ message: 'Grade is required!' }),
+  subjectId: z.coerce.number({ message: 'Subject is required!' }),
+  maxMarks: z.coerce.number({ message: 'Max Marks is required!' }).min(1, { message: 'Max Marks must be greater than 0!' }),
 });
 
-// Infer the form data type from schema
 export type ExamSchema = z.infer<typeof examSchema>;
 
 // Define the lessons schema with zod
