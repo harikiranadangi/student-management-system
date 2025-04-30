@@ -18,6 +18,17 @@ type Exams = Exam & {
   })[];
 };
 
+const formatDateTime = (date: Date, time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  const combined = new Date(date);
+  combined.setHours(hours);
+  combined.setMinutes(minutes);
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(combined);
+};
+
 const renderRow = (item: Exams, role: string | null) =>
   item.examGradeSubjects.map((egs, idx) => (
     <tr
@@ -26,10 +37,7 @@ const renderRow = (item: Exams, role: string | null) =>
     >
       <td className="p-4">{item.title}</td>
       <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(new Date(egs.date))}
+        {formatDateTime(new Date(egs.date), egs.startTime)}
       </td>
       <td className="p-4">{egs.Grade.level}</td>
       <td className="p-4">{egs.Subject.name}</td>
@@ -64,6 +72,10 @@ const getColumns = (role: string | null) => [
   {
     header: "Subject",
     accessor: "subject",
+  },
+  {
+    header: "Marks",
+    accessor: "maxMarks",
   },
   ...(role === "admin" || role === "teacher"
     ? [
@@ -102,7 +114,7 @@ const ExamsList = async ({
     };
   }
 
-  
+
   let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
 
   // Apply date filter

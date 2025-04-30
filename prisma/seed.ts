@@ -33,12 +33,16 @@ async function main() {
   const subjectsFilePath = path.join(projectRootPath, 'data', 'subjects.csv'); // <- NEW
   const gradeSubjectsFilePath = path.join(projectRootPath, 'data', 'grade_subjects_data.csv');
   const teachersFilePath = path.join(projectRootPath, 'data', 'teachers_data.csv');
+  const feesStructureFilePath = path.join(projectRootPath, 'data', 'fees_structure.csv');
+
+
 
   console.log(`Grades CSV Path: ${gradesFilePath}`);
   console.log(`Classes CSV Path: ${classesFilePath}`);
   console.log(`Subjects CSV Path: ${subjectsFilePath}`);
   console.log(`Grade Subjects CSV Path: ${gradeSubjectsFilePath}`);
   console.log(`Teachers CSV Path: ${teachersFilePath}`);
+  console.log(`Fee Structure CSV Path: ${feesStructureFilePath}`);
 
 
   // 1. Seed Grades
@@ -76,67 +80,150 @@ async function main() {
 
   console.log("✅ Teachers seeded");
 
+  const feeStructureData = await readCSVFile(feesStructureFilePath);
 
-// 2. Seed Classes
-const classesData = await readCSVFile(classesFilePath);
-const formattedClasses = classesData.map((row: any) => ({
-  id: parseInt(row.id),
-  name: row.name,
-  gradeId: parseInt(row.gradeId),
-  supervisorId: row.supervisorId,
-}));
+  const formattedFeeStructure = feeStructureData.map((row: any) => ({
+    id: row.id,
+    gradeId: parseInt(row.gradeId),
+    abacusFees: parseInt(row.abacusFees),
+    termFees: parseInt(row.termFees),
+    term: row.term,
+    startDate: new Date(row.startDate),  // Convert to Date object
+    dueDate: new Date(row.dueDate),
+    academicYear: row.academicYear,
+  }));
 
-await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
-console.log("✅ Classes with teachers seeded");
-
-// 3. Seed Subjects
-if (!fs.existsSync(subjectsFilePath)) {
-  console.error(`File not found: ${subjectsFilePath}`);
-  return;
-}
-
-const subjectsData = await readCSVFile(subjectsFilePath);
-
-const formattedSubjects = subjectsData.map((row: any) => ({
-  name: row.name,  // Assuming CSV has column "name"
-}));
-
-await prisma.subject.createMany({ data: formattedSubjects, skipDuplicates: true });
-console.log("✅ Subjects seeded");
-
-// 4. Connect Subjects to Grades
-if (!fs.existsSync(gradeSubjectsFilePath)) {
-  console.error(`File not found: ${gradeSubjectsFilePath}`);
-  return;
-}
-
-const gradeSubjectsData = await readCSVFile(gradeSubjectsFilePath);
-
-for (const row of gradeSubjectsData) {
-  const { gradeId, subject } = row;
-
-  const subjectEntry = await prisma.subject.findUnique({
-    where: { name: subject },
+  await prisma.feeStructure.createMany({
+    data: formattedFeeStructure,
+    skipDuplicates: true,
   });
 
-  if (!subjectEntry) {
-    console.error(`⚠️ Subject "${subject}" not found. Skipping connection...`);
-    continue;
+  console.log("✅ Fee Structure seeded");
+
+
+  // 2. Seed Classes
+  const classesData = await readCSVFile(classesFilePath);
+  const formattedClasses = classesData.map((row: any) => ({
+    id: parseInt(row.id),
+    name: row.name,
+    gradeId: parseInt(row.gradeId),
+    supervisorId: row.supervisorId,
+  }));
+
+  await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
+  console.log("✅ Classes with teachers seeded");
+
+  // 3. Seed Subjects
+  if (!fs.existsSync(subjectsFilePath)) {
+    console.error(`File not found: ${subjectsFilePath}`);
+    return;
   }
 
-  await prisma.subject.update({
-    where: { id: subjectEntry.id },
-    data: {
-      grades: {
-        connect: { id: parseInt(gradeId) },
+  const subjectsData = await readCSVFile(subjectsFilePath);
+
+  const formattedSubjects = subjectsData.map((row: any) => ({
+    name: row.name,  // Assuming CSV has column "name"
+  }));
+
+  await prisma.subject.createMany({ data: formattedSubjects, skipDuplicates: true });
+  console.log("✅ Subjects seeded");
+
+  // 4. Connect Subjects to Grades
+  if (!fs.existsSync(gradeSubjectsFilePath)) {
+    console.error(`File not found: ${gradeSubjectsFilePath}`);
+    return;
+  }
+
+  const gradeSubjectsData = await readCSVFile(gradeSubjectsFilePath);
+
+  for (const row of gradeSubjectsData) {
+    const { gradeId, subject } = row;
+
+    const subjectEntry = await prisma.subject.findUnique({
+      where: { name: subject },
+    });
+
+    if (!subjectEntry) {
+      console.error(`⚠️ Subject "${subject}" not found. Skipping connection...`);
+      continue;
+    }
+
+    await prisma.subject.update({
+      where: { id: subjectEntry.id },
+      data: {
+        grades: {
+          connect: { id: parseInt(gradeId) },
+        },
+      },
+    });
+  }
+
+  console.log("✅ Subjects connected to grades");
+
+  console.log("🌱 Seeding complete!");
+
+  console.log("🚀 Starting fee assignment to existing students...");
+
+  const students = await prisma.student.findMany({
+    include: {
+      Class: {
+        include: {
+          Grade: true,
+        },
       },
     },
   });
-}
 
-console.log("✅ Subjects connected to grades");
+  console.log(`🎯 Found ${students.length} students.`);
 
-console.log("🌱 Seeding complete!");
+  for (const student of students) {
+    const grade = student.Class?.Grade;
+
+    if (!student.classId) {
+      console.error(`❌ Student ${student.id} has no class assigned. Skipping.`);
+      continue;
+    }
+
+    if (!grade) {
+      console.error(`❌ Student ${student.id} has no grade assigned through class. Skipping.`);
+      continue;
+    }
+
+    const matchingFeeStructures = await prisma.feeStructure.findMany({
+      where: {
+        gradeId: grade.id,
+        academicYear: student.academicYear,
+      },
+    });
+
+    if (matchingFeeStructures.length === 0) {
+      console.warn(
+        `⚠️ No fee structures found for grade ${grade.id} and year ${student.academicYear}. Skipping student ${student.id}.`
+      );
+      continue;
+    }
+
+    await prisma.studentFees.createMany({
+      data: matchingFeeStructures.map((fee) => ({
+        studentId: student.id,
+        feeStructureId: fee.id,
+        academicYear: student.academicYear,
+        term: fee.term,
+        paidAmount: 0,
+        discountAmount: 0,
+        fineAmount: 0,
+        abacusPaidAmount: 0,
+        receivedDate: undefined,
+        receiptDate: null,
+        paymentMode: "CASH",
+      })),
+      skipDuplicates: true,
+    });
+
+    console.log(`✅ Fees assigned for student ${student.id}`);
+  }
+
+  console.log("🏁 Fee assignment complete for all students.");
 }
 
 main()

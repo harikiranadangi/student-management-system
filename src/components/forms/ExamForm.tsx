@@ -40,6 +40,22 @@ const ExamForm = ({
     });
 
     useEffect(() => {
+        if (type === "update" && data) {
+            reset({
+                id: data?.id,
+                title: data?.title || "",
+                examDate: data?.examGradeSubjects?.[0]?.date || "",
+                startTime: data?.examGradeSubjects?.[0]?.startTime || "",
+                gradeId: data?.examGradeSubjects?.[0]?.gradeId || "",
+                subjectId: data?.examGradeSubjects?.[0]?.subjectId || "",
+                maxMarks: data?.examGradeSubjects?.[0]?.maxMarks || "",
+            });
+            setSelectedGradeId(data?.examGradeSubjects?.[0]?.gradeId || null);
+        }
+    }, [type, data, reset]);
+
+
+    useEffect(() => {
         if (selectedGradeId) {
             const fetchSubjects = async () => {
                 try {
@@ -103,31 +119,76 @@ const ExamForm = ({
         fetchTitles();
     }, []);
 
+    useEffect(() => {
+        if (type === "update" && data) {
+            reset({
+                id: data?.id,
+                title: data?.title || "",
+                examDate: data?.examGradeSubjects?.[0]?.date || "",
+                startTime: data?.examGradeSubjects?.[0]?.startTime || "",
+                gradeId: data?.examGradeSubjects?.[0]?.gradeId || "",
+                subjectId: data?.examGradeSubjects?.[0]?.subjectId || "",
+                maxMarks: data?.examGradeSubjects?.[0]?.maxMarks || "",
+            });
+            setSelectedGradeId(data?.examGradeSubjects?.[0]?.gradeId || null);
+        }
+    }, [type, data, reset]);
 
 
     const onSubmit = async (formData: ExamSchema) => {
         try {
-            const res = await fetch(
-                type === "create" ? "/api/exams" : `/api/exams/${formData.id}`,
-                {
-                    method: type === "create" ? "POST" : "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(formData),
+            // Determine the correct API endpoint and HTTP method based on the action type
+            const url = type === "create" ? "/api/exams" : `/api/exams/${formData?.id}`;
+            const method = type === "create" ? "POST" : "PUT";  // Use "PUT" for updating
+
+            // Send the request
+            const res = await fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            // If response is not OK (non-2xx status), handle error
+            if (!res.ok) {
+                // Attempt to parse the error response as JSON
+                let errorMessage = "Something went wrong";
+                try {
+                    const data = await res.json();
+                    errorMessage = data.error || "Something went wrong";
+                } catch (e) {
+                    // If JSON parsing fails, keep the fallback message
+                    console.error("Failed to parse error response:", e);
                 }
-            );
+                throw new Error(errorMessage);
+            }
 
-            if (!res.ok) throw new Error("Something went wrong");
-
+            // Success: Show toast message, close modal, and refresh page
             toast.success(`Exam ${type === "create" ? "created" : "updated"} successfully!`);
-            setOpen(false);
-            router.refresh();
-            reset();
-        } catch (error) {
-            toast.error("Failed to submit exam.");
+            setOpen(false);  // Close modal or dialog
+            router.refresh();  // Refresh the page or data
+            reset();  // Reset form fields
+
+        } catch (error: any) {
+            // Display error message to the user
+            toast.error(error.message || "Failed to submit exam.");
         }
     };
+
+    const onDelete = async (examId: number) => {
+        const res = await fetch(`/api/exams/${examId}`, {
+            method: "DELETE",
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Delete failed");
+        }
+
+        toast.success("Deleted successfully");
+    };
+
 
 
 
@@ -143,9 +204,8 @@ const ExamForm = ({
                 <label className="text-xs text-gray-500">Exam Title</label>
                 <input
                     list="exam-titles"
-                    className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+                    className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-64"
                     {...register("title")}
-                    defaultValue={data?.title || ""}
                     placeholder="Type or select a title"
                 />
                 <datalist id="exam-titles">
@@ -167,7 +227,6 @@ const ExamForm = ({
                 <InputField
                     label="Exam Date"
                     name="examDate"
-                    defaultValue={data?.examDate}
                     register={register}
                     error={errors?.examDate}
                     type="date"
@@ -177,7 +236,6 @@ const ExamForm = ({
                 <InputField
                     label="Start Time"
                     name="startTime"
-                    defaultValue={data?.startTime}
                     register={register}
                     error={errors?.startTime}
                     type="time"
@@ -189,7 +247,6 @@ const ExamForm = ({
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                         {...register("gradeId")}
-                        defaultValue={data?.gradeId || ""}
                         onChange={(e) => {
                             const value = e.target.value;
                             setSelectedGradeId(value ? parseInt(value) : null);
@@ -213,7 +270,6 @@ const ExamForm = ({
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                         {...register("subjectId")}
-                        defaultValue={data?.subjectId || ""}
                     >
                         <option value="">Select Subject</option>
                         {filteredSubjects.map((subject: { id: number; name: string }) => (
@@ -231,7 +287,6 @@ const ExamForm = ({
                 <InputField
                     label="Max Marks"
                     name="maxMarks"
-                    defaultValue={data?.maxMarks}
                     register={register}
                     error={errors?.maxMarks}
                     type="number"
@@ -242,7 +297,6 @@ const ExamForm = ({
                     <InputField
                         label="Id"
                         name="id"
-                        defaultValue={data?.id}
                         register={register}
                         error={errors?.id}
                         hidden
@@ -276,9 +330,33 @@ const ExamForm = ({
                 </div>
             )}
 
-            <button className="p-2 text-white bg-blue-400 rounded-md">
-                {type === "create" ? "Create" : "Update"}
-            </button>
+            <div className="flex gap-4">
+                <button className="p-2 text-white bg-blue-400 rounded-md">
+                    {type === "create" ? "Create" : "Update"}
+                </button>
+
+                {type === "update" && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (confirm("Are you sure you want to delete this exam?")) {
+                                onDelete(data.id)
+                                    .then(() => {
+                                        setOpen(false);
+                                        router.refresh();
+                                    })
+                                    .catch((err) => {
+                                        toast.error(err.message || "Failed to delete exam");
+                                    });
+                            }
+                        }}
+                        className="p-2 text-white bg-red-500 rounded-md"
+                    >
+                        Delete
+                    </button>
+                )}
+            </div>
+
         </form>
     );
 };
