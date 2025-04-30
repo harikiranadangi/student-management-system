@@ -23,7 +23,7 @@ const readCSVFile = (filePath: string): Promise<any[]> => {
 const prisma = new PrismaClient();
 
 async function main() {
-  
+
 
   console.log("📌 Seeding data...");
 
@@ -32,11 +32,14 @@ async function main() {
   const classesFilePath = path.join(projectRootPath, 'data', 'classes.csv');
   const subjectsFilePath = path.join(projectRootPath, 'data', 'subjects.csv'); // <- NEW
   const gradeSubjectsFilePath = path.join(projectRootPath, 'data', 'grade_subjects_data.csv');
+  const teachersFilePath = path.join(projectRootPath, 'data', 'teachers_data.csv');
 
   console.log(`Grades CSV Path: ${gradesFilePath}`);
   console.log(`Classes CSV Path: ${classesFilePath}`);
   console.log(`Subjects CSV Path: ${subjectsFilePath}`);
   console.log(`Grade Subjects CSV Path: ${gradeSubjectsFilePath}`);
+  console.log(`Teachers CSV Path: ${teachersFilePath}`);
+
 
   // 1. Seed Grades
   const gradesData = await readCSVFile(gradesFilePath);
@@ -48,66 +51,92 @@ async function main() {
   await prisma.grade.createMany({ data: formattedGrades, skipDuplicates: true });
   console.log("✅ Grades seeded");
 
-  // 2. Seed Classes
-  const classesData = await readCSVFile(classesFilePath);
-  const formattedClasses = classesData.map((row: any) => ({
-    id: parseInt(row.id),
+  const teachersData = await readCSVFile(teachersFilePath);
+
+  const formattedTeachers = teachersData.map((row: any) => ({
+    id: row.id,
+    username: row.username,
     name: row.name,
-    gradeId: parseInt(row.gradeId),
-    supervisorId: row.supervisorId,
+    surname: row.surname,
+    email: row.email,
+    phone: row.phone,
+    address: row.address,
+    img: row.img,
+    bloodType: row.bloodType,
+    gender: row.gender,
+    dob: new Date(row.dob),
+    classId: (row.classId),
+    clerk_id: row.clerk_id,
   }));
 
-  await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
-  console.log("✅ Classes with teachers seeded");
+  await prisma.teacher.createMany({
+    data: formattedTeachers,
+    skipDuplicates: true,
+  });
 
-  // 3. Seed Subjects
-  if (!fs.existsSync(subjectsFilePath)) {
-    console.error(`File not found: ${subjectsFilePath}`);
-    return;
+  console.log("✅ Teachers seeded");
+
+
+// 2. Seed Classes
+const classesData = await readCSVFile(classesFilePath);
+const formattedClasses = classesData.map((row: any) => ({
+  id: parseInt(row.id),
+  name: row.name,
+  gradeId: parseInt(row.gradeId),
+  supervisorId: row.supervisorId,
+}));
+
+await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
+console.log("✅ Classes with teachers seeded");
+
+// 3. Seed Subjects
+if (!fs.existsSync(subjectsFilePath)) {
+  console.error(`File not found: ${subjectsFilePath}`);
+  return;
+}
+
+const subjectsData = await readCSVFile(subjectsFilePath);
+
+const formattedSubjects = subjectsData.map((row: any) => ({
+  name: row.name,  // Assuming CSV has column "name"
+}));
+
+await prisma.subject.createMany({ data: formattedSubjects, skipDuplicates: true });
+console.log("✅ Subjects seeded");
+
+// 4. Connect Subjects to Grades
+if (!fs.existsSync(gradeSubjectsFilePath)) {
+  console.error(`File not found: ${gradeSubjectsFilePath}`);
+  return;
+}
+
+const gradeSubjectsData = await readCSVFile(gradeSubjectsFilePath);
+
+for (const row of gradeSubjectsData) {
+  const { gradeId, subject } = row;
+
+  const subjectEntry = await prisma.subject.findUnique({
+    where: { name: subject },
+  });
+
+  if (!subjectEntry) {
+    console.error(`⚠️ Subject "${subject}" not found. Skipping connection...`);
+    continue;
   }
 
-  const subjectsData = await readCSVFile(subjectsFilePath);
-  
-  const formattedSubjects = subjectsData.map((row: any) => ({
-    name: row.name,  // Assuming CSV has column "name"
-  }));
-
-  await prisma.subject.createMany({ data: formattedSubjects, skipDuplicates: true });
-  console.log("✅ Subjects seeded");
-
-  // 4. Connect Subjects to Grades
-  if (!fs.existsSync(gradeSubjectsFilePath)) {
-    console.error(`File not found: ${gradeSubjectsFilePath}`);
-    return;
-  }
-
-  const gradeSubjectsData = await readCSVFile(gradeSubjectsFilePath);
-
-  for (const row of gradeSubjectsData) {
-    const { gradeId, subject } = row;
-
-    const subjectEntry = await prisma.subject.findUnique({
-      where: { name: subject },
-    });
-
-    if (!subjectEntry) {
-      console.error(`⚠️ Subject "${subject}" not found. Skipping connection...`);
-      continue;
-    }
-
-    await prisma.subject.update({
-      where: { id: subjectEntry.id },
-      data: {
-        grades: {
-          connect: { id: parseInt(gradeId) },
-        },
+  await prisma.subject.update({
+    where: { id: subjectEntry.id },
+    data: {
+      grades: {
+        connect: { id: parseInt(gradeId) },
       },
-    });
-  }
+    },
+  });
+}
 
-  console.log("✅ Subjects connected to grades");
+console.log("✅ Subjects connected to grades");
 
-  console.log("🌱 Seeding complete!");
+console.log("🌱 Seeding complete!");
 }
 
 main()
@@ -118,3 +147,10 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+// Run the seed script using the following command:
+// npx ts-node prisma/seed.ts
+// This will seed the data from the CSV file to the database
+// You can also run the seed script using the following command:
+// npm run seed
+// npx tsx prisma/seed.ts
