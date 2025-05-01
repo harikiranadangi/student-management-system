@@ -10,6 +10,7 @@ import { fetchUserInfo, getClassIdForRole } from "@/lib/utils";
 import { Class, Homework, Prisma } from "@prisma/client";
 import Image from "next/image";
 import SortButton from "@/components/SortButton";
+import { SearchParams } from "../../../../../types";
 
 type Homeworks = Homework & { Class: Class };
 
@@ -66,11 +67,11 @@ const getColumns = (role: string | null) => {
 const HomeworkListPage = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
   const { page, gradeId, classId, date, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
   const { role, userId } = await fetchUserInfo();
@@ -79,9 +80,10 @@ const HomeworkListPage = async ({
 
   // Get sorting order and column from URL
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = params.sortKey || "id"; // Default sorting column
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
 
-  const selectedDate = new Date(date ?? new Date().toISOString().split("T")[0]);
+  const rawDate = Array.isArray(date) ? date[0] : date;
+  const selectedDate = new Date(rawDate ?? new Date().toISOString().split("T")[0]);
 
   // Ensure selectedDate is UTC+5:30
   const selectedDateUTC = new Date(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth(), selectedDate.getUTCDate());
@@ -106,18 +108,18 @@ const HomeworkListPage = async ({
     query.Class = { gradeId: Number(gradeId) };
   }
 
-  
+
   // Fetch class ID based on role
   const userClassId = await getClassIdForRole(role, userId);
-  
-  
+
+
   // Apply class filter based on role
   if (userClassId) {
     query.classId = userClassId; // Apply student/teacher class filter
   } else if (classId) {
     query.classId = Number(classId); // Admin & teacher can filter by class
   }
-  
+
 
   // Dynamically add filters based on query parameters
   if (queryParams) {
@@ -140,7 +142,7 @@ const HomeworkListPage = async ({
   const grades = await prisma.grade.findMany();
 
   //  * ROLE CONDITIONS
-  
+
   // * Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
     prisma.homework.findMany({
@@ -153,7 +155,7 @@ const HomeworkListPage = async ({
         Class: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.homework.count({ where: query }),
   ]);
@@ -188,7 +190,7 @@ const HomeworkListPage = async ({
       {/* LIST: Description */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

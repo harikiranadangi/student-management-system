@@ -1,14 +1,14 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-// POST /api/exams
+// ✅ POST /api/exams → Create exam + examGradeSubject
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
       title,
-      examDate,      // date of the exam (e.g., "2025-04-29")
-      startTime,     // time component (e.g., "10:00:00")
+      examDate,
+      startTime,
       gradeId,
       subjectId,
       maxMarks,
@@ -19,25 +19,18 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Check if exam exists for given title and date (without time)
       const examDateOnly = new Date(examDate);
+
       let exam = await tx.exam.findFirst({
-        where: {
-          title,
-          date: examDateOnly,
-        },
+        where: { title, date: examDateOnly },
       });
 
       if (!exam) {
         exam = await tx.exam.create({
-          data: {
-            title,
-            date: examDateOnly,
-          },
+          data: { title, date: examDateOnly },
         });
       }
 
-      // 2. Create ExamGradeSubject entry
       const existingEGS = await tx.examGradeSubject.findFirst({
         where: {
           examId: exam.id,
@@ -53,7 +46,7 @@ export async function POST(request: Request) {
             gradeId,
             subjectId,
             date: examDateOnly,
-            startTime: startTime,
+            startTime,
             maxMarks,
           },
         });
@@ -63,30 +56,29 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, exam: result }, { status: 201 });
-
   } catch (error) {
     console.error("[CREATE_EXAM_ERROR]", error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
 
-// Function to get all exams for a specific day (e.g., 2025-04-29)
-export async function getExamsForDate(request: Request) {
+// ✅ GET /api/exams?date=2025-04-29 → Fetch exams by date
+export async function GET(request: Request) {
   try {
-    const { date } = await request.json(); // Date in format "2025-04-29"
-    
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+
     if (!date) {
       return NextResponse.json({ error: "Date is required" }, { status: 400 });
     }
 
     const examDate = new Date(date);
-    
-    // Query for all exams on the specific date
+
     const exams = await prisma.exam.findMany({
       where: {
         date: {
-          gte: new Date(examDate.setHours(0, 0, 0, 0)), // start of the day
-          lt: new Date(examDate.setHours(23, 59, 59, 999)), // end of the day
+          gte: new Date(examDate.setHours(0, 0, 0, 0)),
+          lt: new Date(examDate.setHours(23, 59, 59, 999)),
         },
       },
       include: {

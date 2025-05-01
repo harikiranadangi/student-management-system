@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import {
-    ClassSchema, ExamSchema, FeesSchema, HomeworkSchema,
-    LessonsSchema, Studentschema, Teacherschema
+    ClassSchema,  FeesSchema, HomeworkSchema,
+    LessonsSchema,  Teacherschema
 }
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";

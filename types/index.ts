@@ -54,3 +54,11 @@ export type StudentFeeReportList = {
 export type MessageType = "ABSENT" | "FEE_RELATED" | "ANNOUNCEMENT" | "GENERAL" | "FEE_COLLECTION";
 
 export type CurrentState = { success: boolean; error: boolean }
+
+
+// types.ts
+export type SearchParams = { [key: string]: string | string[] | undefined };
+
+export type PageProps = { searchParams?: SearchParams };
+
+

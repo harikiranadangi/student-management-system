@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: { studentId: string } }) {
-  const { studentId } = params;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ studentId: string }> }
+) {
+  const { studentId } = await params;
 
   try {
     // Step 1: Get Student → including their Class → including Grade

@@ -10,7 +10,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-const SingleStudentPage = async ({ params }: { params: { id?: string } }) => {
+// Define the prop types with `Promise` for `params`
+interface StudentSinglePageProps {
+  params: Promise<{  id: string }>;
+}
+
+const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
 
   // Await the params to ensure they are resolved before use
   const { id } = await params;

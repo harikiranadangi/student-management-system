@@ -8,6 +8,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Admin, Prisma } from "@prisma/client";
 import Image from "next/image";
+import { SearchParams } from "../../../../../../types";
 
 type AdminList = Admin
 
@@ -59,18 +60,18 @@ const renderRow = (item: AdminList, role: string | null) => (
 const AdminListPage = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
   const { page, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
   const { role } = await fetchUserInfo();
 
   // Get sorting order and column from URL
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = params.sortKey || "id"; // Default sorting column
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
 
   const columns = [
     { header: "Student Name", accessor: "full_name" },
@@ -84,22 +85,13 @@ const AdminListPage = async ({
   // Initialize Prisma query object
   const query: Prisma.AdminWhereInput = {};
 
-  // Dynamically add filters based on query parameters
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "search":
-            // Search by name or id
-            query.OR = [
-              { full_name: { contains: value, mode: "insensitive" } },
-              { username: { contains: (value) } },
-            ];
-            break;
-        }
-      }
-    }
-  }
+  if (queryParams.search) {
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+  query.OR = [
+    { full_name: { contains: searchValue, mode: "insensitive" } },
+    { username: { contains: (searchValue) } },
+  ];
+}
 
   // Fetch students and include related fields (classes, etc.)
   const [data, count] = await prisma.$transaction([
@@ -107,7 +99,7 @@ const AdminListPage = async ({
       orderBy: { [sortKey]: sortOrder },
       where: query,
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.admin.count({ where: query }),
   ]);
@@ -149,7 +141,7 @@ const AdminListPage = async ({
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
 
       {/* PAGINATION: Description */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
 
     </div>
   );

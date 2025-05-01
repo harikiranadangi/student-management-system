@@ -9,6 +9,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
+import { SearchParams } from "../../../../../types";
 
 type LessonsList = Lesson & { subject: Subject } & { class: Class } & { teacher: Teacher };
 
@@ -34,12 +35,6 @@ const renderRow = (item: LessonsList, role: string | null) => (
   </tr>
 );
 
-type SearchParams = {
-  classId?: string;
-  teacherId?: string;
-  search?: string;
-  page?: string;
-};
 
 const getColumns = (role: string | null) => [
   {
@@ -65,7 +60,11 @@ const getColumns = (role: string | null) => [
     : []),
 ];
 
-const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams }) => {
+const LessonsListPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
 
   // Fetch user info and role
   const {  role } = await fetchUserInfo();
@@ -74,12 +73,8 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
   
-  
-  // Get sorting order and column from URL
-  // const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  // const sortKey = params.sortKey || "id"; // Default sorting column
   
   // Initialize Prisma query object
   const query: Prisma.LessonWhereInput = {};
@@ -87,19 +82,20 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
   // Dynamically add filters based on query parameters
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
+      const val = Array.isArray(value) ? value[0] : value;
+      if (val !== undefined) {
         switch (key) {
           case "classId":
-            query.classId = parseInt(value);
+            query.classId = parseInt(val);
             break;
           case "teacherId":
-            query.teacherId = value;
+            query.teacherId = val;
             break;
           case "search":
             query.OR = [
-              { Subject: { name: { contains: value } } },
-              { Teacher: { name: { contains: value } } },
-            ]
+              { Subject: { name: { contains: val } } },
+              { Teacher: { name: { contains: val } } },
+            ];
             break;
           default:
             break;
@@ -107,6 +103,7 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
       }
     }
   }
+    
 
   // Fetch teachers and include related fields (subjects, classes)
   const [data, count] = await prisma.$transaction([
@@ -119,7 +116,7 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
         Teacher: { select: { name: true, surname: true } },
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.lesson.count({ where: query }),
   ]);
@@ -147,7 +144,7 @@ const LessonsListPage = async ({ searchParams }: { searchParams: SearchParams })
       {/* LIST: Description */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

@@ -2,27 +2,30 @@ import { examSchema } from "@/lib/formValidationSchemas";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(req: NextRequest) {
+// This is for route like: /api/exams/[id]
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    // Extract the examId from the URL path using split()
-    const paramId = req.nextUrl.pathname.split("/")[3];
+    const { id } = await params; // ✅ Await here
+    const examId = parseInt(id);
 
-    // Parse the extracted id as integer
-    const examId = parseInt(paramId);
     if (isNaN(examId)) {
       return NextResponse.json({ error: "Invalid exam ID" }, { status: 400 });
     }
 
-    // Parse the incoming request body
+    // Parse and validate the request body
     const body = await req.json();
-    const parse = examSchema.safeParse(body);
+    const parsed = examSchema.safeParse(body);
 
-    // If input is invalid, return error
-    if (!parse.success) {
-      return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.errors },
+        { status: 400 }
+      );
     }
 
-    // Destructure the required fields from the parsed data
     const {
       title,
       examDate,
@@ -30,22 +33,19 @@ export async function PUT(req: NextRequest) {
       gradeId,
       subjectId,
       maxMarks,
-    } = parse.data;
+    } = parsed.data;
 
-    // Perform the transaction to update the exam and its associated grade/subject information
-    const updated = await prisma.$transaction(async (tx) => {
-      // Update the Exam's title
+    const updatedExam = await prisma.$transaction(async (tx) => {
+      // Update exam
       const exam = await tx.exam.update({
         where: { id: examId },
         data: { title },
       });
 
-      // Delete existing ExamGradeSubjects for the exam
-      await tx.examGradeSubject.deleteMany({
-        where: { examId },
-      });
+      // Remove old links
+      await tx.examGradeSubject.deleteMany({ where: { examId } });
 
-      // Create the updated ExamGradeSubject
+      // Add updated link
       await tx.examGradeSubject.create({
         data: {
           examId,
@@ -57,17 +57,20 @@ export async function PUT(req: NextRequest) {
         },
       });
 
-      console.log("Exam ID:", examId);
-      console.log("Parsed data:", parse.data);
-
       return exam;
     });
 
-    // Return success response
-    return NextResponse.json({ exam: updated }, { status: 200 });
-  } catch (err) {
-    console.error("Update exam error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: true, message: "Exam updated successfully", data: updatedExam },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[UPDATE_EXAM_ERROR]", error);
+    return NextResponse.json(
+      { error: "Something went wrong", details: (error as any).message },
+      { status: 500 }
+    );
   }
 }
 
@@ -75,17 +78,19 @@ export async function PUT(req: NextRequest) {
 
 
 
+
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const examId = parseInt(params.id); // ✅ No await here
+    const { id } = await params; // ✅ Await here
+    const examId = parseInt(id);
+
     if (isNaN(examId)) {
       return NextResponse.json({ error: "Invalid exam ID" }, { status: 400 });
     }
 
-    // Delete the exam
     await prisma.exam.delete({
       where: { id: examId },
     });
@@ -102,3 +107,4 @@ export async function DELETE(
     );
   }
 }
+

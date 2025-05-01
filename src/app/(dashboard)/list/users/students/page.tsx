@@ -10,6 +10,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import { SearchParams } from "../../../../../../types";
 
 // Define types
 type StudentList = Student & { Class?: { name: string } };
@@ -68,11 +69,11 @@ const getColumns = (role: string | null) => [
 const StudentListPage = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
   const { page, gradeId, classId, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
   const { role } = await fetchUserInfo();
@@ -81,7 +82,7 @@ const StudentListPage = async ({
 
   // Sorting
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = params.sortKey || "classId";
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "classId";
 
   // ✅ Build query properly
   const query: Prisma.StudentWhereInput = {};
@@ -96,9 +97,10 @@ const StudentListPage = async ({
 
   // ✅ Search logic
   if (queryParams.search) {
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
     query.OR = [
-      { name: { contains: queryParams.search, mode: "insensitive" } },
-      { id: { contains: queryParams.search } },
+      { name: { contains: searchValue, mode: "insensitive" } },
+      { id: { contains: searchValue } },
     ];
   }
 
@@ -124,7 +126,7 @@ const StudentListPage = async ({
         Class: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.student.count({ where: query }),
   ]);
@@ -158,7 +160,7 @@ const StudentListPage = async ({
       {/* LIST: Description */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
       {/* PAGINATION: Description */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

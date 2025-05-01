@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // your Prisma instance
 
-export async function GET(req: Request, { params }: { params: { studentId: string, term: string } }) {
-  const { studentId, term } = params;
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ studentId: string, term: string }> }) {
+  const { studentId, term } = await params;
 
   try {
     const studentFees = await prisma.studentFees.findFirst({

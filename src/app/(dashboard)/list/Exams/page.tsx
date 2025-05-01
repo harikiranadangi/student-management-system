@@ -9,6 +9,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Exam, Prisma, ExamGradeSubject, Grade, Subject } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
 import Image from "next/image";
+import { SearchParams } from "../../../../../types";
 
 // Extended Exam type
 type Exams = Exam & {
@@ -90,44 +91,36 @@ const getColumns = (role: string | null) => [
 const ExamsList = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
   const { page, date, gradeId, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1"; // Handle page being a string[] or string
   const { role } = await fetchUserInfo();
   const columns = getColumns(role);
 
-  // Get sorting order and column from URL
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = params.sortKey || "date";
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "date";
 
 
-  // Initialize exam query
   let query: Prisma.ExamWhereInput = {};
 
   // Title filter
   if (queryParams.title) {
     query.title = {
-      contains: queryParams.title,
+      contains: Array.isArray(queryParams.title) ? queryParams.title[0] : queryParams.title,
       mode: "insensitive",
     };
   }
 
-
   let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
 
-  // Apply date filter
+  // Apply date filter (handle date being string | string[])
   if (date) {
-    const selectedDate = new Date(date);
-    const selectedDateUTC = new Date(
-      selectedDate.getUTCFullYear(),
-      selectedDate.getUTCMonth(),
-      selectedDate.getUTCDate()
-    );
-
-    const startDate = startOfDay(selectedDateUTC);
-    const endDate = endOfDay(selectedDateUTC);
+    const selectedDate = Array.isArray(date) ? date[0] : date;
+    const dateObj = new Date(selectedDate);
+    const startDate = startOfDay(dateObj);
+    const endDate = endOfDay(dateObj);
 
     examGradeSubjectsFilter.date = {
       gte: startDate,
@@ -137,11 +130,12 @@ const ExamsList = async ({
 
   // Apply search filter (by subject or grade level)
   if (queryParams.search) {
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
     examGradeSubjectsFilter.OR = [
       {
         Subject: {
           name: {
-            contains: queryParams.search,
+            contains: searchValue,
             mode: "insensitive",
           },
         },
@@ -149,7 +143,7 @@ const ExamsList = async ({
       {
         Grade: {
           level: {
-            contains: queryParams.search,
+            contains: searchValue,
             mode: "insensitive",
           },
         },
@@ -174,8 +168,8 @@ const ExamsList = async ({
     prisma.exam.findMany({
       where: query,
       orderBy: [
-        { [sortKey]: sortOrder },  // Dynamic sorting (based on user selection)
-        { id: "desc" },  // Default multi-column sorting        
+        { [sortKey]: sortOrder },
+        { id: "desc" },
       ],
       include: {
         examGradeSubjects: {
@@ -186,7 +180,7 @@ const ExamsList = async ({
         },
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.exam.count({ where: query }),
   ]);
@@ -194,7 +188,6 @@ const ExamsList = async ({
   // Fetch dropdown data
   const classes = await prisma.class.findMany();
   const grades = await prisma.grade.findMany();
-
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -233,7 +226,7 @@ const ExamsList = async ({
       </div>
 
       {/* PAGINATION */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

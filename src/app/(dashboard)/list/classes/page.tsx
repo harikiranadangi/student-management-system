@@ -8,8 +8,9 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
+import { SearchParams } from "../../../../../types";
 
-type ClassList = Class & { Teacher: Teacher };
+type ClassList = Class & { Teacher: Teacher | null };
 
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
@@ -17,11 +18,9 @@ const renderRow = (item: ClassList, role: string | null) => (
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.name}</td>
-
     <td className="hidden md:table-cell">
-      {item.Teacher ? `${item.Teacher.name} ` : "No Class Teacher"}
+      {item.Teacher ? `${item.Teacher.name}` : "No Class Teacher"}
     </td>
-
     <td className="flex items-center gap-4 p-4">{item.gradeId}</td>
     <td>
       <div className="flex items-center gap-2">
@@ -36,98 +35,57 @@ const renderRow = (item: ClassList, role: string | null) => (
   </tr>
 );
 
-// Define columns dynamically based on role
 const getColumns = (role: string | null) => [
-  {
-    header: "Class Name",
-    accessor: "name",
-  },
-  {
-    header: "Supervisor",
-    accessor: "supervisor",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Grade",
-    accessor: "gradeId",
-  },
-
-  ...(role === "admin"
-    ? [
-      {
-        header: "Actions",
-        accessor: "action",
-      },
-    ]
-    : []),
+  { header: "Class Name", accessor: "name" },
+  { header: "Supervisor", accessor: "supervisor", className: "hidden md:table-cell" },
+  { header: "Grade", accessor: "gradeId" },
+  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const ClassesList = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) => {
-
-  // Fetch user info and role
+const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+  const params = await searchParams;
   const { role } = await fetchUserInfo();
 
-  // Await the searchParams first
-  const params = await searchParams;
-  const { page, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
-  
-  const columns = getColumns(role);
+  const pageParam = params.page;
+  const currentPage = Array.isArray(pageParam) ? parseInt(pageParam[0]) : parseInt(pageParam || "1");
 
-  // Get sorting order and column from URL
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = params.sortKey || "id"; // Default sorting column
+  const sortKeyRaw = params.sortKey;
+  const sortKey = Array.isArray(sortKeyRaw) ? sortKeyRaw[0] : sortKeyRaw || "id";
 
-
-
-  // Initialize Prisma query object
   const query: Prisma.ClassWhereInput = {};
 
-  // Dynamically add filters based on query parameters
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "supervisorId":
-            query.supervisorId = value;
-            break;
-          case "search":
-            query.name = { contains: value };
-            break;
-          default:
-            break;
-        }
-      }
+  for (const [key, value] of Object.entries(params)) {
+    const val = Array.isArray(value) ? value[0] : value;
+    if (!val) continue;
+
+    switch (key) {
+      case "supervisorId":
+        query.supervisorId = val;
+        break;
+      case "search":
+        query.name = { contains: val };
+        break;
+      default:
+        break;
     }
   }
 
-  // Fetch classes and include related fields (supervisor)
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
       orderBy: { [sortKey]: sortOrder },
       where: query,
       include: {
-        Teacher: {
-          select: { name: true, surname: true, },
-        },
+        Teacher: { select: { name: true, surname: true } },
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (currentPage - 1),
     }),
     prisma.class.count({ where: query }),
   ]);
 
-
-  console.log("User Role:", role);
-  console.log("Classes Data:", data);
-
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* TOP: Description */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Classes</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
@@ -136,18 +94,14 @@ const ClassesList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
-            
-            {/* Sort by Class ID */}
             <SortButton sortKey="id" />
-
             {role === "admin" && <FormContainer table="class" type="create" />}
           </div>
         </div>
       </div>
-      {/* LIST: Description */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
-      {/* PAGINATION: Description */}
-      <Pagination page={p} count={count} />
+
+      <Table columns={getColumns(role)} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Pagination page={currentPage} count={count} />
     </div>
   );
 };

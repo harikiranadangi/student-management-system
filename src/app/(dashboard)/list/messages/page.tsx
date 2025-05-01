@@ -9,6 +9,7 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { getUserIdentifiersForRole } from "@/lib/utils/getUserIdentifiersForRole";
 import SortButton from "@/components/SortButton";
+import { SearchParams } from "../../../../../types";
 
 
 
@@ -104,13 +105,13 @@ const getColumns = (role: string | null) => [
 const MessagesList = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
 
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
   const { classId, studentId } = await getUserIdentifiersForRole(role, userId);
@@ -121,7 +122,7 @@ const MessagesList = async ({
 
   // Get sorting order and column from URL
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = params.sortKey || "id"; // Default sorting column
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
 
 
   // Initialize Prisma query object
@@ -141,22 +142,13 @@ const MessagesList = async ({
 
   
   // Dynamically add filters based on query parameters
-if (queryParams) {
-  for (const [key, value] of Object.entries(queryParams)) {
-    if (value !== undefined) {
-      switch (key) {
-        case "search":
-          query.OR = [
-            { message: { contains: value, mode: "insensitive" } },
-            { Student: { name: { contains: value, mode: "insensitive" } } },
-            { Student: { id: { contains: value, mode: "insensitive" } } },
-          ];
-          break;
-        default:
-          break;
-      }
-    }
-  }
+  if (queryParams.search) {
+  const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+  query.OR = [
+    { message: { contains: searchValue, mode: "insensitive" } },
+    { Student: { name: { contains: searchValue, mode: "insensitive" } } },
+    { Student: { id: { contains: searchValue, mode: "insensitive" } } },
+  ];
 }
 
 
@@ -173,7 +165,7 @@ if (queryParams) {
         Student: true,
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.messages.count({ where: query }),
   ]);
@@ -200,7 +192,7 @@ if (queryParams) {
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
 
       {/* PAGINATION */}
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

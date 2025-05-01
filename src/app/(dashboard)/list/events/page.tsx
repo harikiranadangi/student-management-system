@@ -7,6 +7,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
+import { SearchParams } from "../../../../../types";
 
 type Events = Event & { class: Class };
 
@@ -86,79 +87,65 @@ const getColumns = (role: string | null) => [
 const EventsList = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<SearchParams>;
 }) => {
-
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
 
-  const columns = getColumns(role);  // Get dynamic columns
-
+  const columns = getColumns(role); // Get dynamic columns
 
   // Await the searchParams first
   const params = await searchParams;
-  const { page, ...queryParams } = params;
-  const p = page ? parseInt(page) : 1;
+  // Fixing the 'page' parameter issue
+  const pageParam = params.page;
+  const currentPage = Array.isArray(pageParam) ? parseInt(pageParam[0]) : parseInt(pageParam || "1");
+
+  const { ...queryParams } = params;
+  const p = currentPage;
 
   // Initialize Prisma query object
   const query: Prisma.EventWhereInput = {};
 
   // Dynamically add filters based on query parameters
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          case "search":
-            query.title = { contains: value }
-            break;
-          default:
-            break;
-        }
+  for (const [key, value] of Object.entries(queryParams)) {
+    const val = Array.isArray(value) ? value[0] : value;
+    if (val !== undefined) {
+      switch (key) {
+        case "search":
+          query.title = { contains: val };
+          break;
+        default:
+          break;
       }
     }
   }
 
-  //  * ROLE CONDITIONS
-
+  // ROLE CONDITIONS
   const roleConditions = {
-
     teacher: { lessons: { some: { teacherId: userId! } } },
     student: { students: { some: { id: userId! } } },
-
   };
 
   query.OR = [
-    { classId: null},
+    { classId: null },
     {
-      Class: roleConditions [role as keyof typeof roleConditions] || {},
-    }
-  ]
+      Class: roleConditions[role as keyof typeof roleConditions] || {},
+    },
+  ];
 
-  // switch(role){
-  //   case "admin":
-  //     break;
-      
-  //   case "teacher":
-  //     query.OR = [
-  //       { classId: null }, 
-  //       { class: { lessons: { some: {teacherId: userId!}}}},
-  //     ]  
-  //     break;
-  // }
-  
-  // Fetch teachers and include related fields (subjects, classes)
+  // Fetch events and count
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
       where: query,
       include: {
         Class: true,
       },
-        
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.event.count({ where: query }),
   ]);
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">

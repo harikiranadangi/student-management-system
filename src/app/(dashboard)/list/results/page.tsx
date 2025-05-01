@@ -9,6 +9,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
 import { Class, Exam, Prisma, Result, Student, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
+import { SearchParams } from "../../../../../types";
 
 type ResultList = Result & {
   student: Student;
@@ -23,9 +24,9 @@ type ResultList = Result & {
 const renderRow = (item: ResultList, role: string | null) => (
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
     <td>{item.student.name}</td>
+    <td className="hidden md:table-cell">{item.exam.class.name}</td>
     <td className="p-4">{item.subject.name}</td>
     <td className="hidden md:table-cell">{item.marks}</td>
-    <td className="hidden md:table-cell">{item.exam.class.name}</td>
     <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(new Date(item.exam.date))}</td>
     <td>
       <div className="flex items-center gap-2">
@@ -42,52 +43,33 @@ const renderRow = (item: ResultList, role: string | null) => (
 
 const getColumns = (role: string | null) => [
   { header: "Student", accessor: "student" },
+  { header: "Class", accessor: "class", className: "hidden md:table-cell" },
   { header: "Subject", accessor: "subject" },
   { header: "Score", accessor: "score", className: "hidden md:table-cell" },
-  { header: "Class", accessor: "class", className: "hidden md:table-cell" },
   { header: "Date", accessor: "date", className: "hidden md:table-cell" },
   ...(role === "admin" || role === "teacher" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const ResultsList = async ({ searchParams }: { searchParams: { [key: string]: string | undefined } }) => {
+const ResultsList = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const { role } = await fetchUserInfo();
   const columns = getColumns(role);
 
   const { page, ...queryParams } = await searchParams;
-  const p = page ? parseInt(page) : 1;
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   const query: Prisma.ResultWhereInput = {};
 
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== undefined) {
-        switch (key) {
-          // case "studentId":
-          //   query.studentId = parseInt(value);
-          //   break;
-          case "search":
-            query.OR = [
-              { Exam: { title: { contains: value, mode: "insensitive" } } },
-              { Student: { name: { contains: value, mode: "insensitive" } } },
+  if (queryParams.search) {
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    query.OR = [
+              { Exam: { title: { contains: searchValue, mode: "insensitive" } } },
+              { Student: { name: { contains: searchValue, mode: "insensitive" } } },
             ];
-            break;
         }
-      }
-    }
-  }
-
-  // // Filter based on user role
-  // if (role === "teacher") {
-  //   query.exam = {
-  //     class: {
-  //       teacher: {
-  //         id: userId!,
-  //       },
-  //     },
-  //   };
-  // } else if (role === "student") {
-  //   query.studentId = userId!;
-  // }
 
   // Fetching Data
   const [data, count] = await prisma.$transaction([
@@ -98,16 +80,15 @@ const ResultsList = async ({ searchParams }: { searchParams: { [key: string]: st
         Subject: true,
         Exam: {
           include: {
-            Grade: {
+            examGradeSubjects: {
               include: {
-                classes: true,
-              },
+                },
             } // To get class.name
           },
         },
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p - 1),
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
       orderBy: { createdAt: "desc" },
     }),
     prisma.result.count({ where: query }),
@@ -137,7 +118,7 @@ const ResultsList = async ({ searchParams }: { searchParams: { [key: string]: st
 
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
 
-      <Pagination page={p} count={count} />
+      <Pagination page={parseInt(p)} count={count} />
     </div>
   );
 };

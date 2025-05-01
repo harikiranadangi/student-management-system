@@ -8,7 +8,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const SingleTeacherPage = async ({ params }: { params: { id: string } }) => {
+// Define the prop types with `Promise` for `params`
+interface TeacherSinglePageProps {
+  params: Promise<{  id: string }>;
+}
+
+const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
   // Await the params to ensure they are resolved before use
   const { id } = await params; // Await the params
 
