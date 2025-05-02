@@ -2,7 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -29,11 +28,11 @@ model Admin {
 model Grade {
   id                Int                @id @default(autoincrement())
   level             String             @unique
+  examGradeSubjects ExamGradeSubject[]
   feestructure      FeeStructure[]     @relation("GradeToFeesStructure")
   Homework          Homework[]
   classes           Class[]
   subjects          Subject[]          @relation("SubjectGrades")
-  examGradeSubjects ExamGradeSubject[]
 }
 
 model Class {
@@ -42,15 +41,15 @@ model Class {
   supervisorId    String?          @unique
   gradeId         Int
   Announcement    Announcement[]
+  attendances     Attendance[]
   events          Event[]
   homeworks       Homework[]
   lessons         Lesson[]
+  messages        Messages[]
   students        Student[]
+  subjectTeachers SubjectTeacher[]
   Grade           Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher         Teacher?         @relation("ClassToTeacher", fields: [supervisorId], references: [id])
-  attendances     Attendance[]
-  messages        Messages[]
-  subjectTeachers SubjectTeacher[]
 
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
@@ -89,13 +88,12 @@ model Announcement {
 model Messages {
   id        String      @id @default(cuid())
   message   String
-  type      MessageType // Using the MessageType enum here
+  type      MessageType
   studentId String?
   date      DateTime
   classId   Int?
-
-  Class   Class?   @relation(fields: [classId], references: [id])
-  Student Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Class     Class?      @relation(fields: [classId], references: [id])
+  Student   Student?    @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Event {
@@ -114,8 +112,8 @@ model Exam {
   id                Int                @id @default(autoincrement())
   title             String
   date              DateTime
-  results           Result[]
   examGradeSubjects ExamGradeSubject[]
+  results           Result[]
 }
 
 model ExamGradeSubject {
@@ -123,14 +121,14 @@ model ExamGradeSubject {
   examId    Int
   gradeId   Int
   subjectId Int
-  date      DateTime // ✅ Allows multiple exams on the same day with time
+  date      DateTime
   startTime String
   maxMarks  Int
   Exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
   Grade     Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@unique([examId, gradeId, subjectId]) // Ensures no duplicates
+  @@unique([examId, gradeId, subjectId])
 }
 
 model Homework {
@@ -147,47 +145,45 @@ model Homework {
 }
 
 model Result {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   marks     Int
   studentId String
   examId    Int
   subjectId Int
-
-  Student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  Exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  Subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
   createdAt DateTime @default(now())
+  Exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, examId, subjectId]) // No duplicate entries
+  @@unique([studentId, examId, subjectId])
 }
 
 model Student {
-  id              String             @id
-  username        String             @unique
+  id              String            @id
+  username        String            @unique
   name            String
   surname         String?
   parentName      String?
-  email           String?            @unique
+  email           String?           @unique
   phone           String
   address         String
   img             String?
   bloodType       String?
   gender          Gender
   dob             DateTime
-  createdAt       DateTime           @default(now())
+  createdAt       DateTime          @default(now())
   deletedAt       DateTime?
-  clerk_id        String?            @unique
-  academicYear    AcademicYear       @default(Y2024_2025)
+  clerk_id        String?           @unique
+  academicYear    AcademicYear      @default(Y2024_2025)
+  classId         Int
+  attendances     Attendance[]
   clerkStudent    ClerkStudents?
   feeTransactions FeeTransaction[]
-  results         Result[]
-  classId         Int
-  Class           Class              @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentFees     StudentFees[]
-  totalFees       StudentTotalFees[]
-  attendances     Attendance[]
   messages        Messages[]
+  results         Result[]
+  Class           Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentFees     StudentFees[]
+  totalFees       StudentTotalFees?
 
   @@index([classId])
 }
@@ -200,18 +196,18 @@ model ClerkStudents {
   full_name      String   @db.VarChar
   role           String   @default("student") @db.VarChar
   studentId      String?  @unique @db.VarChar
+  publicMetadata Json?    @default("{}")
   student        Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  publicMetadata Json?    @default("{}") // Default empty object
 }
 
 model Subject {
   id                Int                @id @default(autoincrement())
   name              String             @unique
   createdAt         DateTime           @default(now())
-  teachers          SubjectTeacher[]
   examGradeSubjects ExamGradeSubject[]
   lessons           Lesson[]
   results           Result[]
+  teachers          SubjectTeacher[]
   grades            Grade[]            @relation("SubjectGrades")
 }
 
@@ -234,21 +230,19 @@ model Teacher {
   clerk_id      String?          @unique
   ClerkTeachers ClerkTeachers?
   lessons       Lesson[]
-  subjects      SubjectTeacher[] // Many-to-many relation
+  subjects      SubjectTeacher[]
   class         Class?           @relation("ClassToTeacher")
 }
 
 model SubjectTeacher {
-  subject   Subject @relation(fields: [subjectId], references: [id])
   subjectId Int
-
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
   teacherId String
+  classId   Int
+  class     Class   @relation(fields: [classId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
 
-  class   Class @relation(fields: [classId], references: [id])
-  classId Int
-
-  @@id([subjectId, teacherId, classId]) // Composite primary key
+  @@id([subjectId, teacherId, classId])
 }
 
 model ClerkTeachers {
@@ -291,9 +285,9 @@ model FeeTransaction {
   paymentMode    PaymentMode @default(CASH)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+  remarks        String?
   studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
   student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  remarks        String?
 }
 
 model StudentFees {
@@ -319,17 +313,16 @@ model StudentFees {
 }
 
 model StudentTotalFees {
-  id                  Int    @id @default(autoincrement())
-  studentId           String @unique
-  totalPaidAmount     Float  @default(0)
-  totalDiscountAmount Float  @default(0)
-  totalFineAmount     Float  @default(0)
-  totalAbacusAmount   Float  @default(0)
-  totalFeeAmount      Float  @default(0) // ➡️ Added
-  dueAmount           Float  @default(0) // ➡️ Added
-  status              String @default("Not Paid") // ➡️ New
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                  Int     @id @default(autoincrement())
+  studentId           String  @unique
+  totalPaidAmount     Float   @default(0)
+  totalDiscountAmount Float   @default(0)
+  totalFineAmount     Float   @default(0)
+  totalAbacusAmount   Float   @default(0)
+  totalFeeAmount      Float   @default(0)
+  dueAmount           Float   @default(0)
+  status              String  @default("Not Paid")
+  student             Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Attendance {
@@ -383,5 +376,4 @@ enum MessageType {
   ANNOUNCEMENT
   GENERAL
   FEE_COLLECTION
-  // Add any other types you want
 }

@@ -1,32 +1,38 @@
-// lib/getGroupedStudentFees.ts
-
 import prisma from "./prisma";
 
 export async function getGroupedStudentFees() {
   const students = await prisma.student.findMany({
     include: {
-      totalFees: true, // Fetch totalFees data
+      studentFees: {
+        include: {
+          feeStructure: true, // Include the related FeeStructure data
+        },
+      },
+      totalFees: true, // Include totalFees data if necessary
     },
   });
 
   const groupedData = students.map((student) => {
-    // Make sure there's at least one entry in totalFees array
-    const totalFee = student.totalFees && student.totalFees[0]; // Access first element of the array
+    // Sum the values across all studentFees (one for each term)
+    const totalPaidAmount = student.studentFees.reduce((acc, fee) => acc + fee.paidAmount, 0);
+    const totalDiscountAmount = student.studentFees.reduce((acc, fee) => acc + fee.discountAmount, 0);
+    const totalFineAmount = student.studentFees.reduce((acc, fee) => acc + fee.fineAmount, 0);
+    const totalAbacusAmount = student.studentFees.reduce((acc, fee) => acc + (fee.abacusPaidAmount || 0), 0);
+    
+    // Now we access feeStructure for each term
+    const totalFeeAmount = student.studentFees.reduce((acc, fee) => acc + (fee.feeStructure?.termFees || 0), 0); 
+    const dueAmount = student.studentFees.reduce((acc, fee) => acc + (fee.feeStructure?.termFees || 0) - fee.paidAmount, 0);
 
-    // Defaulting to 0 if no fee data exists
-    const totalPaidAmount = totalFee?.totalPaidAmount || 0;
-    const totalDiscountAmount = totalFee?.totalDiscountAmount || 0;
-    const totalFeeAmount = totalFee?.totalFeeAmount || 0;
-    const dueAmount = totalFee?.dueAmount || 0;
-    const status = totalFee?.status || "Not Paid";
-    const totalAbacusAmount = totalFee?.totalAbacusAmount || 0;
+    // Determine the status based on whether the student has fully paid or not
+    const status = totalPaidAmount >= totalFeeAmount ? "Paid" : "Not Paid";
 
     return {
       studentId: student.id,
       studentName: student.name,
       totalPaidAmount,
-      totalAbacusAmount,
       totalDiscountAmount,
+      totalFineAmount,
+      totalAbacusAmount,
       totalFeeAmount,
       dueAmount,
       status,

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import DownloadExcelButton from "@/components/DownloadExcelButton";
 import ClassFilterDropdown from "@/components/FilterDropdown";
 import Pagination from "@/components/Pagination";

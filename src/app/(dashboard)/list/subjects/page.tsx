@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import ClassFilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";

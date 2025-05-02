@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import React from "react";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
