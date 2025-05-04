@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
-import { FeeStructure, FeeTransaction, PaymentMode, Term } from "@prisma/client";
+import { FeeStructure, FeeTransaction, PaymentMode } from "@prisma/client";
 import { toast } from "react-toastify";
 
 // Interface for StudentFees (same as before)
@@ -32,7 +32,7 @@ interface FeesTableProps {
 
 function formatDate(value: string | Date | undefined | null) {
   if (!value) return "-";
-  
+
   const date = new Date(value);
 
   // Format the date as dd-mm-yyyy
@@ -57,15 +57,15 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   const [receiptNo, setReceiptNo] = useState<string>();
   const [remarks, setRemarks] = useState<string>("");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<string>("CASH");
-  
+
 
   const handleCollect = (studentFee: StudentFees) => {
     setCurrentStudentFee(studentFee);
     setAmount(studentFee.feeStructure.termFees);
     setDiscount(0);
     setFine(0);
-    setReceiptDate("");
-    setReceiptNo(studentFee.receiptNo || studentFee.feeTransactions?.[0]?.receiptNo || ""); 
+    setReceiptDate(new Date().toISOString().split('T')[0]);
+    setReceiptNo(studentFee.receiptNo || studentFee.feeTransactions?.[0]?.receiptNo || "");
     setRemarks(studentFee.remarks || `Collected Fees for ${studentFee.term} on ${formatDate(new Date())}`); // Ensure remarks from DB
     setIsModalOpen(true);
   };
@@ -73,16 +73,19 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   // * * Submit Form **
   const handleFormSubmit = async () => {
     if (currentStudentFee) {
+      console.log('Amount attempting to pay:', amount); // should be 1250
+
+      // Incremental payment: Adding the new payment to the existing paid amount
       const updatedPaidAmount = currentStudentFee.paidAmount + amount;
 
       const updatedFeeData = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
-        paidAmount: updatedPaidAmount,
-        discountAmount: discount,
-        fineAmount: fine,
+        amount,            // ✅ Amount paid in this transaction
+        discountAmount: discount,  // ✅ Discount for this transaction
+        fineAmount: fine,          // ✅ Fine for this transaction
         receiptDate,
-        receiptNo: receiptNo,
+        receiptNo,
         remarks,
       };
 
@@ -97,7 +100,6 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
         });
 
         if (response.ok) {
-
           // 2. Create a new FeeTransaction
           await fetch("/api/fees/transactions", {
             method: "POST",
@@ -108,13 +110,13 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
               studentId: currentStudentFee.studentId,
               term: currentStudentFee.term,
               studentFeesId: currentStudentFee.id,  // Assuming you have 'id' in currentStudentFee
-              amount,
+              paidAmount: amount,
               discountAmount: discount,
               fineAmount: fine,
-              receiptDate,
+              receiptDate: receiptDate ? new Date(receiptDate).toISOString() : undefined,
               receiptNo,
-              paymentMode: PaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
-              remarks
+              paymentMode: selectedPaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
+              remarks,
             }),
           });
 
@@ -123,7 +125,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
             if (fee.studentId === currentStudentFee.studentId && fee.term === currentStudentFee.term) {
               return {
                 ...fee,
-                paidAmount: amount + fee.paidAmount,
+                paidAmount: updatedPaidAmount, // Use the updated paidAmount
                 discountAmount: discount,
                 fineAmount: fine,
                 receiptDate,
@@ -139,7 +141,6 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
           // ✅ Show success toast
           toast.success("Payment collected successfully!");
 
-
         } else {
           const errorMessage = await response.text();
           toast.error(`Failed to collect fees: ${errorMessage}`);
@@ -152,74 +153,64 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   };
 
 
-  const handleCancel = async (fee: any) => {
-    const isConfirmed = confirm("Are you sure you want to cancel the fees? This will reset Paid Amount to 0.");
-    if (!isConfirmed) return;
 
-    const remarks = `Cancelled Fees for ${fee.term} on ${new Date().toLocaleDateString()}`;
+
+  const handleCancel = async (fee: any, remarks: string) => {
+    if (!fee.studentId || !fee.term) {
+      toast.error("Missing studentId or term");
+      return;
+    }
 
     try {
-      // 1. Cancel all FeeTransactions first
-      const cancelTransactionResponse = await fetch("/api/fees/cancel-transactions", {
+      // 1. Cancel associated transactions
+      const cancelRes = await fetch("/api/fees/cancel-transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: fee.studentId,
-          term: fee.term,
-        }),
+        body: JSON.stringify({ studentId: fee.studentId, term: fee.term }),
       });
 
-      if (!cancelTransactionResponse.ok) {
-        throw new Error("Failed to cancel fee transactions");
+      if (!cancelRes.ok) {
+        const { message } = await cancelRes.json();
+        toast.error(`Cancel transaction failed: ${message}`);
+        return;
       }
 
-      // 2. Update StudentFees
+      // 2. Reset fees to zero
       const updatedFeeData = {
         studentId: fee.studentId,
         term: fee.term,
-        paidAmount: 0,
+        amount: 0,
         discountAmount: 0,
         fineAmount: 0,
-        receiptDate,
-        receiptNo,
-        remarks,
+        receiptNo: "",
+        receiptDate: fee.receiptDate
+          ? new Date(fee.receiptDate).toISOString()
+          : null,
+        paymentMode: "CASH",
+        remarks: remarks || "Fees cancelled",
       };
 
-      const response = await fetch("/api/fees/update", {
+      const updateRes = await fetch("/api/fees/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFeeData),
       });
 
-      if (response.ok) {
-        const updatedFees = rowData.map((item) => {
-          if (item.studentId === fee.studentId && item.term === fee.term) {
-            return {
-              ...item,
-              paidAmount: 0,
-              discountAmount: 0,
-              fineAmount: 0,
-              receiptDate: null,
-              receiptNo: null,
-              remarks,
-            };
-          }
-          return item;
-        });
-
-        setRowData(updatedFees);
-        toast.success(`Fees for ${fee.term} cancelled successfully!`);
-
-      } else {
-        console.error("Failed to cancel fees:", await response.text());
-        toast.error("Failed to cancel fees. Please try again.");
+      if (!updateRes.ok) {
+        const { message } = await updateRes.json();
+        toast.error(`Fee update failed: ${message}`);
+        return;
       }
 
+      toast.success("Fees successfully cancelled.");
     } catch (error) {
       console.error("Error cancelling fees:", error);
-      toast.error("Error cancelling fees. Please try again.");
+      toast.error("Something went wrong during cancellation.");
     }
   };
+
+
+
 
   // * * Columns Definition **
   // Define columns for the table using React Table's ColumnDef type
@@ -355,13 +346,13 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
     {
       accessorKey: "paymentMode",
       header: "Payment Mode",
-    },   
+    },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
         const { isCollectDisabled, isZero } = getFeeStatus(row.original);
-    
+
         if (mode === "collect") {
           // When mode is 'collect'
           return (
@@ -376,17 +367,17 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
           return (
             <div className="flex gap-2">
               {!isZero && (
-                <CancelButton onClick={() => handleCancel(row.original)} />
+                <CancelButton onClick={() => handleCancel(row.original, remarks)} />
               )}
             </div>
           );
         }
-    
+
         // Default fallback if mode is unknown
         return null;
       },
     },
-    
+
   ], [handleCollect, handleCancel, mode]);
 
 
@@ -403,30 +394,30 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   return (
     <div className=" overflow-x-auto">
       <div className="min-w-full rounded-xl border border-gray-200 shadow-sm">
-      <table className="min-w-full text-sm text-gray-700m">
-        <thead className="bg-gray-100">
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-black uppercase tracking-wider bg-LamaSky">
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody className="divide-y divide-gray-300 bg-white">
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id} className="px-2 py-3 text-sm text-gray-900">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <table className="min-w-full text-sm text-gray-700m">
+          <thead className="bg-gray-100">
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-black uppercase tracking-wider bg-LamaSky">
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody className="divide-y divide-gray-300 bg-white">
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id} className="px-2 py-3 text-sm text-gray-900">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
 

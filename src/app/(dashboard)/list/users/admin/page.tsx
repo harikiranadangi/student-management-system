@@ -37,7 +37,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td>{item.dob ? new Date(item.dob).toLocaleDateString() : 'Not Available'}</td>
-    <td className="hidden md:table-cell">{item.phone}</td>
+    <td className="">{item.phone}</td>
 
     <td className="p-2">
 
@@ -74,9 +74,9 @@ const AdminListPage = async ({
   const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
 
   const columns = [
-    { header: "Student Name", accessor: "full_name" },
-    { header: "Gender", accessor: "gender" },
-    { header: "Parent Name", accessor: "parentName" },
+    { header: "Admin Name", accessor: "full_name" },
+    { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
+    { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
     { header: "DOB", accessor: "dob" },
     { header: "Mobile", accessor: "phone" },
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),

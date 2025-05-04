@@ -89,13 +89,6 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
 
           {/* SMALL CARDS */}
           <div className="flex flex-wrap justify-between flex-1 gap-4">
-            {/* Attendance */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
-              <Image src="/singleAttendance.png" alt="Attendance" width={24} height={24} />
-              <Suspense fallback="Loading attendance...">
-                <StudentAttendanceCard id={student.id} />
-              </Suspense>
-            </div>
 
             {/* Grade */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
@@ -103,6 +96,15 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
               <div>
                 <h1 className="text-xl font-semibold">{student.Class.gradeId}</h1>
                 <span className="text-sm text-gray-400">Grade</span>
+              </div>
+            </div>
+
+            {/* Class */}
+            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+              <Image src="/singleClass.png" alt="Class" width={24} height={24} />
+              <div>
+                <h1 className="text-xl font-semibold">{student.Class.name}</h1>
+                <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
 
@@ -115,13 +117,12 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
               </div>
             </div>
 
-            {/* Class */}
+            {/* Attendance */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
-              <Image src="/singleClass.png" alt="Class" width={24} height={24} />
-              <div>
-                <h1 className="text-xl font-semibold">{student.Class.name}</h1>
-                <span className="text-sm text-gray-400">Class</span>
-              </div>
+              <Image src="/singleAttendance.png" alt="Attendance" width={24} height={24} />
+              <Suspense fallback="Loading attendance...">
+                <StudentAttendanceCard id={student.id} />
+              </Suspense>
             </div>
           </div>
         </div>

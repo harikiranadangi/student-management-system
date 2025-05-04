@@ -69,7 +69,7 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
       </td>
       <td>{item.Class?.name ?? "N/A"}</td>
       <td className="hidden md:table-cell">{item.parentName || "N/A"}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
+      {/* <td>{item.phone}</td> */}
       <td className="hidden md:table-cell">{totalFees}</td>
       <td className="hidden md:table-cell">{paidAmount}</td>
       <td className="hidden md:table-cell">{discountAmount}</td>
@@ -82,12 +82,12 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
   { header: "Class", accessor: "class" },
-  { header: "Parent Name", accessor: "parentName" },
-  { header: "Mobile", accessor: "phone" },
-  { header: "Total Fees", accessor: "totalFees" },
-  { header: "Paid", accessor: "paidAmount" },
-  { header: "Discount Amount", accessor: "discountAmount" },
-  { header: "Due Amount", accessor: "dueAmount" },
+  { header: "Parent Name", accessor: "parentName", className:"hidden md:table-cell" },
+  // { header: "Mobile", accessor: "phone" },
+  { header: "Total Fees", accessor: "totalFees", className:"hidden md:table-cell" },
+  { header: "Paid", accessor: "paidAmount", className:"hidden md:table-cell" },
+  { header: "Discount Amount", accessor: "discountAmount", className:"hidden md:table-cell" },
+  { header: "Due Amount", accessor: "dueAmount", className:"hidden md:table-cell" },
 ];
 
 // Main page

@@ -41,7 +41,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
 
     {/* Directly use the strings from subjects and classes */}
     <td className="hidden w-32 md:table-cell">{item.class ? item.class.name : "No Class"}</td>
-    <td className="px-2 w-36 md:table-cell">{item.phone}</td>
+    {/* <td className="px-2 w-36 md:table-cell">{item.phone}</td> */}
     <td className="hidden w-32 truncate md:table-cell">
       {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
     </td>
@@ -70,7 +70,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
 const getColumns = (role: string | null) => [
   { header: "Name", accessor: "info" },
   { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
-  { header: "Phone", accessor: "phone", className: "lg:table-cell" },
+  // { header: "Phone", accessor: "phone", className: "lg:table-cell" },
   { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
   { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
   { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },

@@ -51,7 +51,7 @@ const StudentsList = () => {
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Id</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Name</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Grade</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Mobile Number</th>
+                    {/* <th style={{ padding: '8px', border: '1px solid #ddd' }}>Mobile Number</th> */}
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Date of Birth</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Address</th>
                 </tr>
@@ -62,7 +62,7 @@ const StudentsList = () => {
                         <td style={{ padding: '8px' }}>{student.id}</td>
                         <td style={{ padding: '8px' }}>{student.name}</td>
                         <td style={{ padding: '8px' }}>{student.grade}</td>
-                        <td style={{ padding: '8px' }}>{student.mobileNumber}</td>
+                        {/* <td style={{ padding: '8px' }}>{student.mobileNumber}</td> */}
                         <td style={{ padding: '8px' }}>{new Date(student.dateOfBirth).toLocaleDateString()}</td>
                         <td style={{ padding: '8px' }}>{student.address}</td>
                     </tr>

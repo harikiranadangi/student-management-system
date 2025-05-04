@@ -4,6 +4,8 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ["latin"], fallback: ["Arial", "sans-serif"] });
 
@@ -25,9 +27,13 @@ export default function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           <div className="layout-container">
-            <main>{children}</main>
+            <main>
+              {children}
+            </main>
           </div>
           <ToastContainer position="bottom-right" theme="dark" />
+          <Analytics /> {/* Add Vercel Analytics here */}
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>

@@ -1,7 +1,29 @@
+// H:\student-management-system\src\app\api\fees\transactions\route.ts
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { getMessageContent } from "@/lib/utils/messageUtils";
-import { MessageType } from "../../../../../types";
+import { PaymentMode } from "@prisma/client";
+
+// Function to calculate total fees for a student
+function getTotalFees(fee: any) {
+  const termFees = fee.feeStructure?.termFees ?? 0;
+  const abacusFees = fee.feeStructure?.abacusFees ?? 0;
+
+  if (fee.term === "TERM_2") {
+    return termFees + abacusFees; // include Abacus only for Term 2
+  } else {
+    return termFees; // for Term 1 or others, only Term Fees
+  }
+}
+
+// Function to calculate the due amount for a student
+function calculateDueAmount(fee: any) {
+  const totalFees = getTotalFees(fee);
+  const paidAmount = fee.paidAmount ?? 0;
+  const discountAmount = fee.discountAmount ?? 0;
+  const fineAmount = fee.fineAmount ?? 0;
+
+  return totalFees - paidAmount - discountAmount + fineAmount;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,122 +31,101 @@ export async function POST(req: NextRequest) {
     const {
       studentId,
       term,
-      paidAmount,
-      discountAmount,
-      fineAmount,
+      paidAmount = 0,
+      discountAmount = 0,
+      fineAmount = 0,
       receiptDate,
       receiptNo,
       remarks,
+      paymentMode = PaymentMode.CASH,
     } = body;
 
     if (!studentId || !term) {
       return NextResponse.json({ message: "studentId and term are required." }, { status: 400 });
     }
 
-    const feeDataToUpdate: Partial<{
-      paidAmount: number;
-      discountAmount: number;
-      fineAmount: number;
-      remarks: string;
-      receiptDate: Date;
-    }> = {
-      paidAmount,
-      discountAmount,
-      fineAmount,
-      remarks,
-    };
+    // Fetch the student's fee record for the given term
+    const studentFee = await prisma.studentFees.findFirst({
+      where: { studentId, term },
+      include: { feeStructure: true },
+    });
 
-    if (receiptDate) {
-      feeDataToUpdate.receiptDate = new Date(receiptDate);
+    if (!studentFee) {
+      return NextResponse.json({ message: "Student fee record not found." }, { status: 404 });
     }
 
-    // Step 1: Update studentFees
-    const updatedFee = await prisma.studentFees.updateMany({
-      where: { studentId, term },
+    // Calculate the due amount for the student
+    const dueAmount = calculateDueAmount(studentFee);
+
+    // Ensure the payment is within the due amount
+    const totalIncomingAmount = paidAmount + discountAmount + fineAmount;
+
+    if (totalIncomingAmount > dueAmount) {
+      return NextResponse.json(
+        {
+          message: `Overpayment not allowed. Due: ₹${dueAmount}, Attempted: ₹${totalIncomingAmount}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Prepare the data to update the student fee record
+    const feeDataToUpdate = {
+      paidAmount: studentFee.paidAmount + paidAmount,
+      discountAmount: studentFee.discountAmount + discountAmount,
+      fineAmount: studentFee.fineAmount + fineAmount,
+      remarks,
+      paymentMode,
+      ...(receiptDate && { receiptDate: new Date(receiptDate) }),
+      ...(receiptNo && { receiptNo: String(receiptNo) }),
+    };
+
+    // Update the student fee record for the specific term
+    const updatedFee = await prisma.studentFees.update({
+      where: { id: studentFee.id },
       data: feeDataToUpdate,
     });
 
-    // Step 2: Update receiptNo for all terms
-    if (receiptNo != null) {
+    // Update receiptNo across all terms if provided
+    if (receiptNo) {
       await prisma.studentFees.updateMany({
         where: { studentId },
         data: { receiptNo: String(receiptNo) },
       });
     }
 
-    // Step 3: Get studentFee record
-    const studentFeesRecord = await prisma.studentFees.findFirst({
+    // Fetch the latest student fee after the update
+    const updatedStudentFee = await prisma.studentFees.findFirst({
       where: { studentId, term },
     });
 
-    if (!studentFeesRecord) {
-      return NextResponse.json(
-        { message: "StudentFees not found for creating transaction." },
-        { status: 404 }
-      );
-    }
+    // Update the total fees record for the student
+    const totalIncrementAmount = paidAmount + discountAmount + fineAmount;
 
-    const selectedId = studentFeesRecord.id;
-    const selectedPaymentMode = studentFeesRecord.paymentMode;
-    const paidFees = studentFeesRecord.paidAmount;
-    const paiddiscount = studentFeesRecord.discountAmount;
-    const paidFine = studentFeesRecord.fineAmount;
-    const remark = studentFeesRecord.remarks;
-
-    // Step 4: Create FeeTransaction
-    const feeTransaction = await prisma.feeTransaction.create({
-      data: {
-        studentId,
-        term,
-        studentFeesId: selectedId,
-        amount: paidFees,
-        discountAmount: paiddiscount,
-        fineAmount: paidFine,
-        receiptDate: receiptDate ? new Date(receiptDate) : new Date(),
-        receiptNo: receiptNo ? String(receiptNo) : "",
-        paymentMode: selectedPaymentMode,
-        remarks: remark,
-      },
-    });
-
-    await prisma.feeTransaction.updateMany({
+    const updatedTotalFee = await prisma.studentTotalFees.upsert({
       where: { studentId },
-      data: {
-        receiptNo: receiptNo ? String(receiptNo) : "",
+      update: {
+        totalPaidAmount: { increment: paidAmount },
+        totalDiscountAmount: { increment: discountAmount },
+        totalFineAmount: { increment: fineAmount },
+        totalFeeAmount: { increment: totalIncrementAmount },
+      },
+      create: {
+        studentId,
+        totalPaidAmount: paidAmount,
+        totalDiscountAmount: discountAmount,
+        totalFineAmount: fineAmount,
+        totalFeeAmount: totalIncrementAmount,
+        totalAbacusAmount: 0,
       },
     });
 
-    // Step 5: Fetch student + class for message
-    const student = await prisma.student.findUnique({
-      where: { id: studentId },
-      include: { Class: true },
-    });
-
-    if (student) {
-      const message = getMessageContent("FEE_COLLECTION" as MessageType, {
-        name: student.name,
-        className: student.Class?.name ?? "Unknown",
-        amount: paidFees,
-        term,
-      });
-
-      await prisma.messages.create({
-        data: {
-          message,
-          type: "FEE_COLLECTION",
-          date: new Date().toISOString(),
-          classId: student.classId ?? null,
-          studentId,
-        },
-      });
-    }
-
-    return NextResponse.json({ updatedFee, feeTransaction }, { status: 200 });
-
+    // Return the updated data
+    return NextResponse.json({ updatedStudentFee, updatedFee, updatedTotalFee }, { status: 200 });
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(
-      { message: "Internal Server Error", error: String(error) },
+      { message: "Internal Server Error", error: (error as any)?.message || "Unknown error" },
       { status: 500 }
     );
   }

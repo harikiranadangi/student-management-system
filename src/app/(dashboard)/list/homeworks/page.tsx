@@ -19,14 +19,14 @@ const renderRow = (item: Homeworks, role: string | null) => (
     key={item.id}
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
-    <td className="hidden md:table-cell w-32">
+    <td className="">
       {new Intl.DateTimeFormat("en-GB")
         .format(new Date(item.date))
         .replace(/\//g, "-")}
     </td>
 
     {(role === "admin" || role === "teacher") && (
-      <td className="hidden md:table-cell">
+      <td className="">
         {item.Class?.name ?? "N/A"}
       </td>
     )}
@@ -49,12 +49,12 @@ const renderRow = (item: Homeworks, role: string | null) => (
 
 const getColumns = (role: string | null) => {
   const baseColumns = [
-    { header: "Date", accessor: "date", className: "hidden md:table-cell" },
-    { header: "Description", accessor: "description", className: "hidden md:table-cell" },
+    { header: "Date", accessor: "date" },
+    { header: "Description", accessor: "description" },
   ];
 
   const adminTeacherColumns = [
-    { header: "Class", accessor: "class", className: "hidden md:table-cell" },
+    { header: "Class", accessor: "class" },
     { header: "Actions", accessor: "action" },
   ];
 
