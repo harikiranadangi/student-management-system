@@ -36,11 +36,11 @@ export const getClassIdForRole = async (role: string | null, userId: string | nu
   if (!userId) return null;
 
   if (role === "student") {
-    const clerkStudent = await prisma.clerkStudents.findUnique({
-      where: { user_id: userId },
-      select: { student: { select: { classId: true, id:true  } } },
+    const student = await prisma.student.findUnique({
+      where: { clerk_id: userId },
+      select: { classId: true },
     });
-    return clerkStudent?.student?.classId ?? null;
+    return student?.classId ?? null;
   }
 
   if (role === "teacher") {

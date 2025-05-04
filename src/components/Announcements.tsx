@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 
 
@@ -16,21 +17,18 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
     let classId: number | null = null;
 
     // Only if student, get their classId
+    // If student, fetch classId from student table directly
     if (role === "student") {
-      const clerkStudent = await prisma.clerkStudents.findUnique({
-        where: { user_id: userId },
-        select: { clerk_id: true },
-      });
-
-      if (!clerkStudent) {
-        return <div>Error: Student not found</div>;
-      }
-
       const student = await prisma.student.findUnique({
-        where: { clerk_id: clerkStudent.clerk_id },
+        where: { clerk_id: userId } as Prisma.StudentWhereUniqueInput,
         select: { classId: true },
       });
 
+      if (!student) {
+        return <div>Error: Student not found</div>;
+      }
+
+      // Get classId from student table
       classId = student?.classId ?? null;
     }
 

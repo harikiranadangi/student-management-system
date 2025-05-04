@@ -112,6 +112,9 @@ const HomeworkListPage = async ({
   // Fetch class ID based on role
   const userClassId = await getClassIdForRole(role, userId);
 
+  console.log("User Class ID:", userClassId); // Debugging line
+  console.log("Role:", role); // Debugging line
+
 
   // Apply class filter based on role
   if (userClassId) {

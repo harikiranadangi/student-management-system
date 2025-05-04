@@ -1,14 +1,41 @@
-// route.ts
 import { adminSchema } from "@/lib/formValidationSchemas";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { clerkClient } from "@clerk/nextjs/server";
 
-// POST: Create new admin
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = adminSchema.parse(body);
 
+    const client = await clerkClient();
+
+    // Check if Clerk user with username already exists
+    const existingUsers = await client.users.getUserList({ query: data.username });
+    if (existingUsers.totalCount > 0) {
+      return NextResponse.json(
+        { message: `Username "${data.username}" already exists!` },
+        { status: 409 }
+      );
+    }
+
+    const clerkPassword = data.phone; // or another logic for default password
+
+    // Create Clerk user
+    const clerkUser = await client.users.createUser({
+      username: data.username,
+      password: clerkPassword,
+      firstName: data.full_name, // You can split if needed
+    });
+
+    // Optionally add metadata
+    await client.users.updateUser(clerkUser.id, {
+      publicMetadata: {
+        role: "admin",
+      },
+    });
+
+    // Create admin in Prisma DB
     const admin = await prisma.admin.create({
       data: {
         username: data.username,
@@ -22,28 +49,17 @@ export async function POST(req: Request) {
         dob: data.dob ?? null,
         img: data.img ?? null,
         phone: data.phone,
-      },
+        clerkId: clerkUser.id,
+        },
     });
 
     return NextResponse.json({ success: true, admin }, { status: 201 });
+
   } catch (error: any) {
     console.error("Admin creation error:", error);
     if (error.name === "ZodError") {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
     return NextResponse.json({ error: error.message || "Something went wrong" }, { status: 500 });
-  }
-}
-
-// GET: List all admins
-export async function GET() {
-  try {
-    const admins = await prisma.admin.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(admins, { status: 200 });
-  } catch (error: any) {
-    console.error("Admin fetch error:", error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

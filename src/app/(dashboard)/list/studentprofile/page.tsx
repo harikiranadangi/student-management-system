@@ -12,17 +12,12 @@ import { Suspense } from "react";
 
 const StudentProfilePage = async () => {
   const { userId } = await fetchUserInfo();
-  if (!userId) return notFound(); // Redirect if not logged in
+  if (!userId) {
+    console.log("❌ No userId found");
+    return notFound();
+  }
 
-  // Step 1: Fetch clerk_id from ClerkStudents using user_id
-  const clerkUser = await prisma.clerkStudents.findUnique({
-    where: { user_id: userId },
-    select: { clerk_id: true },
-  });
-
-  if (!clerkUser) return notFound(); // Redirect if Clerk user is not found
-
-  // Step 2: Fetch student using clerk_id
+ 
   const student = await prisma.student.findUnique({
     where: { clerk_id: userId },
     include: {
@@ -35,7 +30,10 @@ const StudentProfilePage = async () => {
     },
   });
 
-  if (!student) return notFound(); // Redirect if student is not found
+  if (!student) {
+    console.log("❌ No student found for clerk_id:", userId);
+    return notFound();
+  }
 
     // Return the student data
     return (

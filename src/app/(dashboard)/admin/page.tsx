@@ -1,4 +1,3 @@
-// app/(dashboard)/admin/page.tsx
 import Messages from "@/components/Announcements";
 import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import CountChartContainer from "@/components/CountChartContainer";

@@ -92,7 +92,7 @@ const AdminForm = ({
       };
   
       // URL for the API
-      const url = type === "create" ? "/api/admin" : `/api/admin/${data.id}`;
+      const url = type === "create" ? "/api/users/admin" : `/api/users/admin/${data.id}`;
   
       // Make the API request
       const method = type === "create" ? "POST" : "PUT";
