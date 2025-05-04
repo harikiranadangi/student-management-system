@@ -22,23 +22,39 @@ const renderRow = (item: MessageList, role: string | null) => (
   >
     {/* Date */}
     <td className="hidden md:table-cell w-24">
-    {new Date(item.date).toLocaleDateString("en-GB").replace(/\//g, '-')}
+      {new Date(item.date).toLocaleDateString("en-GB").replace(/\//g, '-')}
     </td>
 
 
     {/* Student Name (only for teacher/admin) */}
     {(role === "teacher" || role === "admin") && (
       <>
-      <td className="hidden md:table-cell capitalize w-32">{item.type.toLowerCase()}</td>
-        <td> <div className="flex flex-col">
-          <h3 className="font-semibold">{item.Student.name}</h3>
-          <p className="text-xs">{item.studentId}</p>
-        </div>
+        <td className="hidden md:table-cell capitalize w-32">
+          {item.type.toLowerCase()}
         </td>
-        {/* Type */}
-        <td className="hidden md:table-cell w-24">{item.Class?.name}</td>
+
+        <td>
+          <div className="flex flex-col">
+            {item.Student ? (
+              <>
+                <h3 className="font-semibold">{item.Student.name}</h3>
+                <p className="text-xs">{item.studentId}</p>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold text-gray-500 italic">Class / School-wide</h3>
+                <p className="text-xs text-gray-400">No specific student</p>
+              </>
+            )}
+          </div>
+        </td>
+
+        <td className="hidden md:table-cell w-24">
+          {item.Class?.name ?? <span className="text-gray-400 italic">All Classes</span>}
+        </td>
       </>
     )}
+
 
     {/* Message */}
     <td className="p-4 whitespace-pre-line px-0">{item.message}</td>
@@ -114,9 +130,8 @@ const MessagesList = async ({
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
   // Fetch user info and role
   const { userId, role } = await fetchUserInfo();
-  const { classId, studentId } = await getUserIdentifiersForRole(role, userId);
+  const { classId } = await getUserIdentifiersForRole(role, userId);
 
-  console.log("Student Id:", studentId)
 
   const columns = getColumns(role);  // Get dynamic columns
 
@@ -128,9 +143,7 @@ const MessagesList = async ({
   // Initialize Prisma query object
   const query: Prisma.MessagesWhereInput = {};
 
-  if (studentId) {
-    query.studentId = studentId
-  }
+  
 
   // Filter by gradeId (apply conditionally to Class relation)
   const userClassId = await getClassIdForRole(role, userId);
@@ -140,16 +153,16 @@ const MessagesList = async ({
     query.classId = userClassId ?? Number(classId);
   }
 
-  
+
   // Dynamically add filters based on query parameters
   if (queryParams.search) {
-  const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
-  query.OR = [
-    { message: { contains: searchValue, mode: "insensitive" } },
-    { Student: { name: { contains: searchValue, mode: "insensitive" } } },
-    { Student: { id: { contains: searchValue, mode: "insensitive" } } },
-  ];
-}
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    query.OR = [
+      { message: { contains: searchValue, mode: "insensitive" } },
+      { Student: { name: { contains: searchValue, mode: "insensitive" } } },
+      { Student: { id: { contains: searchValue, mode: "insensitive" } } },
+    ];
+  }
 
 
   // Fetch messages and count

@@ -418,6 +418,11 @@ SELECT * FROM "StudentFees" WHERE "studentId" = '17159' ;
 SELECT * FROM "StudentTotalFees";
 
 DELETE FROM "StudentTotalFees";
+DELETE FROM "StudentTotalFees";
 
 SELECT * FROM "Student" WHERE clerk_id = 'user_2wFMzReXZcEfUSOhp7yzJGkhNRw';
 SELECT * FROM "Student";
+
+
+SELECT * FROM "Messages";
+DELETE FROM "Messages";

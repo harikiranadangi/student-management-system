@@ -37,7 +37,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
     <td>{item.dob ? new Date(item.dob).toLocaleDateString() : 'Not Available'}</td>
-    <td className="">{item.phone}</td>
+    {/* <td className="">{item.phone}</td> */}
 
     <td className="p-2">
 
@@ -78,7 +78,7 @@ const AdminListPage = async ({
     { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
     { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
     { header: "DOB", accessor: "dob" },
-    { header: "Mobile", accessor: "phone" },
+    // { header: "Mobile", accessor: "phone" },
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 

@@ -78,7 +78,7 @@ const StudentProfilePage = async () => {
                   </div>
                   <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                     <Image src="/phone.png" alt="" width={14} height={14} />
-                    <span>{student.phone || "-"}</span>
+                    {/* <span>{student.phone || "-"}</span> */}
                   </div>
                 </div>
               </div>

@@ -243,8 +243,6 @@ const MessageForm = ({
           className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
         >
           <option value="">Select Type</option>
-          <option value="ABSENT">ABSENT</option>
-          <option value="FEE_COLLECTION">FEE COLLECTION</option>
           <option value="FEE_RELATED">FEE RELATED</option>
           <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
           <option value="GENERAL">GENERAL</option>
