@@ -1,25 +1,33 @@
-"use client"; // Ensure it's a client component
+"use client";
 
 import { usePathname } from "next/navigation";
 
 const Loading = () => {
   const pathname = usePathname();
 
-  // Determine loading message based on pathname
-  let message = "Loading...";
-  if (pathname.includes("/students")) message = "Students Loading...";
-  else if (pathname.includes("/teachers")) message = "Teachers Loading...";
-  else if (pathname.includes("/classes")) message = "Classes Loading...";
-  else if (pathname.includes("/admin")) message = "Dashboard Loading...";
-  else if (pathname.includes("/attendance")) message = "Attendance Loading...";
-  else if (pathname.includes("/homeworks")) message = "Homeworks   Loading...";
-  else if (pathname.includes("/fees")) message = "Fees List Loading...";
-  else if (pathname.includes("/subjects")) message = "Subjects Loading...";
-  else if (pathname.includes("/lessons")) message = "Lessons Loading...";
-  else if (pathname.includes("/exams")) message = "Exams Loading...";
-  else if (pathname.includes("/results")) message = "Results Loading...";
-  else if (pathname.includes("/events")) message = "Events Loading...";
-  else if (pathname.includes("/announcements")) message = "Announcements Loading...";
+  // Map of path keywords to loading messages
+  const pathMessages: { [key: string]: string } = {
+    students: "Students Loading...",
+    teachers: "Teachers Loading...",
+    classes: "Classes Loading...",
+    admin: "Dashboard Loading...",
+    attendance: "Attendance Loading...",
+    homeworks: "Homeworks Loading...",
+    fees: "Fees List Loading...",
+    subjects: "Subjects Loading...",
+    lessons: "Lessons Loading...",
+    exams: "Exams Loading...",
+    results: "Results Loading...",
+    events: "Events Loading...",
+    announcements: "Announcements Loading...",
+  };
+
+  // Find the first path match
+  const matched = Object.entries(pathMessages).find(([key]) =>
+    pathname.includes(`/${key}`)
+  );
+
+  const message = matched ? matched[1] : "Loading...";
 
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-4 transition-opacity animate-fadeIn">

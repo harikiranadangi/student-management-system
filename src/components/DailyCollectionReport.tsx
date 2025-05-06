@@ -22,7 +22,6 @@ type Transaction = {
 export default function DailyCollectionReport() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Get the "date" query parameter from URL
@@ -66,13 +65,12 @@ export default function DailyCollectionReport() {
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-4 py-2">ID No</th>
+            <th className="border px-4 py-2">Receipt Date</th>
             <th className="border px-4 py-2">Student Name</th>
             <th className="border px-4 py-2">Student ID</th>
             <th className="border px-4 py-2">Class</th>
             <th className="border px-4 py-2">Amount</th>
             <th className="border px-4 py-2">Receipt No</th>
-            <th className="border px-4 py-2">Date</th>
-            <th className="border px-4 py-2">Receive Date</th>
             <th className="border px-4 py-2">Remarks</th>
           </tr>
         </thead>
@@ -80,13 +78,12 @@ export default function DailyCollectionReport() {
           {transactions.map((txn) => (
             <tr key={txn.id} className="hover:bg-gray-50">
               <td className="border px-4 py-2">{txn.id || "-"}</td>
+              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
               <td className="border px-4 py-2">{txn.student?.name || "-"}</td>
               <td className="border px-4 py-2">{txn.student?.id || "-"}</td>
               <td className="border px-4 py-2">{txn.student?.Class?.name || "-"}</td>
               <td className="border px-4 py-2">₹ {txn.amount}</td>
               <td className="border px-4 py-2">{txn.receiptNo}</td>
-              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
-              <td className="border px-4 py-2">{new Date(txn.receiptDate).toLocaleDateString().split("/").join("-")}</td>
               <td className="border px-4 py-2">{txn.remarks || "-"}</td>
             </tr>
           ))}

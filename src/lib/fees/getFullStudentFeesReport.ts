@@ -1,28 +1,32 @@
 // src/lib/fees/getFullStudentFeesReport.ts
 import prisma from "@/lib/prisma";
-import { calculateStudentFeeReport } from "@/lib/feeUtils";
+import { calculateStudentFeeReport } from "@/lib/fees/feeUtils";
 
 export async function getFullStudentFeesReport() {
-  const allStudents = await prisma.student.findMany({
-    include: {
-      Class: {
-        include: {
-          Grade: {
-            include: {
-              feestructure: true,
+  try {
+    const allStudents = await prisma.student.findMany({
+      include: {
+        Class: {
+          include: {
+            Grade: {
+              include: {
+                feestructure: true,
+              },
             },
           },
         },
-      },
-      totalFees: true,
-      studentFees: {
-        include: {
-          feeStructure: true,
+        totalFees: true,
+        studentFees: {
+          include: {
+            feeStructure: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  const studentReportData = allStudents.map(calculateStudentFeeReport);
-  return studentReportData;
+    return allStudents.map(calculateStudentFeeReport);
+  } catch (error) {
+    console.error("Error fetching student fees report:", error);
+    throw error;
+  }
 }
