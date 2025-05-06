@@ -67,6 +67,7 @@ const renderRow = (item: StudentList, role: string | null) => {
       <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
       <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
       {/* <td className="">{item.phone}</td> */}
+      <td className="hidden md:table-cell">{paidAmount}</td>
       <td
         className={clsx(
           "hidden md:table-cell",
@@ -106,6 +107,7 @@ const getColumns = (role: string | null) => [
   { header: "Parent Name", accessor: "parentName",className:"hidden md:table-cell" },
   { header: "DOB", accessor: "dob",className:"hidden md:table-cell" },
   // { header: "Mobile", accessor: "phone" },
+  { header: "Fees", accessor: "paidAmount",className:"hidden md:table-cell" },
   { header: "Status", accessor: "status",className:"hidden md:table-cell" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];

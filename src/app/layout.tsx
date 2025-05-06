@@ -32,8 +32,12 @@ export default function RootLayout({
             </main>
           </div>
           <ToastContainer position="bottom-right" theme="dark" />
-          <Analytics /> {/* Add Vercel Analytics here */}
-          <SpeedInsights />
+          {process.env.NODE_ENV === 'production' && (
+            <>
+              <Analytics />
+              <SpeedInsights />
+            </>
+          )}
         </body>
       </html>
     </ClerkProvider>

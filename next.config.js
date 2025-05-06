@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "ik.imagekit.io", // ImageKit URL
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com", // Cloudinary URL
+      },
     ],
   },
   reactStrictMode: true,

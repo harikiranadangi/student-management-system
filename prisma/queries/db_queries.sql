@@ -396,11 +396,10 @@ SELECT * FROM "FeeStructure" ;
 
 SELECT * FROM "StudentFees" WHERE "term" IS NULL;
 
-SELECT * FROM "StudentFees" WHERE term = '';
-
 SELECT DISTINCT "term" FROM "StudentFees";
 
 -- Check fees assigned to this grade
+SELECT * FROM "FeeTransaction";
 SELECT * FROM "FeeTransaction" ORDER BY id DESC;
 
 SELECT * FROM "FeeTransaction" WHERE "studentId" = '17160';
@@ -411,8 +410,6 @@ DELETE FROM "FeeTransaction";
 ALTER SEQUENCE "FeeTransaction_id_seq" RESTART WITH 1;
 
 -- Check fees assigned to this grade
-SELECT * FROM "FeeTransaction" ORDER BY id DESC;
-
 SELECT * FROM "StudentFees" WHERE "studentId" = '17159' ;
 
 SELECT * FROM "StudentTotalFees";

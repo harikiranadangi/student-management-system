@@ -289,6 +289,8 @@ model FeeTransaction {
   remarks        String?
   studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
   student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  deletedAt      DateTime?
+  transactionType String   @default("PAYMENT") // use "CANCELLED" for cancelled fees
 }
 
 model StudentFees {
@@ -310,7 +312,7 @@ model StudentFees {
   feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
   student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, academicYear, term])
+  @@unique([studentId, academicYear, term], name: "studentId_academicYear_term")
 }
 
 model StudentTotalFees {

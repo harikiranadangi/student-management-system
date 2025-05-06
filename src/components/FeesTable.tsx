@@ -1,8 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
-import { FeeStructure, FeeTransaction, PaymentMode } from "@prisma/client";
+import { FeeStructure, FeeTransaction } from "@prisma/client";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation"; // ✅ CORRECT for App Router
+
 
 // Interface for StudentFees (same as before)
 interface StudentFees {
@@ -57,125 +59,138 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   const [receiptNo, setReceiptNo] = useState<string>();
   const [remarks, setRemarks] = useState<string>("");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<string>("CASH");
+  
 
 
-  const handleCollect = (studentFee: StudentFees) => {
+  const handleCollect = useCallback((studentFee: StudentFees) => {
+    const dueAmount = calculateDueAmount(studentFee);
+    console.log("studentFee in handleCollect", studentFee);
+
+    console.log("Calculated dueAmount:", dueAmount); // optional debug
+
     setCurrentStudentFee(studentFee);
-    setAmount(studentFee.feeStructure.termFees);
+    setAmount(dueAmount > 0 ? dueAmount : 0); // ✅ Set correct due
+    // ❌ DO NOT SET termFees again!
     setDiscount(0);
     setFine(0);
-    setReceiptDate(new Date().toISOString().split('T')[0]);
+    setReceiptDate(new Date().toISOString().split("T")[0]);
     setReceiptNo(studentFee.receiptNo || studentFee.feeTransactions?.[0]?.receiptNo || "");
-    setRemarks(studentFee.remarks || `Collected Fees for ${studentFee.term} on ${formatDate(new Date())}`); // Ensure remarks from DB
+    setRemarks(studentFee.remarks || `Collected Fees for ${studentFee.term} on ${formatDate(new Date())}`);
     setIsModalOpen(true);
-  };
+  }, []);
+
 
   // * * Submit Form **
   const handleFormSubmit = async () => {
-    if (currentStudentFee) {
-      console.log('Amount attempting to pay:', amount); // should be 1250
+    if (!currentStudentFee) return;
 
-      // Incremental payment: Adding the new payment to the existing paid amount
-      const updatedPaidAmount = currentStudentFee.paidAmount + amount;
+    const dueAmount = calculateDueAmount(currentStudentFee);
 
-      const updatedFeeData = {
+    if (amount + discount > dueAmount) {
+      toast.error("Total of payment and discount exceeds due amount.");
+      return;
+    }
+
+    console.log("Amount attempting to pay:", amount);
+
+    const updatedPaidAmount = currentStudentFee.paidAmount + amount;
+
+    const updatedFeeData = {
+      studentId: currentStudentFee.studentId,
+      term: currentStudentFee.term,
+      amount,
+      discountAmount: discount,
+      fineAmount: fine,
+      receiptDate,
+      receiptNo,
+      remarks,
+    };
+
+    try {
+      // 1. Update the student fees
+      const response = await fetch("/api/fees/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFeeData),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        toast.error(`Failed to collect fees: ${errorMessage}`);
+        return;
+      }
+
+      // 2. Prepare transaction payload safely
+      const transactionPayload: any = {
         studentId: currentStudentFee.studentId,
         term: currentStudentFee.term,
-        amount,            // ✅ Amount paid in this transaction
-        discountAmount: discount,  // ✅ Discount for this transaction
-        fineAmount: fine,          // ✅ Fine for this transaction
-        receiptDate,
-        receiptNo,
+        studentFeesId: currentStudentFee.id,
+        paidAmount: amount,
+        discountAmount: discount,
+        fineAmount: fine,
+        paymentMode: selectedPaymentMode,
         remarks,
       };
 
-      try {
-        // 1. Update the student fees
-        const response = await fetch("/api/fees/update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedFeeData),
-        });
-
-        if (response.ok) {
-          // 2. Create a new FeeTransaction
-          await fetch("/api/fees/transactions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              studentId: currentStudentFee.studentId,
-              term: currentStudentFee.term,
-              studentFeesId: currentStudentFee.id,  // Assuming you have 'id' in currentStudentFee
-              paidAmount: amount,
-              discountAmount: discount,
-              fineAmount: fine,
-              receiptDate: receiptDate ? new Date(receiptDate).toISOString() : undefined,
-              receiptNo,
-              paymentMode: selectedPaymentMode, // You need to get paymentMode from somewhere (like a dropdown)
-              remarks,
-            }),
-          });
-
-          // 3. Update UI state
-          const updatedFees = rowData.map((fee) => {
-            if (fee.studentId === currentStudentFee.studentId && fee.term === currentStudentFee.term) {
-              return {
-                ...fee,
-                paidAmount: updatedPaidAmount, // Use the updated paidAmount
-                discountAmount: discount,
-                fineAmount: fine,
-                receiptDate,
-                receiptNo,
-                remarks,
-              };
-            }
-            return fee;
-          });
-
-          setRowData(updatedFees);
-          setIsModalOpen(false);
-          // ✅ Show success toast
-          toast.success("Payment collected successfully!");
-
-        } else {
-          const errorMessage = await response.text();
-          toast.error(`Failed to collect fees: ${errorMessage}`);
+      if (receiptDate) {
+        const parsed = new Date(receiptDate);
+        if (!isNaN(parsed.getTime())) {
+          transactionPayload.receiptDate = parsed.toISOString();
         }
-      } catch (error) {
-        console.error("Error submitting form:", error);
-        toast.error("Something went wrong while submitting the form.");
       }
+
+      if (receiptNo?.trim()) {
+        transactionPayload.receiptNo = receiptNo.trim();
+      }
+
+
+      // 4. Update local UI state
+      const updatedFees = rowData.map((fee) =>
+        fee.studentId === currentStudentFee.studentId && fee.term === currentStudentFee.term
+          ? {
+            ...fee,
+            paidAmount: updatedPaidAmount,
+            discountAmount: discount,
+            fineAmount: fine,
+            receiptDate,
+            receiptNo,
+            remarks,
+          }
+          : fee
+      );
+
+      setRowData(updatedFees);
+      setIsModalOpen(false);
+      window.location.href = `/list/fees/collect/${currentStudentFee.studentId}`;
+      toast.success("Payment collected successfully!");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Something went wrong while submitting the form.");
     }
   };
 
-
-
-
-  const handleCancel = async (fee: any, remarks: string) => {
+  const handleCancel = useCallback(async (fee: any, remarks: string) => {
     if (!fee.studentId || !fee.term) {
       toast.error("Missing studentId or term");
       return;
     }
-
+  
+    const confirmed = window.confirm(`Are you sure you want to cancel fees for ${fee.term}?`);
+    if (!confirmed) return;
+  
     try {
-      // 1. Cancel associated transactions
       const cancelRes = await fetch("/api/fees/cancel-transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: fee.studentId, term: fee.term }),
       });
-
+  
       if (!cancelRes.ok) {
         const { message } = await cancelRes.json();
         toast.error(`Cancel transaction failed: ${message}`);
         return;
       }
-
-      // 2. Reset fees to zero
+  
       const updatedFeeData = {
         studentId: fee.studentId,
         term: fee.term,
@@ -183,34 +198,48 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
         discountAmount: 0,
         fineAmount: 0,
         receiptNo: "",
-        receiptDate: fee.receiptDate
-          ? new Date(fee.receiptDate).toISOString()
-          : null,
+        receiptDate: fee.receiptDate ? new Date(fee.receiptDate).toISOString() : null,
         paymentMode: "CASH",
         remarks: remarks || "Fees cancelled",
       };
-
+  
       const updateRes = await fetch("/api/fees/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFeeData),
       });
-
+  
       if (!updateRes.ok) {
         const { message } = await updateRes.json();
         toast.error(`Fee update failed: ${message}`);
         return;
       }
-
+  
+      setRowData((prev) =>
+        prev.map((f) =>
+          f.studentId === fee.studentId && f.term === fee.term
+            ? {
+                ...f,
+                paidAmount: 0,
+                discountAmount: 0,
+                fineAmount: 0,
+                receiptNo: "",
+                receiptDate: updatedFeeData.receiptDate,
+                remarks: updatedFeeData.remarks,
+              }
+            : f
+        )
+      );
+  
+      setIsModalOpen(false);
+      window.location.href = `/list/fees/cancel/${fee.studentId}`;
       toast.success("Fees successfully cancelled.");
     } catch (error) {
-      console.error("Error cancelling fees:", error);
-      toast.error("Something went wrong during cancellation.");
+      console.error("Error during fee cancellation:", error);
+      toast.error("An error occurred during the cancellation process.");
     }
-  };
-
-
-
+  }, [rowData]);
+  
 
   // * * Columns Definition **
   // Define columns for the table using React Table's ColumnDef type

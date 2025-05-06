@@ -1,84 +1,134 @@
+// src/app/api/fees/update/route.ts
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { PaymentMode } from "@prisma/client";
+
+function getTotalFees(fee: any) {
+  const termFees = fee.feeStructure?.termFees ?? 0;
+  const abacusFees = fee.feeStructure?.abacusFees ?? 0;
+  return fee.term === "TERM_2" ? termFees + abacusFees : termFees;
+}
+
+function calculateDueAmount(fee: any) {
+  const totalFees = getTotalFees(fee);
+  const paidAmount = fee.paidAmount ?? 0;
+  const discountAmount = fee.discountAmount ?? 0;
+  const fineAmount = fee.fineAmount ?? 0;
+  return totalFees - paidAmount - discountAmount + fineAmount;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log("Incoming request body to /api/fees/update:", body);
-
     const {
       studentId,
       term,
-      amount,
-      discountAmount,
-      fineAmount,
+      amount = 0,
+      discountAmount = 0,
+      fineAmount = 0,
       receiptDate,
       receiptNo,
       remarks,
+      paymentMode = PaymentMode.CASH,
     } = body;
 
-    if (
-      !studentId ||
-      !term ||
-      amount == null ||
-      discountAmount == null ||
-      fineAmount == null
-    ) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    if (!studentId || !term) {
+      return NextResponse.json({ message: "studentId and term are required." }, { status: 400 });
     }
 
-    const fee = await prisma.studentFees.findFirst({
-      where: {
-        studentId,
-        term,
-      },
-      include: {
-        feeStructure: true,
-      },
+    // Fetch the student's fee record
+    const studentFee = await prisma.studentFees.findFirst({
+      where: { studentId, term },
+      include: { feeStructure: true },
     });
 
-    if (!fee || !fee.feeStructure) {
-      return NextResponse.json({ message: "Student fee record not found" }, { status: 404 });
+    if (!studentFee) {
+      return NextResponse.json({ message: "Student fee record not found." }, { status: 404 });
     }
 
-    const newPaid = fee.paidAmount + amount;
-    const newDiscount = fee.discountAmount + discountAmount;
-    const newFine = fee.fineAmount + fineAmount;
+    const dueAmount = calculateDueAmount(studentFee);
+    const totalIncomingAmount = amount + discountAmount + fineAmount;
 
-    const totalCollected = newPaid + newFine - newDiscount;
-    const termFee = fee.feeStructure.termFees;
-
-    if (totalCollected > termFee) {
-      const due = termFee - (fee.paidAmount + fee.fineAmount - fee.discountAmount);
+    if (totalIncomingAmount > dueAmount) {
       return NextResponse.json(
         {
-          message: `Overpayment not allowed. Due: ₹${due}, Attempted: ₹${totalCollected}`,
+          message: `Overpayment not allowed. Due: ₹${dueAmount}, Attempted: ₹${totalIncomingAmount}`,
         },
         { status: 400 }
       );
     }
 
-    // ✅ Safely handle receiptDate
-    const parsedReceiptDate = receiptDate ? new Date(receiptDate) : undefined;
-    if (parsedReceiptDate && isNaN(parsedReceiptDate.getTime())) {
-      return NextResponse.json({ message: "Invalid receipt date format" }, { status: 400 });
+    // Update studentFees table
+    const updatedFee = await prisma.studentFees.update({
+      where: { id: studentFee.id },
+      data: {
+        paidAmount: studentFee.paidAmount + amount,
+        discountAmount: studentFee.discountAmount + discountAmount,
+        fineAmount: studentFee.fineAmount + fineAmount,
+        remarks,
+        paymentMode,
+        ...(receiptDate && { receiptDate: new Date(receiptDate) }),
+        ...(receiptNo && { receiptNo: String(receiptNo) }),
+      },
+    });
+
+    // Update receiptNo in all terms for the student (if provided)
+    if (receiptNo) {
+      await prisma.studentFees.updateMany({
+        where: { studentId },
+        data: { receiptNo: String(receiptNo) },
+      });
     }
 
-    await prisma.studentFees.update({
-      where: { id: fee.id },
+    // Update studentTotalFees table
+    const updatedTotalFee = await prisma.studentTotalFees.upsert({
+      where: { studentId },
+      update: {
+        totalPaidAmount: { increment: amount },
+        totalDiscountAmount: { increment: discountAmount },
+        totalFineAmount: { increment: fineAmount },
+        totalFeeAmount: { increment: totalIncomingAmount },
+      },
+      create: {
+        studentId,
+        totalPaidAmount: amount,
+        totalDiscountAmount: discountAmount,
+        totalFineAmount: fineAmount,
+        totalFeeAmount: totalIncomingAmount,
+        totalAbacusAmount: 0,
+      },
+    });
+
+    // Insert FeeTransaction
+    const newTransaction = await prisma.feeTransaction.create({
       data: {
-        paidAmount: newPaid,
-        discountAmount: newDiscount,
-        fineAmount: newFine,
-        receiptDate: parsedReceiptDate,
-        receiptNo,
+        studentId,
+        term,
+        studentFeesId: studentFee.id,
+        amount,
+        discountAmount,
+        fineAmount,
+        receiptDate: new Date(receiptDate),
+        receiptNo: String(receiptNo),
+        paymentMode,
         remarks,
       },
     });
 
-    return NextResponse.json({ message: "Fees updated successfully" });
+    return NextResponse.json(
+      {
+        message: "Fee updated and transaction recorded.",
+        updatedFee,
+        updatedTotalFee,
+        transaction: newTransaction,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error updating fees:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    console.error("API Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error", error: (error as any)?.message || "Unknown error" },
+      { status: 500 }
+    );
   }
 }
