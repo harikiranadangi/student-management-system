@@ -1,7 +1,11 @@
-import { currentUser } from "@clerk/nextjs/server";
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 import Dropdown from "./Dropdown";
+import { useTranslation } from "next-i18next";
+
+type Role = "admin" | "teacher" | "student";
 
 interface MenuItem {
   icon: string;
@@ -16,20 +20,22 @@ interface MenuItemSection {
   items: MenuItem[];
 }
 
-type Role = "admin" | "teacher" | "student";
+interface MenuProps {
+  role: Role;
+}
 
 const menuItems: MenuItemSection[] = [
   {
-    title: "MENU",
+    title: "",
     items: [
       { icon: "/home.png", label: "Home", href: "/", visible: ["admin", "teacher", "student"] },
       {
         icon: "/profile.png",
         label: "Users",
         href: "#",
-        visible: ["admin"],
+        visible: ["admin", "teacher"],
         dropdown: [
-          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin"] },
+          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin", "teacher"] },
           { icon: '/teacher.png', label: "Teachers", href: "/list/users/teachers", visible: ["admin"] },
           { icon: '/admin.png', label: "Admins", href: "/list/users/admin", visible: ["admin"] },
         ],
@@ -40,7 +46,7 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: '/attendance.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
+          { icon: '/lesson.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
           { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin", "teacher"] },
         ],
       },
@@ -50,8 +56,8 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: "/collection.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
-          { icon: "/structure.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },
+          { icon: "/finance.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
+          { icon: "/finance.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },
         ],
       },
       {
@@ -60,11 +66,11 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: "/collection.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
-          { icon: "/structure.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
+          { icon: "/finance.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
+          { icon: "/finance.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
         ],
       },
-      { icon: "/homework.png", label: "Homeworks", href: "/list/homeworks", visible: ["admin", "teacher", "student"] },
+      { icon: "/singleLesson.png", label: "Homeworks", href: "/list/homeworks", visible: ["admin", "teacher", "student"] },
       { icon: "/announcement.png", label: "Announcements", href: "/list/announcements", visible: ["admin", "teacher", "student"] },
       { icon: "/message.png", label: "Messages", href: "/list/messages", visible: ["admin", "teacher", "student"] },
       { icon: "/subject.png", label: "Subjects", href: "/list/subjects", visible: ["admin"] },
@@ -77,8 +83,8 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin", "student"] },
-          { icon: "/result.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin"] },
+          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin", "student", "teacher"] },
+          { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin","teacher"] },
         ],
       },
       { icon: "/calendar.png", label: "Events", href: "/list/events", visible: ["admin", "teacher", "student"] },
@@ -94,15 +100,11 @@ const menuItems: MenuItemSection[] = [
   },
 ];
 
-const updateMenuItem = (item: MenuItem, role: Role): MenuItem | null => {
-  if (!item) return null;
-
-  // Dynamic Home link
+function updateMenuItem(item: MenuItem, role: Role): MenuItem | null {
   if (item.label === "Home") {
     return { ...item, href: `/${role}` };
   }
 
-  // Dynamic Profile link
   if (item.label === "Profile") {
     const profileHref = {
       student: "/list/studentprofile",
@@ -112,21 +114,14 @@ const updateMenuItem = (item: MenuItem, role: Role): MenuItem | null => {
     return { ...item, href: profileHref };
   }
 
-  // Filter dropdown items
   const dropdown = item.dropdown?.filter(sub => sub.visible.includes(role));
-  if (item.dropdown && (!dropdown || dropdown.length === 0)) {
-    return null;
-  }
+  if (item.dropdown && (!dropdown || dropdown.length === 0)) return null;
 
-  return {
-    ...item,
-    dropdown,
-  };
-};
+  return { ...item, dropdown };
+}
 
-const Menu = async () => {
-  const user = await currentUser();
-  const role = (user?.publicMetadata?.role as Role) || "";
+export default function Menu({ role }: MenuProps) {
+  const { t } = useTranslation();
 
   const updatedMenu = menuItems
     .map((section) => {
@@ -148,20 +143,22 @@ const Menu = async () => {
     <div className="mt-4 text-sm">
       {updatedMenu.map((section) => (
         <div className="flex flex-col gap-2" key={section.title}>
-          <span className="hidden my-4 mb-4 font-light text-gray-400 lg:block">
-            {section.title}
-          </span>
+          {section.title && (
+            <span className="hidden my-4 mb-4 font-light text-black-400 lg:block">
+              {t(section.title)}
+            </span>
+          )}
           {section.items.map((item) =>
             item.dropdown ? (
-              <Dropdown key={item.label} icon={item.icon} label={item.label} items={item.dropdown} />
+              <Dropdown key={item.label} icon={item.icon} label={t(item.label)} items={item.dropdown} />
             ) : (
               <Link
                 href={item.href}
                 key={item.label}
-                className="flex items-center justify-center gap-6 py-2 text-gray-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
+                className="flex items-center justify-center gap-6 py-2 text-black-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
               >
                 <Image src={item.icon} alt={item.label} width={20} height={20} />
-                <span className="hidden lg:block">{item.label}</span>
+                <span className="hidden lg:block">{t(item.label)}</span>
               </Link>
             )
           )}
@@ -169,6 +166,4 @@ const Menu = async () => {
       ))}
     </div>
   );
-};
-
-export default Menu;
+}

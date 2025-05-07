@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 type Exam = { id: number; title: string; date: string };
 type Grade = { id: number; level: string };
@@ -95,7 +96,7 @@ export default function MarksEntryForm() {
 
     try {
       const res = await axios.post('/api/results/bulk-entry', payload);
-      alert('Marks submitted successfully!');
+      toast.success('Marks submitted successfully!');
     } catch (err) {
       console.error(err);
       alert('Failed to submit marks');
@@ -154,9 +155,10 @@ export default function MarksEntryForm() {
         <table className="w-full border mt-4">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border px-2 py-1">Student</th>
+              <th className="border py-1">Student ID</th>
+              <th className="border py-1">Student</th>
               {subjects.map((subj) => (
-                <th key={subj.id} className="border px-2 py-1">
+                <th key={subj.id} className="border py-1">
                   {subj.name}
                 </th>
               ))}
@@ -165,9 +167,10 @@ export default function MarksEntryForm() {
           <tbody>
             {students.map((student) => (
               <tr key={student.id}>
-                <td className="border px-2 py-1">{student.name}</td>
+                <td className="border py-1">{student.id}</td>
+                <td className="border py-1">{student.name}</td>
                 {subjects.map((subj) => (
-                  <td key={subj.id} className="border px-2 py-1">
+                  <td key={subj.id} className="border py-1">
                     <input
                       type="number"
                       value={

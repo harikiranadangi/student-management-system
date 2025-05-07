@@ -1,4 +1,4 @@
-import Menu from "@/components/Menu";
+import MenuWrapper from "@/components/MenuWrapper";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,7 @@ export default function DashboardLayout({
           <span className="hidden font-bold lg:block">Kotak Salesian School</span>
         </Link>
         <div className="pl-4">
-          <Menu />
+        <MenuWrapper />
         </div>
       </div>
 
