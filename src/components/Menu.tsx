@@ -1,18 +1,32 @@
-import {  currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import Dropdown from "./Dropdown";
+
+interface MenuItem {
+  icon: string;
+  label: string;
+  href: string;
+  visible: Role[];
+  dropdown?: MenuItem[];
+}
+
+interface MenuItemSection {
+  title: string;
+  items: MenuItem[];
+}
+
+type Role = "admin" | "teacher" | "student";
 
 const menuItems: MenuItemSection[] = [
   {
     title: "MENU",
     items: [
       { icon: "/home.png", label: "Home", href: "/", visible: ["admin", "teacher", "student"] },
-      // 🎯 DROPDOWN FOR STUDENTS
       {
         icon: "/profile.png",
         label: "Users",
-        href: "#", // Placeholder for dropdown
+        href: "#",
         visible: ["admin"],
         dropdown: [
           { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin"] },
@@ -23,17 +37,17 @@ const menuItems: MenuItemSection[] = [
       {
         icon: "/attendance.png",
         label: "Attendance",
-        href: "#", // Placeholder for dropdown
+        href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: '/attendance.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin","teacher"] },
-          { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin","teacher"] },
+          { icon: '/attendance.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
+          { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin", "teacher"] },
         ],
       },
       {
         icon: "/finance.png",
         label: "Fees",
-        href: "#", // Placeholder for dropdown
+        href: "#",
         visible: ["admin"],
         dropdown: [
           { icon: "/collection.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
@@ -43,7 +57,7 @@ const menuItems: MenuItemSection[] = [
       {
         icon: "/finance.png",
         label: "Reports",
-        href: "#", // Placeholder for dropdown
+        href: "#",
         visible: ["admin"],
         dropdown: [
           { icon: "/collection.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
@@ -57,65 +71,78 @@ const menuItems: MenuItemSection[] = [
       { icon: "/class.png", label: "Classes", href: "/list/classes", visible: ["admin"] },
       { icon: "/lesson.png", label: "Time Table", href: "/list/lessons", visible: ["admin", "teacher", "student"] },
       { icon: "/exam.png", label: "Exams", href: "/list/exams", visible: ["admin", "teacher", "student"] },
-      { icon: "/result.png", label: "Results", href: "/list/results", visible: ["admin", "teacher", "student"] },
+      {
+        icon: "/result.png",
+        label: "Results",
+        href: "#",
+        visible: ["admin"],
+        dropdown: [
+          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin", "student"] },
+          { icon: "/result.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin"] },
+        ],
+      },
       { icon: "/calendar.png", label: "Events", href: "/list/events", visible: ["admin", "teacher", "student"] },
     ],
   },
   {
     title: "OTHERS",
     items: [
-      { icon: "/profile.png", label: "Profile", href: "/list/profile", visible: ["teacher", "student","admin"] },
+      { icon: "/profile.png", label: "Profile", href: "/list/profile", visible: ["teacher", "student", "admin"] },
       { icon: "/setting.png", label: "Settings", href: "/settings", visible: ["admin", "teacher", "student"] },
       { icon: "/logout.png", label: "Logout", href: "/logout", visible: ["admin", "teacher", "student"] },
     ],
   },
 ];
 
-interface MenuItem {
-  icon: string;
-  label: string;
-  href: string;
-  visible: string[];
-  dropdown?: MenuItem[]; // Dropdown is an array of MenuItem
-}
-
-interface MenuItemSection {
-  title: string;
-  items: MenuItem[];
-}
-
-// 🔹 Helper function to modify menu items dynamically
-const updateMenuItem = (item: MenuItem, role: string): MenuItem | null => {
+const updateMenuItem = (item: MenuItem, role: Role): MenuItem | null => {
   if (!item) return null;
 
-  // Update "Home" link based on role
-  if (item.label === "Home" && role) {
+  // Dynamic Home link
+  if (item.label === "Home") {
     return { ...item, href: `/${role}` };
   }
 
-  // Update "Profile" link based on role
+  // Dynamic Profile link
   if (item.label === "Profile") {
-    if (role === "student") return { ...item, href: "/list/studentprofile" };
-    if (role === "teacher") return { ...item, href: "/list/teacherprofile" };
-    if (role === "admin") return { ...item, href: "/list/adminprofile" }; // ✅ Fix: Admin profile
+    const profileHref = {
+      student: "/list/studentprofile",
+      teacher: "/list/teacherprofile",
+      admin: "/list/adminprofile",
+    }[role];
+    return { ...item, href: profileHref };
   }
 
-  return item;
-};
+  // Filter dropdown items
+  const dropdown = item.dropdown?.filter(sub => sub.visible.includes(role));
+  if (item.dropdown && (!dropdown || dropdown.length === 0)) {
+    return null;
+  }
 
+  return {
+    ...item,
+    dropdown,
+  };
+};
 
 const Menu = async () => {
   const user = await currentUser();
-  const role = user?.publicMetadata?.role as string || "";
+  const role = (user?.publicMetadata?.role as Role) || "";
 
-  // 🔹 Generate updated menu dynamically
-  const updatedMenu = menuItems.map((section) => ({
-    ...section,
-    items: section.items
-      .map((item) => updateMenuItem(item, role)) // Apply helper function
-      .filter((item): item is NonNullable<typeof item> => item !== null) // Remove null values
-      .filter((item) => item.visible.includes(role)), // Filter based on role
-  }));
+  const updatedMenu = menuItems
+    .map((section) => {
+      const filteredItems = section.items
+        .map((item) => updateMenuItem(item, role))
+        .filter((item): item is MenuItem => !!item)
+        .filter((item) => item.visible.includes(role));
+
+      if (filteredItems.length === 0) return null;
+
+      return {
+        ...section,
+        items: filteredItems,
+      };
+    })
+    .filter((section): section is MenuItemSection => section !== null);
 
   return (
     <div className="mt-4 text-sm">
@@ -126,10 +153,8 @@ const Menu = async () => {
           </span>
           {section.items.map((item) =>
             item.dropdown ? (
-              // Render Dropdown for items that have a "dropdown" array
               <Dropdown key={item.label} icon={item.icon} label={item.label} items={item.dropdown} />
             ) : (
-              // Render Normal Menu Item
               <Link
                 href={item.href}
                 key={item.label}
@@ -138,12 +163,12 @@ const Menu = async () => {
                 <Image src={item.icon} alt={item.label} width={20} height={20} />
                 <span className="hidden lg:block">{item.label}</span>
               </Link>
-            ))}
+            )
+          )}
         </div>
       ))}
     </div>
   );
 };
-
 
 export default Menu;

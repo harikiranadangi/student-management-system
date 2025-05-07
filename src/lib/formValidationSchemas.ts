@@ -1,8 +1,23 @@
 import { AcademicYear } from "@prisma/client";
 import { z } from "zod";
 
+export const resultschema = z.object({
+  id: z.number().optional(),  // Optional for updates, needed for identifying the result
+  studentId: z.string().min(1, "Student ID is required"),  // Student ID is required
+  examId: z.number().min(1, "Exam ID is required").int("Exam ID must be an integer"),  // Exam ID is required and should be an integer
+  subjectId: z.number().min(1, "Subject ID is required").int("Subject ID must be an integer"),  // Subject ID is required and should be an integer
+  gradeId: z.number().min(1, "Grade ID is required").int("Grade ID must be an integer"),  // Grade ID is required and should be an integer
+  marks: z
+    .number()
+    .min(0, "Marks cannot be negative")  // Marks should be greater than or equal to 0
+    .max(100, "Marks cannot exceed 100")  // Marks should be less than or equal to 100
+    .int("Marks must be an integer"),  // Marks should be an integer
+  createdAt: z.date().default(new Date()),  // Date the result was created (defaults to the current date if not provided)
+});
 
+export type ResultSchema = z.infer<typeof resultschema>;
 
+// * Message Schema
 export const messageSchema = z.object({
   message: z.string().min(1, "Message cannot be empty"),
   type: z.enum(["ABSENT", "FEE_RELATED", "ANNOUNCEMENT", "GENERAL"]),  // Enum for message types
@@ -10,7 +25,6 @@ export const messageSchema = z.object({
   classId: z.number().optional(),
   gradeId: z.number().optional(),
   date: z.string().min(1, "Date is required"),
-
 });
 
 export type MessageSchema = z.infer<typeof messageSchema>;

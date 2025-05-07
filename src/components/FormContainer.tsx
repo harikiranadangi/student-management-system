@@ -11,7 +11,6 @@ export type FormContainerProps = {
     | "lesson"
     | "exam"
     | "assignment"
-    | "result"
     | "attendance"
     | "event"
     | "announcement"
@@ -19,6 +18,7 @@ export type FormContainerProps = {
     | "admin"
     | "fees_structure"
     | "messages"
+    | "results"
     | "homeworks";
     type: "create" | "update" | "delete";
     data?: any;
@@ -198,14 +198,55 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     classes: classMessages,
                     students: studentMessages,
                 };
-
                 break;
 
+            case 'results':
+                // Fetch grades
+                const gradeResults = await prisma.grade.findMany({
+                    select: { id: true, level: true },
+                });
+
+                // Fetch exams based on the grade
+                const examresults = await prisma.exam.findMany({
+                    select: {
+                        id: true,
+                        title: true,
+                        examGradeSubjects: {
+                            select: {
+                                id: true,
+                                gradeId: true,
+                                subjectId: true,
+                                maxMarks: true,
+                                date: true,
+                                startTime: true,
+                            },
+                        },
+                    }, // Including gradeId to associate exams with grades
+                });
+
+                const studentResults = await prisma.student.findMany({
+                    select: { id: true, name: true, classId: true },
+                });
+
+                // Fetch subjects based on the exam
+                const subjectResults = await prisma.subject.findMany({
+                    select: { id: true, name: true },
+                });
+
+                const classesResults = await prisma.class.findMany({
+                    select: { id: true, name: true, gradeId: true }, // Including gradeId to associate classes with grades
+                });
+
+                relatedData = {
+                    grades: gradeResults,  // List of grades
+                    examGradeSubjects: examresults.flatMap(exam => exam.examGradeSubjects),  // Flatten the exams and their examGradeSubjects
+                    students: studentResults,  // List of students
+                    subjects: subjectResults,  // List of subjects
+                    classes: classesResults,  // List of classes
+                };
+                break;
 
             default:
-
-
-
         }
     }
 

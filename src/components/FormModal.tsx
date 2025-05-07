@@ -16,7 +16,6 @@ const deleteActionMap = {
   exam: deleteExam,
   lesson: deleteSubject,
   assignment: deleteSubject,
-  result: deleteSubject,
   attendance: deleteSubject,
   event: deleteSubject,
   announcement: deleteAnnouncements,
@@ -24,6 +23,7 @@ const deleteActionMap = {
   fees_structure: deleteFees,
   homeworks: deleteHomework,
   admin: deleteHomework,
+  results: deleteHomework,
   messages: deleteMessages
 }
 
@@ -61,8 +61,6 @@ const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
 const MessagesForm = dynamic(() => import("./forms/MessageForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-
-
 
 
 // Define the available forms based on the table type

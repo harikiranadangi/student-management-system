@@ -76,9 +76,6 @@ export async function PUT(
 
 
 
-
-
-
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -108,3 +105,37 @@ export async function DELETE(
   }
 }
 
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const examId = parseInt(id);
+
+    if (isNaN(examId)) {
+      return NextResponse.json({ error: "Invalid exam ID" }, { status: 400 });
+    }
+
+    const exam = await prisma.exam.findUnique({
+      where: { id: examId },
+      include: {
+        examGradeSubjects: {
+          include: {
+            Grade: true,
+            Subject: true,
+          },
+        },
+      },
+    });
+
+    if (!exam) {
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ exam }, { status: 200 });
+  } catch (error) {
+    console.error("[GET_EXAM_BY_ID_ERROR]", error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
+}

@@ -63,24 +63,11 @@ export async function POST(request: Request) {
 }
 
 // ✅ GET /api/exams?date=2025-04-29 → Fetch exams by date
+// ✅ GET /api/exams → Fetch all exams
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const date = searchParams.get("date");
-
-    if (!date) {
-      return NextResponse.json({ error: "Date is required" }, { status: 400 });
-    }
-
-    const examDate = new Date(date);
-
+    // Fetch all exams without date filtering
     const exams = await prisma.exam.findMany({
-      where: {
-        date: {
-          gte: new Date(examDate.setHours(0, 0, 0, 0)),
-          lt: new Date(examDate.setHours(23, 59, 59, 999)),
-        },
-      },
       include: {
         examGradeSubjects: {
           include: {
@@ -97,3 +84,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
+
