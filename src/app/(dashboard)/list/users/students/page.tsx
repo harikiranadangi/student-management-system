@@ -23,7 +23,7 @@ const renderRow = (item: StudentList, role: string | null) => (
   >
     <td className="flex items-center gap-2 p-2">
       <Image
-        src={item.img || "/profile.png"}
+        src={item.img || (item.gender === "Male" ? "/male.png" : "/female.png")}
         alt={item.name}
         width={40}
         height={40}

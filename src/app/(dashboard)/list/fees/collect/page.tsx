@@ -50,7 +50,7 @@ const renderRow = (item: StudentList, role: string | null) => {
     >
       <td className="flex items-center gap-2 p-2">
         <Image
-          src={item.img || "/profile.png"}
+          src={item.img || (item.gender === "Male" ? "/male.png" : "/female.png")}
           alt={item.name}
           width={40}
           height={40}
@@ -103,12 +103,12 @@ const renderRow = (item: StudentList, role: string | null) => {
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
   { header: "Class", accessor: "class" },
-  { header: "Gender", accessor: "gender",className:"hidden md:table-cell" },
-  { header: "Parent Name", accessor: "parentName",className:"hidden md:table-cell" },
-  { header: "DOB", accessor: "dob",className:"hidden md:table-cell" },
+  { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
+  { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
+  { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
   // { header: "Mobile", accessor: "phone" },
-  { header: "Fees", accessor: "paidAmount",className:"hidden md:table-cell" },
-  { header: "Status", accessor: "status",className:"hidden md:table-cell" },
+  { header: "Fees", accessor: "paidAmount", className: "hidden md:table-cell" },
+  { header: "Status", accessor: "status", className: "hidden md:table-cell" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 

@@ -49,8 +49,8 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
           <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
-                src={student.img || "/student.png"}
-                alt="Student Image"
+                src={student.img || (student.gender === "Male" ? "/male.png" : "/female.png")}
+                alt={student.name}
                 width={144}
                 height={144}
                 className="object-cover rounded-full w-36 h-36"

@@ -26,13 +26,14 @@ const renderRow = (item: TeachersList, role: string | null) => (
 
     {/* Info Column */}
     <td className="flex items-center gap-2 p-2">
-
+      {/* Use a default image if item.img is not available */}
       <Image
-        src={item.img || "/teacher.png"}
-        alt={``}
+        src={item.img || (item.gender === "Male" ? "/maleteacher.png" : "/femaleteacher.png")}
+        alt={item.name}
         width={40}
         height={40}
-        className="object-cover w-10 h-10 rounded-full md:hidden xl:block" />
+        className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
+      />
       <div className="flex flex-col ">
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs">{item?.id}</p>

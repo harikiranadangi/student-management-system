@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -9,36 +9,46 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts";
+import Image from "next/image";
 
-// Example dataset: Payments collected on different days (replace with real data)
-const allData = [
-  { date: "2025-03-05", collected: 180000 },
-  { date: "2025-03-06", collected: 100000 },
-  { date: "2025-03-07", collected: 22000 },
-  { date: "2025-03-08", collected: 80000 },
-  { date: "2025-03-09", collected: 207000 },
-  { date: "2025-03-10", collected: 300000 },
-];
-
-// Function to get the first and last day of the previous month
-const getLastMonthDateRange = () => {
-  const today = new Date();
-  const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-  return { firstDayLastMonth, lastDayLastMonth };
+type ChartData = {
+  date: string;
+  collected: number;
 };
 
-// Filter data for the last month
-const lastMonthData = allData.filter(({ date }) => {
-  const { firstDayLastMonth, lastDayLastMonth } = getLastMonthDateRange();
-  const entryDate = new Date(date);
-  return entryDate >= firstDayLastMonth && entryDate <= lastDayLastMonth;
-});
+export default function FinanceChart() {
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const FinanceChart = () => {
-  // Format date for the X-axis (e.g., "Feb 1", "Feb 2")
+  useEffect(() => {
+    async function fetchChartData() {
+      try {
+        const res = await fetch("/api/fees/daily-summary");
+        const data = await res.json();
+
+        // Ensure sorted data by date in ascending order
+        const sorted = data
+          .map((item: any) => ({
+            date: item.date,
+            collected: item.collected,
+          }))
+          .sort((a: ChartData, b: ChartData) => {
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+          });
+
+        setChartData(sorted);
+      } catch (error) {
+        console.error("Failed to fetch chart data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchChartData();
+  }, []);
+
   const formatDateTick = (dateStr: string) => {
     const dateObj = new Date(dateStr);
     return dateObj.toLocaleString("en-US", {
@@ -47,17 +57,18 @@ const FinanceChart = () => {
     });
   };
 
+  if (loading) return <div>Loading chart...</div>;
+
   return (
-    <div className="w-full h-full p-4 bg-white rounded-xl">
-      {/* TITLE */}
+    <div className="w-full h-[400px] p-4 bg-white rounded-xl shadow">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-lg font-semibold">Payments Collected (Last Month)</h1>
+        <h1 className="text-lg font-semibold">Payments Collected (Last 30 Days)</h1>
         <Image src="/moreDark.png" alt="More options" width={20} height={20} />
       </div>
 
       <ResponsiveContainer width="100%" height="90%">
         <AreaChart
-          data={lastMonthData}
+          data={chartData}
           margin={{ top: 5, right: 30, left: 25, bottom: 5 }}
         >
           <defs>
@@ -70,26 +81,24 @@ const FinanceChart = () => {
           <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#d1d5db" }}
-            tickLine={false}
-            tickMargin={10}
-            axisLine={false}
+            tick={{ fill: "#6b7280" }}
             tickFormatter={formatDateTick}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={10}
           />
           <YAxis
-            tick={{ fill: "#d1d5db" }}
+            tick={{ fill: "#6b7280" }}
             tickLine={false}
-            tickMargin={20}
             axisLine={false}
+            tickMargin={20}
           />
           <Tooltip />
           <Legend align="center" verticalAlign="top" wrapperStyle={{ paddingTop: "10px", paddingBottom: "30px" }} />
-
-          {/* Single Area Chart for "collected" money */}
           <Area
             type="monotone"
             dataKey="collected"
-            stroke= "Lamapurple"
+            stroke="#8884d8"
             fillOpacity={1}
             fill="url(#colorCollected)"
             strokeWidth={3}
@@ -98,6 +107,4 @@ const FinanceChart = () => {
       </ResponsiveContainer>
     </div>
   );
-};
-
-export default FinanceChart;
+}

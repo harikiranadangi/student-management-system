@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; // Import hooks to access query params
+import { useSearchParams } from "next/navigation"; // Import hooks to access query params
 import { DateFilter } from "./FilterDropdown";
 
 type Transaction = {

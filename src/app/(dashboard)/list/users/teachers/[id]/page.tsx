@@ -10,7 +10,7 @@ import { notFound } from "next/navigation";
 
 // Define the prop types with `Promise` for `params`
 interface TeacherSinglePageProps {
-  params: Promise<{  id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
@@ -38,45 +38,45 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
       },
     },
   });
-  
+
   if (!teacher) {
     return notFound();
   }
-  
+
   // ✅ Get student count from the assigned class
   const totalStudents = teacher.class?._count?.students ?? 0;
-  
+
   console.log("Fetched Teacher:", JSON.stringify(teacher, null, 2));
-  
+
   const teacherData = {
     ...teacher,
     totalStudents,
   };
-  
+
   console.log("Processed Teacher Data:", JSON.stringify(teacherData, null, 2));
-  
+
 
   return (
     <div className="flex flex-col flex-1 gap-4 p-4 xl:flex-row">
-      
+
       {/* LEFT */}
       <div className="w-full xl:w-2/3">
-        
+
         {/* TOP */}
         <div className="flex flex-col gap-4 lg:flex-row">
-          
+
           {/* USER INFO CARD */}
           <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
-                src={teacherData.img || "/profile.png"}
-                alt=""
+                src={teacherData.img || (teacherData.gender === "Male" ? "/maleteacher.png" : "/femaleteacher.png")}
+                alt={teacherData.name}
                 width={144}
                 height={144}
                 className="object-cover rounded-full w-36 h-36"
               />
             </div>
-            
+
             <div className="flex flex-col justify-between w-2/3 gap-4">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">
@@ -84,7 +84,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
                 </h1>
                 {role === "admin" && <FormContainer table="teacher" type="update" data={teacherData} />}
               </div>
-              
+
               <p className="text-sm text-black-500"></p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium">
 
@@ -92,7 +92,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
                   <Image src="/blood.png" alt="" width={14} height={14} />
                   <span>{teacherData.bloodType}</span>
                 </div>
-                
+
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/date.png" alt="" width={14} height={14} />
                   <p className="text-sm text-gray-500">
@@ -101,21 +101,20 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
                       : "Date of birth not available"}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/mail.png" alt="" width={14} height={14} />
                   <span>{teacherData.email || "-"}</span>
                 </div>
-                
+
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/phone.png" alt="" width={14} height={14} />
                   {/* <span>{teacherData.phone}</span> */}
                 </div>
-                
               </div>
             </div>
           </div>
-          
+
           {/* SMALL CARDS */}
           <div className="flex flex-wrap justify-between flex-1 gap-4">
 
@@ -157,7 +156,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
 
           </div>
         </div>
-        
+
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Teacher&apos;s Schedule</h1>
@@ -190,7 +189,6 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
             </Link>
           </div>
         </div>
-        <Performance />
         <Announcements />
       </div>
     </div>
