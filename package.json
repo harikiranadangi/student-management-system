@@ -10,7 +10,8 @@
     "lint": "next lint",
     "clean": "rd /s /q .next",
     "studio": "prisma studio",
-    "dev:all": "concurrently \"npm run dev\" \"npm run studio\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run studio\"",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.2.3",

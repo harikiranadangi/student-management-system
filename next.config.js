@@ -4,30 +4,23 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ik.imagekit.io", // ImageKit URL
+        hostname: "ik.imagekit.io",
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com", // Cloudinary URL
+        hostname: "res.cloudinary.com",
       },
     ],
   },
   reactStrictMode: true,
-
   eslint: {
     ignoreDuringBuilds: true,
   },
-
-  allowedDevOrigins: ['http://192.168.5.2:3000'], // Example dev origin, update as necessary
-
-  turbopack: {
-    // Optional config
-  },
-
+  output: "standalone", // Great for Vercel or Dockerized deployment
   experimental: {
-    serverActions: {}, // Enabled by default
-    optimizeCss: true, // Enable CSS optimization
+    optimizeCss: true, // Optional: for better CSS performance
   },
+  serverExternalPackages: ["@prisma/client"], // ✅ updated key name
 };
 
 export default nextConfig;

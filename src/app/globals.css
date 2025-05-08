@@ -107,6 +107,20 @@
   margin-bottom: 5px;
 }
 
+/* globals.css or other CSS file */
+.menu-item {
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.menu-item:hover {
+  background-color: #add8e6; /* Light blue on hover */
+}
+
+
 
 
 @layer base {

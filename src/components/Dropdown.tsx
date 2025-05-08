@@ -40,25 +40,38 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     <div className="relative group w-full" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+        className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-md transition-all duration-300 ease-in-out"
         aria-haspopup="true"
         aria-expanded={isOpen ? "true" : "false"}
       >
         <Image src={icon} alt={label} width={20} height={20} className="min-w-[20px]" />
         <span className="hidden lg:block">{t(label)}</span>
+        <svg
+          className={`w-4 h-4 transition-transform transform ${isOpen ? "rotate-180" : ""}`}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
       </button>
 
       {isOpen && (
         <div
-          className="absolute left-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+          className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 transition-all duration-300 ease-in-out transform scale-95 opacity-100"
           role="menu"
         >
-          <div className="py-1">
+          <div className="py-2">
             {items.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition-all duration-200 ease-in-out rounded-md"
                 role="menuitem"
               >
                 <Image
