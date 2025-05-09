@@ -61,7 +61,6 @@ async function main() {
     id: row.id,
     username: row.username,
     name: row.name,
-    surname: row.surname,
     email: row.email,
     phone: row.phone,
     address: row.address,

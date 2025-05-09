@@ -163,9 +163,8 @@ model Student {
   id              String            @id
   username        String            @unique
   name            String
-  surname         String?
   parentName      String?
-  email           String?           @unique
+  email           String?           
   phone           String
   address         String
   img             String?
@@ -216,7 +215,6 @@ model Teacher {
   id            String           @id
   username      String           @unique
   name          String
-  surname       String?
   email         String?          @unique
   phone         String
   address       String

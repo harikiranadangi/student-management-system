@@ -9,7 +9,6 @@ export async function POST(req: Request) {
     const {
       id,
       name,
-      surname,
       username,
       phone,
       classId,
@@ -43,7 +42,7 @@ export async function POST(req: Request) {
       username: username,
       password,
       firstName: name,
-      lastName: surname,
+      lastName: "",
     });
 
     await client.users.updateUser(user.id, {
@@ -62,7 +61,6 @@ export async function POST(req: Request) {
         id,
         username,
         name,
-        surname,
         parentName,
         dob: new Date(dob),
         email,
@@ -87,7 +85,7 @@ export async function POST(req: Request) {
         clerk_id: user.id,
         username: `s${student.id}`,
         password: student.id,
-        full_name: `${name} ${surname}`,
+        full_name: `${name}`,
         user_id: user.id, // ✅ ADD COMMA HERE
         role,
         studentId: student.id,

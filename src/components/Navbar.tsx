@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = async () => {
 
@@ -17,6 +18,13 @@ const Navbar = async () => {
           placeholder="Search..." 
           className="w-[200px] p-2 bg-transparent outline-none" 
         />
+      </div>
+
+      {/* THEME TOGGLE */}
+            <div className='flex items-center justify-end w-full gap-10'>
+        <div className='flex items-center justify-center bg-white rounded-full cursor-pointer w-6 h-6'> 
+      <ThemeToggle />
+        </div>
       </div>
       
       {/* ICONS AND USER */}

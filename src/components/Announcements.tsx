@@ -64,7 +64,7 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
             >
               <div className="flex items-center justify-between">
                 <h2 className="font-medium">
-                  {msg.Class?.name ?? (type === "GENERAL" ? "General Message" : "School-wide")}
+                  {msg.Class?.name ?? (type === "GENERAL" ? "General Message" : "Announcement")}
                 </h2>
                 <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">
                   {new Intl.DateTimeFormat("en-GB").format(msg.date)}

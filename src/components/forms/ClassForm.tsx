@@ -39,12 +39,12 @@ const ClassForm = ({
 
     const onSubmit = handleSubmit((formData) => {
         console.log("Submitting Form Data:", formData); // Debugging Log
-    
+
         if (!formData || typeof formData !== "object") {
             toast.error("Invalid data submitted!");
             return;
         }
-    
+
         React.startTransition(() => {
             formAction(formData);
         });
@@ -96,11 +96,11 @@ const ClassForm = ({
                         {...register("supervisorId")}
                         defaultValue={data?.supervisorId || ""}
                     >
-                    <option value="" disabled>Select Teacher</option>
-                        {teachers.map((teacher: { id: string; name: string; surname: string }) => (
-                            
+                        <option value="" disabled>Select Teacher</option>
+                        {teachers.map((teacher: { id: string; name: string; }) => (
+
                             <option value={teacher.id} key={teacher.id}>
-                                {`${teacher.name} ${teacher.surname}`}
+                                {`${teacher.name}`}
                             </option>
                         ))}
                     </select>

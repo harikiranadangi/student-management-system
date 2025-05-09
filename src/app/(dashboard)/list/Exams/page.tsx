@@ -94,16 +94,33 @@ const ExamsList = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, date, gradeId, ...queryParams } = params;
+  const { page, date, gradeId,  ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1"; // Handle page being a string[] or string
   const { role } = await fetchUserInfo();
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
   const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "date";
+  const teacherId = Array.isArray(params.teacherId) ? params.teacherId[0] : params.teacherId;
+
 
 
   let query: Prisma.ExamWhereInput = {};
+
+  let teacherGradeIds: number[] = [];
+
+if (teacherId) {
+  const teacherClasses = await prisma.class.findMany({
+    where: { supervisorId: teacherId },
+    include: { Grade: true },
+  });
+
+  teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+}
+
+
+
+  
 
   // Title filter
   if (queryParams.title) {

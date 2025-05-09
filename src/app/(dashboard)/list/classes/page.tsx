@@ -76,7 +76,7 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
       orderBy: { [sortKey]: sortOrder },
       where: query,
       include: {
-        Teacher: { select: { name: true, surname: true } },
+        Teacher: { select: { name: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (currentPage - 1),

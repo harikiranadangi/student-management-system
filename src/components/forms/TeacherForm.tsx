@@ -87,7 +87,6 @@ const TeacherForm = ({
 
             <div className="flex flex-wrap justify-between gap-4">
                 <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors?.name} />
-                <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors?.surname} />
                 <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors?.phone} />
                 <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors?.address} />
 

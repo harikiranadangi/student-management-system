@@ -28,6 +28,15 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
           id: true,
           name: true,
           _count: { select: { students: true } }, // ✅ Get student count in the class
+          Grade: {
+            include: {
+              examGradeSubjects: { // Join through ExamGradeSubject
+                include: {
+                  Exam: true, // Fetch related exams
+                },
+              },
+            },
+          },
         },
       },
       _count: {
@@ -38,6 +47,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
       },
     },
   });
+
 
   if (!teacher) {
     return notFound();
@@ -174,18 +184,17 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
             </Link>
             <Link
               className="p-3 rounded-md bg-LamaPurpleLight"
-              href={`/list/students?teacherId=${teacherData.id}`}>
+              href={`/list/users/students?teacherId=${teacherData?.id}`}>
               Teacher&apos;s Students
             </Link>
-
             <Link className="p-3 rounded-md bg-LamaYellowLight" href={`/list/lessons?teacherId=${teacherData.id}`}>
               Teacher&apos;s Lessons
             </Link>
             <Link className="p-3 rounded-md bg-pink-50" href={`/list/exams?teacherId=${teacherData.id}`}>
               Teacher&apos;s Exams
             </Link>
-            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/assignments?teacherId=${teacherData.id}`}>
-              Teacher&apos;s Assignments
+            <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/subjects?teacherId=${teacherData.id}`}>
+              Teacher&apos;s Subjects
             </Link>
           </div>
         </div>

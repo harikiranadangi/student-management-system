@@ -114,7 +114,7 @@ const LessonsListPage = async ({
       include: {
         Subject: { select: { name: true } },
         Class: { select: { name: true } },
-        Teacher: { select: { name: true, surname: true } },
+        Teacher: { select: { name: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),

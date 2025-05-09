@@ -81,7 +81,7 @@ const StudentForm = ({
         console.error('API Error Response:', errorData);
         throw new Error(errorData.message || 'Error in API request');
       }
-      
+
 
       const result = await response.json();
       console.log("Response from server:", result);
@@ -126,19 +126,27 @@ const StudentForm = ({
       <div className="flex flex-wrap justify-between gap-4">
         <InputField label="Admission No" name="id" defaultValue={data?.id} register={register} error={errors.id} />
         <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
-        <InputField label="Surname" name="surname" defaultValue={data?.surname} register={register} error={errors.surname} />
         <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName} />
         <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
         <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
 
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Academic Year</label>
-          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("academicYear")} defaultValue={data?.academicYear}>
+          <label htmlFor="academicYear" className="text-xs text-gray-500">Academic Year</label>
+          <select
+            id="academicYear"
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("academicYear")}
+            defaultValue={data?.academicYear ?? ""}
+          >
+            <option value="" disabled>Select academic year</option>
             <option value="Y2024_2025">2024-25</option>
             <option value="Y2025_2026">2025-26</option>
           </select>
-          {errors.academicYear?.message && <p className="text-xs text-red-400">{errors.academicYear.message.toString()}</p>}
+          {errors.academicYear?.message && (
+            <p className="text-xs text-red-400">{errors.academicYear.message.toString()}</p>
+          )}
         </div>
+
 
         <InputField label="Birthday" name="dob" defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""} register={register} error={errors.dob} type="date" />
       </div>
@@ -146,44 +154,62 @@ const StudentForm = ({
       <div className="flex flex-wrap gap-16">
         {/* Gender */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Gender</label>
-          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("gender")} defaultValue={data?.gender}>
+          <label htmlFor="gender" className="text-xs text-gray-500">Gender</label>
+          <select
+            id="gender"
+            {...register("gender")}
+            defaultValue={data?.gender || ""}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+          >
+            <option value="" disabled>Select Gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
           </select>
-          {errors.gender?.message && <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>}
+          {errors.gender?.message && (
+            <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
+          )}
         </div>
 
-        {/* Grade with change handler */}
+        {/* Grade Select */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Grade</label>
+          <label htmlFor="gradeId" className="text-xs text-gray-500">Grade</label>
           <select
+            id="gradeId"
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("gradeId")}
-            defaultValue={data?.gradeId}
+            defaultValue={data?.gradeId ?? ""}
             onChange={(e) => setSelectedGradeId(parseInt(e.target.value))}
           >
+            <option value="" disabled>Select grade</option>
             {grades.map((grade: { id: number; level: number }) => (
               <option value={grade.id} key={grade.id}>{grade.level}</option>
             ))}
           </select>
-          {errors.gradeId?.message && <p className="text-xs text-red-500">{errors.gradeId.message.toString()}</p>}
+          {errors.gradeId?.message && (
+            <p className="text-xs text-red-500">{errors.gradeId.message.toString()}</p>
+          )}
         </div>
 
-        {/* Filtered classes */}
+        {/* Class Select */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Class</label>
+          <label htmlFor="classId" className="text-xs text-gray-500">Class</label>
           <select
+            id="classId"
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("classId")}
-            defaultValue={data?.classId}
+            defaultValue={data?.classId ?? ""}
+            disabled={filteredClasses.length === 0}
           >
+            <option value="" disabled>Select class</option>
             {filteredClasses.map((cls: { id: number; name: string }) => (
               <option value={cls.id} key={cls.id}>{cls.name}</option>
             ))}
           </select>
-          {errors.classId?.message && <p className="text-xs text-red-500">{errors.classId.message.toString()}</p>}
+          {errors.classId?.message && (
+            <p className="text-xs text-red-500">{errors.classId.message.toString()}</p>
+          )}
         </div>
+
 
         {/* Image Upload */}
         <CldUploadWidget

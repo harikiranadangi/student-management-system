@@ -30,7 +30,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
       <div className="flex flex-col">
-        <h3 className="font-semibold">{item.name}</h3>
+        <h3 className="font-semibold">{item.name }</h3>
         <p className="text-xs">{item.id}</p>
       </div>
     </td>
@@ -72,7 +72,7 @@ const StudentListPage = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, gradeId, classId, ...queryParams } = params;
+  const { page, gradeId, classId, teacherId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
@@ -84,25 +84,32 @@ const StudentListPage = async ({
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
   const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "classId";
 
-  // ✅ Build query properly
-  const query: Prisma.StudentWhereInput = {};
+  const search = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+  const teacher = Array.isArray(teacherId) ? teacherId[0] : teacherId;
+  const grade = Array.isArray(gradeId) ? gradeId[0] : gradeId;
+  const classIdNum = Array.isArray(classId) ? Number(classId[0]) : classId ? Number(classId) : undefined;
 
-  if (classId) {
-    query.classId = Number(classId);  // ✅ Direct classId filter
-  }
+  // Build Class filter conditionally
+  const classFilter: Prisma.ClassWhereInput = {
+    ...(teacher && { supervisorId: teacher }),
+    ...(grade && { gradeId: Number(grade) }),
+  };
 
-  if (gradeId) {
-    query.Class = { gradeId: Number(gradeId) };  // ✅ gradeId through Class relation
-  }
+  // Final query
+  const query: Prisma.StudentWhereInput = {
+    ...(classIdNum && { classId: classIdNum }),
+    ...(Object.keys(classFilter).length && { Class: classFilter }),  // ✅ FIXED HERE
+    ...(search && {
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { id: { contains: search } },
+      ],
+    }),
+  };
 
-  // ✅ Search logic
-  if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
-    query.OR = [
-      { name: { contains: searchValue, mode: "insensitive" } },
-      { id: { contains: searchValue } },
-    ];
-  }
+
+
+
 
   // Fetch classes list (for dropdown etc.)
   const classes = await prisma.class.findMany({

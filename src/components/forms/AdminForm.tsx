@@ -41,7 +41,6 @@ const AdminForm = ({
   type,
   data,
   setOpen,
-  relatedData,
 }: {
   type: "create" | "update";
   data?: any;
@@ -106,6 +105,23 @@ const AdminForm = ({
       toast.error(`Something went wrong: ${error.message}`); // Show the error message
     }
   });
+
+  const handleDelete = async () => {
+    if (!data?.id) return;
+  
+    const confirmDelete = window.confirm("Are you sure you want to delete this admin?");
+    if (!confirmDelete) return;
+  
+    try {
+      const result = await makeRequest(`/api/users/admin/${data.id}`, "DELETE", {});
+      setState({ success: result.success, error: !result.success });
+      toast("Admin deleted successfully!");
+      setOpen(false);
+      router.refresh();
+    } catch (error: any) {
+      toast.error(`Delete failed: ${error.message}`);
+    }
+  };
   
 
   return (

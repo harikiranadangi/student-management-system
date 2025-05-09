@@ -1,64 +1,64 @@
-id,username,name,surname,email,phone,address,img,bloodType,gender,dob,classId,clerk_id
-staff_ks_001,staff_ks_001,N SANDHYA RANI,N,staff_ks_001@kss.com,9701481990,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,2,staff_ks_001
-staff_ks_002,staff_ks_002,ARPITA DAS PAUL,ARPITA,staff_ks_002@kss.com,6302383497,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,3,staff_ks_002
-staff_ks_003,staff_ks_003,LYNETTE PEREIRA,LYNETTE,staff_ks_003@kss.com,9948038750,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,4,staff_ks_003
-staff_ks_004,staff_ks_004,K V S MADHAVI LATHA,K,staff_ks_004@kss.com,9676837249,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,5,staff_ks_004
-staff_ks_005,staff_ks_005,P DAYAMANI,P,staff_ks_005@kss.com,8330933783,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,6,staff_ks_005
-staff_ks_006,staff_ks_006,SUJATHA DHARA,SUJATHA,staff_ks_006@kss.com,9849672659,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_006
-staff_ks_007,staff_ks_007,SHEELA MADHURA,SHEELA,staff_ks_007@kss.com,9966399618,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,7,staff_ks_007
-staff_ks_008,staff_ks_008,P MARY POORNIMA,P,staff_ks_008@kss.com,9492433271,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,8,staff_ks_008
-staff_ks_009,staff_ks_009,AVARC SEKHARA RAO,AVARC,staff_ks_009@kss.com,9490132924,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,9,staff_ks_009
-staff_ks_010,staff_ks_010,PRATAP KUMAR,PRATAP,staff_ks_010@kss.com,9133591188,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_010
-staff_ks_011,staff_ks_011,CH BHUVANESWARI,CH,staff_ks_011@kss.com,9032325590,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_011
-staff_ks_012,staff_ks_012,RACHEL FRANKLIN,RACHEL,staff_ks_012@kss.com,9985873544,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,10,staff_ks_012
-staff_ks_013,staff_ks_013,SHOBHANA DAVID,SHOBHANA,staff_ks_013@kss.com,8555065249,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_013
-staff_ks_014,staff_ks_014,P RAJA RAO,P,staff_ks_014@kss.com,8919550220,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_014
-staff_ks_015,staff_ks_015,V SUHASINI,V,staff_ks_015@kss.com,9492641196,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,11,staff_ks_015
-staff_ks_016,staff_ks_016,J N V SARASWATHI,J,staff_ks_016@kss.com,6304405729,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,12,staff_ks_016
-staff_ks_017,staff_ks_017,P MADHAVI,P,staff_ks_017@kss.com,7095824331,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,13,staff_ks_017
-staff_ks_018,staff_ks_018,AJ MARIA LOBO,AJ,staff_ks_018@kss.com,8978341797,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,14,staff_ks_018
-staff_ks_019,staff_ks_019,I SUDHA RANI,I,staff_ks_019@kss.com,9441579776,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,15,staff_ks_019
-staff_ks_020,staff_ks_020,HARRY MARY,HARRY,staff_ks_020@kss.com,8019433981,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,16,staff_ks_020
-staff_ks_021,staff_ks_021,A HARI KIRAN,A,staff_ks_021@kss.com,7801049830,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_021
-staff_ks_022,staff_ks_022,P SUDHA RANI,P,staff_ks_022@kss.com,9490267689,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,17,staff_ks_022
-staff_ks_023,staff_ks_023,B BHAVANI KUMARI,B,staff_ks_023@kss.com,9848514019,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_023
-staff_ks_024,staff_ks_024,CH PUSHPA,CH,staff_ks_024@kss.com,9701974458,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_024
-staff_ks_025,staff_ks_025,MOLY ROY,MOLY,staff_ks_025@kss.com,9491547350,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,18,staff_ks_025
-staff_ks_026,staff_ks_026,MD HABBIMUNNISA,MD,staff_ks_026@kss.com,9985977403,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_026
-staff_ks_027,staff_ks_027,J MANJULA,J,staff_ks_027@kss.com,8143909060,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_027
-staff_ks_028,staff_ks_028,P KALPALATHA,P,staff_ks_028@kss.com,9666853883,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,19,staff_ks_028
-staff_ks_029,staff_ks_029,K JAGADAMBA,K,staff_ks_029@kss.com,9247884414,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,20,staff_ks_029
-staff_ks_030,staff_ks_030,JENNIFER MARY FRANCIS,JENNIFER,staff_ks_030@kss.com,9666328772,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,21,staff_ks_030
-staff_ks_031,staff_ks_031,S SATYANARAYANA,S,staff_ks_031@kss.com,9502110047,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_031
-staff_ks_032,staff_ks_032,P LAVANYA RANI,P,staff_ks_032@kss.com,7386238555,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,22,staff_ks_032
-staff_ks_033,staff_ks_033,NAJMA BEGUM,NAJMA,staff_ks_033@kss.com,8179970923,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,23,staff_ks_033
-staff_ks_034,staff_ks_034,D DEVI SUGUNA,D,staff_ks_034@kss.com,9676418343,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,24,staff_ks_034
-staff_ks_035,staff_ks_035,D SURESH KUMAR,D,staff_ks_035@kss.com,9542512589,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_035
-staff_ks_036,staff_ks_036,K ASHA KIRAN,K,staff_ks_036@kss.com,8019803854,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,25,staff_ks_036
-staff_ks_037,staff_ks_037,L PRABHA,L,staff_ks_037@kss.com,9642608259,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,26,staff_ks_037
-staff_ks_038,staff_ks_038,J NIRMALA MARY,J,staff_ks_038@kss.com,9989429423,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,27,staff_ks_038
-staff_ks_039,staff_ks_039,PRASANNA LATHA,PRASANNA,staff_ks_039@kss.com,9160917327,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,28,staff_ks_039
-staff_ks_040,staff_ks_040,P SAINATH,P,staff_ks_040@kss.com,9490167105,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,29,staff_ks_040
-staff_ks_041,staff_ks_041,J FATIMA RITA,J,staff_ks_041@kss.com,9290742246,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,30,staff_ks_041
-staff_ks_042,staff_ks_042,R UDAY RAJ,R,staff_ks_042@kss.com,9703311775,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_042
-staff_ks_043,staff_ks_043,ALISON FRANCIS,ALISON,staff_ks_043@kss.com,9640426095,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,31,staff_ks_043
-staff_ks_044,staff_ks_044,CH LUKE RATNAM,CH,staff_ks_044@kss.com,7989899883,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,32,staff_ks_044
-staff_ks_045,staff_ks_045,A SUJATHA,A,staff_ks_045@kss.com,9492640429,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,33,staff_ks_045
-staff_ks_046,staff_ks_046,O VIJAYALAKSHMI,O,staff_ks_046@kss.com,8125124898,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,34,staff_ks_046
-staff_ks_047,staff_ks_047,P HARSHA,P,staff_ks_047@kss.com,9582803185,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_047
-staff_ks_048,staff_ks_048,K SRI DEEPTHI,K,staff_ks_048@kss.com,9848656892,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,35,staff_ks_048
-staff_ks_049,staff_ks_049,D RAJINI KANTHI,D,staff_ks_049@kss.com,9948451523,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_049
-staff_ks_050,staff_ks_050,P VANAJA,P,staff_ks_050@kss.com,9701637837,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,36,staff_ks_050
-staff_ks_051,staff_ks_051,CHV DAMAYANTHI,CHV,staff_ks_051@kss.com,9000247842,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_051
-staff_ks_052,staff_ks_052,D GOWRI NIRMALA,D,staff_ks_052@kss.com,9885854781,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,37,staff_ks_052
-staff_ks_053,staff_ks_053,J M SONIA FERNANDO,J,staff_ks_053@kss.com,8309977347,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_053
-staff_ks_054,staff_ks_054,FAUSTINA DMOSS,FAUSTINA,staff_ks_054@kss.com,8978487144,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,38,staff_ks_054
-staff_ks_055,staff_ks_055,SHIREEN KHAN,SHIREEN,staff_ks_055@kss.com,9394468375,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,39,staff_ks_055
-staff_ks_056,staff_ks_056,B N SANDHYA RANI,B,staff_ks_056@kss.com,9121731140,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,40,staff_ks_056
-staff_ks_057,staff_ks_057,B RAMYA SUSEELA,B,staff_ks_057@kss.com,8179495576,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,41,staff_ks_057
-staff_ks_058,staff_ks_058,U PRASADA RAO,U,staff_ks_058@kss.com,9182082140,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_058
-staff_ks_059,staff_ks_059,M SUNIL,M,staff_ks_059@kss.com,7989606778,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_059
-staff_ks_060,staff_ks_060,YVL PADMAVATHI,YVL,staff_ks_060@kss.com,8341293371,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_060
-staff_ks_061,staff_ks_061,S RAVI KUMAR,S,staff_ks_061@kss.com,9059935495,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,42,staff_ks_061
-staff_ks_062,staff_ks_062,K KARUNA LATHA,K,staff_ks_062@kss.com,7386248069,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,43,staff_ks_062
-staff_ks_063,staff_ks_063,YVONNE THERESA,YVONNE,staff_ks_063@kss.com,9966282776,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,1,staff_ks_063
+id,username,name,email,phone,address,img,bloodType,gender,dob,classId,clerk_id
+staff_ks_001,staff_ks_001,N SANDHYA RANI,staff_ks_001@kss.com,9701481990,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,2,staff_ks_001
+staff_ks_002,staff_ks_002,ARPITA DAS PAUL,staff_ks_002@kss.com,6302383497,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,3,staff_ks_002
+staff_ks_003,staff_ks_003,LYNETTE PEREIRA,staff_ks_003@kss.com,9948038750,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,4,staff_ks_003
+staff_ks_004,staff_ks_004,K V S MADHAVI LATHA,staff_ks_004@kss.com,9676837249,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,5,staff_ks_004
+staff_ks_005,staff_ks_005,P DAYAMANI,staff_ks_005@kss.com,8330933783,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,6,staff_ks_005
+staff_ks_006,staff_ks_006,SUJATHA DHARA,staff_ks_006@kss.com,9849672659,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_006
+staff_ks_007,staff_ks_007,SHEELA MADHURA,staff_ks_007@kss.com,9966399618,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,7,staff_ks_007
+staff_ks_008,staff_ks_008,P MARY POORNIMA,staff_ks_008@kss.com,9492433271,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,8,staff_ks_008
+staff_ks_009,staff_ks_009,AVARC SEKHARA RAO,staff_ks_009@kss.com,9490132924,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,9,staff_ks_009
+staff_ks_010,staff_ks_010,PRATAP KUMAR,staff_ks_010@kss.com,9133591188,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_010
+staff_ks_011,staff_ks_011,CH BHUVANESWARI,staff_ks_011@kss.com,9032325590,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_011
+staff_ks_012,staff_ks_012,RACHEL FRANKLIN,staff_ks_012@kss.com,9985873544,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,10,staff_ks_012
+staff_ks_013,staff_ks_013,SHOBHANA DAVID,staff_ks_013@kss.com,8555065249,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_013
+staff_ks_014,staff_ks_014,P RAJA RAO,staff_ks_014@kss.com,8919550220,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_014
+staff_ks_015,staff_ks_015,V SUHASINI,staff_ks_015@kss.com,9492641196,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,11,staff_ks_015
+staff_ks_016,staff_ks_016,J N V SARASWATHI,staff_ks_016@kss.com,6304405729,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,12,staff_ks_016
+staff_ks_017,staff_ks_017,P MADHAVI,staff_ks_017@kss.com,7095824331,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,13,staff_ks_017
+staff_ks_018,staff_ks_018,AJ MARIA LOBO,staff_ks_018@kss.com,8978341797,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,14,staff_ks_018
+staff_ks_019,staff_ks_019,I SUDHA RANI,staff_ks_019@kss.com,9441579776,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,15,staff_ks_019
+staff_ks_020,staff_ks_020,HARRY MARY,staff_ks_020@kss.com,8019433981,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,16,staff_ks_020
+staff_ks_021,staff_ks_021,A HARI KIRAN,staff_ks_021@kss.com,7801049830,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_021
+staff_ks_022,staff_ks_022,P SUDHA RANI,staff_ks_022@kss.com,9490267689,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,17,staff_ks_022
+staff_ks_023,staff_ks_023,B BHAVANI KUMARI,staff_ks_023@kss.com,9848514019,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_023
+staff_ks_024,staff_ks_024,CH PUSHPA,staff_ks_024@kss.com,9701974458,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_024
+staff_ks_025,staff_ks_025,MOLY ROY,staff_ks_025@kss.com,9491547350,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,18,staff_ks_025
+staff_ks_026,staff_ks_026,MD HABBIMUNNISA,staff_ks_026@kss.com,9985977403,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_026
+staff_ks_027,staff_ks_027,J MANJULA,staff_ks_027@kss.com,8143909060,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_027
+staff_ks_028,staff_ks_028,P KALPALATHA,staff_ks_028@kss.com,9666853883,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,19,staff_ks_028
+staff_ks_029,staff_ks_029,K JAGADAMBA,staff_ks_029@kss.com,9247884414,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,20,staff_ks_029
+staff_ks_030,staff_ks_030,JENNIFER MARY FRANCIS,staff_ks_030@kss.com,9666328772,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,21,staff_ks_030
+staff_ks_031,staff_ks_031,S SATYANARAYANA,staff_ks_031@kss.com,9502110047,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_031
+staff_ks_032,staff_ks_032,P LAVANYA RANI,staff_ks_032@kss.com,7386238555,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,22,staff_ks_032
+staff_ks_033,staff_ks_033,NAJMA BEGUM,staff_ks_033@kss.com,8179970923,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,23,staff_ks_033
+staff_ks_034,staff_ks_034,D DEVI SUGUNA,staff_ks_034@kss.com,9676418343,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,24,staff_ks_034
+staff_ks_035,staff_ks_035,D SURESH KUMAR,staff_ks_035@kss.com,9542512589,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_035
+staff_ks_036,staff_ks_036,K ASHA KIRAN,staff_ks_036@kss.com,8019803854,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,25,staff_ks_036
+staff_ks_037,staff_ks_037,L PRABHA,staff_ks_037@kss.com,9642608259,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,26,staff_ks_037
+staff_ks_038,staff_ks_038,J NIRMALA MARY,staff_ks_038@kss.com,9989429423,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,27,staff_ks_038
+staff_ks_039,staff_ks_039,PRASANNA LATHA,staff_ks_039@kss.com,9160917327,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,28,staff_ks_039
+staff_ks_040,staff_ks_040,P SAINATH,staff_ks_040@kss.com,9490167105,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,29,staff_ks_040
+staff_ks_041,staff_ks_041,J FATIMA RITA,staff_ks_041@kss.com,9290742246,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,30,staff_ks_041
+staff_ks_042,staff_ks_042,R UDAY RAJ,staff_ks_042@kss.com,9703311775,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_042
+staff_ks_043,staff_ks_043,ALISON FRANCIS,staff_ks_043@kss.com,9640426095,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,31,staff_ks_043
+staff_ks_044,staff_ks_044,CH LUKE RATNAM,staff_ks_044@kss.com,7989899883,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,32,staff_ks_044
+staff_ks_045,staff_ks_045,A SUJATHA,staff_ks_045@kss.com,9492640429,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,33,staff_ks_045
+staff_ks_046,staff_ks_046,O VIJAYALAKSHMI,staff_ks_046@kss.com,8125124898,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,34,staff_ks_046
+staff_ks_047,staff_ks_047,P HARSHA,staff_ks_047@kss.com,9582803185,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_047
+staff_ks_048,staff_ks_048,K SRI DEEPTHI,staff_ks_048@kss.com,9848656892,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,35,staff_ks_048
+staff_ks_049,staff_ks_049,D RAJINI KANTHI,staff_ks_049@kss.com,9948451523,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_049
+staff_ks_050,staff_ks_050,P VANAJA,staff_ks_050@kss.com,9701637837,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,36,staff_ks_050
+staff_ks_051,staff_ks_051,CHV DAMAYANTHI,staff_ks_051@kss.com,9000247842,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_051
+staff_ks_052,staff_ks_052,D GOWRI NIRMALA,staff_ks_052@kss.com,9885854781,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,37,staff_ks_052
+staff_ks_053,staff_ks_053,J M SONIA FERNANDO,staff_ks_053@kss.com,8309977347,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_053
+staff_ks_054,staff_ks_054,FAUSTINA DMOSS,staff_ks_054@kss.com,8978487144,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,38,staff_ks_054
+staff_ks_055,staff_ks_055,SHIREEN KHAN,staff_ks_055@kss.com,9394468375,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,39,staff_ks_055
+staff_ks_056,staff_ks_056,B N SANDHYA RANI,staff_ks_056@kss.com,9121731140,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,40,staff_ks_056
+staff_ks_057,staff_ks_057,B RAMYA SUSEELA,staff_ks_057@kss.com,8179495576,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,41,staff_ks_057
+staff_ks_058,staff_ks_058,U PRASADA RAO,staff_ks_058@kss.com,9182082140,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_058
+staff_ks_059,staff_ks_059,M SUNIL,staff_ks_059@kss.com,7989606778,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,,staff_ks_059
+staff_ks_060,staff_ks_060,YVL PADMAVATHI,staff_ks_060@kss.com,8341293371,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,,staff_ks_060
+staff_ks_061,staff_ks_061,S RAVI KUMAR,staff_ks_061@kss.com,9059935495,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Male,01-01-1985,42,staff_ks_061
+staff_ks_062,staff_ks_062,K KARUNA LATHA,staff_ks_062@kss.com,7386248069,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,43,staff_ks_062
+staff_ks_063,staff_ks_063,YVONNE THERESA,staff_ks_063@kss.com,9966282776,"CHINNA WALTAIR, VISAKHAPATNAM",,Under Investigation,Female,01-01-1985,1,staff_ks_063

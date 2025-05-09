@@ -18,13 +18,11 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
-
-    const clerkPassword = data.phone; // or another logic for default password
-
+    
     // Create Clerk user
     const clerkUser = await client.users.createUser({
       username: data.username,
-      password: clerkPassword,
+      password: data.password,
       firstName: data.full_name, // You can split if needed
     });
 

@@ -10,8 +10,61 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { CurrentState } from "../../types";
 
+const client = await clerkClient();
+
 // Initialize Prisma Client
 const prisma = new PrismaClient();
+
+export const deleteAdmin = async (prevState: any, formData: FormData) => {
+    const id = formData.get("id");
+    const numericId = Number(id);
+    
+    if (!numericId) {
+        return {
+            success: false,
+            error: true,
+            message: "No ID provided",
+        };
+    }
+
+    try {
+        // Fetch the admin to check if it exists
+        const admin = await prisma.admin.findUnique({
+            where: { id: numericId },
+        });
+
+        if (!admin) {
+            return {
+                success: false,
+                error: true,
+                message: "Admin not found",
+            };
+        }
+
+        // Delete Clerk user if associated
+        if (admin.clerkId) {
+            await client.users.deleteUser(admin.clerkId);
+        }
+
+        // Delete the admin from Prisma
+        await prisma.admin.delete({
+            where: { id: numericId },
+        });
+
+        return {
+            success: true,
+            error: false,
+        };
+    } catch (error) {
+        console.error("Error deleting admin:", error);
+        return {
+            success: false,
+            error: true,
+            message: "Delete failed",
+        };
+    }
+};
+
 
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
@@ -385,7 +438,7 @@ export const createTeacher = async (
             username: data.username,
             password: data.password,
             firstName: data.name,
-            lastName: data.surname,
+            lastName: "",
         });
 
         // Create a new teacher record in Prisma
@@ -394,7 +447,6 @@ export const createTeacher = async (
                 id: user.id,
                 username: data.username,
                 name: data.name,
-                surname: data.surname,
                 dob: data.dob || new Date(),
                 email: data.email || null,
                 phone: data.phone,
@@ -442,7 +494,7 @@ export const updateTeacher = async (
         const updateData: any = {
             username: data.username,
             firstName: data.name,
-            lastName: data.surname,
+            lastName: "",
         };
 
         if (data.password && data.password.trim() !== "") {
@@ -468,7 +520,6 @@ export const updateTeacher = async (
             data: {
                 username: data.username,
                 name: data.name,
-                surname: data.surname,
                 dob: data.dob || existingTeacher?.dob,
                 email: data.email || null,
                 phone: data.phone!,

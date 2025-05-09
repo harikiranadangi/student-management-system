@@ -88,7 +88,6 @@ export const teacherschema = z.object({
   password: z.string().min(5, { message: "Password must be at least 5 characters long!" }).optional()
     .or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
-  surname: z.string().min(1, { message: "Surname is required!" }),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }), // Made address mandatory
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional()
@@ -111,7 +110,6 @@ export const studentschema = z.object({
   password: z.string().min(5, { message: "Password must be at least 5 characters long!" })
     .optional().or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
-  surname: z.string().min(1, { message: "Surname is required!" }),
   parentName: z.string().min(1, { message: "Parent Name is required!" }),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }),

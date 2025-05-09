@@ -20,8 +20,6 @@ type TeachersList = Teacher & {
 
 // Function to render a table row
 const renderRow = (item: TeachersList, role: string | null) => (
-  console.log("Subjects Data:", item.subjects),
-  console.log("Class Data:", item.class),
   <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
 
     {/* Info Column */}
@@ -135,20 +133,32 @@ const TeacherListPage = async ({
       include: {
         subjects: {
           include: {
-            subject: true, // ✅ Fetch Subject details
+            subject: true, // Fetch Subject details
           },
         },
-        class: {  // ✅ Fetch multiple classes (Fix this!)
+        class: {
           include: {
-            students: true, // ✅ Fetch students in the class
+            students: true, // Fetch students in the class
+            Grade: {
+              include: {
+                examGradeSubjects: { // Join through ExamGradeSubject
+                  include: {
+                    Exam: true, // Fetch related exams
+                  },
+                },
+              },
+            },
           },
         },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
-    prisma.teacher.count({ where: query }),
+    prisma.teacher.count({ where: query }), // Count teachers for pagination
   ]);
+
+
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">

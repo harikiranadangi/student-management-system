@@ -8,13 +8,13 @@ WHERE schemaname = 'public';
 
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
-COPY "Teacher" (id, username, name, surname, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
+COPY "Teacher" (id, username, name, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
 FROM 'H:/student-management-system/data/teachers_data.csv'
 WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
 DELETE FROM "Teacher"
 
-COPY "Student" ( id,username,name,surname,"parentName",email,phone,address,img,"bloodType",gender,dob,"createdAt","deletedAt","classId",clerk_id,"academicYear"
+COPY "Student" ( id,username,name,"parentName",email,phone,address,img,"bloodType",gender,dob,"createdAt","deletedAt","classId",clerk_id,"academicYear"
 )
 FROM 'H:/student-management-system/data/student_data.csv'
 WITH (

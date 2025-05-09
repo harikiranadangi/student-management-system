@@ -42,12 +42,12 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update Clerk user if necessary
-    if (data.password || data.username || data.name || data.surname) {
+    if (data.password || data.username || data.name ) {
       await client.users.updateUser(clerkStudent.user_id, {
         username: data.username,
         password: data.password || undefined,
         firstName: data.name,
-        lastName: data.surname,
+        lastName: "",
       });
     }
 
@@ -66,7 +66,6 @@ export async function PUT(req: NextRequest) {
       data: {
         username: data.username,
         name: data.name,
-        surname: data.surname,
         dob: data.dob || existingStudent.dob,
         email: data.email || null,
         phone: data.phone!,
