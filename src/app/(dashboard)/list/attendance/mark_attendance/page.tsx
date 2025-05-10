@@ -136,7 +136,7 @@ export default function MarkAttendancePage() {
       <div>
         <button
           type="button"
-          className="bg-green-600 text-white px-4 py-2 rounded"
+          className="bg-green-500 text-black-500 px-4 py-2 rounded"
           onClick={fetchStudents}
         >
           Get Students
@@ -156,7 +156,7 @@ export default function MarkAttendancePage() {
                 setAttendanceStatus(updated);
                 setAllMarkedAbsent(false); // Toggle state to show "Mark All Absent" next
               }}
-              className="bg-green-700 text-white px-3 py-1 rounded"
+              className="bg-green-500 text-black-500 px-3 py-1 rounded"
             >
               Mark All Present
             </button>
@@ -171,7 +171,7 @@ export default function MarkAttendancePage() {
                 setAttendanceStatus(updated);
                 setAllMarkedAbsent(true); // Toggle state to show "Mark All Present" next
               }}
-              className="bg-red-700 text-white px-3 py-1 rounded"
+              className="bg-red-500 text-black-500 px-3 py-1 rounded"
             >
               Mark All Absent
             </button>
@@ -191,30 +191,29 @@ export default function MarkAttendancePage() {
                 ? classes.find((cls) => cls.id === selectedClass)?.name || "Unknown Class"
                 : "All Classes"}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-            {students.map((student) => {
-              const isAbsent = !attendanceStatus[student.id];
+          <div className="max-h-[530px] overflow-y-scroll border rounded p-2 bg-white shadow-inner">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
 
-              return (
-                <div
-                  key={student.id}
-                  onClick={() => handleCheckboxChange(student.id)}
-                  className={`p-2 rounded shadow hover:scale-105 cursor-pointer transition-transform duration-200 ${isAbsent ? "bg-red-600" : "bg-green-600"
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-bold text-white">{student.name}</div>
-                    <div className="text-sm text-white">
-                      {classes.find((cls) => cls.id === student.classId)?.name || "Unknown"}
+              {students.map((student) => {
+                const isAbsent = !attendanceStatus[student.id];
+                return (
+                  <div
+                    key={student.id}
+                    onClick={() => handleCheckboxChange(student.id)}
+                    className={`p-2 rounded shadow hover:scale-105 cursor-pointer transition-transform duration-200 ${isAbsent ? "bg-red-500" : "bg-green-500"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-bold text-white">{student.name}</div>
+                      <div className="text-sm text-white">
+                        {classes.find((cls) => cls.id === student.classId)?.name }
+                      </div>
                     </div>
+                    <div className="text-sm text-white mt-1 font-bold">{student.id}</div>
                   </div>
-                  <div className="text-sm text-white mt-1 font-bold">{student.id}</div>
-                  <div className="text-sm text-white font-semibold mt-1">
-                    {isAbsent ? "Absent" : "Present"}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
