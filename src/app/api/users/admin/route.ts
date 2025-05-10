@@ -18,18 +18,19 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
-    
-    // Create Clerk user
+
+    // Create Clerk user with phone number (using array format)
     const clerkUser = await client.users.createUser({
       username: data.username,
       password: data.password,
-      firstName: data.full_name, // You can split if needed
+      firstName: data.full_name,
+      phoneNumber: [`+91${data.phone}`],  // Passing phone as an array
     });
 
-    // Optionally add metadata
+    // Optionally add metadata, including role
     await client.users.updateUser(clerkUser.id, {
       publicMetadata: {
-        role: "admin",
+        role: "admin",  // You can dynamically set the role if needed
       },
     });
 
@@ -48,16 +49,24 @@ export async function POST(req: Request) {
         img: data.img ?? null,
         phone: data.phone,
         clerkId: clerkUser.id,
-        },
+      },
     });
 
     return NextResponse.json({ success: true, admin }, { status: 201 });
 
   } catch (error: any) {
     console.error("Admin creation error:", error);
+
     if (error.name === "ZodError") {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
+
+    // Log more detailed Clerk error message
+    if (error.errors && Array.isArray(error.errors)) {
+      return NextResponse.json({ error: error.errors }, { status: 400 });
+    }
+
+
     return NextResponse.json({ error: error.message || "Something went wrong" }, { status: 500 });
   }
 }
