@@ -1,3 +1,4 @@
+import type { User } from '@clerk/backend';
 import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -9,7 +10,6 @@ export async function POST(req: Request) {
     const {
       id,
       name,
-      username,
       phone,
       classId,
       academicYear,
@@ -26,23 +26,32 @@ export async function POST(req: Request) {
 
     // Step 2: Clerk client & check if user exists
     const client = await clerkClient();
-    const existingUsers = await client.users.getUserList({ query: username });
+   
+    // Step 3: Validate phone number
+    const password = phone
+    const generatedUsername = `s${id}`;
+    const phoneNumber = `+91${phone}`;
 
-    if (existingUsers.totalCount > 0) {
+    const existingUsers = await client.users.getUserList({ query: generatedUsername });
+
+    // Safely check for exact username match
+    const userExists = existingUsers.data.some(
+      (u: User) => u.username === generatedUsername
+    );
+
+    if (userExists) {
       return NextResponse.json(
-        { message: `Username "${username}" already exists!` },
+        { message: `Username "${generatedUsername}" already exists!` },
         { status: 409 }
       );
     }
 
-    const password = phone
-
     // Step 2: Create Clerk user
     const user = await client.users.createUser({
-      username: username,
-      password,
+      username: generatedUsername,
+      password: password,
       firstName: name,
-      lastName: "",
+      phoneNumber: [phoneNumber],
     });
 
     await client.users.updateUser(user.id, {
@@ -50,16 +59,14 @@ export async function POST(req: Request) {
         role: "student"
       }
     });
-    
 
     console.log('Created Clerk User:', user.firstName, user.username, user.id);
-
 
     // Step 3: Create student in Prisma
     const student = await prisma.student.create({
       data: {
         id,
-        username,
+        username: generatedUsername,
         name,
         parentName,
         dob: new Date(dob),
@@ -84,7 +91,7 @@ export async function POST(req: Request) {
       data: {
         clerk_id: user.id,
         username: `s${student.id}`,
-        password: student.id,
+        password: `s${student.id}`,
         full_name: `${name}`,
         user_id: user.id, // ✅ ADD COMMA HERE
         role,
@@ -92,7 +99,6 @@ export async function POST(req: Request) {
       },
     });
 
-    
     console.log('ClerkStudent Created:', clerkStudent);
 
     // Step 6: Fetch gradeId via class relation
@@ -142,7 +148,7 @@ export async function POST(req: Request) {
     return NextResponse.json(student, { status: 201 });
 
   } catch (error: any) {
-    console.error('Error creating student:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
 
     if (error.code === 'P2002') {
       return NextResponse.json(
@@ -151,9 +157,11 @@ export async function POST(req: Request) {
       );
     }
 
+    console.error('Unexpected error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Internal server error', error: error.message },
       { status: 500 }
     );
   }
+
 }

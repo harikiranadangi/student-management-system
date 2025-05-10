@@ -1,6 +1,6 @@
 "use client";
 
-import {  deleteAdmin, deleteAnnouncements, deleteClass, deleteExam,  deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import {  deleteAdmins, deleteAnnouncements, deleteClass, deleteExam,  deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,7 @@ const deleteActionMap = {
   fees: deleteFees,
   fees_structure: deleteFees,
   homeworks: deleteHomework,
-  admin: deleteAdmin,
+  admin: deleteAdmins,
   results: deleteHomework,
   messages: deleteMessages
 }

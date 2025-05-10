@@ -191,7 +191,7 @@ export default function MarkAttendancePage() {
                 ? classes.find((cls) => cls.id === selectedClass)?.name || "Unknown Class"
                 : "All Classes"}
           </h3>
-          <div className="max-h-[530px] overflow-y-scroll border rounded p-2 bg-white shadow-inner">
+          <div className="max-h-[500px] overflow-y-scroll border rounded p-2 bg-LamaSkyLight shadow-inner">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
 
               {students.map((student) => {

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import {
-    ClassSchema,  FeesSchema, HomeworkSchema,
-    LessonsSchema,  Teacherschema
+    ClassSchema, FeesSchema, HomeworkSchema,
+    LessonsSchema, Teacherschema
 }
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
@@ -15,10 +15,30 @@ const client = await clerkClient();
 // Initialize Prisma Client
 const prisma = new PrismaClient();
 
-export const deleteAdmin = async (prevState: any, formData: FormData) => {
+const deleteAdmin = async (id: number) => {
+    try {
+        const response = await fetch(`/api/admin/${id}`, {
+            method: 'DELETE',
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('Admin deleted successfully');
+        } else {
+            console.error('Failed to delete admin:', data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting admin:', error);
+    }
+};
+
+
+
+export const deleteAdmins = async (prevState: any, formData: FormData) => {
     const id = formData.get("id");
     const numericId = Number(id);
-    
+
     if (!numericId) {
         return {
             success: false,

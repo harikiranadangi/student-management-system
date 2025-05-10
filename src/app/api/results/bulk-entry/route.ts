@@ -37,7 +37,6 @@ export async function POST(request: Request) {
             marks: Number(marks), // Ensure marks are a number
           },
         });
-
         results.push(result);
       }
     }

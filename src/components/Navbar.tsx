@@ -1,7 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
-import ThemeToggle from "./ThemeToggle";
 
 const Navbar = async () => {
 
@@ -9,7 +8,7 @@ const Navbar = async () => {
   
 
   return (
-    <div className='flex items-center justify-between p-4'>
+    <div className="flex items-center justify-between px-3 py-4 bg-white shadow-sm">
       {/* SEARCH BAR */}
       <div className='hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2'> 
         <Image src="/search.png" alt="Search" width={14} height={14} />
@@ -20,12 +19,6 @@ const Navbar = async () => {
         />
       </div>
 
-      {/* THEME TOGGLE */}
-            <div className='flex items-center justify-end w-full gap-10'>
-        <div className='flex items-center justify-center bg-white rounded-full cursor-pointer w-6 h-6'> 
-      <ThemeToggle />
-        </div>
-      </div>
       
       {/* ICONS AND USER */}
       <div className='flex items-center justify-end w-full gap-6'>

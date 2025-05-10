@@ -106,7 +106,7 @@ export type Teacherschema = z.infer<typeof teacherschema>;
 // Student Schema
 export const studentschema = z.object({
   id: z.string().optional(),
-  username: z.string().min(5, { message: "Username must be at least 5 characters long!" }),
+  username: z.string().min(0, { message: "Username must be at least 5 characters long!" }).optional(),
   password: z.string().min(5, { message: "Password must be at least 5 characters long!" })
     .optional().or(z.literal("")),
   name: z.string().min(1, { message: "Name is required!" }),
@@ -122,6 +122,7 @@ export const studentschema = z.object({
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
   academicYear: z.nativeEnum(AcademicYear).optional(),
+
 });
 
 // Infer the form data type from schema

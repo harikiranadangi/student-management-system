@@ -112,15 +112,7 @@ const StudentForm = ({
       <h1 className="text-xl font-semibold">
         {type === "create" ? "Create a new student" : "Update the student"}
       </h1>
-
-      {/* Authentication */}
-      <span className="text-xs font-medium text-gray-400">Authentication Information</span>
-      <div className="flex flex-wrap justify-between gap-4">
-        <InputField label="Username" name="username" register={register} error={errors?.username} />
-        <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
-        <InputField label="Password" name="password" type="password" defaultValue={data?.password} register={register} error={errors?.password} />
-      </div>
-
+  
       {/* Personal Info */}
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
       <div className="flex flex-wrap justify-between gap-4">
@@ -129,7 +121,10 @@ const StudentForm = ({
         <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName} />
         <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
         <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
-
+        <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
+        <InputField label="Birthday" name="dob" defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""} register={register} error={errors.dob} type="date" />
+  
+        {/* Academic Year */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label htmlFor="academicYear" className="text-xs text-gray-500">Academic Year</label>
           <select
@@ -146,12 +141,7 @@ const StudentForm = ({
             <p className="text-xs text-red-400">{errors.academicYear.message.toString()}</p>
           )}
         </div>
-
-
-        <InputField label="Birthday" name="dob" defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""} register={register} error={errors.dob} type="date" />
-      </div>
-
-      <div className="flex flex-wrap gap-16">
+  
         {/* Gender */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label htmlFor="gender" className="text-xs text-gray-500">Gender</label>
@@ -169,7 +159,7 @@ const StudentForm = ({
             <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
           )}
         </div>
-
+  
         {/* Grade Select */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label htmlFor="gradeId" className="text-xs text-gray-500">Grade</label>
@@ -189,7 +179,7 @@ const StudentForm = ({
             <p className="text-xs text-red-500">{errors.gradeId.message.toString()}</p>
           )}
         </div>
-
+  
         {/* Class Select */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label htmlFor="classId" className="text-xs text-gray-500">Class</label>
@@ -209,33 +199,35 @@ const StudentForm = ({
             <p className="text-xs text-red-500">{errors.classId.message.toString()}</p>
           )}
         </div>
-
-
+  
         {/* Image Upload */}
-        <CldUploadWidget
-          uploadPreset="school"
-          onSuccess={(result, { widget }) => {
-            setImg(result.info);
-            console.log("Image Uploaded:", result.info);
-            widget.close();
-          }}
-        >
-          {({ open }) => (
-            <div className="flex items-right gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
-              <Image src="/upload.png" alt="" width={28} height={28} />
-              <span>Upload a photo</span>
-            </div>
-          )}
-        </CldUploadWidget>
+        <div className="flex flex-col w-full gap-2 md:w-1/4">
+          <label className="text-xs text-gray-500">Photo</label>
+          <CldUploadWidget
+            uploadPreset="school"
+            onSuccess={(result, { widget }) => {
+              setImg(result.info);
+              console.log("Image Uploaded:", result.info);
+              widget.close();
+            }}
+          >
+            {({ open }) => (
+              <div className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer" onClick={() => open()}>
+                <Image src="/upload.png" alt="Upload" width={28} height={28} />
+                <span>Upload a photo</span>
+              </div>
+            )}
+          </CldUploadWidget>
+        </div>
       </div>
-
+  
       {state.error && <span className="text-red-500">Something went wrong!</span>}
-
+  
       <button className="p-2 text-white bg-blue-400 rounded-md">
         {type === "create" ? "Create" : "Update"}
       </button>
     </form>
-  );
+  );  
 };
 
 export default StudentForm;
