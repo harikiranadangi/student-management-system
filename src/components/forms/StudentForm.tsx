@@ -116,12 +116,12 @@ const StudentForm = ({
       {/* Personal Info */}
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
       <div className="flex flex-wrap justify-between gap-4">
-        <InputField label="Admission No" name="id" defaultValue={data?.id} register={register} error={errors.id} />
-        <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors.name} />
-        <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName} />
-        <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} />
-        <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address} />
-        <InputField label="Email" name="email" defaultValue={data?.email} register={register} error={errors?.email} />
+        <InputField label="Admission No (Optional)" name="id" defaultValue={data?.id} register={register} placeholder="Enter admission number" error={errors.id} />
+        <InputField label="Student Name" name="name" defaultValue={data?.name} register={register} error={errors.name} placeholder="As per Record" />
+        <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName}  placeholder="Enter Parent Number"/>
+        <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} placeholder="Enter Mobile Number"/>
+        <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address}  placeholder="Enter Address"/>
+        <InputField label="Email (Optional)" name="email" defaultValue={data?.email} register={register} error={errors?.email} placeholder="Enter email id"/>
         <InputField label="Birthday" name="dob" defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""} register={register} error={errors.dob} type="date" />
   
         {/* Academic Year */}
@@ -202,7 +202,7 @@ const StudentForm = ({
   
         {/* Image Upload */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label className="text-xs text-gray-500">Photo</label>
+          <label className="text-xs text-gray-500">Photo (Optional)</label>
           <CldUploadWidget
             uploadPreset="school"
             onSuccess={(result, { widget }) => {

@@ -24,6 +24,13 @@ export async function PUT(
 
     const existingStudent = await prisma.student.findUnique({
       where: { id: studentId },
+      include: {
+        Class: {
+          select: {
+            gradeId: true,
+          },
+        },
+      },
     });
 
     if (!existingStudent || !existingStudent.clerk_id) {
@@ -40,13 +47,14 @@ export async function PUT(
       (phone) => phone.phoneNumber === formattedNewPhone
     );
 
+    const updatedUsername = `s${data.id}`;
     const isPrimary =
       existingPhone && existingPhone.id === user.primaryPhoneNumberId;
 
     if (existingPhone && isPrimary) {
       await client.users.updateUser(existingStudent.clerk_id, {
         firstName: data.name,
-        username: `s${studentId}`,
+        username: updatedUsername,
         password: data.phone,
       });
     } else if (existingPhone && !isPrimary) {
@@ -78,25 +86,25 @@ export async function PUT(
 
       await client.users.updateUser(existingStudent.clerk_id, {
         firstName: data.name,
-        username: `s${studentId}`,
-        password: data.phone,
+        username: updatedUsername,
+        password: updatedUsername,
       });
+    }
+
+    const { gradeId, dob, ...otherData } = data;
+
+    const studentData: any = {
+      ...otherData,
+    };
+
+    // ✅ Safely parse dob
+    if (dob) {
+      studentData.dob = new Date(dob);
     }
 
     const updatedStudent = await prisma.student.update({
       where: { id: studentId },
-      data: {
-        name: data.name,
-        username: `s${studentId}`,
-        dob: data.dob ? new Date(data.dob) : existingStudent.dob,
-        email: data.email || null,
-        phone: data.phone,
-        address: data.address,
-        gender: data.gender,
-        img: data.img ?? existingStudent.img ?? null,
-        bloodType: data.bloodType ?? existingStudent.bloodType ?? null,
-        classId: data.classId,
-      },
+      data: studentData,
     });
 
     return NextResponse.json({ success: true, updatedStudent }, { status: 200 });
@@ -109,6 +117,7 @@ export async function PUT(
     );
   }
 }
+
 
 // DELETE - Delete student
 export async function DELETE(

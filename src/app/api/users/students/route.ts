@@ -1,14 +1,22 @@
-import type { User } from '@clerk/backend';
+import { User } from '@clerk/backend';
 import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { studentschema } from '@/lib/formValidationSchemas';
 
 export async function POST(req: Request) {
   try {
-    // Step 1: Parse request body
     const body = await req.json();
+
+    // ✅ Step 1: Validate input
+    const result = studentschema.safeParse(body);
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      return NextResponse.json({ message: 'Validation failed', errors }, { status: 400 });
+    }
+
     const {
-      id,
+      id: requestedId,
       name,
       phone,
       classId,
@@ -20,21 +28,35 @@ export async function POST(req: Request) {
       bloodType,
       address,
       img,
-    } = body;
+    } = result.data;
 
-    console.log('Received data:', body);
+    console.log('Received data:', result.data);
 
-    // Step 2: Clerk client & check if user exists
-    const client = await clerkClient();
-   
-    // Step 3: Validate phone number
-    const password = phone
+    // ✅ Step 2: Determine ID
+    let id = requestedId;
+    if (!id) {
+      const lastStudent = await prisma.student.findFirst({
+        orderBy: { id: 'desc' },
+        select: { id: true },
+      });
+      
+      console.log('Last Student:', lastStudent);
+
+      id = lastStudent?.id
+        ? (parseInt(lastStudent.id.toString()) + 1).toString()
+        : '10000';
+    }
+
+
     const generatedUsername = `s${id}`;
+    const password = phone;
     const phoneNumber = `+91${phone}`;
 
-    const existingUsers = await client.users.getUserList({ query: generatedUsername });
+    // ✅ Step 3: Check if Clerk user already exists
+    const client = await clerkClient();
+    const existingUsers = await client.users.getUserList({ username: [generatedUsername] });
 
-    // Safely check for exact username match
+    console.log('Existing users:', existingUsers);
     const userExists = existingUsers.data.some(
       (u: User) => u.username === generatedUsername
     );
@@ -46,7 +68,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step 2: Create Clerk user
+    // ✅ Step 4: Create Clerk user
     const user = await client.users.createUser({
       username: generatedUsername,
       password: password,
@@ -55,21 +77,19 @@ export async function POST(req: Request) {
     });
 
     await client.users.updateUser(user.id, {
-      publicMetadata: {
-        role: "student"
-      }
+      publicMetadata: { role: 'student' },
     });
 
-    console.log('Created Clerk User:', user.firstName, user.username, user.id);
+    console.log('Clerk user created:', user.id, user.username, user.firstName);
 
-    // Step 3: Create student in Prisma
+    // ✅ Step 5: Create student record
     const student = await prisma.student.create({
       data: {
         id,
         username: generatedUsername,
         name,
         parentName,
-        dob: new Date(dob),
+        dob: dob ? new Date(dob) : "",  // Ensure dob is either a Date or null
         email,
         phone,
         address,
@@ -82,26 +102,25 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log('Student Created:', student);
+    console.log('Student created:', student);
 
-    const role = 'student'
 
-    // Step 5: Create ClerkStudent relation
+    // ✅ Step 6: Create ClerkStudents entry
     const clerkStudent = await prisma.clerkStudents.create({
       data: {
         clerk_id: user.id,
-        username: `s${student.id}`,
-        password: `s${student.id}`,
-        full_name: `${name}`,
-        user_id: user.id, // ✅ ADD COMMA HERE
-        role,
+        username: generatedUsername,
+        password: generatedUsername,
+        full_name: name,
+        user_id: user.id,
+        role: 'student',
         studentId: student.id,
       },
     });
 
-    console.log('ClerkStudent Created:', clerkStudent);
+    console.log('Clerk student created:', clerkStudent);
 
-    // Step 6: Fetch gradeId via class relation
+    // ✅ Step 7: Get gradeId from class
     const studentClass = await prisma.class.findUnique({
       where: { id: student.classId },
       select: { gradeId: true },
@@ -114,7 +133,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step 7: Fetch matching fee structures
+    // ✅ Step 8: Match and assign fee structures
     const matchingFeeStructures = await prisma.feeStructure.findMany({
       where: {
         gradeId: studentClass.gradeId,
@@ -122,16 +141,13 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log('Matching Fee Structures:', matchingFeeStructures);
-
-    // Step 8: Map and create student fee records
     if (matchingFeeStructures.length > 0) {
       await prisma.studentFees.createMany({
         data: matchingFeeStructures.map((fee) => ({
           studentId: student.id,
           feeStructureId: fee.id,
-          academicYear: academicYear,
-          term: fee.term, // ✅ uses enum Term directly
+          academicYear,
+          term: fee.term,
           paidAmount: 0,
           discountAmount: 0,
           fineAmount: 0,
@@ -141,9 +157,9 @@ export async function POST(req: Request) {
           paymentMode: 'CASH',
         })),
       });
-
-      console.log('Student Fees Created.');
     }
+
+    console.log('Fee structures assigned to student:', matchingFeeStructures);
 
     return NextResponse.json(student, { status: 201 });
 
@@ -157,11 +173,9 @@ export async function POST(req: Request) {
       );
     }
 
-    console.error('Unexpected error:', error);
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }
     );
   }
-
 }

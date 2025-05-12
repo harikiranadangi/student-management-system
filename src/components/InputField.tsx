@@ -10,6 +10,7 @@ type InputFieldProps = {
     error?: FieldError;
     hidden?: boolean;
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+    placeholder?: string; 
 };
 
 const InputField = ({
@@ -21,6 +22,7 @@ const InputField = ({
     error,
     hidden,
     inputProps,
+    placeholder = "",
 }: InputFieldProps) => {
     return (
         <div className={hidden ?"hidden" : "flex flex-col gap-2 md:w-1/4"}>
@@ -30,6 +32,7 @@ const InputField = ({
                 {...register(name)} // Register the input with name directly
                 className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                 defaultValue={defaultValue}
+                placeholder={placeholder}
                 {...inputProps}
             />
             {error?.message && (
