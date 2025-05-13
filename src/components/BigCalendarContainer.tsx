@@ -3,31 +3,35 @@ import BigCalendar from "./BigCalendar";
 import { adjustScheduleToCurrentWeek } from "@/lib/utils";
 
 const BigCalendarContainer = async ({
-    type,
-    id,
+  type,
+  id,
 }: {
-    type: "teacherId" | "classId";
-    id: string | number;
+  type: "teacherId" | "classId";
+  id: string | number;
 }) => {
+  const dataRes = await prisma.lesson.findMany({
+    where: {
+      ...(type === "teacherId"
+        ? { teacherId: id as string }
+        : { classId: id as number }),
+    },
+    include: {
+      Subject: true,
+    },
+  });
 
-    const dataRes = await prisma.lesson.findMany({
-        where: {
-            ...(type === "teacherId" 
-                ? {teacherId :id as string}
-            : { classId: id as number }),
-        },
-    });
+  const rawSchedule = dataRes.map((lesson) => ({
+    start: lesson.startTime,
+    end: lesson.endTime,
+    title: lesson.Subject?.name ?? "Untitled Lesson",
+  }));
 
-    const data = dataRes.map(lesson=> ({
-        title: lesson.name,
-        start: lesson.startTime,
-        end: lesson.endTime,
-    }))
+  const schedule = adjustScheduleToCurrentWeek(rawSchedule);
 
-    const schedule = adjustScheduleToCurrentWeek(data)
-    
   return (
-    <div className="container"><BigCalendar data={schedule}/></div>
+    <div className="container mx-auto p-4">
+      <BigCalendar data={schedule} />
+    </div>
   );
 };
 

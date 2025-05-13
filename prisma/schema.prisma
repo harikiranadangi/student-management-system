@@ -59,7 +59,7 @@ model Class {
 
 model Lesson {
   id        Int       @id @default(autoincrement())
-  name      String    @unique
+  title   String   // Add title here
   day       LessonDay
   startTime DateTime
   endTime   DateTime

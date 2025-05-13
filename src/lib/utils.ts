@@ -70,30 +70,33 @@ const currentWorkWeek = (): Date => {
   return startOfweek;
 };
 
-export const adjustScheduleToCurrentWeek = (
-  lessons: { title: string; start: Date; end: Date }[]
-): { title: string; start: Date; end: Date }[] => {
-  const startOfweek = currentWorkWeek();
+// lib/utils.ts
+export function adjustScheduleToCurrentWeek(data: { start: Date; end: Date; title: string }[]) {
+  const currentDate = new Date();
+  const startOfWeek = new Date(currentDate);
+  const currentDay = startOfWeek.getDay();
+  const diff = currentDay === 0 ? -6 : 1 - currentDay; // Adjust Sunday to be last
+  startOfWeek.setDate(startOfWeek.getDate() + diff);
+  startOfWeek.setHours(0, 0, 0, 0);
 
-  return lessons.map((lesson) => {
-    if (!lesson.start || !lesson.end) {
-      throw new Error(`Lesson start or end date is invalid: ${JSON.stringify(lesson)}`);
-    }
+  return data.map((event) => {
+    const originalStart = new Date(event.start);
+    const originalEnd = new Date(event.end);
+    const dayOfWeek = originalStart.getDay();
 
-    const lessonDayOfWeek = lesson.start.getDay();
-    const daysFromMonday = lessonDayOfWeek === 0 ? 6 : lessonDayOfWeek - 1;
+    const start = new Date(startOfWeek);
+    const end = new Date(startOfWeek);
 
-    const adjustedStartDate = new Date(startOfweek);
-    adjustedStartDate.setDate(startOfweek.getDate() + daysFromMonday);
-    
-    const adjustedEndDate = new Date(adjustedStartDate);
-    adjustedStartDate.setHours(lesson.start.getHours(), lesson.start.getMinutes(), lesson.start.getSeconds());
-    adjustedEndDate.setHours(lesson.end.getHours(), lesson.end.getMinutes(), lesson.end.getSeconds());
+    start.setDate(start.getDate() + dayOfWeek);
+    start.setHours(originalStart.getHours(), originalStart.getMinutes(), 0, 0);
+
+    end.setDate(end.getDate() + dayOfWeek);
+    end.setHours(originalEnd.getHours(), originalEnd.getMinutes(), 0, 0);
 
     return {
-      title: lesson.title,
-      start: adjustedStartDate,
-      end: adjustedEndDate,
+      title: event.title,
+      start,
+      end,
     };
   });
-};
+}

@@ -11,6 +11,7 @@ type InputFieldProps = {
     hidden?: boolean;
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
     placeholder?: string; 
+    value?: string;
 };
 
 const InputField = ({
@@ -23,6 +24,7 @@ const InputField = ({
     hidden,
     inputProps,
     placeholder = "",
+    value,
 }: InputFieldProps) => {
     return (
         <div className={hidden ?"hidden" : "flex flex-col gap-2 md:w-1/4"}>

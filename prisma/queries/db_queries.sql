@@ -237,6 +237,8 @@ SELECT * FROM "Homework";
 -- Retrieve all records from the Lesson table
 SELECT * FROM "Lesson";
 
+DELETE FROM "Lesson";
+
 INSERT INTO lesson (name, day, classId, subject, startTime, endTime, teacherId)  
 VALUES  
 (1, 'Math', '2025-03-11 09:00:00', '2025-03-11 10:00:00', 5),  
