@@ -2,24 +2,56 @@
 import prisma from "@/lib/prisma";
 
 export async function getExamsForDate(date: string) {
-  if (!date) throw new Error("Date is required");
+  if (!date) {
+    throw new Error("Date parameter is required.");
+  }
 
-  const examDate = new Date(date);
+  const parsedDate = new Date(date);
 
-  return prisma.exam.findMany({
-    where: {
-      date: {
-        gte: new Date(examDate.setHours(0, 0, 0, 0)),
-        lt: new Date(examDate.setHours(23, 59, 59, 999)),
-      },
-    },
-    include: {
-      examGradeSubjects: {
-        include: {
-          Grade: true,
-          Subject: true,
+  // Check for valid date format
+  if (isNaN(parsedDate.getTime())) {
+    throw new Error("Invalid date format.");
+  }
+
+  // Set the start and end of the day
+  const start = new Date(parsedDate);
+  const end = new Date(parsedDate);
+  end.setHours(23, 59, 59, 999); // End of the same day
+
+  try {
+    const exams = await prisma.exam.findMany({
+      where: {
+        examGradeSubjects: {
+          some: {
+            date: {
+              gte: start, // Greater than or equal to start date
+              lte: end,   // Less than or equal to end date
+            },
+          },
         },
       },
-    },
-  });
+      include: {
+        examGradeSubjects: {
+          where: {
+            date: {
+              gte: start,
+              lte: end,
+            },
+          },
+          include: {
+            Grade: true,
+            Subject: true,
+          },
+        },
+      },
+    });
+
+    if (exams.length === 0) {
+      throw new Error("No exams found for the selected date.");
+    }
+
+    return exams;
+  } catch (error) {
+    throw new Error(`Failed to fetch exams: ${(error as any).message}`);
+  }
 }

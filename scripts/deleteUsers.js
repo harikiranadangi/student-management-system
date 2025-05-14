@@ -77,7 +77,5 @@ async function deleteAllUsersExceptAdmins() {
 
 deleteAllUsersExceptAdmins();
 
-
-
 // * Run the above code
 // * node scripts\deleteUsers.js

@@ -21,6 +21,7 @@ export default function MarksEntryForm() {
   const [selectedExamId, setSelectedExamId] = useState<number>();
   const [selectedGradeId, setSelectedGradeId] = useState<number>();
   const [selectedClassId, setSelectedClassId] = useState<number>();
+  
 
   const [marksData, setMarksData] = useState<
     { studentId: string; marks: { [subjectName: string]: string } }[]
@@ -28,9 +29,10 @@ export default function MarksEntryForm() {
 
   // Fetch exams and grades on load
   useEffect(() => {
-    axios.get('/api/exams').then((res) =>{ 
+    axios.get('/api/exams').then((res) => {
       console.log(res.data); // Inspect the response
-      setExams(res.data.exams)})
+      setExams(res.data.exams)
+    })
     axios.get('/api/grades').then((res) => setGrades(res.data)); // You need to create this API if not present
   }, []);
 
@@ -104,20 +106,19 @@ export default function MarksEntryForm() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <h2 className="text-xl font-bold">Enter Marks</h2>
+    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md shadow-md">
+      <h2 className="text-2xl font-semibold text-gray-800">Enter Marks</h2>
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <select
           onChange={(e) => setSelectedExamTitle(e.target.value)}
           defaultValue=""
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
-          <option value="" disabled>
-            Select Exam
-          </option>
+          <option value="" disabled>Select Exam</option>
           {exams.map((exam) => (
             <option key={exam.id} value={exam.title}>
-              {exam.title} - {exam.date}
+              {exam.title}
             </option>
           ))}
         </select>
@@ -125,10 +126,9 @@ export default function MarksEntryForm() {
         <select
           onChange={(e) => setSelectedGradeId(Number(e.target.value))}
           defaultValue=""
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
-          <option value="" disabled>
-            Select Grade
-          </option>
+          <option value="" disabled>Select Grade</option>
           {grades.map((g) => (
             <option key={g.id} value={g.id}>
               {g.level}
@@ -139,10 +139,9 @@ export default function MarksEntryForm() {
         <select
           onChange={(e) => setSelectedClassId(Number(e.target.value))}
           defaultValue=""
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
-          <option value="" disabled>
-            Select Class
-          </option>
+          <option value="" disabled>Select Class</option>
           {classes.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -152,52 +151,62 @@ export default function MarksEntryForm() {
       </div>
 
       {students.length > 0 && subjects.length > 0 && (
-        <table className="w-full border mt-4">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border py-1">Student ID</th>
-              <th className="border py-1">Student</th>
-              {subjects.map((subj) => (
-                <th key={subj.id} className="border py-1">
-                  {subj.name}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.id}>
-                <td className="border py-1">{student.id}</td>
-                <td className="border py-1">{student.name}</td>
+        <div className="overflow-auto mt-4">
+          <table className="min-w-full table-auto border border-gray-300 rounded-lg overflow-hidden">
+            <thead className="bg-LamaPurpleLight text-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left border">Student ID</th>
+                <th className="px-4 py-2 text-left border">Student</th>
                 {subjects.map((subj) => (
-                  <td key={subj.id} className="border py-1">
-                    <input
-                      type="number"
-                      value={
-                        marksData.find((entry) => entry.studentId === student.id)
-                          ?.marks[subj.name] || ''
-                      }
-                      onChange={(e) =>
-                        handleMarkChange(student.id, subj.name, e.target.value)
-                      }
-                      className="w-16 border px-1"
-                    />
-                  </td>
+                  <th key={subj.id} className="px-4 py-2 text-left border">
+                    {subj.name}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {students.map((student) => (
+                <tr key={student.id} className="even:bg-slate-50 hover:bg-LamaPurpleLight">
+                  <td className="px-4 py-2 border">{student.id}</td>
+                  <td className="px-4 py-2 border">{student.name}</td>
+                  {subjects.map((subj) => (
+                    <td key={subj.id} className="px-4 py-2 border">
+                      <input
+                        type="number"
+                        value={
+                          marksData.find((entry) => entry.studentId === student.id)
+                            ?.marks[subj.name] || ''
+                        }
+                        onChange={(e) =>
+                          handleMarkChange(student.id, subj.name, e.target.value)
+                        }
+                        className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {students.length > 0 && (
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 text-white px-4 py-2 rounded mt-4"
-        >
-          Submit Marks
-        </button>
+        <div className="text-center mt-4">
+          <button
+            onClick={() => {
+              const confirmed = window.confirm("Are you sure you want to submit the marks?");
+              if (confirmed) {
+                handleSubmit();
+              }
+            }}
+            className="bg-green-400 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-md shadow-md transition duration-200"
+          >
+            Submit Marks
+          </button>
+        </div>
       )}
+
     </div>
   );
 }

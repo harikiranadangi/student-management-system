@@ -100,7 +100,7 @@ const ExamsList = async ({
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "date";
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
   const teacherId = Array.isArray(params.teacherId) ? params.teacherId[0] : params.teacherId;
 
 
@@ -117,10 +117,6 @@ if (teacherId) {
 
   teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
 }
-
-
-
-  
 
   // Title filter
   if (queryParams.title) {

@@ -69,13 +69,14 @@ const menuItems: MenuItemSection[] = [
       { icon: "/class.png", label: "Classes", href: "/list/classes", visible: ["admin"] },
       { icon: "/lesson.png", label: "Time Table", href: "/list/lessons", visible: ["admin", "teacher", "student"] },
       { icon: "/exam.png", label: "Exams", href: "/list/exams", visible: ["admin", "teacher", "student"] },
+      { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["student"] },
       {
         icon: "/result.png",
         label: "Results",
         href: "#",
-        visible: ["admin"],
+        visible: ["admin", "teacher"],
         dropdown: [
-          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin", "student", "teacher"] },
+          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin",  "teacher"] },
           { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin","teacher"] },
         ],
       },

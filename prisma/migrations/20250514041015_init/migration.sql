@@ -58,7 +58,7 @@ CREATE TABLE "class" (
 -- CreateTable
 CREATE TABLE "Lesson" (
     "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
     "day" "LessonDay" NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
@@ -108,7 +108,6 @@ CREATE TABLE "Event" (
 CREATE TABLE "Exam" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
 );
@@ -154,7 +153,6 @@ CREATE TABLE "Student" (
     "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "surname" TEXT,
     "parentName" TEXT,
     "email" TEXT,
     "phone" TEXT NOT NULL,
@@ -200,7 +198,6 @@ CREATE TABLE "Teacher" (
     "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "surname" TEXT,
     "email" TEXT,
     "phone" TEXT NOT NULL,
     "address" TEXT NOT NULL,
@@ -269,6 +266,8 @@ CREATE TABLE "FeeTransaction" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "remarks" TEXT,
+    "deletedAt" TIMESTAMP(3),
+    "transactionType" TEXT NOT NULL DEFAULT 'PAYMENT',
 
     CONSTRAINT "FeeTransaction_pkey" PRIMARY KEY ("id")
 );
@@ -349,9 +348,6 @@ CREATE INDEX "Class_gradeId_idx" ON "class"("gradeId");
 CREATE INDEX "Class_supervisorId_idx" ON "class"("supervisorId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Lesson_name_key" ON "Lesson"("name");
-
--- CreateIndex
 CREATE INDEX "Lesson_classId_idx" ON "Lesson"("classId");
 
 -- CreateIndex
@@ -367,6 +363,9 @@ CREATE INDEX "Announcement_classId_idx" ON "Announcement"("classId");
 CREATE INDEX "Event_classId_idx" ON "Event"("classId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Exam_title_key" ON "Exam"("title");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ExamGradeSubject_examId_gradeId_subjectId_key" ON "ExamGradeSubject"("examId", "gradeId", "subjectId");
 
 -- CreateIndex
@@ -380,9 +379,6 @@ CREATE UNIQUE INDEX "Result_studentId_examId_subjectId_key" ON "Result"("student
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Student_username_key" ON "Student"("username");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Student_email_key" ON "Student"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Student_clerk_id_key" ON "Student"("clerk_id");
@@ -481,10 +477,10 @@ ALTER TABLE "Homework" ADD CONSTRAINT "Homework_classId_fkey" FOREIGN KEY ("clas
 ALTER TABLE "Homework" ADD CONSTRAINT "Homework_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "Grade"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Result" ADD CONSTRAINT "Result_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Result" ADD CONSTRAINT "Result_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Result" ADD CONSTRAINT "Result_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Result" ADD CONSTRAINT "Result_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Result" ADD CONSTRAINT "Result_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "Subject"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -496,13 +492,13 @@ ALTER TABLE "Student" ADD CONSTRAINT "Student_classId_fkey" FOREIGN KEY ("classI
 ALTER TABLE "ClerkStudents" ADD CONSTRAINT "ClerkStudents_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SubjectTeacher" ADD CONSTRAINT "SubjectTeacher_classId_fkey" FOREIGN KEY ("classId") REFERENCES "class"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "SubjectTeacher" ADD CONSTRAINT "SubjectTeacher_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "Subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SubjectTeacher" ADD CONSTRAINT "SubjectTeacher_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "Teacher"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "SubjectTeacher" ADD CONSTRAINT "SubjectTeacher_classId_fkey" FOREIGN KEY ("classId") REFERENCES "class"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ClerkTeachers" ADD CONSTRAINT "ClerkTeachers_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "Teacher"("id") ON DELETE CASCADE ON UPDATE CASCADE;

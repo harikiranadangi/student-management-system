@@ -1,4 +1,4 @@
-// app/api/exam-data/route.ts
+// app/api/exams/exam-data/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 

@@ -34,6 +34,7 @@ async function main() {
   const gradeSubjectsFilePath = path.join(projectRootPath, 'data', 'grade_subjects_data.csv');
   const teachersFilePath = path.join(projectRootPath, 'data', 'teachers_data.csv');
   const feesStructureFilePath = path.join(projectRootPath, 'data', 'fees_structure.csv');
+  const studentFilePath = path.join(projectRootPath, 'data', 'student_data.csv');
 
 
 
@@ -42,6 +43,7 @@ async function main() {
   console.log(`Subjects CSV Path: ${subjectsFilePath}`);
   console.log(`Grade Subjects CSV Path: ${gradeSubjectsFilePath}`);
   console.log(`Teachers CSV Path: ${teachersFilePath}`);
+  console.log(`Student CSV Path: ${studentFilePath}`);
   console.log(`Fee Structure CSV Path: ${feesStructureFilePath}`);
 
 
@@ -79,6 +81,8 @@ async function main() {
 
   console.log("✅ Teachers seeded");
 
+
+
   const feeStructureData = await readCSVFile(feesStructureFilePath);
 
   const formattedFeeStructure = feeStructureData.map((row: any) => ({
@@ -102,6 +106,8 @@ async function main() {
 
   // 2. Seed Classes
   const classesData = await readCSVFile(classesFilePath);
+
+
   const formattedClasses = classesData.map((row: any) => ({
     id: parseInt(row.id),
     name: row.name,
@@ -159,10 +165,9 @@ async function main() {
 
   console.log("✅ Subjects connected to grades");
 
-  console.log("🌱 Seeding complete!");
-
   console.log("🚀 Starting fee assignment to existing students...");
 
+  
   const students = await prisma.student.findMany({
     include: {
       Class: {
@@ -219,10 +224,11 @@ async function main() {
       skipDuplicates: true,
     });
 
-    console.log(`✅ Fees assigned for student ${student.id}`);
   }
 
   console.log("🏁 Fee assignment complete for all students.");
+  console.log("✅ All data seeded successfully");
+  console.log("🚀 Seeding completed!");
 }
 
 main()

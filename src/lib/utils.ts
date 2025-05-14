@@ -13,17 +13,44 @@ export function getRoleFromSession(sessionClaims: any): string | null {
   return (sessionClaims?.metadata as SessionMetadata)?.role || null;
 }
 
-// Main function to fetch user info (userId and role)
-export async function fetchUserInfo(): Promise<{ userId: string | null; role: string | null }> {
+export async function fetchUserInfo(): Promise<{
+  userId: string | null;
+  role: string | null;
+  studentId?: string;
+  classId?: string | number;
+}> {
   try {
-    // Fetch session claims and user ID from the authentication system
     const { sessionClaims, userId } = await auth();
-
-    // Extract role using the helper function
     const role = getRoleFromSession(sessionClaims);
 
-    // Return the user ID and role
-    console.log("User Info fetched:", { userId, role });
+    if (!userId || !role) {
+      return { userId: null, role: null };
+    }
+
+    if (role === "student") {
+      const student = await prisma.student.findUnique({
+        where: { clerk_id: userId },
+      });
+
+      return {
+        userId,
+        role,
+        studentId: student?.id ?? undefined,
+        classId: student?.classId ?? undefined, // Int
+      };
+    }
+
+    if (role === "teacher") {
+      const teacher = await prisma.teacher.findUnique({
+        where: { clerk_id: userId },
+      });
+
+      return {
+        userId,
+        role,
+        classId: teacher?.classId ?? undefined, // String?
+      };
+    }
 
     return { userId, role };
   } catch (error) {
