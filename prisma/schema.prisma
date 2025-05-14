@@ -59,7 +59,7 @@ model Class {
 
 model Lesson {
   id        Int       @id @default(autoincrement())
-  title   String   // Add title here
+  title     String // Add title here
   day       LessonDay
   startTime DateTime
   endTime   DateTime
@@ -111,7 +111,7 @@ model Event {
 
 model Exam {
   id                Int                @id @default(autoincrement())
-  title             String  @unique
+  title             String             @unique
   examGradeSubjects ExamGradeSubject[]
   results           Result[]
 }
@@ -163,7 +163,7 @@ model Student {
   username        String            @unique
   name            String
   parentName      String?
-  email           String?           
+  email           String?
   phone           String
   address         String
   img             String?
@@ -214,7 +214,8 @@ model Teacher {
   id            String           @id
   username      String           @unique
   name          String
-  email         String?          @unique
+  parentName    String?
+  email         String?
   phone         String
   address       String
   img           String?
@@ -232,6 +233,18 @@ model Teacher {
   class         Class?           @relation("ClassToTeacher")
 }
 
+model ClerkTeachers {
+  clerk_id       String   @id @db.VarChar
+  user_id        String?  @unique
+  username       String   @unique
+  password       String   @db.VarChar
+  full_name      String   @db.VarChar
+  role           String   @default("teacher") @db.VarChar
+  teacherId      String?  @unique @db.VarChar
+  publicMetadata Json?    @default("{}")
+  teacher        Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
 model SubjectTeacher {
   subjectId Int
   teacherId String
@@ -241,17 +254,6 @@ model SubjectTeacher {
   teacher   Teacher @relation(fields: [teacherId], references: [id])
 
   @@id([subjectId, teacherId, classId])
-}
-
-model ClerkTeachers {
-  clerk_id  String   @id @db.VarChar
-  user_id   String?  @unique
-  username  String   @unique
-  password  String   @db.VarChar
-  full_name String   @db.VarChar
-  role      String   @default("teacher") @db.VarChar
-  teacherId String?  @unique @db.VarChar
-  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
 model FeeStructure {
@@ -270,24 +272,24 @@ model FeeStructure {
 }
 
 model FeeTransaction {
-  id             Int         @id @default(autoincrement())
-  studentId      String
-  term           String
-  studentFeesId  Int
-  amount         Float       @default(0)
-  discountAmount Float       @default(0)
-  fineAmount     Float       @default(0)
-  receiptDate    DateTime
-  receivedDate   DateTime?   @default(now())
-  receiptNo      String
-  paymentMode    PaymentMode @default(CASH)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  remarks        String?
-  studentFees    StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
-  student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  deletedAt      DateTime?
-  transactionType String   @default("PAYMENT") // use "CANCELLED" for cancelled fees
+  id              Int         @id @default(autoincrement())
+  studentId       String
+  term            String
+  studentFeesId   Int
+  amount          Float       @default(0)
+  discountAmount  Float       @default(0)
+  fineAmount      Float       @default(0)
+  receiptDate     DateTime
+  receivedDate    DateTime?   @default(now())
+  receiptNo       String
+  paymentMode     PaymentMode @default(CASH)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  remarks         String?
+  studentFees     StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
+  student         Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  deletedAt       DateTime?
+  transactionType String      @default("PAYMENT") // use "CANCELLED" for cancelled fees
 }
 
 model StudentFees {

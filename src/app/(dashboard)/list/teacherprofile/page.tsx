@@ -10,22 +10,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const TeacherProfilePage = async () => {
-  const { userId, role } = await fetchUserInfo();
+  const { userId, role, teacherId } = await fetchUserInfo();
   if (!userId) return notFound(); // Redirect if not logged in
-
-  // Step 1: Fetch clerk_id from clerkUser using user_id
-  const clerkUser = await prisma.clerkTeachers.findUnique({
-    where: { user_id: userId }, // userId is provided
-    select: { clerk_id: true }, // Only fetch clerk_id
-  });
-
-  // Step 2: If clerkUser exists, fetch the student using clerk_id
-  if (!clerkUser) {
-    throw new Error("Clerk user not found");
+  
+  if (!teacherId) {
+    console.log("❌ No teacherId found");
+    return notFound();
   }
 
   const teacher = await prisma.teacher.findUnique({
-    where: { clerk_id: clerkUser.clerk_id }, // Use the retrieved clerk_id
+    where: { clerk_id: userId }, // Use the retrieved clerk_id
     include: {
       class: { // ✅ Fetch the teacher's single assigned class
         select: {
@@ -43,8 +37,9 @@ const TeacherProfilePage = async () => {
     },
   });
 
+  // Step 2: If clerkUser exists, fetch the student using clerk_id
   if (!teacher) {
-    return notFound();
+    throw new Error("Clerk user not found");
   }
 
   // ✅ Get student count from the assigned class
@@ -174,7 +169,7 @@ const TeacherProfilePage = async () => {
             </Link>
             <Link
               className="p-3 rounded-md bg-LamaPurpleLight"
-              href={`/list/students?teacherId=${teacher.id}`}>
+              href={`/list/users/students?teacherId=${teacher.id}`}>
               Teacher&apos;s Students
             </Link>
 

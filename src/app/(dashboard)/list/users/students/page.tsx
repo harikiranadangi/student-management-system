@@ -107,10 +107,6 @@ const StudentListPage = async ({
     }),
   };
 
-
-
-
-
   // Fetch classes list (for dropdown etc.)
   const classes = await prisma.class.findMany({
     where: gradeId ? { gradeId: Number(gradeId) } : {},
@@ -130,7 +126,9 @@ const StudentListPage = async ({
       ],
       where: query,
       include: {
-        Class: true,
+        Class: {
+          
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),

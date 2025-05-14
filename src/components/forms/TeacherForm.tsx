@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import { createTeacher, updateTeacher } from "@/lib/actions";
 
 const TeacherForm = ({
     type,
@@ -41,18 +40,29 @@ const TeacherForm = ({
     const formAction = async (formData: any) => {
         try {
             const currentState = { success: false, error: false }; // Define an initial state
-    
-            const response = type === "create"
-                ? await createTeacher(currentState, { ...formData, img: img?.secure_url })
-                : await updateTeacher(currentState, { ...formData, img: img?.secure_url });
-    
-            setState({ success: response.success, error: response.error });
+            
+            const apiUrl = type === "create" ? "/api/users/teachers" : `/api/users/teachers/${data?.id}`;
+            const response = await fetch(apiUrl, {
+                method: type === "create" ? "POST" : "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ ...formData, img: img?.secure_url }),
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                currentState.success = true;
+            } else {
+                currentState.error = true;
+            }
+
+            setState({ success: currentState.success, error: currentState.error });
         } catch (err) {
             console.error("Error in form submission:", err);
             setState({ success: false, error: true });
         }
     };
-    
 
     const onSubmit = handleSubmit((data) => {
         console.log("Submitting data:", data);
@@ -87,6 +97,7 @@ const TeacherForm = ({
 
             <div className="flex flex-wrap justify-between gap-4">
                 <InputField label="Name" name="name" defaultValue={data?.name} register={register} error={errors?.name} />
+                <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors?.parentName} />
                 <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors?.phone} />
                 <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors?.address} />
 

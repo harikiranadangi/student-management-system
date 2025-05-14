@@ -33,18 +33,19 @@ const menuItems: MenuItemSection[] = [
         icon: "/profile.png",
         label: "Users",
         href: "#",
-        visible: ["admin", "teacher"],
+        visible: ["admin"],
         dropdown: [
-          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin", "teacher"] },
+          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin"] },
           { icon: '/teacher.png', label: "Teachers", href: "/list/users/teachers", visible: ["admin"] },
           { icon: '/admin.png', label: "Admins", href: "/list/users/admin", visible: ["admin"] },
         ],
       },
+      { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["teacher"] },
       {
         icon: "/attendance.png",
         label: "Attendance",
         href: "#",
-        visible: ["admin"],
+        visible: ["admin", "teacher"],
         dropdown: [
           { icon: '/lesson.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
           { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin", "teacher"] },

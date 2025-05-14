@@ -42,6 +42,7 @@ export async function PUT(
 
     const user = await client.users.getUser(existingStudent.clerk_id);
     const formattedNewPhone = `+91${data.phone}`;
+    const password = data.phone;
 
     const existingPhone = user.phoneNumbers.find(
       (phone) => phone.phoneNumber === formattedNewPhone
@@ -55,7 +56,7 @@ export async function PUT(
       await client.users.updateUser(existingStudent.clerk_id, {
         firstName: data.name,
         username: updatedUsername,
-        password: data.phone,
+        password: password,
       });
     } else if (existingPhone && !isPrimary) {
       return NextResponse.json(
@@ -87,7 +88,7 @@ export async function PUT(
       await client.users.updateUser(existingStudent.clerk_id, {
         firstName: data.name,
         username: updatedUsername,
-        password: updatedUsername,
+        password: password,
       });
     }
 

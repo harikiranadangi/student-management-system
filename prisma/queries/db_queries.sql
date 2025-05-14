@@ -41,6 +41,7 @@ FROM 'H:/student-management-system/data/fees_structure.csv'
 WITH CSV HEADER DELIMITER ',';
 
 SELECT * FROM "ClerkStudents";
+SELECT * FROM "ClerkStudents";
 DROP TABLE IF EXISTS "ClerkStudents" CASCADE;
 
 

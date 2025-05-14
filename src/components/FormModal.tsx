@@ -1,6 +1,6 @@
 "use client";
 
-import {  deleteAdmins, deleteAnnouncements, deleteClass, deleteExam,  deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
+import { deleteAdmins, deleteAnnouncements, deleteClass, deleteExam, deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -138,55 +138,48 @@ const FormModal = ({
         : "bg-LamaPurple";
 
   const [open, setOpen] = useState(false);
+  const [formKey, setFormKey] = useState(Date.now()); // Force remount
 
-  // Define the form to render based on the type and table
+  const router = useRouter();
+
   const Form = () => {
-
-    // Using useActionState with startTransition
     const [state, formAction] = React.useActionState(deleteActionMap[table], {
       success: false,
       error: false,
     });
 
-    console.log("Delete function for", table, ":", deleteActionMap[table]);
-
-
-    const router = useRouter();
-
     useEffect(() => {
       if (state.success) {
         toast(`${table} has been deleted!`);
         setOpen(false);
-        router.refresh()
+        router.refresh();
       }
     }, [state]);
 
-    useEffect(() => {
-      console.log("FormModal open state:", open);
-    }, [open]);
+    if (type === "delete" && id) {
+      return (
+        <form action={formAction} className="flex flex-col gap-4 p-4">
+          <input
+            type="text"
+            name="id"
+            value={id || ""}
+            readOnly
+          />
+          <span className="font-medium text-center">
+            All data will be lost. Are you sure you want to delete this {table}?
+          </span>
+          <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
+            Delete
+          </button>
+        </form>
+      );
+    }
 
-    console.log("Deleting", table, "with ID:", id);
+    if (type === "create" || type === "update") {
+      return forms[table](setOpen, type, data, relatedData);
+    }
 
-    return type === "delete" && id ? (
-
-      <form action={formAction} className="flex flex-col gap-4 p-4">
-        <input
-          type="text | number" name="id" value={id || ""} // Use the id value or an empty string if undefined
-          readOnly
-        />
-
-        <span className="font-medium text-center">
-          All data will be lost. Are you sure you want to delete this {table}?
-        </span>
-        <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
-          Delete
-        </button>
-      </form>
-    ) : type === "create" || type === "update" ? (
-      forms[table](setOpen, type, data, relatedData)
-    ) : (
-      "Form not found!"
-    );
+    return <p>Form not found!</p>;
   };
 
   return (
@@ -197,19 +190,40 @@ const FormModal = ({
       >
         <Image src={`/${type}.png`} alt="" width={16} height={16} />
       </button>
+
       {open && (
         <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-screen h-screen bg-black bg-opacity-60">
           <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
-            <Form />
+
+            {/* Reset Button - top-left */}
+            {(type === "create" || type === "update") && (
+              <button
+                type="button"
+                onClick={() => setFormKey(Date.now())}
+                className="absolute top-4 left-4"
+                title="Reset"
+              >
+                <Image src="/reset.png" alt="Reset" width={14} height={14} />
+              </button>
+
+            )}
+
+            {/* Close Icon - top-right */}
             <div
               className="absolute cursor-pointer top-4 right-4"
               onClick={() => setOpen(false)}
             >
               <Image src="/close.png" alt="Close" width={14} height={14} />
             </div>
+
+            {/* Render form with key to force remount */}
+            <div key={formKey} className="mt-10">
+              <Form />
+            </div>
           </div>
         </div>
       )}
+
     </>
   );
 };

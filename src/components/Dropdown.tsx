@@ -21,6 +21,8 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
 
@@ -31,21 +33,44 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
       }
     };
 
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
+
+  const handleMouseEnter = () => {
+    if (isDesktop) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setIsOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDesktop) {
+      timeoutRef.current = setTimeout(() => {
+        setIsOpen(false);
+      }, 1000); // 3-second delay
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <div
       className="relative group w-full"
       ref={dropdownRef}
-      onMouseEnter={() => isDesktop && setIsOpen(true)}
-      onMouseLeave={() => isDesktop && setIsOpen(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <button
-        onClick={() => {
-          if (!isDesktop) setIsOpen(!isOpen);
-        }}
+        onClick={() => { }}
         className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-md transition-all duration-300 ease-in-out"
         aria-haspopup="true"
         aria-expanded={isOpen ? "true" : "false"}
@@ -67,31 +92,32 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
         </svg>
       </button>
 
-      {isOpen && (
-        <div
-          className={`
-          absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5
-          transition-all duration-300 ease-out transform opacity-100 origin-top-left
-          ${isDesktop ? 'left-full top-0 translate-x-2 animate-slideInRight' : 'left-0 translate-y-1 animate-slideInDown'}
-        `}
-          role="menu"
-        >
+      {/* Always mounted, transition-controlled dropdown */}
+      <div
+        className={`
+    absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-300 ease-in-out transform origin-top-left
+    ${isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
+    md:left-full md:top-0 md:translate-x-2 left-0 translate-y-1
+  `}
+        role="menu"
+      >
 
-          <div className="py-2">
-            {items.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition-all duration-200 ease-in-out rounded-md whitespace-nowrap"
-                role="menuitem"
-              >
-                <Image src={item.icon} alt={item.label} width={18} height={18} className="min-w-[18px]" />
-                <span>{t(item.label)}</span>
-              </Link>
-            ))}
-          </div>
+
+        <div className="py-2">
+          {items.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition-all duration-200 ease-in-out rounded-md whitespace-nowrap"
+              role="menuitem"
+            >
+              <Image src={item.icon} alt={item.label} width={18} height={18} className="min-w-[18px]" />
+              <span>{t(item.label)}</span>
+            </Link>
+          ))}
         </div>
-      )}
+      </div>
     </div>
+
   );
 }

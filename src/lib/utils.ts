@@ -17,7 +17,8 @@ export async function fetchUserInfo(): Promise<{
   userId: string | null;
   role: string | null;
   studentId?: string;
-  classId?: string | number;
+  teacherId?: string;
+  classId?: number | string; // Consistent type
 }> {
   try {
     const { sessionClaims, userId } = await auth();
@@ -32,11 +33,15 @@ export async function fetchUserInfo(): Promise<{
         where: { clerk_id: userId },
       });
 
+      if (!student) {
+        console.warn(`No student found for Clerk ID: ${userId}`);
+      }
+
       return {
         userId,
         role,
-        studentId: student?.id ?? undefined,
-        classId: student?.classId ?? undefined, // Int
+        studentId: student?.id,
+        classId: student?.classId,
       };
     }
 
@@ -45,10 +50,15 @@ export async function fetchUserInfo(): Promise<{
         where: { clerk_id: userId },
       });
 
+      if (!teacher) {
+        console.warn(`No teacher found for Clerk ID: ${userId}`);
+      }
+
       return {
         userId,
         role,
-        classId: teacher?.classId ?? undefined, // String?
+        teacherId: teacher?.id,
+        classId: typeof teacher?.classId === 'number' ? teacher?.classId : undefined,
       };
     }
 
@@ -58,6 +68,7 @@ export async function fetchUserInfo(): Promise<{
     return { userId: null, role: null };
   }
 }
+
 
 export const getClassIdForRole = async (role: string | null, userId: string | null): Promise<number | null> => {
   if (!userId) return null;

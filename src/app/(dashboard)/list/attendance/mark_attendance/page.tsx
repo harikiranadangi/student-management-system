@@ -103,130 +103,156 @@ export default function MarkAttendancePage() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
-      <div>
-        <label>Date: </label>
-        <input type="date" defaultValue={today} {...register("date")} />
-      </div>
 
-      <div>
-        <label>Grade: </label>
-        <select onChange={(e) => setSelectedGrade(Number(e.target.value))}>
-          <option value="">Select Grade</option>
-          {grades.map((grade) => (
-            <option key={grade.id} value={grade.id}>
-              {grade.level}
-            </option>
-          ))}
-        </select>
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-6">
 
-      <div>
-        <label>Class: </label>
-        <select onChange={(e) => setSelectedClass(Number(e.target.value))}>
-          <option value="">Select Class</option>
-          {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
-              {cls.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+        <h2 className="text-2xl font-bold mb-4">Mark Attendance</h2>
 
-      <div>
-        <button
-          type="button"
-          className="bg-green-500 text-black-500 px-4 py-2 rounded"
-          onClick={fetchStudents}
-        >
-          Get Students
-        </button>
-      </div>
+        {/* Wrap inputs and button in flex to align horizontally */}
+        <div className="flex gap-4">
+          {/* Date input */}
+          <div className="flex-1 space-y-2">
+            <label className="block font-semibold">Date:</label>
+            <input
+              type="date"
+              defaultValue={today}
+              {...register("date")}
+              className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
 
-      {students.length > 0 && (
-        <div className="flex gap-4 my-4">
-          {allMarkedAbsent ? (
+          {/* Grade dropdown */}
+          <div className="flex-1 space-y-2">
+            <label className="block font-semibold">Grade:</label>
+            <select
+              onChange={(e) => setSelectedGrade(Number(e.target.value))}
+              className="w-full px-3 py-2.5 border rounded-md"
+            >
+              <option value="">Select Grade</option>
+              {grades.map((grade) => (
+                <option key={grade.id} value={grade.id}>
+                  {grade.level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Class dropdown */}
+          <div className="flex-1 space-y-2">
+            <label className="block font-semibold">Class:</label>
+            <select
+              onChange={(e) => setSelectedClass(Number(e.target.value))}
+              className="w-full px-3 py-2.5 border rounded-md"
+            >
+              <option value="">Select Class</option>
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Button */}
+          <div className="flex items-end">
             <button
               type="button"
-              onClick={() => {
-                const updated: { [key: string]: boolean } = {};
-                students.forEach((student) => {
-                  updated[student.id] = true; // Set all students to present
-                });
-                setAttendanceStatus(updated);
-                setAllMarkedAbsent(false); // Toggle state to show "Mark All Absent" next
-              }}
-              className="bg-green-500 text-black-500 px-3 py-1 rounded"
+              className="bg-green-500 text-white w-full px-3 py-2.5 border rounded-md"
+              onClick={fetchStudents}
             >
-              Mark All Present
+              Get Students
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                const updated: { [key: string]: boolean } = {};
-                students.forEach((student) => {
-                  updated[student.id] = false; // Set all students to absent
-                });
-                setAttendanceStatus(updated);
-                setAllMarkedAbsent(true); // Toggle state to show "Mark All Present" next
-              }}
-              className="bg-red-500 text-black-500 px-3 py-1 rounded"
-            >
-              Mark All Absent
-            </button>
-          )}
-        </div>
-      )}
-
-
-
-      {students.length > 0 && (
-        <div>
-          <h3 className="font-bold mt-4">Students</h3>
-          <h3 className="mt-2 text-l text-black font-bold">
-            {selectedGrade
-              ? grades.find((grade) => grade.id === selectedGrade)?.level || "Unknown Grade"
-              : selectedClass
-                ? classes.find((cls) => cls.id === selectedClass)?.name || "Unknown Class"
-                : "All Classes"}
-          </h3>
-          <div className="max-h-[500px] overflow-y-scroll border rounded p-2 bg-LamaSkyLight shadow-inner">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-
-              {students.map((student) => {
-                const isAbsent = !attendanceStatus[student.id];
-                return (
-                  <div
-                    key={student.id}
-                    onClick={() => handleCheckboxChange(student.id)}
-                    className={`p-2 rounded shadow hover:scale-105 cursor-pointer transition-transform duration-200 ${isAbsent ? "bg-red-500" : "bg-green-500"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-bold text-white">{student.name}</div>
-                      <div className="text-sm text-white">
-                        {classes.find((cls) => cls.id === student.classId)?.name }
-                      </div>
-                    </div>
-                    <div className="text-sm text-white mt-1 font-bold">{student.id}</div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+        {students.length > 0 && (
+          <div className="flex justify-end">
+            {allMarkedAbsent ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const updated: { [key: string]: boolean } = {};
+                  students.forEach((student) => {
+                    updated[student.id] = true;
+                  });
+                  setAttendanceStatus(updated);
+                  setAllMarkedAbsent(false);
+                }}
+                className="bg-green-500 text-white px-4 py-2 rounded-md"
+              >
+                Mark All Present
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  const updated: { [key: string]: boolean } = {};
+                  students.forEach((student) => {
+                    updated[student.id] = false;
+                  });
+                  setAttendanceStatus(updated);
+                  setAllMarkedAbsent(true);
+                }}
+                className="bg-red-500 text-white px-4 py-2 rounded-md"
+              >
+                Mark All Absent
+              </button>
+            )}
+          </div>
+        )}
 
 
-      {students.length > 0 && (
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Submit Attendance
-        </button>
-      )}
+        {students.length > 0 && (
+          <div>
+            <h3 className="font-bold mt-0">Students</h3>
+            <h4 className="mt-2 text-lg font-bold">
+              {selectedGrade
+                ? grades.find((grade) => grade.id === selectedGrade)?.level || selectedGrade
+                : selectedClass
+                  ? classes.find((cls) => cls.id === selectedClass)?.name || selectedClass
+                  : "All Classes"}
+            </h4>
+            <div className="max-h-[500px] overflow-y-scroll border rounded p-4 bg-LamaSkyLight shadow-inner mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {students.map((student) => {
+                  const isAbsent = !attendanceStatus[student.id];
+                  return (
+                    <div
+                      key={student.id}
+                      onClick={() => handleCheckboxChange(student.id)}
+                      className={`p-4 rounded-md shadow hover:scale-110 cursor-pointer transition-transform duration-300 ${isAbsent ? "bg-red-500" : "bg-green-500"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-bold text-white">{student.name}</div>
+                        <div className="text-sm text-white">
+                          {classes.find((cls) => cls.id === student.classId)?.name}
+                        </div>
+                      </div>
+                      <div className="text-sm text-white mt-1 font-bold">{student.id}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {students.length > 0 && (
+          <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2 rounded-md mt-2"
+            >
+              Submit Attendance
+            </button>
+          </div>
+        )}
+      </div>
     </form>
   );
+
 }
