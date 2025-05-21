@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
-import Performance from "@/components/Performance";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
 import Image from "next/image";
@@ -12,7 +11,7 @@ import { notFound } from "next/navigation";
 const TeacherProfilePage = async () => {
   const { userId, role, teacherId } = await fetchUserInfo();
   if (!userId) return notFound(); // Redirect if not logged in
-  
+
   if (!teacherId) {
     console.log("❌ No teacherId found");
     return notFound();
@@ -44,10 +43,9 @@ const TeacherProfilePage = async () => {
 
   // ✅ Get student count from the assigned class
   const totalStudents = teacher.class?._count?.students ?? 0;
+  const teacherImage = teacher.img || (teacher.gender === "Male" ? "/maleteacher.png" : "/femaleteacher.png");
 
 
-
-  if (!teacher) return notFound(); // Redirect if student is not found
 
   // Return the student data
   return (
@@ -63,7 +61,7 @@ const TeacherProfilePage = async () => {
           <div className="flex flex-1 gap-4 px-4 py-6 rounded-md bg-LamaSky">
             <div className="w-1/3">
               <Image
-                src={teacher.img || (teacher.gender === "Male" ? "/maleteacher.png" : "/femaleteacher.png")}
+                src={teacherImage}
                 alt={teacher.name}
                 width={144}
                 height={144}
@@ -121,8 +119,8 @@ const TeacherProfilePage = async () => {
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
-            {/* CARD */}
 
+            {/* CARD */}
             <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
               <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6" />
               <div>
@@ -153,17 +151,21 @@ const TeacherProfilePage = async () => {
         </div>
 
         {/* BOTTOM */}
-        <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
-          <h1>Teacher&apos;s Schedule</h1>
-          <BigCalendarContainer type="teacherId" id={teacher.id} />
+        <div className="mt-4 flex flex-col bg-white rounded-md p-4 h-[800px] w-full">
+          <h1 className="mb-4">Teacher&apos;s Schedule</h1>
+          <div className="flex-1 overflow-hidden w-full">
+            <BigCalendarContainer type="teacherId" id={teacher.id} />
+          </div>
         </div>
+
+
 
       </div>
       {/* RIGHT */}
       <div className="flex flex-col w-full gap-4 xl:w-1/3">
         <div className="p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
-          <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
+          <div className="flex flex-wrap gap-4 mt-9 text-xs text-gray-500">
             <Link className="p-3 rounded-md bg-LamaSkyLight" href={`/list/classes?supervisorId=${teacher.id}`}>
               Teacher&apos;s Classes
             </Link>
@@ -184,7 +186,6 @@ const TeacherProfilePage = async () => {
             </Link>
           </div>
         </div>
-        <Announcements />
       </div>
     </div>
   );

@@ -93,7 +93,7 @@ export const getClassIdForRole = async (role: string | null, userId: string | nu
 };
 
 
-const currentWorkWeek = (): Date => {
+export const currentWorkWeek = (): Date => {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const startOfweek = new Date(today);

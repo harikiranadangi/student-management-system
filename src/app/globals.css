@@ -77,6 +77,22 @@
   width: 99% !important;
 }
 
+/* Make time gutter wider */
+.rbc-time-gutter {
+  width: 120px !important;
+  min-width: 120px !important;
+}
+
+/* Center time labels in the middle of the gutter cell */
+.rbc-time-gutter .rbc-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  text-align: center !important;
+}
+
+
 .rbc-event:nth-child(1) {
   background-color: #e2f8ff !important;
 }

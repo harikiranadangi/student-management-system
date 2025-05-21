@@ -17,13 +17,17 @@ const BigCalendarContainer = async ({
     },
     include: {
       Subject: true,
+      Class: true,
     },
   });
 
   const rawSchedule = dataRes.map((lesson) => ({
     start: lesson.startTime,
     end: lesson.endTime,
-    title: lesson.Subject?.name ?? "Untitled Lesson",
+    title:
+      type === "teacherId"
+        ? `${lesson.Class?.name ?? "Untitled"} - ${lesson.Subject?.name ?? "Unknown Class"}`
+        : lesson.Subject?.name ?? "Untitled Lesson",
   }));
 
   const schedule = adjustScheduleToCurrentWeek(rawSchedule);

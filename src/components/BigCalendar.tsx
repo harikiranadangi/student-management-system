@@ -32,7 +32,7 @@ const BigCalendar = ({ data }: { data: CalendarEvent[] }) => {
   const schoolEnd = new Date(0, 0, 0, 16, 0);   // 4:00 PM
 
   return (
-    <div className="custom-calendar" style={{ height: "70vh", width: "100%" }}>
+    <div className="custom-calendar" style={{ height: "80vh", width: "100%" }}>
       <Calendar
         localizer={localizer}
         events={data}

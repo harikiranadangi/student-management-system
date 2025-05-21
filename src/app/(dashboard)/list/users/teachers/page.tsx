@@ -11,6 +11,7 @@ import Link from "next/link";
 import FormContainer from "@/components/FormContainer";
 import { fetchUserInfo } from "@/lib/utils";
 import { SearchParams } from "../../../../../../types";
+import SortButton from "@/components/SortButton";
 
 // Define types
 type TeachersList = Teacher & {
@@ -88,8 +89,6 @@ const TeacherListPage = async ({
 
   const columns = getColumns(role);
 
-
-
   // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
@@ -103,6 +102,13 @@ const TeacherListPage = async ({
     if (Array.isArray(value)) return value[0];
     return value;
   };
+
+  // Sorting
+  const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const search = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+  const teacher = Array.isArray(queryParams.teacherId) ? queryParams.teacherId[0] : queryParams.teacherId;
+
 
   // Inside the loop
   for (const [key, value] of Object.entries(queryParams)) {
@@ -129,6 +135,8 @@ const TeacherListPage = async ({
 
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
+      orderBy: [
+        { [sortKey]: sortOrder }],
       where: query,
       include: {
         subjects: {
@@ -171,9 +179,7 @@ const TeacherListPage = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-              <Image src="/sort.png" alt="Sort" width={14} height={14} />
-            </button>
+            <SortButton sortKey="id" />
             <FormContainer table="teacher" type="create" />
           </div>
         </div>
