@@ -165,9 +165,44 @@ async function main() {
 
   console.log("✅ Subjects connected to grades");
 
+  // 5. Seed Students
+  if (!fs.existsSync(studentFilePath)) {
+    console.error(`File not found: ${studentFilePath}`);
+    return;
+  }
+
+  const studentsData = await readCSVFile(studentFilePath);
+
+  const formattedStudents = studentsData.map((row: any) => ({
+    id: row.id,
+    username: row.username,
+    name: row.name,
+    parentName: row.parentName,
+    email: row.email,
+    phone: row.phone,
+    address: row.address,
+    img: row.img,
+    bloodType: row.bloodType,
+    gender: row.gender,
+    dob: new Date(row.dob),
+    createdAt: row.createdAt ? new Date(row.createdAt) : new Date(),
+    deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
+    classId: row.classId,
+    clerk_id: row.clerk_id,
+    academicYear: row.academicYear,
+  }));
+
+  await prisma.student.createMany({
+    data: formattedStudents,
+    skipDuplicates: true,
+  });
+
+  console.log("✅ Students seeded");
+
+
   console.log("🚀 Starting fee assignment to existing students...");
 
-  
+
   const students = await prisma.student.findMany({
     include: {
       Class: {
