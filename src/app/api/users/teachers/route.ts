@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     const existingUsers = await client.users.getUserList({ username: [generatedUsername] });
 
     const userExists = existingUsers.data.some(
-      (u: User) => u.username === generatedUsername
+      (u) => u.username === generatedUsername
     );
 
     if (userExists) {

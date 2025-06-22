@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         orderBy: { id: 'desc' },
         select: { id: true },
       });
-      
+
       console.log('Last Student:', lastStudent);
 
       id = lastStudent?.id
@@ -58,8 +58,9 @@ export async function POST(req: Request) {
 
     console.log('Existing users:', existingUsers);
     const userExists = existingUsers.data.some(
-      (u: User) => u.username === generatedUsername
+      (u) => u.username === generatedUsername
     );
+
 
     if (userExists) {
       return NextResponse.json(
