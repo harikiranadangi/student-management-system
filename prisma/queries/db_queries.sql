@@ -14,7 +14,9 @@ WITH (FORMAT CSV, HEADER, DELIMITER ',', QUOTE '"');
 
 DELETE FROM "Teacher"
 
-COPY "Student" ( id,username,name,"parentName",email,phone,address,img,"bloodType",gender,dob,"createdAt","deletedAt","classId",clerk_id,"academicYear"
+COPY "Student" (
+  id, username, name, "parentName", email, phone, address, img,
+  "bloodType", gender, dob, "classId", clerk_id, "academicYear"
 )
 FROM 'H:/student-management-system/data/student_data.csv'
 WITH (
@@ -23,6 +25,7 @@ WITH (
   DELIMITER ',',
   QUOTE '"'
 );
+
 
 
 -- Clerk Teachers
@@ -135,7 +138,7 @@ SELECT * FROM "class" WHERE "gradeId" = 2;
 SELECT * FROM "Student" WHERE "classId" IN (SELECT id FROM "class" WHERE "gradeId" = 2);
 
 
-SELECT * FROM "class" ;
+SELECT * FROM "class" ORDER BY id;
 
 
 SELECT "supervisorId" FROM "class" LIMIT 5;

@@ -36,6 +36,15 @@ async function main() {
   const feesStructureFilePath = path.join(projectRootPath, 'data', 'fees_structure.csv');
   const studentFilePath = path.join(projectRootPath, 'data', 'student_data.csv');
 
+  function parseDDMMYYYY(dateStr: string): Date | null {
+    const [day, month, year] = dateStr.split("-");
+    if (!day || !month || !year) return null;
+    const isoString = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    const parsedDate = new Date(isoString);
+    return isNaN(parsedDate.getTime()) ? null : parsedDate;
+  }
+
+
 
 
   console.log(`Grades CSV Path: ${gradesFilePath}`);
@@ -107,16 +116,46 @@ async function main() {
   // 2. Seed Classes
   const classesData = await readCSVFile(classesFilePath);
 
+  for (const row of classesData) {
+    const section = row.section?.trim() || null;
+    const gradeId = parseInt(row.gradeId);
+    const supervisorId = row.supervisorId?.trim() || undefined;
 
-  const formattedClasses = classesData.map((row: any) => ({
-    id: parseInt(row.id),
-    name: row.name,
-    gradeId: parseInt(row.gradeId),
-    supervisorId: row.supervisorId,
-  }));
+    // Get grade level for dynamic class name
+    const grade = await prisma.grade.findUnique({
+      where: { id: gradeId },
+    });
 
-  await prisma.class.createMany({ data: formattedClasses, skipDuplicates: true });
-  console.log("✅ Classes with teachers seeded");
+    if (!grade) {
+      console.warn(`⚠️ Grade not found for gradeId: ${gradeId}`);
+      continue;
+    }
+
+    const className = `${grade.level} - ${section}`;
+
+    try {
+      await prisma.class.create({
+        data: {
+          name: className,
+          gradeId,
+          section,
+          supervisorId,
+        },
+      });
+
+      console.log(`✅ Created class: ${className}`);
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        const target = error.meta?.target?.toString() || "unknown";
+        console.warn(`⚠️ Duplicate skipped for ${className} (target: ${target})`);
+      } else {
+        console.error(`❌ Failed to create class: ${className}`, error);
+      }
+    }
+  }
+
+  console.log("✅ Class seeding complete");
+
 
   // 3. Seed Subjects
   if (!fs.existsSync(subjectsFilePath)) {
@@ -184,11 +223,11 @@ async function main() {
     img: row.img,
     bloodType: row.bloodType,
     gender: row.gender,
-    dob: new Date(row.dob),
+    dob: parseDDMMYYYY(row.dob) ?? new Date(), 
     createdAt: row.createdAt ? new Date(row.createdAt) : new Date(),
     deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
-    classId: row.classId,
-    clerk_id: row.clerk_id,
+    classId: parseInt(row.classId),
+    clerk_id: null,
     academicYear: row.academicYear,
   }));
 
@@ -261,7 +300,7 @@ async function main() {
 
   }
 
-  console.log("🏁 Fee assignment complete for all students.");
+  // console.log("🏁 Fee assignment complete for all students.");
   console.log("✅ All data seeded successfully");
   console.log("🚀 Seeding completed!");
 }

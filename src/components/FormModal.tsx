@@ -1,69 +1,45 @@
 "use client";
 
-import { deleteAdmins, deleteAnnouncements, deleteClass, deleteExam, deleteFees, deleteHomework, deleteMessages, deleteStudent, deleteSubject, deleteTeacher, } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
-const deleteActionMap = {
-  subject: deleteSubject,
-  class: deleteClass,
-  teacher: deleteTeacher,
-  student: deleteStudent,
-  exam: deleteExam,
-  lesson: deleteSubject,
-  assignment: deleteSubject,
-  attendance: deleteSubject,
-  event: deleteSubject,
-  announcement: deleteAnnouncements,
-  fees: deleteFees,
-  fees_structure: deleteFees,
-  homeworks: deleteHomework,
-  admin: deleteAdmins,
-  results: deleteHomework,
-  messages: deleteMessages
-}
+// ✅ Mapping logical table names to API routes
+const deleteActionMap: Record<string, string> = {
+  subject: "subject",
+  class: "classes",
+  teacher: "teacher",
+  student: "student",
+  exam: "exam",
+  lesson: "subject",
+  assignment: "subject",
+  attendance: "subject",
+  event: "subject",
+  announcement: "announcement",
+  fees: "fees",
+  fees_structure: "fees",
+  homeworks: "homeworks",
+  admin: "admin",
+  results: "homeworks",
+  messages: "messages",
+};
 
-// Dynamically import the form components
-const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const StudentForm = dynamic(() => import("./forms/StudentForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const ClassForm = dynamic(() => import("./forms/ClassForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const ExamForm = dynamic(() => import("./forms/ExamForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const LessonsForm = dynamic(() => import("./forms/LessonsForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const AdminForm = dynamic(() => import("./forms/AdminForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const FeesManagementForm = dynamic(() => import("./forms/FeesManagementForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const MessagesForm = dynamic(() => import("./forms/MessageForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
+// ✅ Dynamic form component imports
+const TeacherForm = dynamic(() => import("./forms/TeacherForm"), { loading: () => <h1>Loading...</h1> });
+const StudentForm = dynamic(() => import("./forms/StudentForm"), { loading: () => <h1>Loading...</h1> });
+const SubjectForm = dynamic(() => import("./forms/SubjectForm"), { loading: () => <h1>Loading...</h1> });
+const ClassForm = dynamic(() => import("./forms/ClassForm"), { loading: () => <h1>Loading...</h1> });
+const ExamForm = dynamic(() => import("./forms/ExamForm"), { loading: () => <h1>Loading...</h1> });
+const LessonsForm = dynamic(() => import("./forms/LessonsForm"), { loading: () => <h1>Loading...</h1> });
+const AdminForm = dynamic(() => import("./forms/AdminForm"), { loading: () => <h1>Loading...</h1> });
+const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), { loading: () => <h1>Loading...</h1> });
+const FeesManagementForm = dynamic(() => import("./forms/FeesManagementForm"), { loading: () => <h1>Loading...</h1> });
+const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), { loading: () => <h1>Loading...</h1> });
+const MessagesForm = dynamic(() => import("./forms/MessageForm"), { loading: () => <h1>Loading...</h1> });
 
-
-// Define the available forms based on the table type
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
@@ -71,56 +47,21 @@ const forms: {
     data?: any,
     relatedData?: any
   ) => JSX.Element;
-
-
-
 } = {
-
-  subject: (setOpen, type, data, relatedData) => (
-    <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  class: (setOpen, type, data, relatedData) => (
-    <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  teacher: (setOpen, type, data, relatedData) => (
-    <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  student: (setOpen, type, data, relatedData) => (
-    <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  exam: (setOpen, type, data, relatedData) => (
-    <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  lesson: (setOpen, type, data, relatedData) => (
-    <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  admin: (setOpen, type, data, relatedData) => (
-    <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  homeworks: (setOpen, type, data, relatedData) => (
-    <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  fees: (setOpen, type, data, relatedData) => (
-    <FeesManagementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  announcement: (setOpen, type, data, relatedData) => (
-    <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
-  messages: (setOpen, type, data, relatedData) => (
-    <MessagesForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),
-
+  subject: (setOpen, type, data, relatedData) => <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  class: (setOpen, type, data, relatedData) => <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  teacher: (setOpen, type, data, relatedData) => <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  student: (setOpen, type, data, relatedData) => <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  exam: (setOpen, type, data, relatedData) => <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  lesson: (setOpen, type, data, relatedData) => <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  admin: (setOpen, type, data, relatedData) => <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  homeworks: (setOpen, type, data, relatedData) => <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  fees: (setOpen, type, data, relatedData) => <FeesManagementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  announcement: (setOpen, type, data, relatedData) => <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  messages: (setOpen, type, data, relatedData) => <MessagesForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
 };
+
+const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const FormModal = ({
   table,
@@ -134,49 +75,60 @@ const FormModal = ({
     type === "create"
       ? "bg-LamaYellow"
       : type === "update"
-        ? "bg-LamaSky"
-        : "bg-LamaPurple";
+      ? "bg-LamaSky"
+      : "bg-LamaPurple";
 
   const [open, setOpen] = useState(false);
-  const [formKey, setFormKey] = useState(Date.now()); // Force remount
+  const [formKey, setFormKey] = useState(Date.now());
 
   const router = useRouter();
 
   const Form = () => {
-    const [state, formAction] = React.useActionState(deleteActionMap[table], {
-      success: false,
-      error: false,
-    });
-
-    useEffect(() => {
-      if (state.success) {
-        toast(`${table} has been deleted!`);
-        setOpen(false);
-        router.refresh();
-      }
-    }, [state]);
-
     if (type === "delete" && id) {
+      const handleDelete = async () => {
+        try {
+          const endpoint = deleteActionMap[table];
+          if (!endpoint) {
+            toast.error("Invalid delete target.");
+            return;
+          }
+
+          const res = await fetch(`/api/${endpoint}/${id}`, {
+            method: "DELETE",
+          });
+
+          const result = await res.json();
+
+          if (!res.ok || result.error) {
+            toast.error(result.error || "Failed to delete.");
+          } else {
+            toast.success(`${capitalizeFirstLetter(table)} has been deleted!`);
+            setOpen(false);
+            router.refresh();
+          }
+        } catch (err) {
+          console.error("Delete error:", err);
+          toast.error("Something went wrong during deletion.");
+        }
+      };
+
       return (
-        <form action={formAction} className="flex flex-col gap-4 p-4">
-          <input
-            type="text"
-            name="id"
-            value={id || ""}
-            readOnly
-          />
+        <div className="flex flex-col gap-4 p-4">
           <span className="font-medium text-center">
             All data will be lost. Are you sure you want to delete this {table}?
           </span>
-          <button className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max">
+          <button
+            onClick={handleDelete}
+            className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max"
+          >
             Delete
           </button>
-        </form>
+        </div>
       );
     }
 
     if (type === "create" || type === "update") {
-      return forms[table](setOpen, type, data, relatedData);
+      return forms[table]?.(setOpen, type, data, relatedData) ?? <p>Form not found!</p>;
     }
 
     return <p>Form not found!</p>;
@@ -195,7 +147,7 @@ const FormModal = ({
         <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-screen h-screen bg-black bg-opacity-60">
           <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
 
-            {/* Reset Button - top-left */}
+            {/* Reset Button */}
             {(type === "create" || type === "update") && (
               <button
                 type="button"
@@ -205,10 +157,9 @@ const FormModal = ({
               >
                 <Image src="/reset.png" alt="Reset" width={14} height={14} />
               </button>
-
             )}
 
-            {/* Close Icon - top-right */}
+            {/* Close Button */}
             <div
               className="absolute cursor-pointer top-4 right-4"
               onClick={() => setOpen(false)}
@@ -216,14 +167,13 @@ const FormModal = ({
               <Image src="/close.png" alt="Close" width={14} height={14} />
             </div>
 
-            {/* Render form with key to force remount */}
+            {/* Render Form */}
             <div key={formKey} className="mt-10">
               <Form />
             </div>
           </div>
         </div>
       )}
-
     </>
   );
 };

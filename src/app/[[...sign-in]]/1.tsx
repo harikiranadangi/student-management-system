@@ -24,7 +24,7 @@ export default function Page() {
 
   const otpInputRef = useRef<HTMLInputElement>(null)
 
-  // Handle session/user loading
+  // Redirect if already signed in
   useEffect(() => {
     if (!isUserLoaded || !isSessionLoaded) return
     setIsLoading(false)
@@ -39,14 +39,14 @@ export default function Page() {
     }
   }, [isUserLoaded, isSessionLoaded, isSignedIn, user, router])
 
-  // Focus OTP input when shown
+  // Auto-focus OTP input
   useEffect(() => {
     if (pendingVerification && otpInputRef.current) {
       otpInputRef.current.focus()
     }
   }, [pendingVerification])
 
-  // Countdown timer for resend
+  // Resend countdown timer
   useEffect(() => {
     let timer: NodeJS.Timeout
     if (resendTimer > 0) {
@@ -60,13 +60,16 @@ export default function Page() {
     setError('')
 
     if (!isSignInLoaded || !signIn) {
+      console.error('[CLERK] Sign-in not loaded or unavailable:', { isSignInLoaded, signIn })
       setError('Sign-in service is not available.')
       return
     }
 
     if (loginMethod === 'password') {
       try {
+        console.log('[LOGIN] Signing in with password:', identifier)
         const result = await signIn.create({ identifier, password })
+        console.log('[LOGIN] Password login result:', result)
 
         if (result.status === 'complete') {
           window.location.reload()
@@ -74,6 +77,7 @@ export default function Page() {
           setError('Authentication failed. Please check your credentials.')
         }
       } catch (err: any) {
+        console.error('[LOGIN] Password login error:', err)
         setError(err?.errors?.[0]?.message || 'Something went wrong!')
       }
     } else {
@@ -82,11 +86,14 @@ export default function Page() {
           setError('OTP must be 6 digits.')
           return
         }
+
         try {
+          console.log('[OTP] Verifying code:', otpCode)
           const result = await signIn.attemptFirstFactor({
             strategy: 'phone_code',
             code: otpCode,
           })
+          console.log('[OTP] Verification result:', result)
 
           if (result.status === 'complete') {
             window.location.reload()
@@ -94,22 +101,33 @@ export default function Page() {
             setError('OTP verification failed.')
           }
         } catch (err: any) {
-          setError(err?.errors?.[0]?.message || 'OTP failed.')
+          console.error('[OTP] Error verifying OTP:', err)
+          setError(err?.errors?.[0]?.message || 'Failed to verify OTP.')
         }
       } else {
         try {
           setIsSending(true)
+          const sanitizedPhone = phoneNumber.replace(/\D/g, '')
+          if (sanitizedPhone.length !== 10) {
+            setError('Enter a valid 10-digit mobile number.')
+            return
+          }
+
+          console.log('[OTP] Sending OTP to:', `+91${sanitizedPhone}`)
           const result = await signIn.create({
-            identifier: `+91${phoneNumber}`,
+            identifier: `+91${sanitizedPhone}`,
             strategy: 'phone_code',
           })
-          
+          console.log('[OTP] signIn.create() result:', result)
 
           if (result.status === 'needs_first_factor') {
             setPendingVerification(true)
             setResendTimer(30)
+          } else {
+            setError('Unexpected response. OTP not sent.')
           }
         } catch (err: any) {
+          console.error('[OTP] Error sending OTP:', err)
           setError(err?.errors?.[0]?.message || 'Failed to send OTP.')
         } finally {
           setIsSending(false)
@@ -129,16 +147,9 @@ export default function Page() {
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gray-200">
-      <form
-        onSubmit={handleSignIn}
-        className="flex flex-col gap-6 p-12 bg-white rounded-md shadow-2xl"
-      >
+      <form onSubmit={handleSignIn} className="flex flex-col gap-6 p-12 bg-white rounded-md shadow-2xl">
         <header className="text-center">
-          <img
-            src="/logo.png"
-            alt="Kotak Salesian School Logo"
-            className="w-20 h-20 mx-auto"
-          />
+          <img src="/logo.png" alt="Kotak Salesian School Logo" className="w-20 h-20 mx-auto" />
           <h1 className="text-lg font-bold">Kotak Salesian School</h1>
         </header>
 
@@ -156,10 +167,7 @@ export default function Page() {
               setPendingVerification(false)
               setError('')
             }}
-            className={`px-4 py-1 text-sm rounded ${loginMethod === 'password'
-              ? 'bg-zinc-950 text-white'
-              : 'bg-gray-100'
-              }`}
+            className={`px-4 py-1 text-sm rounded ${loginMethod === 'password' ? 'bg-zinc-950 text-white' : 'bg-gray-100'}`}
           >
             Password
           </button>
@@ -170,8 +178,7 @@ export default function Page() {
               setPendingVerification(false)
               setError('')
             }}
-            className={`px-4 py-1 text-sm rounded ${loginMethod === 'otp' ? 'bg-zinc-950 text-white' : 'bg-gray-100'
-              }`}
+            className={`px-4 py-1 text-sm rounded ${loginMethod === 'otp' ? 'bg-zinc-950 text-white' : 'bg-gray-100'}`}
           >
             OTP
           </button>
@@ -180,31 +187,27 @@ export default function Page() {
         {loginMethod === 'password' ? (
           <>
             <div className="flex flex-col gap-2">
-              <label htmlFor="identifier" className="text-sm font-medium text-zinc-950">
-                Username
-              </label>
+              <label htmlFor="identifier" className="text-sm font-medium text-zinc-950">Username</label>
               <input
                 type="text"
                 id="identifier"
                 value={identifier}
                 placeholder="Enter Username"
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-LamaSky"
+                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-400"
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="text-sm font-medium text-zinc-950">
-                Password
-              </label>
+              <label htmlFor="password" className="text-sm font-medium text-zinc-950">Password</label>
               <input
                 type="password"
                 id="password"
                 value={password}
                 placeholder="Enter password"
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-LamaSky"
+                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-400"
                 required
               />
             </div>
@@ -212,39 +215,31 @@ export default function Page() {
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <label htmlFor="phone" className="text-sm font-medium text-zinc-950">
-                Mobile Number
-              </label>
+              <label htmlFor="phone" className="text-sm font-medium text-zinc-950">Mobile Number</label>
               <input
                 type="tel"
                 id="phone"
                 value={phoneNumber}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 10) // keep only digits, max 10
-                  setPhoneNumber(value)
-                }}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 placeholder="Enter mobile number"
-                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-LamaSky"
+                className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-400"
                 required
               />
-
             </div>
 
             {pendingVerification && (
               <div className="flex flex-col gap-2">
-                <label htmlFor="otp" className="text-sm font-medium text-zinc-950">
-                  Enter OTP
-                </label>
+                <label htmlFor="otp" className="text-sm font-medium text-zinc-950">Enter OTP</label>
                 <input
                   ref={otpInputRef}
                   type="text"
                   id="otp"
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   maxLength={6}
-                  pattern="\d{6}"
+                  inputMode="numeric"
                   placeholder="Enter OTP"
-                  className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-LamaSky"
+                  className="w-full px-3 py-2 text-sm bg-white border rounded-md outline-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>

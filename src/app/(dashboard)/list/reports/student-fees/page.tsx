@@ -73,7 +73,9 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
       <td className="hidden md:table-cell">{totalFees}</td>
       <td className="hidden md:table-cell">{paidAmount}</td>
       <td className="hidden md:table-cell">{discountAmount}</td>
-      <td className="hidden md:table-cell">{dueAmount}</td>
+      <td className={`hidden md:table-cell ${dueAmount > 0 ? "text-red-500" : ""}`}>
+        {dueAmount}
+      </td>
     </tr>
   );
 };

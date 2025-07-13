@@ -6,22 +6,25 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils";
-import { Class, Prisma, Teacher } from "@prisma/client";
+import { Class, Grade, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../types";
 
-type ClassList = Class & { Teacher: Teacher | null };
+type ClassList = Class & {
+  Teacher: Teacher | null;
+  Grade: Grade;
+};
+
 
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
     key={item.id}
     className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
-    <td className="flex items-center gap-4 p-4">{item.name}</td>
+    <td className="flex items-center gap-4 p-4">{item.Grade.level} - {item.section}</td>
     <td className="hidden md:table-cell">
       {item.Teacher ? `${item.Teacher.name}` : "No Class Teacher"}
     </td>
-    <td className="flex items-center gap-4 p-4">{item.gradeId}</td>
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" && (
@@ -38,7 +41,6 @@ const renderRow = (item: ClassList, role: string | null) => (
 const getColumns = (role: string | null) => [
   { header: "Class Name", accessor: "name" },
   { header: "Supervisor", accessor: "supervisor", className: "hidden md:table-cell" },
-  { header: "Grade", accessor: "gradeId" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
@@ -77,6 +79,7 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
       where: query,
       include: {
         Teacher: { select: { name: true } },
+        Grade: { select: { level: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (currentPage - 1),

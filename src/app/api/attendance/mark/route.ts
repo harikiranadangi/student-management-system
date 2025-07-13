@@ -1,61 +1,110 @@
 import prisma from "@/lib/prisma";
 import { getMessageContent } from "@/lib/utils/messageUtils";
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { MessageType } from "../../../../../types";
 
 export async function POST(req: Request) {
-  const data = await req.json();
-
   try {
-    const operations: any[] = [];
+    const data = await req.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return NextResponse.json({ error: "Invalid or empty data" }, { status: 400 });
+    }
+
+    const operations: Prisma.PrismaPromise<any>[] = [];
+
+    // Step 1: Build attendance key and collect IDs
+    const attendanceKeys = new Set<string>();
+    const absentStudentIds = new Set<string>();
+    const attendanceMap = new Map<string, any>();
 
     for (const entry of data) {
-      const entryDate = new Date(entry.date);
+      const dateStr = new Date(entry.date).toISOString().split("T")[0];
+      const key = `${entry.studentId}_${dateStr}`;
+      attendanceKeys.add(key);
+      if (!entry.present) {
+        absentStudentIds.add(entry.studentId);
+      }
+      attendanceMap.set(key, { ...entry, date: new Date(entry.date) });
+    }
 
-      const existing = await prisma.attendance.findFirst({
-        where: {
-          studentId: entry.studentId,
-          date: entryDate,
-        },
-      });
+    // Step 2: Fetch existing attendance in one query
+    const existingRecords = await prisma.attendance.findMany({
+      where: {
+        OR: Array.from(attendanceKeys).map((key) => {
+          const [studentId, dateStr] = key.split("_");
+          return {
+            studentId,
+            date: new Date(dateStr),
+          };
+        }),
+      },
+    });
 
-      if (existing) {
+    const existingMap = new Map<string, { id: string }>();
+    for (const record of existingRecords) {
+      const dateStr = record.date.toISOString().split("T")[0];
+      const key = `${record.studentId}_${dateStr}`;
+      existingMap.set(key, { id: String(record.id) });
+
+    }
+
+    // Step 3: Process operations (create/update)
+    for (const key of attendanceKeys) {
+      const entry = attendanceMap.get(key);
+      const { studentId, present, date, ...rest } = entry;
+
+      if (existingMap.has(key)) {
+        const existing = existingMap.get(key);
         operations.push(
           prisma.attendance.update({
-            where: { id: existing.id },
-            data: {
-              present: entry.present,
-            },
+            where: { id: parseInt(existing!.id) },
+            data: { present },
           })
         );
       } else {
         operations.push(
           prisma.attendance.create({
             data: {
-              ...entry,
-              date: entryDate,
+              ...rest,
+              studentId,
+              present,
+              date,
             },
           })
         );
       }
+    }
 
-      // 👇 Only send message if student is absent
-      if (!entry.present) {
-        const student = await prisma.student.findUnique({
-          where: { id: entry.studentId },
+    // Step 4: Fetch student + class info for absentees
+    const absentStudents = await prisma.student.findMany({
+      where: { id: { in: Array.from(absentStudentIds) } },
+      select: {
+        id: true,
+        name: true,
+        Class: {
           select: {
+            id: true,
             name: true,
-            Class: {
-              select: {
-                name: true,
-                Grade: {
-                  select: { level: true },
-                },
-              },
+            Grade: {
+              select: { level: true },
             },
           },
-        });
+        },
+      },
+    });
 
+    const studentInfoMap = new Map<string, typeof absentStudents[0]>();
+    for (const student of absentStudents) {
+      studentInfoMap.set(student.id, student);
+    }
+
+    // Step 5: Prepare messages for absentees
+    for (const key of attendanceKeys) {
+      const entry = attendanceMap.get(key);
+      if (!entry.present) {
+        const student = studentInfoMap.get(entry.studentId);
         if (student) {
           const studentName = student.name;
           const className = student.Class?.name || "Unknown";
@@ -70,7 +119,7 @@ export async function POST(req: Request) {
               data: {
                 message,
                 type: "ABSENT",
-                date: entryDate.toISOString(),
+                date: entry.date,
                 classId: entry.classId,
                 studentId: entry.studentId,
               },
@@ -80,14 +129,12 @@ export async function POST(req: Request) {
       }
     }
 
+    // Step 6: Execute all DB operations
     await prisma.$transaction(operations);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, count: operations.length });
   } catch (error) {
-    console.error("❌ Attendance error:", error);
-    return NextResponse.json(
-      { error: "Failed to save attendance" },
-      { status: 500 }
-    );
+    console.error("❌ Attendance error:", JSON.stringify(error, null, 2));
+    return NextResponse.json({ error: "Failed to save attendance" }, { status: 500 });
   }
 }

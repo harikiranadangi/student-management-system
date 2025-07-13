@@ -38,7 +38,8 @@ model Grade {
 
 model Class {
   id              Int              @id @default(autoincrement())
-  name            String           @unique(map: "Class_name_key")
+  name String // no @unique anymore
+  section         String? // e.g., "A", "B"
   supervisorId    String?          @unique
   gradeId         Int
   Announcement    Announcement[]
@@ -52,6 +53,7 @@ model Class {
   Grade           Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   Teacher         Teacher?         @relation("ClassToTeacher", fields: [supervisorId], references: [id])
 
+  @@unique([gradeId, section], map: "Class_gradeId_section_key") // enforce uniqueness within grade
   @@index([gradeId], map: "Class_gradeId_idx")
   @@index([supervisorId], map: "Class_supervisorId_idx")
   @@map("class")

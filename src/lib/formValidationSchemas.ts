@@ -70,12 +70,19 @@ export const subjectSchema = z.object({
 // Infer the form data type from schema
 export type SubjectSchema = z.infer<typeof subjectSchema>;
 
-export const classSchema = z.object({
-  id: z.coerce.number().optional(),
-  name: z.string().min(1, { message: "Class Name is required!" }),
-  supervisorId: z.string().nullable().optional(),
-  gradeId: z.coerce.number().min(1, { message: "Grade selection is required!" }),
-});
+export const classSchema = z
+  .object({
+    id: z.coerce.number().optional(), // 👈 Add this
+    section: z.enum(["A", "B", "C", "D", "E"]),
+    name: z.string().optional(), // auto-generated
+    supervisorId: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().optional()
+    ),
+    gradeId: z.coerce.number().min(1, { message: "Grade selection is required!" }),
+  })
+  .strict(); // ✅ prevent extra keys like "id"
+
 
 // Infer the form data type from schema
 export type ClassSchema = z.infer<typeof classSchema>;
