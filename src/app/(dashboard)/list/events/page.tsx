@@ -9,14 +9,15 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../types";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
 
 type Events = Event & { class: Class };
 
 const renderRow = (item: Events, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight" 
+  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class?.name || "-" }</td>
+    <td>{item.class?.name || "-"}</td>
     <td className="hidden md:table-cell">
       {""}
       {new Intl.DateTimeFormat("en-US").format(item.startTime)}
@@ -37,16 +38,16 @@ const renderRow = (item: Events, role: string | null) => (
       }
       )}
     </td>
-      <td>
-        <div className="flex items-center gap-2">
+    <td>
+      <div className="flex items-center gap-2">
         {role === "admin" || role === "teacher" && (
-              <>
-              <FormContainer table="event" type="update" data={item}/> 
-              <FormContainer table="event" type="delete"  id={item.id} /> 
-             </>
-          )}
-        </div>
-      </td>
+          <>
+            <FormContainer table="event" type="update" data={item} />
+            <FormContainer table="event" type="delete" id={item.id} />
+          </>
+        )}
+      </div>
+    </td>
   </tr>
 );
 
@@ -77,11 +78,11 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "admin"
     ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
     : []),
 ];
 
@@ -155,6 +156,8 @@ const EventsList = async ({
         <h1 className="hidden text-lg font-semibold md:block">All Events</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
+          {/* 🔄 Reset Filters Button */}
+          <ResetFiltersButton basePath="/list/events" />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />

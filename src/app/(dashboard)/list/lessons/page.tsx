@@ -11,6 +11,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../types";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
 
 // Keep original type
 type LessonsList = Lesson & {
@@ -121,6 +122,8 @@ const LessonsListPage = async ({
         <h1 className="hidden text-lg font-semibold md:block">All Lessons</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
+          {/* 🔄 Reset Filters Button */}
+          <ResetFiltersButton basePath="/list/lessons" />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />

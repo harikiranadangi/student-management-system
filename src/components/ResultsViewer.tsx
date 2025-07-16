@@ -5,7 +5,7 @@ import axios from 'axios';
 
 type Exam = { id: number; title: string };
 type Grade = { id: number; level: string };
-type Class = { id: number; name: string };
+type Class = { id: number; section: string; name: string };
 type Result = {
     id: number;
     marks: number;
@@ -144,7 +144,7 @@ export default function ResultsViewer() {
                             <option value="" disabled>Select Class</option>
                             {classes.map((cls) => (
                                 <option key={cls.id} value={cls.id}>
-                                    {cls.name}
+                                    {cls.section}
                                 </option>
                             ))}
                         </select>

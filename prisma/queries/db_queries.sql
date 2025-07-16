@@ -6,6 +6,9 @@ SELECT 'SELECT * FROM ' || tablename || ';'
 FROM pg_tables  
 WHERE schemaname = 'public';
 
+SELECT * FROM "Homework";
+DELETE FROM "Homework";
+
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 COPY "Teacher" (id, username, name, email, phone, address, img, "bloodType", gender, dob, "classId", clerk_id)
@@ -115,6 +118,9 @@ SELECT * FROM _prisma_migrations;
 
 -- Retrieve all records from the Admin table
 SELECT * FROM "Admin";
+
+-- Retrieve all records from the Admin table
+SELECT * FROM "";
 
 -- Retrieve all records from the class table
 SELECT * FROM class;

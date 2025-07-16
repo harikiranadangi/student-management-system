@@ -1,19 +1,31 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type ClassType = { id: number; name: string };
-type GradeType = { id: number; level: string };
+type ClassType = {
+  id: number;
+  name: string;
+  section: string | null;
+  gradeId: number;
+};
+
+type GradeType = {
+  id: number;
+  level: string;
+};
 
 interface ClassFilterProps {
   classes: ClassType[];
   grades: GradeType[];
-  basePath: string; // Dynamic base path (e.g., "/list/students" or "/list/teachers")
+  basePath: string;
+  hideClassFilter?: boolean;
 }
 
-
-const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) => {
+const ClassFilterDropdown = ({ classes, grades, basePath, hideClassFilter = true }: ClassFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const selectedGradeId = searchParams.get("gradeId");
+  const selectedClassId = searchParams.get("classId");
 
   const handleGradeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gradeId = e.target.value;
@@ -43,16 +55,22 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
     router.push(`${basePath}?${params.toString()}`);
   };
 
+  const filteredClasses = selectedGradeId
+    ? classes.filter((cls) => cls.gradeId.toString() === selectedGradeId)
+    : [];
+
   return (
-    <div className="flex space-x-4">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center">
       {/* Grade Dropdown */}
       <div className="relative w-full md:w-auto">
         <select
           className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
           onChange={handleGradeChange}
-          value={searchParams.get("gradeId") || ""}
+          value={selectedGradeId || ""}
         >
-          <option value="">Grade</option>
+          <option value="" disabled>
+            Select Grade
+          </option>
           {grades.map((grade) => (
             <option key={grade.id} value={grade.id}>
               {grade.level}
@@ -62,27 +80,33 @@ const ClassFilterDropdown = ({ classes, grades, basePath }: ClassFilterProps) =>
       </div>
 
       {/* Class Dropdown */}
-      <div className="relative w-full md:w-auto">
-        <select
-          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
-          onChange={handleClassChange}
-          value={searchParams.get("classId") || ""}
-        >
-          <option value="">Class</option>
-          {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
-              {cls.name}
+      {hideClassFilter && (
+        <div className="relative w-full md:w-auto">
+          <select
+            className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+            onChange={handleClassChange}
+            value={selectedClassId || ""}
+            disabled={!selectedGradeId}
+          >
+            <option value="" disabled>
+              {"Select Class"}
             </option>
-          ))}
-        </select>
-      </div>
+            {filteredClasses
+              .sort((a, b) => (a.section ?? "").localeCompare(b.section ?? ""))
+              .map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.section}
+                </option>
+              ))}
+
+          </select>
+        </div>
+      )}
     </div>
   );
 };
 
-
 export default ClassFilterDropdown;
-
 
 // Date Filter Component
 const DateFilter = ({ basePath }: { basePath: string }) => {

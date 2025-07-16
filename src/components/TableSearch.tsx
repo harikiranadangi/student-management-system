@@ -48,7 +48,7 @@ const TableSearch = () => {
 
   return (
     <form
-      className="flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2"
+      className="flex items-center pl-4 gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2"
       onSubmit={(e) => e.preventDefault()}
     >
       <Image src="/search.png" alt="Search" width={14} height={14} />

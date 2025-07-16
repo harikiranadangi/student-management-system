@@ -3,7 +3,6 @@ import React, { useCallback, useState } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
 import { FeeStructure, FeeTransaction } from "@prisma/client";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation"; // ✅ CORRECT for App Router
 
 
 // Interface for StudentFees (same as before)

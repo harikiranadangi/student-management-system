@@ -10,6 +10,8 @@ import { Exam, Prisma, ExamGradeSubject, Grade, Subject } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
 import Image from "next/image";
 import { SearchParams } from "../../../../../types";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
+import TitleFilterDropdown from "@/components/TitleFilterDropdown";
 
 // Extended Exam type
 type Exams = Exam & {
@@ -36,7 +38,6 @@ const renderRow = (item: Exams, role: string | null) =>
       key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`} // or use egs.id if it exists
       className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
     >
-      <td className="p-4">{item.title}</td>
       <td className="hidden md:table-cell">
         {formatDateTime(new Date(egs.date), egs.startTime)}
       </td>
@@ -57,10 +58,6 @@ const renderRow = (item: Exams, role: string | null) =>
   ));
 
 const getColumns = (role: string | null) => [
-  {
-    header: "Title",
-    accessor: "title",
-  },
   {
     header: "Date",
     accessor: "date",
@@ -94,7 +91,7 @@ const ExamsList = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, date, gradeId,  ...queryParams } = params;
+  const { page, date, gradeId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1"; // Handle page being a string[] or string
   const { role } = await fetchUserInfo();
   const columns = getColumns(role);
@@ -109,14 +106,14 @@ const ExamsList = async ({
 
   let teacherGradeIds: number[] = [];
 
-if (teacherId) {
-  const teacherClasses = await prisma.class.findMany({
-    where: { supervisorId: teacherId },
-    include: { Grade: true },
-  });
+  if (teacherId) {
+    const teacherClasses = await prisma.class.findMany({
+      where: { supervisorId: teacherId },
+      include: { Grade: true },
+    });
 
-  teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
-}
+    teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+  }
 
   // Title filter
   if (queryParams.title) {
@@ -208,12 +205,15 @@ if (teacherId) {
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Exams</h1>
         <div className="flex items-center gap-4">
+          <TitleFilterDropdown basePath="/list/exams" />
           <DateFilter basePath="/list/exams" />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/exams" />
+            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/exams" hideClassFilter={false} />
           )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
+            {/* 🔄 Reset Filters Button */}
+            <ResetFiltersButton basePath="/list/exams" />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="Filter" width={14} height={14} />

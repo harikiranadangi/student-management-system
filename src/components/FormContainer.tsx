@@ -125,11 +125,11 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 });
 
                 const lessonTeachers = await prisma.teacher.findMany({
-                    select: { id: true, name: true},
+                    select: { id: true, name: true },
                 });
-                
+
                 const lessonGrades = await prisma.grade.findMany({
-                    select: { id: true, level: true},
+                    select: { id: true, level: true },
                 });
 
 
@@ -139,7 +139,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
             case 'homeworks':
                 const classHomework = await prisma.class.findMany({
-                    select: { id: true, name: true },
+                    select: { id: true, name: true, gradeId: true, section:true }, // ✅ include gradeId
                 });
 
                 const gradeHomework = await prisma.grade.findMany({
@@ -148,6 +148,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 relatedData = { classes: classHomework, grades: gradeHomework };
                 break;
+
 
             case "fees":
                 // Fetch Grades

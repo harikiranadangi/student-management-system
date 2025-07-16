@@ -129,6 +129,7 @@ CREATE TABLE "ExamGradeSubject" (
 -- CreateTable
 CREATE TABLE "Homework" (
     "id" SERIAL NOT NULL,
+    "groupId" TEXT,
     "description" TEXT NOT NULL,
     "date" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "classId" INTEGER NOT NULL,
@@ -339,9 +340,6 @@ CREATE UNIQUE INDEX "Admin_clerkId_key" ON "Admin"("clerkId");
 CREATE UNIQUE INDEX "Grade_level_key" ON "Grade"("level");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Class_name_key" ON "class"("name");
-
--- CreateIndex
 CREATE UNIQUE INDEX "class_supervisorId_key" ON "class"("supervisorId");
 
 -- CreateIndex
@@ -379,6 +377,9 @@ CREATE INDEX "Homework_classId_idx" ON "Homework"("classId");
 
 -- CreateIndex
 CREATE INDEX "Homework_gradeId_idx" ON "Homework"("gradeId");
+
+-- CreateIndex
+CREATE INDEX "Homework_groupId_idx" ON "Homework"("groupId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Result_studentId_examId_subjectId_key" ON "Result"("studentId", "examId", "subjectId");

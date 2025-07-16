@@ -1,5 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
@@ -117,6 +118,8 @@ const AnnouncementsList = async ({
         </h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
+          {/* 🔄 Reset Filters Button */}
+            <ResetFiltersButton basePath="/list/announcements" />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />

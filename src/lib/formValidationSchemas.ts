@@ -1,4 +1,5 @@
 import { AcademicYear } from "@prisma/client";
+import { group } from "console";
 import { z } from "zod";
 
 export const resultschema = z.object({
@@ -170,19 +171,17 @@ export const lessonsSchema = z.object({
 export type LessonsSchema = z.infer<typeof lessonsSchema>;
 
 // * Homework Schema
-
 export const homeworkSchema = z.object({
-  id: z.number().optional(), // Auto-incremented ID
-  classId: z.number({ message: "Class ID is required!" }),
-  description: z.string().min(1, { message: "Description is required!" }),
-  gradeId: z.number({ message: "Class ID is required!" }),
+  description: z.string().min(1, "Description is required"),
+  date: z.string().or(z.date()), // Accept both string and Date
+  classId: z.coerce.number().optional(),
+  gradeId: z.coerce.number().int(),
+  groupId: z.string().optional(), // Optional for grouped homeworks
 });
 
-// Infer the form data type from the schema
 export type HomeworkSchema = z.infer<typeof homeworkSchema>;
 
 // * FeeManagementSchema Schema
-
 export const feesSchema = z.object({
   id: z.number().optional(), // Auto-incremented ID
   gradeId: z.number({ message: "Class ID is required!" }),

@@ -13,6 +13,7 @@ import { Prisma, Student, StudentFees, StudentTotalFees } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchParams } from '../../../../../../types';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 
 
 // Define types
@@ -193,6 +194,8 @@ const StudentFeeListPage = async ({
           <StatusFilter basePath="/list/collect" />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
+            {/* 🔄 Reset Filters Button */}
+            <ResetFiltersButton basePath="/list/fees/collect" />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="" width={14} height={14} />

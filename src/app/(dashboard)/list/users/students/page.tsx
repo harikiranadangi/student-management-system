@@ -11,6 +11,7 @@ import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchParams } from "../../../../../../types";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
 
 // Define types
 type StudentList = Student & { Class?: { name: string } };
@@ -30,7 +31,7 @@ const renderRow = (item: StudentList, role: string | null) => (
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
       <div className="flex flex-col">
-        <h3 className="font-semibold">{item.name }</h3>
+        <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs">{item.id}</p>
       </div>
     </td>
@@ -127,7 +128,7 @@ const StudentListPage = async ({
       where: query,
       include: {
         Class: {
-          
+
         },
       },
       take: ITEM_PER_PAGE,
@@ -150,6 +151,8 @@ const StudentListPage = async ({
           />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
+            {/* 🔄 Reset Filters Button */}
+            <ResetFiltersButton basePath="/list/users/students" />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="" width={14} height={14} />
