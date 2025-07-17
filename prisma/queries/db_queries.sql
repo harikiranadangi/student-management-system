@@ -6,7 +6,7 @@ SELECT 'SELECT * FROM ' || tablename || ';'
 FROM pg_tables  
 WHERE schemaname = 'public';
 
-SELECT * FROM "Homework";
+SELECT * FROM "FeeStructure";
 DELETE FROM "Homework";
 
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';

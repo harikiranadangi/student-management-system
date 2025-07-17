@@ -4,13 +4,13 @@ import { useState } from "react";
 import Papa from "papaparse";
 import axios from "axios";
 
-type GradeCSV = {
+type SubjectCSV = {
   id: string;
-  level: string;
+  name: string;
 };
 
-export default function BulkGradeUpload() {
-  const [grades, setGrades] = useState<GradeCSV[]>([]);
+export default function BulkSubjectUpload() {
+  const [subjects, setSubjects] = useState<SubjectCSV[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -19,18 +19,18 @@ export default function BulkGradeUpload() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    Papa.parse<GradeCSV>(file, {
+    Papa.parse<SubjectCSV>(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsed = results.data as GradeCSV[];
+        const parsed = results.data as SubjectCSV[];
         const err: string[] = [];
 
         parsed.forEach((row, index) => {
           const missingFields = [];
 
           if (!row.id) missingFields.push("id");
-          if (!row.level) missingFields.push("level");
+          if (!row.name) missingFields.push("name");
 
           if (missingFields.length > 0) {
             err.push(`Row ${index + 2} missing: ${missingFields.join(", ")}`);
@@ -38,7 +38,7 @@ export default function BulkGradeUpload() {
         });
 
         setErrors(err);
-        setGrades(parsed);
+        setSubjects(parsed);
       },
     });
   };
@@ -47,8 +47,8 @@ export default function BulkGradeUpload() {
     setLoading(true);
     setMessage("");
     try {
-      const response = await axios.post("/api/grades/bulk-upload", {
-        grades,
+      const response = await axios.post("/api/subjects/bulk-upload", {
+        subjects,
       });
 
       setMessage(response.data.message);
@@ -56,7 +56,7 @@ export default function BulkGradeUpload() {
         setErrors(response.data.errors);
       } else {
         setErrors([]);
-        setGrades([]);
+        setSubjects([]);
       }
     } catch (error) {
       setMessage("Upload failed. Check console.");
@@ -68,7 +68,7 @@ export default function BulkGradeUpload() {
 
   return (
     <div className="space-y-6 p-6 bg-white rounded shadow">
-      <h1 className="text-xl font-semibold">Bulk Upload Grades</h1>
+      <h1 className="text-xl font-semibold">Bulk Upload Subjects</h1>
 
       <input
         type="file"
@@ -88,20 +88,20 @@ export default function BulkGradeUpload() {
         </div>
       )}
 
-      {grades.length > 0 && (
+      {subjects.length > 0 && (
         <div className="overflow-auto border border-gray-200 rounded max-h-96">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-100">
               <tr>
-                {Object.keys(grades[0]).map((key) => (
+                {Object.keys(subjects[0]).map((key) => (
                   <th key={key} className="px-4 py-2 border-b">{key}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {grades.map((grade, i) => (
+              {subjects.map((subject, i) => (
                 <tr key={i} className="even:bg-gray-50">
-                  {Object.values(grade).map((val, j) => (
+                  {Object.values(subject).map((val, j) => (
                     <td key={j} className="px-4 py-1 border-b">{val || "-"}</td>
                   ))}
                 </tr>
@@ -111,7 +111,7 @@ export default function BulkGradeUpload() {
         </div>
       )}
 
-      {grades.length > 0 && (
+      {subjects.length > 0 && (
         <button
           onClick={handleUpload}
           disabled={loading}

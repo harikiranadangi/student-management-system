@@ -50,7 +50,7 @@ export default function BulkClassUpload() {
     setMessage("");
 
     try {
-      const response = await axios.post("/api/classes/bulk-upload", {
+      const response = await axios.post("/api/classes/bulk", {
         classes,
       });
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 interface SampleCSVPreviewProps {
-    type: "student" | "teacher" | "grades" | "classes";
+    type: "student" | "teacher" | "grades" | "classes" | "feestructure" | "subjects" | "feecollection";
 }
 
 const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
@@ -79,6 +79,102 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
             ];
             break;
 
+        case "subjects":
+            sampleRows = [
+                {
+                    id: "1",
+                    name: "Mathematics",
+                },
+                {
+                    id: "2",
+                    name: "Science",
+                },
+            ];
+            break;
+
+        case "feecollection":
+            sampleRows = [
+                {
+                    studentId: "123",
+                    term: "TERM_1",
+                    amount: "2000",
+                    discountAmount: "100",
+                    fineAmount: "50",
+                    receiptDate: "2025-07-17",
+                    receiptNo: "R-001",
+                    remarks: "July payment",
+                    paymentMode: "CASH",
+                },
+                {
+                    studentId: "124",
+                    term: "TERM_1",
+                    amount: "2500",
+                    discountAmount: "0",
+                    fineAmount: "0",
+                    receiptDate: "2025-07-17",
+                    receiptNo: "R-002",
+                    remarks: "Full paid",
+                    paymentMode: "CASH",
+                },
+                {
+                    studentId: "125",
+                    term: "TERM_2",
+                    amount: "3000",
+                    discountAmount: "200",
+                    fineAmount: "0",
+                    receiptDate: "2025-07-18",
+                    receiptNo: "R-003",
+                    remarks: "With discount",
+                    paymentMode: "ONLINE",
+                },
+            ];
+            break;
+
+        case "feestructure":
+            sampleRows = [
+                {
+                    "id": "1",
+                    "gradeId": "1",
+                    "abacusFees": "0",
+                    "termFees": "6050",
+                    "term": "TERM_1",
+                    "startDate": "2024-06-01",
+                    "dueDate": "2024-06-10",
+                    "academicYear": "2024-2025"
+                },
+                {
+                    "id": "2",
+                    "gradeId": "1",
+                    "abacusFees": "0",
+                    "termFees": "6050",
+                    "term": "TERM_2",
+                    "startDate": "2024-12-01",
+                    "dueDate": "2024-12-10",
+                    "academicYear": "2024-2025"
+                },
+                {
+                    "id": "3",
+                    "gradeId": "1",
+                    "abacusFees": "0",
+                    "termFees": "6050",
+                    "term": "TERM_3",
+                    "startDate": "2024-12-01",
+                    "dueDate": "2024-12-10",
+                    "academicYear": "2024-2025"
+                },
+                {
+                    "id": "4",
+                    "gradeId": "1",
+                    "abacusFees": "0",
+                    "termFees": "6050",
+                    "term": "TERM_4",
+                    "startDate": "2024-12-01",
+                    "dueDate": "2024-12-10",
+                    "academicYear": "2024-2025"
+                },
+            ];
+            break;
+
         default: // student
             sampleRows = [
                 {
@@ -122,6 +218,9 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
         teacher: "/sample/teacher-bulk-template.csv",
         grades: "/sample/grade-bulk-template.csv",
         classes: "/sample/class-bulk-template.csv",
+        feestructure: "/sample/feeStructure-bulk-template.csv",
+        subjects: "/sample/subjects-bulk-template.csv",
+        feecollection: "/sample/fees-bulk-template.csv",
     };
 
     const titleMap = {
@@ -129,6 +228,9 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
         teacher: "Teacher",
         grades: "Grade",
         classes: "Class",
+        feestructure: "Fee Structure",
+        subjects: "Subject",
+        feecollection: "Fee Collection",
     };
 
     return (

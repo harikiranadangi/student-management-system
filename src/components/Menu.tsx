@@ -88,9 +88,12 @@ const menuItems: MenuItemSection[] = [
         visible: ["admin"],
         dropdown: [
           { icon: "/class.png", label: "Grades", href: "/list/reports/bulk-import/grades", visible: ["admin"]  },
+          { icon: "/fees.png", label: "Fees Structure", href: "/list/reports/bulk-import/feestructure", visible: ["admin"]  },
           { icon: "/class.png", label: "Classes", href: "/list/reports/bulk-import/classes", visible: ["admin"]  },
           { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"]  },
           { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"]  },
+          { icon: "/subject.png", label: "Subjects", href: "/list/reports/bulk-import/subjects", visible: ["admin"]  },
+          { icon: "/fees.png", label: "Fee Collection", href: "/list/reports/bulk-import/feecollection", visible: ["admin"]  },
         ],
       },
     ],

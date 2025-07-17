@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const { classes } = await req.json();
 
     if (!Array.isArray(classes)) {
-      return NextResponse.json({ message: "Invalid input" }, { status: 400 });
+      return NextResponse.json({ message: "Invalid input format" }, { status: 400 });
     }
 
     const results = {
@@ -17,13 +17,17 @@ export async function POST(req: NextRequest) {
     };
 
     for (const cls of classes) {
-      const section = cls.section?.trim() || null;
+      const section = typeof cls.section === "string" ? cls.section.trim() : null;
       const gradeId = parseInt(cls.gradeId);
-      const supervisorId = cls.supervisorId?.trim() || undefined;
+      const supervisorId = typeof cls.supervisorId === "string" ? cls.supervisorId.trim() : undefined;
 
-      const grade = await prisma.grade.findUnique({
-        where: { id: gradeId },
-      });
+      if (!gradeId || isNaN(gradeId)) {
+        results.skipped++;
+        results.messages.push(`Missing or invalid gradeId`);
+        continue;
+      }
+
+      const grade = await prisma.grade.findUnique({ where: { id: gradeId } });
 
       if (!grade) {
         results.skipped++;
@@ -32,6 +36,16 @@ export async function POST(req: NextRequest) {
       }
 
       const className = `${grade.level} - ${section}`;
+
+      const existing = await prisma.class.findFirst({
+        where: { section, gradeId },
+      });
+
+      if (existing) {
+        results.skipped++;
+        results.messages.push(`Duplicate skipped: ${className}`);
+        continue;
+      }
 
       try {
         await prisma.class.create({
@@ -42,17 +56,11 @@ export async function POST(req: NextRequest) {
             supervisorId,
           },
         });
-
         results.inserted++;
         results.messages.push(`Inserted: ${className}`);
       } catch (error: any) {
-        if (error.code === "P2002") {
-          results.skipped++;
-          results.messages.push(`Duplicate skipped: ${className}`);
-        } else {
-          results.failed++;
-          results.messages.push(`Failed to insert: ${className} (${error.message})`);
-        }
+        results.failed++;
+        results.messages.push(`Failed: ${className} (${error.code}: ${error.message})`);
       }
     }
 

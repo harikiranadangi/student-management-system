@@ -4,13 +4,19 @@ import { useState } from "react";
 import Papa from "papaparse";
 import axios from "axios";
 
-type GradeCSV = {
+type FeeStructureCSV = {
   id: string;
-  level: string;
+  gradeId: string;
+  abacusFees: string;
+  termFees: string;
+  term: string;
+  startDate: string;
+  dueDate: string;
+  academicYear: string;
 };
 
-export default function BulkGradeUpload() {
-  const [grades, setGrades] = useState<GradeCSV[]>([]);
+export default function BulkFeeStructureUpload() {
+  const [feeStructures, setFeeStructures] = useState<FeeStructureCSV[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -19,26 +25,31 @@ export default function BulkGradeUpload() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    Papa.parse<GradeCSV>(file, {
+    Papa.parse<FeeStructureCSV>(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsed = results.data as GradeCSV[];
+        const parsed = results.data;
         const err: string[] = [];
 
         parsed.forEach((row, index) => {
-          const missingFields = [];
+          const missing = [];
+          if (!row.id) missing.push("id");
+          if (!row.gradeId) missing.push("gradeId");
+          if (!row.abacusFees) missing.push("abacusFees");
+          if (!row.termFees) missing.push("termFees");
+          if (!row.term) missing.push("term");
+          if (!row.startDate) missing.push("startDate");
+          if (!row.dueDate) missing.push("dueDate");
+          if (!row.academicYear) missing.push("academicYear");
 
-          if (!row.id) missingFields.push("id");
-          if (!row.level) missingFields.push("level");
-
-          if (missingFields.length > 0) {
-            err.push(`Row ${index + 2} missing: ${missingFields.join(", ")}`);
+          if (missing.length) {
+            err.push(`Row ${index + 2} missing: ${missing.join(", ")}`);
           }
         });
 
         setErrors(err);
-        setGrades(parsed);
+        setFeeStructures(parsed);
       },
     });
   };
@@ -46,17 +57,19 @@ export default function BulkGradeUpload() {
   const handleUpload = async () => {
     setLoading(true);
     setMessage("");
+
     try {
-      const response = await axios.post("/api/grades/bulk-upload", {
-        grades,
+      const response = await axios.post("/api/feestructure/bulk-upload", {
+        feeStructures,
       });
 
       setMessage(response.data.message);
+
       if (response.data.errors?.length) {
         setErrors(response.data.errors);
       } else {
         setErrors([]);
-        setGrades([]);
+        setFeeStructures([]);
       }
     } catch (error) {
       setMessage("Upload failed. Check console.");
@@ -68,13 +81,13 @@ export default function BulkGradeUpload() {
 
   return (
     <div className="space-y-6 p-6 bg-white rounded shadow">
-      <h1 className="text-xl font-semibold">Bulk Upload Grades</h1>
+      <h1 className="text-xl font-semibold">Bulk Upload Fee Structure</h1>
 
       <input
         type="file"
         accept=".csv"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-black hover:file:bg-LamaPurpleLight"
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-white hover:file:bg-LamaPurpleLight"
       />
 
       {errors.length > 0 && (
@@ -88,20 +101,20 @@ export default function BulkGradeUpload() {
         </div>
       )}
 
-      {grades.length > 0 && (
+      {feeStructures.length > 0 && (
         <div className="overflow-auto border border-gray-200 rounded max-h-96">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-100">
               <tr>
-                {Object.keys(grades[0]).map((key) => (
+                {Object.keys(feeStructures[0]).map((key) => (
                   <th key={key} className="px-4 py-2 border-b">{key}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {grades.map((grade, i) => (
+              {feeStructures.map((row, i) => (
                 <tr key={i} className="even:bg-gray-50">
-                  {Object.values(grade).map((val, j) => (
+                  {Object.values(row).map((val, j) => (
                     <td key={j} className="px-4 py-1 border-b">{val || "-"}</td>
                   ))}
                 </tr>
@@ -111,7 +124,7 @@ export default function BulkGradeUpload() {
         </div>
       )}
 
-      {grades.length > 0 && (
+      {feeStructures.length > 0 && (
         <button
           onClick={handleUpload}
           disabled={loading}

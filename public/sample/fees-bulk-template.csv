@@ -1,0 +1,6 @@
+studentId,term,amount,discountAmount,fineAmount,receiptDate,receiptNo,remarks,paymentMode
+123,TERM_1,2000,100,50,2025-07-17,R-001,July payment,CASH
+124,TERM_1,2500,0,0,2025-07-17,R-002,Full paid,CASH
+125,TERM_2,3000,200,0,2025-07-18,R-003,With discount,ONLINE
+126,TERM_1,1800,0,100,2025-07-18,R-004,Late fine,UPI
+127,TERM_2,2200,150,0,2025-07-19,R-005,Early payment,CARD
