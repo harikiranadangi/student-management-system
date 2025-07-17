@@ -18,7 +18,7 @@ export type FormContainerProps = {
     | "fees_structure"
     | "messages"
     | "results"
-    | "homeworks";
+    | "homework";
     type: "create" | "update" | "delete";
     data?: any;
     id?: number | string;
@@ -137,7 +137,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers, grades: lessonGrades };
                 break;
 
-            case 'homeworks':
+            case 'homework':
                 const classHomework = await prisma.class.findMany({
                     select: { id: true, name: true, gradeId: true, section:true }, // ✅ include gradeId
                 });

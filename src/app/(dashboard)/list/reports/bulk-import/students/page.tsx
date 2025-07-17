@@ -1,4 +1,4 @@
-import UploadStudentsPage from "@/components/BulkUploadStudents";
+import UploadStudentsPage from "@/components/BulkUpload/BulkUploadStudents";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {
@@ -7,7 +7,7 @@ export default function ReportsPage() {
       <h1 className="text-xl font-bold mb-4">Bulk Import</h1>
       <UploadStudentsPage />
       <div className="mt-10">
-        <SampleCSVPreview />
+        <SampleCSVPreview type="student" />
       </div>
     </div>
   );

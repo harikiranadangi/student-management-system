@@ -39,8 +39,8 @@ const renderRow = (item: Homeworks, role: string | null) => (
     {(role === "admin" || role === "teacher") && (
       <td>
         <div className="flex items-center gap-2">
-          <FormContainer table="homeworks" type="update" data={item} />
-          <FormContainer table="homeworks" type="delete" id={item.id} />
+          <FormContainer table="homework" type="update" data={item} />
+          <FormContainer table="homework" type="delete" id={item.id} />
         </div>
       </td>
     )}
@@ -187,7 +187,7 @@ const HomeworkListPage = async ({
               <SortButton sortKey="id" />
 
               {(role === "admin" || role === "teacher") && (
-                <FormContainer table="homeworks" type="create" />
+                <FormContainer table="homework" type="create" />
               )}
             </div>
           </div>

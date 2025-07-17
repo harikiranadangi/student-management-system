@@ -81,7 +81,18 @@ const menuItems: MenuItemSection[] = [
           { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin","teacher"] },
         ],
       },
-      { icon: "/warning.png", label: "Bulk Import", href: "/list/reports/bulk-import", visible: ["admin", "teacher", "student"] },
+      {
+        icon: "/warning.png",
+        label: "Import Data",
+        href: "#",
+        visible: ["admin"],
+        dropdown: [
+          { icon: "/class.png", label: "Grades", href: "/list/reports/bulk-import/grades", visible: ["admin"]  },
+          { icon: "/class.png", label: "Classes", href: "/list/reports/bulk-import/classes", visible: ["admin"]  },
+          { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"]  },
+          { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"]  },
+        ],
+      },
     ],
   },
   {

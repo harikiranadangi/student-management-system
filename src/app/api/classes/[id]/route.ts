@@ -1,12 +1,14 @@
-// src/app/api/classes/[id]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 // DELETE /api/classes/:id
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const classId = parseInt(params.id);
+    const { id } = await params; // 👈 You must await it
+    const classId = parseInt(id);
 
     if (isNaN(classId)) {
       return NextResponse.json(

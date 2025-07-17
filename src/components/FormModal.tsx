@@ -21,9 +21,8 @@ const deleteActionMap: Record<string, string> = {
   announcement: "announcement",
   fees: "fees",
   fees_structure: "fees",
-  homeworks: "homeworks",
+  homework: "homework",
   admin: "admin",
-  results: "homeworks",
   messages: "messages",
 };
 
@@ -55,7 +54,7 @@ const forms: {
   exam: (setOpen, type, data, relatedData) => <ExamForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   lesson: (setOpen, type, data, relatedData) => <LessonsForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   admin: (setOpen, type, data, relatedData) => <AdminForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
-  homeworks: (setOpen, type, data, relatedData) => <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  homework: (setOpen, type, data, relatedData) => <HomeworkForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   fees: (setOpen, type, data, relatedData) => <FeesManagementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   announcement: (setOpen, type, data, relatedData) => <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   messages: (setOpen, type, data, relatedData) => <MessagesForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,

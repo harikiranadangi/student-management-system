@@ -177,18 +177,31 @@ const ExamForm = ({
     };
 
     const onDelete = async (examId: number) => {
-        const res = await fetch(`/api/exams/${examId}`, {
-            method: "DELETE",
-        });
+        console.log("📦 DELETE called for", examId); // <-- Add this
 
-        if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.error || "Delete failed");
+        try {
+            const res = await fetch(`/api/exams/${examId}`, {
+                method: "DELETE",
+            });
+
+            const contentType = res.headers.get("content-type");
+
+            if (!res.ok) {
+                if (contentType?.includes("application/json")) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Delete failed");
+                } else {
+                    const text = await res.text();
+                    throw new Error(`Unexpected response:\n${text.slice(0, 200)}...`);
+                }
+            }
+
+            toast.success("Deleted successfully");
+        } catch (err: any) {
+            toast.error(err.message || "Delete failed");
+            console.error("Error during delete:", err);
         }
-
-        toast.success("Deleted successfully");
     };
-
 
 
 

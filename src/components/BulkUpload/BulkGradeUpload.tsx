@@ -3,27 +3,15 @@
 import { useState } from "react";
 import Papa from "papaparse";
 import axios from "axios";
-import Link from "next/link";
 
-type StudentCSV = {
+type GradeCSV = {
   id: string;
-  username: string;
+  level: string;
   name: string;
-  parentName?: string;
-  email?: string;
-  phone: string;
-  address?: string;
-  img?: string;
-  bloodType?: string;
-  gender: string;
-  dob: string;
-  classId: string;
-  clerk_id?: string;
-  academicYear: string;
 };
 
-export default function BulkStudentUpload() {
-  const [students, setStudents] = useState<StudentCSV[]>([]);
+export default function BulkGradeUpload() {
+  const [grades, setGrades] = useState<GradeCSV[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -32,22 +20,27 @@ export default function BulkStudentUpload() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    Papa.parse<StudentCSV>(file, {
+    Papa.parse<GradeCSV>(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsed = results.data as StudentCSV[];
+        const parsed = results.data as GradeCSV[];
         const err: string[] = [];
 
-        // Validate each row
         parsed.forEach((row, index) => {
-          if (!row.id || !row.username || !row.name || !row.phone || !row.dob || !row.classId) {
-            err.push(`Row ${index + 2} missing required fields`);
+          const missingFields = [];
+
+          if (!row.id) missingFields.push("id");
+          if (!row.level) missingFields.push("level");
+          if (!row.name) missingFields.push("name");
+
+          if (missingFields.length > 0) {
+            err.push(`Row ${index + 2} missing: ${missingFields.join(", ")}`);
           }
         });
 
         setErrors(err);
-        setStudents(parsed);
+        setGrades(parsed);
       },
     });
   };
@@ -56,8 +49,8 @@ export default function BulkStudentUpload() {
     setLoading(true);
     setMessage("");
     try {
-      const response = await axios.post("/api/students/bulk-upload", {
-        students,
+      const response = await axios.post("/api/grades/bulk-upload", {
+        grades,
       });
 
       setMessage(response.data.message);
@@ -65,7 +58,7 @@ export default function BulkStudentUpload() {
         setErrors(response.data.errors);
       } else {
         setErrors([]);
-        setStudents([]);
+        setGrades([]);
       }
     } catch (error) {
       setMessage("Upload failed. Check console.");
@@ -77,16 +70,13 @@ export default function BulkStudentUpload() {
 
   return (
     <div className="space-y-6 p-6 bg-white rounded shadow">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Bulk Upload Students</h1>
-        
-      </div>
+      <h1 className="text-xl font-semibold">Bulk Upload Grades</h1>
 
       <input
         type="file"
         accept=".csv"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaBlue file:text-white hover:file:bg-blue-600"
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-black hover:file:bg-LamaPurpleLight"
       />
 
       {errors.length > 0 && (
@@ -100,20 +90,20 @@ export default function BulkStudentUpload() {
         </div>
       )}
 
-      {students.length > 0 && (
+      {grades.length > 0 && (
         <div className="overflow-auto border border-gray-200 rounded max-h-96">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-100">
               <tr>
-                {Object.keys(students[0]).map((key) => (
+                {Object.keys(grades[0]).map((key) => (
                   <th key={key} className="px-4 py-2 border-b">{key}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {students.map((student, i) => (
+              {grades.map((grade, i) => (
                 <tr key={i} className="even:bg-gray-50">
-                  {Object.values(student).map((val, j) => (
+                  {Object.values(grade).map((val, j) => (
                     <td key={j} className="px-4 py-1 border-b">{val || "-"}</td>
                   ))}
                 </tr>
@@ -123,7 +113,7 @@ export default function BulkStudentUpload() {
         </div>
       )}
 
-      {students.length > 0 && (
+      {grades.length > 0 && (
         <button
           onClick={handleUpload}
           disabled={loading}
