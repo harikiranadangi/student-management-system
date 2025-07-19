@@ -95,17 +95,18 @@ const SubjectForm = ({
             hidden
           />
         )}
-
-        <div className="flex flex-col w-full gap-2 md:w-1/4">
+        
+        {/* Multi-select Grades */}
+        <div className="flex flex-col w-full gap-2 md:w-1/3">
           <label className="text-xs text-gray-500">Grades</label>
           <select
             multiple
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register('gradeId')}
-            defaultValue={data?.gradeId || []} // Defaulting to the grades already assigned to the subject
+            defaultValue={data?.gradeId || []}
           >
             {grades?.map((grade: { id: string; level: string }) => (
-              <option value={grade.id} key={grade.id}>
+              <option key={grade.id} value={grade.id}>
                 {grade.level}
               </option>
             ))}

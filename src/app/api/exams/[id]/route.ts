@@ -2,9 +2,6 @@ import { examSchema } from "@/lib/formValidationSchemas";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-console.log("📥 Route file loaded: /api/exams/[id]/route.ts");
-
-
 // This is for route like: /api/exams/[id]
 export async function PUT(
   req: NextRequest,

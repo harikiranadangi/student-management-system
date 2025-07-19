@@ -7,7 +7,7 @@ FROM pg_tables
 WHERE schemaname = 'public';
 
 SELECT * FROM "FeeStructure";
-DELETE FROM "Homework";
+DELETE FROM "Student";
 
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
