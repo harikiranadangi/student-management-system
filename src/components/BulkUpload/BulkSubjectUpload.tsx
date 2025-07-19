@@ -1,3 +1,5 @@
+// components/BulkSubjectUpload.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -5,12 +7,12 @@ import Papa from "papaparse";
 import axios from "axios";
 
 type SubjectCSV = {
-  id: string;
   name: string;
+  gradeIds?: string;
 };
 
 export default function BulkSubjectUpload() {
-  const [subjects, setSubjects] = useState<SubjectCSV[]>([]);
+  const [subjects, setSubjects] = useState<{ name: string; gradeIds: number[] }[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,19 +28,24 @@ export default function BulkSubjectUpload() {
         const parsed = results.data as SubjectCSV[];
         const err: string[] = [];
 
-        parsed.forEach((row, index) => {
+        const processed = parsed.map((row, index) => {
           const missingFields = [];
-
-          if (!row.id) missingFields.push("id");
           if (!row.name) missingFields.push("name");
 
           if (missingFields.length > 0) {
             err.push(`Row ${index + 2} missing: ${missingFields.join(", ")}`);
           }
+
+          return {
+            name: row.name?.trim(),
+            gradeIds: row.gradeIds
+              ? row.gradeIds.split(",").map((id) => parseInt(id.trim())).filter(Boolean)
+              : [],
+          };
         });
 
         setErrors(err);
-        setSubjects(parsed);
+        setSubjects(processed);
       },
     });
   };
@@ -74,7 +81,7 @@ export default function BulkSubjectUpload() {
         type="file"
         accept=".csv"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-black hover:file:bg-LamaPurpleLight"
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
       />
 
       {errors.length > 0 && (
@@ -93,17 +100,15 @@ export default function BulkSubjectUpload() {
           <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-100">
               <tr>
-                {Object.keys(subjects[0]).map((key) => (
-                  <th key={key} className="px-4 py-2 border-b">{key}</th>
-                ))}
+                <th className="px-4 py-2 border-b">Name</th>
+                <th className="px-4 py-2 border-b">Grade IDs</th>
               </tr>
             </thead>
             <tbody>
               {subjects.map((subject, i) => (
                 <tr key={i} className="even:bg-gray-50">
-                  {Object.values(subject).map((val, j) => (
-                    <td key={j} className="px-4 py-1 border-b">{val || "-"}</td>
-                  ))}
+                  <td className="px-4 py-1 border-b">{subject.name}</td>
+                  <td className="px-4 py-1 border-b">{subject.gradeIds.join(", ") || "-"}</td>
                 </tr>
               ))}
             </tbody>

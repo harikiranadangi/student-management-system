@@ -1,31 +1,24 @@
-id,name
-1,Class Activities
-2,English Reading (Oral)
-3,English Written (Written)
-4,Number Work (Oral & Written)
-5,Spellings (Written)
-6,Rhymes (Oral)
-7,EVS (Oral)
-8,Drawing
-9,Spelling & Handwriting
-10,Rhymes
-11,EVS (Oral & Written)
-12,English - I
-13,English - II
-14,Computer
-15,Maths
-16,General Knowledge (G.K.)
-17,Environmental Science (EVS)
-18,Moral Science
-19,Reading & Recitation
-20,Mathematics
-21,General Science
-22,Social Studies
-23,Computer Science
-24,Telugu/Hindi (II Lang)
-25,Moral Science (M.S.)
-26,Chemistry
-27,Telugu/Hindi (III Lang)
-28,"Social Studies (History-Civics, Geography)"
-29,Physics
-30,Biology
+name,gradeIds
+BIOLOGY,"9,10,11,12,13"
+CHEMISTRY,"11,12,13"
+COMPUTER,"4,5,6,7,8,9,10,11,12,13"
+ENGLISH I,"4,5,6,7,8,9,10,11,12,13"
+ENGLISH II,"4,5,6,7,8,9,10,11,12,13"
+ENGLISH READING (ORAL),3
+ENGLISH WRITTEN (WRITTEN),3
+EVS,"1,2"
+EVS (WRITTEN),3
+GENERAL SCIENCE,"6,8"
+GEOGRAPHY,"9,10,11,12,13"
+HISTORY & CIVICS,"9,10,11,12,13"
+II LANGUAGE (TELUGU/HINDI),"5,6,7,8,9,10,12,13"
+III LANGUAGE (TELUGU/HINDI),"6,7"
+MATHS,"4,5,6,7,8,9,10,11,13"
+NUMBER WORK (ORAL),3
+NUMBER WORK (WRITTEN),3
+PHYSICS,"11,12,13"
+READING / RECITATION,"4,5"
+RHYMES (ORAL),3
+SOCIAL,"6,7,8"
+SPELLINGS & HANDWRITING (WRITTEN),"3,4,5"
+TELUGU/HINDI (WRITTEN),"3,4"

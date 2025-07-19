@@ -1,5 +1,12 @@
+// src/app/api/subjects/upload/route.ts
+
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+type SubjectRow = {
+  name: string;
+  gradeIds?: number[];
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,9 +14,8 @@ export async function POST(req: NextRequest) {
     const errors: string[] = [];
 
     const validated = subjects
-      .map((row: any, index: number) => {
+      .map((row: SubjectRow, index: number) => {
         const missing = [];
-
         if (!row.name) missing.push("name");
 
         if (missing.length) {
@@ -21,14 +27,10 @@ export async function POST(req: NextRequest) {
           name: row.name.trim(),
         };
 
-        // Optional: gradeIds (e.g. [1, 2, 3])
         if (Array.isArray(row.gradeIds)) {
           subjectData.grades = {
             connect: row.gradeIds
-              .map((id: any) => {
-                const parsedId = parseInt(id);
-                return isNaN(parsedId) ? null : { id: parsedId };
-              })
+              .map((id) => (isNaN(id) ? null : { id }))
               .filter(Boolean),
           };
         }
@@ -44,9 +46,7 @@ export async function POST(req: NextRequest) {
 
     for (const data of validated) {
       try {
-        await prisma.subject.create({
-          data,
-        });
+        await prisma.subject.create({ data });
         insertResults.created++;
       } catch (err: any) {
         if (err.code === "P2002") {
@@ -65,9 +65,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Subject Bulk Upload Error:", error);
-    return NextResponse.json(
-      { message: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
