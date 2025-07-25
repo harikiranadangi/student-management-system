@@ -5,6 +5,7 @@ export type FormContainerProps = {
     table:
     | "teacher"
     | "student"
+    | "permissions"
     | "subject"
     | "class"
     | "lesson"
@@ -203,6 +204,30 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     grades: gradeMessages,
                     classes: classMessages,
                     students: studentMessages,
+                };
+                break;
+
+            case 'permissions':
+                // Fetch grades
+                const gradepermissions = await prisma.grade.findMany({
+                    select: { id: true, level: true },
+                });
+
+                // Fetch classes based on the grade
+                const classpermissions = await prisma.class.findMany({
+                    select: { id: true, name: true, gradeId: true, section:true }, // Including gradeId to associate classes with grades
+                });
+
+                // Fetch students based on the class
+                const studentpermissions = await prisma.student.findMany({
+                    select: { id: true, name: true, classId: true },
+                });
+
+                // Organize the data in a structured way
+                relatedData = {
+                    grades: gradepermissions,
+                    classes: classpermissions,
+                    students: studentpermissions,
                 };
                 break;
 

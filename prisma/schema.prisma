@@ -188,6 +188,7 @@ model Student {
   studentFees       StudentFees[]
   totalFees         StudentTotalFees?
   cancelledReceipts CancelledReceipt[]
+  permissionSlips   PermissionSlip[]
 
   @@index([classId])
 }
@@ -367,6 +368,24 @@ model CancelledReceipt {
   @@index([originalReceiptNo])
 }
 
+model PermissionSlip {
+  id             Int       @id @default(autoincrement())
+  studentId      String
+  student        Student   @relation(fields: [studentId], references: [id])
+
+  leaveType      LeaveType
+  subReason      String?
+  description    String?
+  date           DateTime  @default(now())   // ✅ Defaults to today's date
+  timeIssued     DateTime  @default(now())
+  withWhom       String?
+  relation       String?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+
 enum LessonDay {
   MONDAY
   TUESDAY
@@ -406,4 +425,11 @@ enum MessageType {
   ANNOUNCEMENT
   GENERAL
   FEE_COLLECTION
+}
+
+enum LeaveType {
+  SICK
+  PERSONAL
+  HALFDAY
+  DAILY_PERMISSION
 }

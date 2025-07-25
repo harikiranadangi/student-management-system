@@ -24,6 +24,7 @@ const deleteActionMap: Record<string, string> = {
   homework: "homework",
   admin: "admin",
   messages: "messages",
+  permissions: "permissions",
 };
 
 // ✅ Dynamic form component imports
@@ -38,6 +39,7 @@ const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), { loading: ()
 const FeesManagementForm = dynamic(() => import("./forms/FeesManagementForm"), { loading: () => <h1>Loading...</h1> });
 const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), { loading: () => <h1>Loading...</h1> });
 const MessagesForm = dynamic(() => import("./forms/MessageForm"), { loading: () => <h1>Loading...</h1> });
+const PermissionForm = dynamic(() => import("./forms/PermissionForm"), { loading: () => <h1>Loading...</h1> });
 
 const forms: {
   [key: string]: (
@@ -58,6 +60,7 @@ const forms: {
   fees: (setOpen, type, data, relatedData) => <FeesManagementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   announcement: (setOpen, type, data, relatedData) => <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   messages: (setOpen, type, data, relatedData) => <MessagesForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
+  permissions: (setOpen, type, data, relatedData) => <PermissionForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
 };
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);

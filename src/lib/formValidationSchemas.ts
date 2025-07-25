@@ -1,6 +1,22 @@
 import { AcademicYear } from "@prisma/client";
-import { group } from "console";
 import { z } from "zod";
+
+export const slipSchema = z.object({
+  studentId: z.string().min(1, "Student is required"),
+  gradeId: z.number().optional(),
+  classId: z.number().optional(),
+  leaveType: z.enum(["SICK", "PERSONAL", "HALFDAY","DAILY_PERMISSION"], {
+    required_error: "Leave type is required",
+  }),
+  subReason: z.string().optional(),
+  description: z.string().optional(),
+  withWhom: z.string().optional(), // use .default(...) if needed
+  relation: z.string().optional(), // use .default(...) if needed
+  date: z.string().optional(), // use .default(...) if needed
+});
+
+export type SlipSchema = z.infer<typeof slipSchema>;
+
 
 export const resultschema = z.object({
   id: z.number().optional(),  // Optional for updates, needed for identifying the result

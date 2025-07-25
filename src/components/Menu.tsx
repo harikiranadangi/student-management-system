@@ -81,6 +81,7 @@ const menuItems: MenuItemSection[] = [
           { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin","teacher"] },
         ],
       },
+      { icon: "/exam.png", label: "Permissions", href: "/list/permissions", visible: ["admin"] },
       {
         icon: "/warning.png",
         label: "Import Data",
