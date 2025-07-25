@@ -54,33 +54,73 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // ✅ Generate gate slip PDF
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 320]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const drawText = (text: string, y: number) => {
-      page.drawText(text, {
-        x: 30,
+
+    // 9cm x 9cm in points
+    const pageWidth = 255;
+    const pageHeight = 255;
+
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    // Title
+    page.drawText("KOTAK SALESIAN SCHOOL", {
+      x: 40,
+      y: pageHeight - 30,
+      size: 12,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    page.drawText("GATE SLIP", {
+      x: 95,
+      y: pageHeight - 45,
+      size: 10,
+      font: regularFont,
+    });
+
+    // Content
+    const lines = [
+      `Name: ${student.name}`,
+      `Class: ${student.Class?.Grade.level} – ${student.Class?.section ?? ""}`,
+      `Date & Time: ${leaveDate.toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString("en-GB")}`,
+      `Permission Type: ${data.leaveType}`,
+      `Reason: ${data.subReason || "-"}`,
+      `Description: ${data.description || "-"}`,
+      `With Whom: ${data.withWhom || "-"}`,
+      `Relation: ${data.relation || "-"}`,
+    ];
+
+    let y = pageHeight - 70;
+    for (const line of lines) {
+      page.drawText(line, {
+        x: 20,
         y,
-        size: 12,
-        font,
-        color: rgb(0, 0, 0),
+        size: 9,
+        font: regularFont,
       });
-    };
+      y -= 14;
+    }
 
-    drawText(`Gate Slip`, 280);
-    drawText(`Date: ${leaveDate.toLocaleDateString("en-GB")}`, 260);
-    drawText(`Time: ${new Date().toLocaleTimeString("en-GB")}`, 240);
-    drawText(`Student: ${student.name}`, 220);
-    drawText(`Class: ${student.Class?.Grade.level} - ${student.Class?.section ?? ""}`, 200);
-    drawText(`Leave Type: ${data.leaveType}`, 180);
-    drawText(`Sub Reason: ${data.subReason || "-"}`, 160);
-    drawText(`Description: ${data.description || "-"}`, 140);
-    drawText(`With Whom: ${data.withWhom || "-"}`, 120);
-    drawText(`Relation: ${data.relation || "-"}`, 100);
+    // Footer: Signature fields
+    page.drawText("Principal Signature", {
+      x: 20,
+      y: 20,
+      size: 9,
+      font: regularFont,
+    });
 
+    page.drawText("Signature", {
+      x: pageWidth - 80,
+      y: 20,
+      size: 9,
+      font: regularFont,
+    });
+
+    // Save the PDF and convert to base64
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+
 
     return NextResponse.json({
       success: true,
