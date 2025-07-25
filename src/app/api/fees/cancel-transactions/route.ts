@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { toast } from "react-toastify";
+
 
 export async function POST(req: NextRequest) {
   try {
-    const { studentId, term } = await req.json();
+    const { studentId, term, cancelledBy, reason } = await req.json();
 
     if (!studentId || !term) {
       return NextResponse.json({ message: "studentId and term are required." }, { status: 400 });
@@ -25,14 +25,22 @@ export async function POST(req: NextRequest) {
     const totalFineAmount = aggregates._sum.fineAmount || 0;
     const totalFeeAmount = totalPaidAmount + totalDiscountAmount + totalFineAmount;
 
-    // Step 2: Transaction
+    // Step 2: Get receiptNo before reset
+    const studentFee = await prisma.studentFees.findFirst({
+      where: { studentId, term },
+      select: { receiptNo: true },
+    });
+
+    const receiptNo = studentFee?.receiptNo || "N/A";
+
+    // Step 3: Transaction
     await prisma.$transaction(async (tx) => {
-      // 2.1 Delete all fee transactions for that student and term
+      // 3.1 Delete fee transactions
       await tx.feeTransaction.deleteMany({
         where: { studentId, term },
       });
 
-      // 2.2 Update studentFees (individual term fees)
+      // 3.2 Reset studentFees
       await tx.studentFees.updateMany({
         where: { studentId, term },
         data: {
@@ -45,7 +53,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 2.3 Update studentTotalFees
+      // 3.3 Update studentTotalFees
       if (totalFeeAmount > 0) {
         const studentTotal = await tx.studentTotalFees.findUnique({
           where: { studentId },
@@ -69,9 +77,25 @@ export async function POST(req: NextRequest) {
           });
         }
       }
+
+      // 3.4 Log cancelled receipt
+      if (totalFeeAmount > 0) {
+        await tx.cancelledReceipt.create({
+          data: {
+            studentId,
+            term,
+            originalReceiptNo: receiptNo,
+            cancelledAmount: totalPaidAmount,
+            cancelledDiscount: totalDiscountAmount,
+            cancelledFine: totalFineAmount,
+            cancelledTotal: totalFeeAmount,
+            cancelledBy,
+            reason,
+          },
+        });
+      }
     });
 
-    
     return NextResponse.json({ message: "Fee transactions cancelled successfully." });
   } catch (error: any) {
     console.error(error);

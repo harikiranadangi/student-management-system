@@ -1,6 +1,6 @@
 // src/app/(dashboard)/list/fees/[mode]/[id]/page.tsx
 
-import FeesTableContainer from "@/components/FeesTableContainer";
+import FeesTableContainer from "@/components/fees/FeesTableContainer";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import prisma from "@/lib/prisma";
 import Image from "next/image";

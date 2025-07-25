@@ -1,9 +1,16 @@
 // types/index.ts
 
-// Define FeeStructure
+import { FeeTransaction } from "@prisma/client";
+
 export type FeeStructure = {
+  id: number;
+  gradeId: number;
+  startDate: string; // or Date, based on usage
+  dueDate: string;   // ✅ Add this line
   termFees: number;
   abacusFees: number | null;
+  term: string;      // Or enum Term if you have it
+  academicYear: string; // Or enum if defined
 };
 
 // Define individual StudentFees entry
@@ -60,5 +67,27 @@ export type CurrentState = { success: boolean; error: boolean, };
 export type SearchParams = { [key: string]: string | string[] | undefined };
 
 export type PageProps = { searchParams?: SearchParams };
+
+export interface StudentFeesTable {
+  id: number;
+  studentId: string;
+  feeStructureId: number;
+  term: string;
+  paidAmount: number;
+  discountAmount: number;
+  fineAmount: number;
+  abacusPaidAmount?: number | null;
+  receivedDate: string | null;
+  receiptDate: string | null;
+  paymentMode: string;
+  feeStructure: FeeStructure;
+  feeTransactions: FeeTransaction[];
+  collectedAmount?: number;
+  receiptNo?: string | null;
+  remarks?: string | null;
+  updatedByName?: string | null;
+}
+
+export type Mode = "collect" | "cancel";
 
 

@@ -1,7 +1,7 @@
-// src/app/api/fees/update/route.ts
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { PaymentMode } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
 
 function getTotalFees(fee: any) {
   const termFees = fee.feeStructure?.termFees ?? 0;
@@ -19,6 +19,15 @@ function calculateDueAmount(fee: any) {
 
 export async function POST(req: NextRequest) {
   try {
+    // ✅ 1. Get current user from Clerk
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const updatedByName = user.fullName ?? user.username ?? "Unknown";
+
+    // ✅ 2. Parse request body
     const body = await req.json();
     const {
       studentId,
@@ -36,7 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "studentId and term are required." }, { status: 400 });
     }
 
-    // Fetch the student's fee record
+    // ✅ 3. Fetch student's fee record
     const studentFee = await prisma.studentFees.findFirst({
       where: { studentId, term },
       include: { feeStructure: true },
@@ -58,7 +67,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Update studentFees table
+    // ✅ 4. Update studentFees table
     const updatedFee = await prisma.studentFees.update({
       where: { id: studentFee.id },
       data: {
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update receiptNo in all terms for the student (if provided)
+    // ✅ 5. Update receiptNo for all terms (optional behavior)
     if (receiptNo) {
       await prisma.studentFees.updateMany({
         where: { studentId },
@@ -80,7 +89,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Update studentTotalFees table
+    // ✅ 6. Update studentTotalFees table
     const updatedTotalFee = await prisma.studentTotalFees.upsert({
       where: { studentId },
       update: {
@@ -99,7 +108,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Insert FeeTransaction
+    // ✅ 7. Insert FeeTransaction
     const newTransaction = await prisma.feeTransaction.create({
       data: {
         studentId,
@@ -112,6 +121,7 @@ export async function POST(req: NextRequest) {
         receiptNo: String(receiptNo),
         paymentMode,
         remarks,
+        updatedByName,
       },
     });
 
