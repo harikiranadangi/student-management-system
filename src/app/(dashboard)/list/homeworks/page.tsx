@@ -119,7 +119,7 @@ const HomeworkListPage = async ({
 
   // Apply class filter based on role
   if (userClassId) {
-    query.classId = userClassId; // Apply student/teacher class filter
+    query.classId = Number(userClassId); // Apply student/teacher class filter
   } else if (classId) {
     query.classId = Number(classId); // Admin & teacher can filter by class
   }

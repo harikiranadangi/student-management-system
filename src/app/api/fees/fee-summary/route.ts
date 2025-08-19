@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Find student by Clerk ID
-        const student = await prisma.student.findUnique({
+        const student = await prisma.student.findFirst({
             where: { clerk_id: userId },
             include: {
                 Class: {

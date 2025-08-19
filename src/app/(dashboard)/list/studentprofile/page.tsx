@@ -19,7 +19,7 @@ const StudentProfilePage = async () => {
     return notFound();
   }
 
-  const student = await prisma.student.findUnique({
+  const student = await prisma.student.findFirst({
     where: { clerk_id: userId },
     include: {
       Class: {

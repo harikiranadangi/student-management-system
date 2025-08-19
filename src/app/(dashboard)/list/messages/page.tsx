@@ -11,6 +11,7 @@ import { getUserIdentifiersForRole } from "@/lib/utils/getUserIdentifiersForRole
 import SortButton from "@/components/SortButton";
 import { SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import { number } from "zod";
 
 
 
@@ -151,7 +152,7 @@ const MessagesList = async ({
 
 
   if (userClassId || classId) {
-    query.classId = userClassId ?? Number(classId);
+    query.classId = Number(userClassId) ?? Number(classId);
   }
 
 

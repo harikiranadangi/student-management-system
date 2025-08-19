@@ -1,2 +1,0 @@
--- AlterEnum
-ALTER TYPE "LeaveType" ADD VALUE 'DAILY_PERMISSION';

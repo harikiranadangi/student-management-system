@@ -64,7 +64,6 @@ const menuItems: MenuItemSection[] = [
           { icon: "/edit.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },
         ],
       },
-      { icon: "/announcement.png", label: "Announcements", href: "/list/announcements", visible: ["admin", "teacher", "student"] },
       { icon: "/message.png", label: "Messages", href: "/list/messages", visible: ["admin", "teacher", "student"] },
       { icon: "/subject.png", label: "Subjects", href: "/list/subjects", visible: ["admin"] },
       { icon: "/class.png", label: "Classes", href: "/list/classes", visible: ["admin"] },

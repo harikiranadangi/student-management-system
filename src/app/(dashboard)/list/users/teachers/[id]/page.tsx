@@ -1,4 +1,4 @@
-import Announcements from "@/components/Announcements";
+import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
@@ -198,7 +198,8 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
             </Link>
           </div>
         </div>
-        <Announcements />
+        <Performance/>
+        <Messages />
       </div>
     </div>
   );

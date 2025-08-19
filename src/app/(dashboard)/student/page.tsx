@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import Announcements from "@/components/Announcements";
+import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import EventCalendar from "@/components/EventCalendar";
 import prisma from "@/lib/prisma";
@@ -17,7 +17,7 @@ const StudentPage = async () => {
   }
 
   // Directly use userId as clerk_id in student table
-  const student = await prisma.student.findUnique({
+  const student = await prisma.student.findFirst({
     where: { clerk_id: userId } as Prisma.StudentWhereUniqueInput,
     include: { Class: true },
   });
@@ -37,7 +37,7 @@ const StudentPage = async () => {
         </div>
         <div className="flex flex-col w-full gap-8 xl:w-1/3">
           <EventCalendar />
-          <Announcements />
+          <Messages />
         </div>
       </div>
     );
@@ -53,7 +53,7 @@ const StudentPage = async () => {
       </div>
       <div className="flex flex-col w-full gap-8 xl:w-1/3">
         <EventCalendar />
-        <Announcements />
+        <Messages />
       </div>
     </div>
   );

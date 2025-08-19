@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import Announcements from "@/components/Announcements";
+import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
@@ -39,7 +39,7 @@ const TeacherPage = async () => {
       </div>
       {/* RIGHT: Description */}
         <div className='flex flex-col w-full gap-8 xl:w-1/3'>
-        <Announcements />
+        <Messages />
         </div>
     </div>
   );

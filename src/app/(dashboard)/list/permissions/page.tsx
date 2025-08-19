@@ -97,7 +97,7 @@ const PermissionSlipListPage = async ({ searchParams }: { searchParams: Promise<
   };
 
   const userClassId = await getClassIdForRole(role, userId);
-  if (userClassId) query.student = { classId: userClassId };
+  if (userClassId) query.student = { classId: Number(userClassId) };
 
   const [data, count] = await prisma.$transaction([
     prisma.permissionSlip.findMany({

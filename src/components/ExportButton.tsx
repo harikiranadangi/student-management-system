@@ -1,5 +1,6 @@
 "use client";
-import {  Student, Class, Grade } from "@prisma/client";
+
+import { Student, Class, Grade } from "@prisma/client";
 import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -8,6 +9,7 @@ import { saveAs } from "file-saver";
 type Props = {
   data: {
     id: number;
+    date: Date;
     leaveType: string;
     description: string | null;
     timeIssued: Date;
@@ -17,12 +19,15 @@ type Props = {
 };
 
 const ExportButton = ({ data, fileName }: Props) => {
+  // ✅ Excel Export
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Permission Slips");
 
     worksheet.columns = [
-      { header: "ID", key: "id", width: 10 ,},
+      { header: "ID", key: "id", width: 10 },
+      { header: "Date", key: "date", width: 15 },
+      { header: "Student ID", key: "studentId", width: 15 },
       { header: "Student", key: "student", width: 20 },
       { header: "Class", key: "class", width: 15 },
       { header: "Leave Type", key: "leaveType", width: 20 },
@@ -33,6 +38,8 @@ const ExportButton = ({ data, fileName }: Props) => {
     data.forEach((item) => {
       worksheet.addRow({
         id: item.id,
+        date: new Date(item.date).toLocaleDateString("en-GB"),
+        studentId: item.student.id, // ✅ fixed
         student: item.student.name,
         class: `${item.student.Class.Grade.level} - ${item.student.Class.section}`,
         leaveType: item.leaveType,
@@ -45,9 +52,10 @@ const ExportButton = ({ data, fileName }: Props) => {
       });
     });
 
-    // Optional styling
+    // ✅ Header Styling
     worksheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true };
+      cell.alignment = { horizontal: "center" };
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -58,12 +66,34 @@ const ExportButton = ({ data, fileName }: Props) => {
     saveAs(blob, `${fileName}.xlsx`);
   };
 
+  // ✅ PDF Export
   const exportToPDF = () => {
     const doc = new jsPDF();
+
+    // Report Title
+    doc.setFontSize(14);
+    doc.text("Permission Slips Report", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, 14, 22);
+
     autoTable(doc, {
-      head: [["ID", "Student", "Class", "Leave Type", "Description", "Time"]],
+      startY: 28,
+      head: [
+        [
+          "ID",
+          "Date",
+          "Student ID",
+          "Student",
+          "Class",
+          "Leave Type",
+          "Description",
+          "Time",
+        ],
+      ],
       body: data.map((item) => [
         item.id,
+        new Date(item.date).toLocaleDateString("en-GB"),
+        item.student.id,
         item.student.name,
         `${item.student.Class.Grade.level} - ${item.student.Class.section}`,
         item.leaveType,
@@ -74,7 +104,10 @@ const ExportButton = ({ data, fileName }: Props) => {
           hour12: true,
         }),
       ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [220, 53, 69] }, // red header
     });
+
     doc.save(`${fileName}.pdf`);
   };
 

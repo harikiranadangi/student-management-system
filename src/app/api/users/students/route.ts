@@ -1,8 +1,11 @@
-import { User } from '@clerk/backend';
 import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { studentschema } from '@/lib/formValidationSchemas';
+
+// Clerk User type alias (avoids import conflict)
+const client = await clerkClient();
+type ClerkUser = Awaited<ReturnType<typeof client.users.getUser>>;
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +15,10 @@ export async function POST(req: Request) {
     const result = studentschema.safeParse(body);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      return NextResponse.json({ message: 'Validation failed', errors }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Validation failed', errors },
+        { status: 400 }
+      );
     }
 
     const {
@@ -32,7 +38,7 @@ export async function POST(req: Request) {
 
     console.log('Received data:', result.data);
 
-    // ✅ Step 2: Determine ID
+    // ✅ Step 2: Generate Student ID
     let id = requestedId;
     if (!id) {
       const lastStudent = await prisma.student.findFirst({
@@ -40,80 +46,90 @@ export async function POST(req: Request) {
         select: { id: true },
       });
 
-      console.log('Last Student:', lastStudent);
-
       id = lastStudent?.id
         ? (parseInt(lastStudent.id.toString()) + 1).toString()
         : '10000';
     }
 
-
     const generatedUsername = `s${id}`;
     const password = phone;
     const phoneNumber = `+91${phone}`;
 
-    // ✅ Step 3: Check if Clerk user already exists
-    const client = await clerkClient();
-    const existingUsers = await client.users.getUserList({ username: [generatedUsername] });
+    // ✅ Step 3: Find or Create Parent Clerk User
+    let parentUser: ClerkUser | null = null;
 
-    console.log('Existing users:', existingUsers);
-    const userExists = existingUsers.data.some(
-      (u) => u.username === generatedUsername
-    );
+    // 🔑 Check if parent already exists by phone number
+    const existingUsers = await client.users.getUserList({
+      phoneNumber: [phoneNumber],
+    });
 
+    if (existingUsers.data.length > 0) {
+      parentUser = existingUsers.data[0]; // 👈 reuse existing parent
+      console.log('Parent user found in Clerk:', parentUser.id);
+    } else {
+      // 👩‍👩‍👦 If not found, create new parent user in Clerk
+      parentUser = await client.users.createUser({
+        firstName: parentName || name,
+        phoneNumber: [phoneNumber],
+        emailAddress: email ? [email] : [],
+      });
 
-    if (userExists) {
+      await client.users.updateUser(parentUser.id, {
+        publicMetadata: { role: 'parent' },
+      });
+
+      console.log('New parent created in Clerk:', parentUser.id);
+    }
+
+    // ✅ Step 4: Ensure student username is unique
+    const existingStudentAccount = await prisma.clerkStudents.findUnique({
+      where: { username: generatedUsername },
+    });
+
+    if (existingStudentAccount) {
       return NextResponse.json(
-        { message: `Username "${generatedUsername}" already exists!` },
+        { message: `Student username "${generatedUsername}" already exists!` },
         { status: 409 }
       );
     }
 
-    // ✅ Step 4: Create Clerk user
-    const user = await client.users.createUser({
+    // ✅ Step 5: Create Student record linked to parent’s Clerk ID
+    console.log('Creating student with ID:', id);
+    const studentData: any = {
+      id,
       username: generatedUsername,
-      password: password,
-      firstName: name,
-      phoneNumber: [phoneNumber],
-    });
+      name,
+      parentName,
+      email: email ?? undefined,
+      phone,
+      address,
+      gender,
+      img: img ?? undefined,
+      bloodType,
+      classId,
+      academicYear,
+      clerk_id: parentUser.id,
+    };
 
-    await client.users.updateUser(user.id, {
-      publicMetadata: { role: 'student' },
-    });
+    // Only add dob if provided
+    if (dob) {
+      studentData.dob = new Date(dob);
+    }
 
-    console.log('Clerk user created:', user.id, user.username, user.firstName);
-
-    // ✅ Step 5: Create student record
     const student = await prisma.student.create({
-      data: {
-        id,
-        username: generatedUsername,
-        name,
-        parentName,
-        dob: dob ? new Date(dob) : "",  // Ensure dob is either a Date or null
-        email,
-        phone,
-        address,
-        gender,
-        img,
-        bloodType,
-        classId,
-        academicYear,
-        clerk_id: user.id,
-      },
+      data: studentData,
     });
 
     console.log('Student created:', student);
 
-
-    // ✅ Step 6: Create ClerkStudents entry
+    // ✅ Step 6: Create ClerkStudents entry (student login)
     const clerkStudent = await prisma.clerkStudents.create({
       data: {
-        clerk_id: user.id,
+        clerk_id: parentUser.id, // still linked to parent
         username: generatedUsername,
-        password: generatedUsername,
+        password: password, // ⚠️ plain phone, hash later recommended
         full_name: name,
-        user_id: user.id,
+        user_id: parentUser.id,
         role: 'student',
         studentId: student.id,
       },
@@ -160,16 +176,15 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log('Fee structures assigned to student:', matchingFeeStructures);
+    console.log('Fee structures assigned:', matchingFeeStructures);
 
     return NextResponse.json(student, { status: 201 });
-
   } catch (error: any) {
     console.error('Error details:', JSON.stringify(error, null, 2));
 
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { message: 'Username already exists in the system.' },
+        { message: 'Unique constraint failed (probably username exists).' },
         { status: 409 }
       );
     }

@@ -36,9 +36,10 @@ id,name,section,gradeId,supervisorId
 35,VIII, A,11,staff_ks_048
 36,VIII, B,11,staff_ks_050
 37,VIII, C,11,staff_ks_052
-38,IX, A,12,staff_ks_054
-39,IX, B,12,staff_ks_055
-40,IX, C,12,staff_ks_056
-41,X, A,13,staff_ks_057
-42,X, B,13,staff_ks_061
-43,X, C,13,staff_ks_062
+38,VIII,D,11,staff_ks_014
+39,IX, A,12,staff_ks_054
+40,IX, B,12,staff_ks_055
+41,IX, C,12,staff_ks_056
+42,X, A,13,staff_ks_057
+43,X, B,13,staff_ks_061
+44,X, C,13,staff_ks_062

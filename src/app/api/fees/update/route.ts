@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { PaymentMode } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
+import { getMessageContent } from "@/lib/utils/messageUtils";
 
 function getTotalFees(fee: any) {
   const termFees = fee.feeStructure?.termFees ?? 0;
@@ -124,6 +125,31 @@ export async function POST(req: NextRequest) {
         updatedByName,
       },
     });
+
+    // ✅ 8. Create message record for fee collection
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { Class: true },
+    });
+
+    if (student) {
+      const messageContent = getMessageContent("FEE_COLLECTION", {
+        name: student.name,
+        className: student.Class?.name ?? "",
+        amount,
+        term,
+      });
+
+      await prisma.messages.create({
+        data: {
+          studentId,
+          type: "FEE_COLLECTION",
+          message: messageContent,
+          classId: student.Class?.id ?? null,
+          date: new Date(),},
+      });
+    }
+
 
     return NextResponse.json(
       {

@@ -14,10 +14,11 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
 
     // Get student's class if role is student
     if (role === "student") {
-      const student = await prisma.student.findUnique({
-        where: { clerk_id: userId } as Prisma.StudentWhereUniqueInput,
-        select: { classId: true },
+      const student = await prisma.student.findFirst({
+        where: { clerk_id: userId },
+        include: { Class: true },
       });
+
 
       if (!student) return <div>Error: Student not found</div>;
 

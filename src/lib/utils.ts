@@ -16,9 +16,9 @@ export function getRoleFromSession(sessionClaims: any): string | null {
 export async function fetchUserInfo(): Promise<{
   userId: string | null;
   role: string | null;
-  studentId?: string;
+  students?: { studentId: string; classId: number; name: string }[];
   teacherId?: string;
-  classId?: number | string; // Consistent type
+  classId?: number | string;
 }> {
   try {
     const { sessionClaims, userId } = await auth();
@@ -28,26 +28,33 @@ export async function fetchUserInfo(): Promise<{
       return { userId: null, role: null };
     }
 
+    // ------------------ Parent Role (currently "student") ------------------
     if (role === "student") {
-      const student = await prisma.student.findUnique({
+      const children = await prisma.student.findMany({
         where: { clerk_id: userId },
+        select: { id: true, classId: true, name: true },
       });
 
-      if (!student) {
-        console.warn(`No student found for Clerk ID: ${userId}`);
+      if (!children.length) {
+        console.warn(`No students found for parent Clerk ID: ${userId}`);
       }
 
       return {
         userId,
         role,
-        studentId: student?.id,
-        classId: student?.classId,
+        students: children.map((s) => ({
+          studentId: s.id,
+          classId: s.classId,
+          name: s.name,
+        })),
       };
     }
 
+    // ------------------ Teacher Role ------------------
     if (role === "teacher") {
       const teacher = await prisma.teacher.findUnique({
         where: { clerk_id: userId },
+        select: { id: true, classId: true },
       });
 
       if (!teacher) {
@@ -58,10 +65,11 @@ export async function fetchUserInfo(): Promise<{
         userId,
         role,
         teacherId: teacher?.id,
-        classId: typeof teacher?.classId === 'number' ? teacher?.classId : undefined,
+        classId: teacher?.classId ?? undefined,
       };
     }
 
+    // ------------------ Other Roles ------------------
     return { userId, role };
   } catch (error) {
     console.error("Error fetching user info:", error);
@@ -70,11 +78,15 @@ export async function fetchUserInfo(): Promise<{
 }
 
 
-export const getClassIdForRole = async (role: string | null, userId: string | null): Promise<number | null> => {
+
+export const getClassIdForRole = async (
+  role: string | null,
+  userId: string | null
+): Promise<number | null | string> => {
   if (!userId) return null;
 
   if (role === "student") {
-    const student = await prisma.student.findUnique({
+    const student = await prisma.student.findFirst({
       where: { clerk_id: userId },
       select: { classId: true },
     });
@@ -86,7 +98,7 @@ export const getClassIdForRole = async (role: string | null, userId: string | nu
       where: { user_id: userId },
       select: { teacher: { select: { classId: true } } },
     });
-    return clerkTeacher?.teacher?.classId ? Number(clerkTeacher.teacher.classId) : null;
+    return clerkTeacher?.teacher?.classId ?? null;
   }
 
   return null;
