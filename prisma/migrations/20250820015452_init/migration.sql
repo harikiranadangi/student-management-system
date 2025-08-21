@@ -176,20 +176,6 @@ CREATE TABLE "public"."Student" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."ClerkStudents" (
-    "clerk_id" VARCHAR NOT NULL,
-    "user_id" TEXT,
-    "username" TEXT NOT NULL,
-    "password" VARCHAR NOT NULL,
-    "full_name" VARCHAR NOT NULL,
-    "role" VARCHAR NOT NULL DEFAULT 'student',
-    "studentId" VARCHAR,
-    "publicMetadata" JSONB DEFAULT '{}',
-
-    CONSTRAINT "ClerkStudents_pkey" PRIMARY KEY ("clerk_id")
-);
-
--- CreateTable
 CREATE TABLE "public"."Subject" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
@@ -214,7 +200,7 @@ CREATE TABLE "public"."Teacher" (
     "deletedAt" TIMESTAMP(3),
     "supervisor" BOOLEAN NOT NULL DEFAULT false,
     "dob" TIMESTAMP(3),
-    "classId" TEXT,
+    "classId" INTEGER NOT NULL,
     "clerk_id" TEXT,
 
     CONSTRAINT "Teacher_pkey" PRIMARY KEY ("id")
@@ -433,15 +419,6 @@ CREATE INDEX "Student_classId_idx" ON "public"."Student"("classId");
 CREATE INDEX "Student_clerk_id_idx" ON "public"."Student"("clerk_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ClerkStudents_user_id_key" ON "public"."ClerkStudents"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ClerkStudents_username_key" ON "public"."ClerkStudents"("username");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ClerkStudents_studentId_key" ON "public"."ClerkStudents"("studentId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Subject_name_key" ON "public"."Subject"("name");
 
 -- CreateIndex
@@ -539,9 +516,6 @@ ALTER TABLE "public"."Result" ADD CONSTRAINT "Result_subjectId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_classId_fkey" FOREIGN KEY ("classId") REFERENCES "public"."class"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."ClerkStudents" ADD CONSTRAINT "ClerkStudents_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "public"."Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ClerkTeachers" ADD CONSTRAINT "ClerkTeachers_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "public"."Teacher"("id") ON DELETE CASCADE ON UPDATE CASCADE;

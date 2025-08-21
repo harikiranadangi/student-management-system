@@ -110,6 +110,15 @@ TRUNCATE TABLE
   "_SubjectGrades"
 RESTART IDENTITY CASCADE;
 
+SELECT *
+FROM "Student"
+LIMIT 10;
+
+SELECT id, clerk_id, length(clerk_id), encode(clerk_id::bytea, 'escape')
+FROM "Student"
+WHERE id = 15616;
+
+
 
 
 

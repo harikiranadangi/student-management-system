@@ -23,7 +23,10 @@ model Admin {
   bloodType  String?
   role       String    @default("admin")
   createdAt  DateTime  @default(now())
-  clerkId    String?   @unique
+  clerk_id   String?   @unique
+  UserProfiles UserProfile[]
+
+  @@index([clerk_id])
 }
 
 model Grade {
@@ -176,11 +179,10 @@ model Student {
   dob               DateTime
   createdAt         DateTime           @default(now())
   deletedAt         DateTime?
-  clerk_id          String?            // 🔹 parent’s Clerk ID (not unique now)
+  clerk_id          String? // 🔹 parent’s Clerk ID (not unique now)
   academicYear      AcademicYear       @default(Y2024_2025)
   classId           Int
   attendances       Attendance[]
-  clerkStudent      ClerkStudents?
   feeTransactions   FeeTransaction[]
   messages          Messages[]
   results           Result[]
@@ -189,21 +191,10 @@ model Student {
   totalFees         StudentTotalFees?
   cancelledReceipts CancelledReceipt[]
   permissionSlips   PermissionSlip[]
+  UserProfiles UserProfile[]
 
   @@index([classId])
   @@index([clerk_id]) // 🔹 Add index for faster lookups of students by parent
-}
-
-model ClerkStudents {
-  clerk_id       String   @id @db.VarChar
-  user_id        String?  @unique
-  username       String   @unique
-  password       String   @db.VarChar
-  full_name      String   @db.VarChar
-  role           String   @default("student") @db.VarChar
-  studentId      String?  @unique @db.VarChar
-  publicMetadata Json?    @default("{}")
-  student        Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Subject {
@@ -218,26 +209,31 @@ model Subject {
 }
 
 model Teacher {
-  id            String           @id
-  username      String           @unique
-  name          String
-  parentName    String?
-  email         String?
-  phone         String
-  address       String
-  img           String?
-  bloodType     String?
-  gender        Gender
-  createdAt     DateTime         @default(now())
-  deletedAt     DateTime?
-  supervisor    Boolean          @default(false)
-  dob           DateTime?
-  classId       String?          @unique
-  clerk_id      String?          @unique
+  id         String    @id
+  username   String    @unique
+  name       String
+  parentName String?
+  email      String?
+  phone      String
+  address    String
+  img        String?
+  bloodType  String?
+  gender     Gender
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  supervisor Boolean   @default(false)
+  dob        DateTime?
+
+  classId  Int?    @unique
+  clerk_id String? @unique
+
   ClerkTeachers ClerkTeachers?
   lessons       Lesson[]
   subjects      SubjectTeacher[]
   class         Class?           @relation("ClassToTeacher")
+  UserProfiles UserProfile[]
+
+  @@index([clerk_id])
 }
 
 model ClerkTeachers {
@@ -370,20 +366,47 @@ model CancelledReceipt {
 }
 
 model PermissionSlip {
-  id             Int       @id @default(autoincrement())
-  studentId      String
-  student        Student   @relation(fields: [studentId], references: [id])
+  id        Int     @id @default(autoincrement())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
 
-  leaveType      LeaveType
-  subReason      String?
-  description    String?
-  date           DateTime  @default(now())   // ✅ Defaults to today's date
-  timeIssued     DateTime  @default(now())
-  withWhom       String?
-  relation       String?
+  leaveType   LeaveType
+  subReason   String?
+  description String?
+  date        DateTime  @default(now()) // ✅ Defaults to today's date
+  timeIssued  DateTime  @default(now())
+  withWhom    String?
+  relation    String?
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id      String     @id @default(cuid())
+  clerkId String     @unique
+  phone   String
+  roles   UserRole[]
+}
+
+model UserRole {
+  id     Int    @id @default(autoincrement())
+  role   String // "admin" | "teacher" | "student"
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model UserProfile {
+  id        Int     @id @default(autoincrement())
+  clerk_id  String
+  role      String   // "teacher" | "parent" | "student" | "admin"
+  teacherId String?  @unique
+  studentId String?
+  adminId   Int?
+
+  Teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  Student   Student? @relation(fields: [studentId], references: [id])
+  Admin   Admin? @relation(fields: [adminId], references: [id])
 }
 
 
