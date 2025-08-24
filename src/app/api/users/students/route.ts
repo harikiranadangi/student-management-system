@@ -69,20 +69,59 @@ export async function POST(req: Request) {
     } else {
       // 👩‍👩‍👦 If not found, create new parent user in Clerk
       parentUser = await client.users.createUser({
-        firstName: parentName || name,
+        firstName: name,
         phoneNumber: [phoneNumber],
         emailAddress: email ? [email] : [],
       });
 
       await client.users.updateUser(parentUser.id, {
-        publicMetadata: { role: 'parent' },
+        publicMetadata: { role: 'student' },
       });
 
       console.log('New parent created in Clerk:', parentUser.id);
     }
 
-    // ✅ Step 4: Ensure student username is unique
-    const existingStudentAccount = await prisma.clerkStudents.findUnique({
+    // ✅ Step 4: Create or reuse Profile
+    let profile = await prisma.profile.findUnique({
+      where: { phone },
+      include: { roles: true },
+    });
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          phone,
+          clerk_id: parentUser.id,
+        },
+        include: { roles: true },
+      });
+      console.log("New Profile created:", profile);
+    } else {
+      console.log("Existing Profile reused:", profile);
+    }
+
+    // ✅ Step 5: Ensure Role (student) exists for this profile
+    const existingRole = await prisma.role.findUnique({
+      where: { username: generatedUsername },
+    });
+
+    if (existingRole) {
+      return NextResponse.json(
+        { message: `Student username "${generatedUsername}" already exists!` },
+        { status: 409 }
+      );
+    }
+
+    const role = await prisma.role.create({
+      data: {
+        role: "student",
+        username: generatedUsername,
+        profileId: profile.id, // 🔑 links to profile
+      },
+    });
+    console.log("New Role created:", role);
+
+    const existingStudentAccount = await prisma.student.findUnique({
       where: { username: generatedUsername },
     });
 
@@ -122,20 +161,7 @@ export async function POST(req: Request) {
 
     console.log('Student created:', student);
 
-    // ✅ Step 6: Create ClerkStudents entry (student login)
-    const clerkStudent = await prisma.clerkStudents.create({
-      data: {
-        clerk_id: parentUser.id, // still linked to parent
-        username: generatedUsername,
-        password: password, // ⚠️ plain phone, hash later recommended
-        full_name: name,
-        user_id: parentUser.id,
-        role: 'student',
-        studentId: student.id,
-      },
-    });
 
-    console.log('Clerk student created:', clerkStudent);
 
     // ✅ Step 7: Get gradeId from class
     const studentClass = await prisma.class.findUnique({

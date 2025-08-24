@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     let feesMapped = 0;
     let clerkCreated = 0;
     const errors: string[] = [];
-    // ✅ Step 3: Check if Clerk user already exists
+
     const client = await clerkClient();
 
     for (let i = 0; i < students.length; i++) {
@@ -69,51 +69,44 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const existing = await prisma.student.findUnique({ where: { id } });
+      // ✅ Step 1: Ensure Profile exists for this phone
+      let profile = await prisma.profile.findUnique({
+        where: { phone },
+        include: { roles: true },
+      });
 
-      const generatedUsername = `s${id}`;
-      const password = phone;
-      const phoneNumber = `+91${phone}`;
-
-      let finalClerkId = providedClerkId || null;
-
-      // ✅ Try to create Clerk user only for first 50 students
-      if (!IS_PRODUCTION && clerkCreated < 50 && !providedClerkId) {
-        try {
-          const existingUsers = await client.users.getUserList({
-            username: [generatedUsername],
-          });
-
-          const userExists = existingUsers.data.some(
-            (u) => u.username === generatedUsername
-          );
-
-          if (!userExists) {
-            const user = await client.users.createUser({
-              username: generatedUsername,
-              password,
-              firstName: name,
-              phoneNumber: [phoneNumber],
-            });
-
-            await client.users.updateUser(user.id, {
-              publicMetadata: { role: "student" },
-            });
-
-            finalClerkId = user.id;
-            clerkCreated++;
-          }
-        } catch (err: any) {
-          errors.push(`Failed to create Clerk user for student ${id}: ${err.message}`);
-        }
+      if (!profile) {
+        profile = await prisma.profile.create({
+          data: {
+            phone,
+            clerk_id: providedClerkId || "", // temporary empty if Clerk not created yet
+          },
+          include: { roles: true },
+        });
       }
 
-      let student;
-      if (existing) {
+      // ✅ Step 2: Ensure Student Role exists for this profile
+      const studentUsername = `s${id}`;
+      let role = profile.roles.find((r) => r.role === "student");
+
+      if (!role) {
+        role = await prisma.role.create({
+          data: {
+            role: "student",
+            username: studentUsername,
+            profileId: profile.id,
+          },
+        });
+      }
+
+      // ✅ Step 3: Upsert Student entity linked to Profile
+      let student = await prisma.student.findUnique({ where: { id } });
+
+      if (student) {
         student = await prisma.student.update({
           where: { id },
           data: {
-            username: generatedUsername,
+            username: studentUsername,
             name,
             parentName,
             email,
@@ -124,8 +117,9 @@ export async function POST(req: NextRequest) {
             gender,
             dob: parsedDob,
             classId: Number(classId),
-            clerk_id: finalClerkId,
+            clerk_id: providedClerkId || profile.clerk_id,
             academicYear,
+            profileId: profile.id,
           },
         });
         updated++;
@@ -133,7 +127,7 @@ export async function POST(req: NextRequest) {
         student = await prisma.student.create({
           data: {
             id,
-            username: generatedUsername,
+            username: studentUsername,
             name,
             parentName,
             email,
@@ -144,38 +138,19 @@ export async function POST(req: NextRequest) {
             gender,
             dob: parsedDob,
             classId: Number(classId),
-            clerk_id: finalClerkId,
+            clerk_id: providedClerkId || profile.clerk_id,
             academicYear,
+            profileId: profile.id,
           },
         });
         created++;
       }
 
-      // ✅ Create ClerkStudents only if Clerk ID exists and student is now in DB
-      if (finalClerkId && !IS_PRODUCTION && clerkCreated <= 50) {
-        try {
-          await prisma.clerkStudents.create({
-            data: {
-              clerk_id: finalClerkId,
-              username: generatedUsername,
-              password: generatedUsername,
-              full_name: name,
-              user_id: finalClerkId,
-              role: "student",
-              studentId: student.id,
-            },
-          });
-        } catch (err: any) {
-          errors.push(`ClerkStudent insert failed for student ${id}: ${err.message}`);
-        }
-      }
+      console.log(`Processed student: ${id} - ${name} (${student.id})`);
 
-      // ✅ Fee structure mapping
+      // ✅ Step 4: Fee structure mapping (unchanged)
       const feeStructures = await prisma.feeStructure.findMany({
-        where: {
-          gradeId: cls.Grade.id,
-          academicYear,
-        },
+        where: { gradeId: cls.Grade.id, academicYear },
       });
 
       if (feeStructures.length === 0) {

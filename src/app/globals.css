@@ -205,3 +205,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+button {
+  caret-color: transparent !important; /* hide blinking text cursor */
+  user-select: none !important;        /* prevent accidental text selection */
+}
+
+

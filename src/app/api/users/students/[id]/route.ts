@@ -119,6 +119,44 @@ export async function PUT(
   }
 }
 
+// PATCH - Update student status (Active, Inactive, Transferred, Suspended)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const studentId = id;
+    const { status } = await req.json();
+
+    if (!["ACTIVE", "INACTIVE", "TRANSFERRED", "SUSPENDED"].includes(status)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid status value" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Sending status update:", status);
+
+
+    const updatedStudent = await prisma.student.update({
+      where: { id: studentId },
+      data: { status },
+    });
+
+    revalidatePath("/list/users/students");
+
+    return NextResponse.json({ success: true, updatedStudent }, { status: 200 });
+  } catch (error) {
+    console.error("PATCH /api/users/students/[id] error:", error);
+    return NextResponse.json(
+      { success: false, error: "Status update failed" },
+      { status: 500 }
+    );
+  }
+}
+
+
 
 // DELETE - Delete student
 export async function DELETE(

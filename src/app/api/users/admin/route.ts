@@ -1,7 +1,7 @@
-import { adminSchema } from "@/lib/formValidationSchemas";
-import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs/server";
+import prisma from '@/lib/prisma';
+import { clerkClient } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { adminSchema } from '@/lib/formValidationSchemas';
 
 export async function POST(req: Request) {
   try {
@@ -10,35 +10,76 @@ export async function POST(req: Request) {
 
     const client = await clerkClient();
 
-    // Check if Clerk user with username already exists
-    const existingUsers = await client.users.getUserList({ query: data.username });
-    if (existingUsers.totalCount > 0) {
+    // ✅ Step 1: Check if a Clerk user already exists for this phone
+    const phoneNumber = `+91${data.phone}`;
+    let clerkUser;
+    const existingUsers = await client.users.getUserList({ phoneNumber: [phoneNumber] });
+
+    if (existingUsers.data.length > 0) {
+      clerkUser = existingUsers.data[0];
+      console.log('Existing Clerk user found:', clerkUser.id);
+    } else {
+      // ✅ Create a new Clerk user
+      clerkUser = await client.users.createUser({
+        firstName: data.name,
+        username: data.username,
+        password: data.password,
+        phoneNumber: [`+91${data.phone}`],
+      });
+
+      console.log('New Clerk user created:', clerkUser.id);
+    }
+
+    await client.users.updateUser(clerkUser.id, {
+      publicMetadata: { role: 'admin' },
+    });
+
+    // ✅ Step 2: Find or create profile
+    let profile = await prisma.profile.findUnique({
+      where: { phone: data.phone },
+      include: { roles: true },
+    });
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          phone: data.phone,
+          clerk_id: clerkUser.id,
+        },
+        include: { roles: true },
+      });
+      console.log('New profile created:', profile);
+    } else {
+      console.log('Existing profile reused:', profile);
+    }
+
+    // ✅ Step 3: Check if username already exists for a role
+    const existingRole = await prisma.role.findUnique({
+      where: { username: data.username },
+    });
+
+    if (existingRole) {
       return NextResponse.json(
-        { message: `Username "${data.username}" already exists!` },
+        { message: `Role username "${data.username}" already exists!` },
         { status: 409 }
       );
     }
 
-    // Create Clerk user with phone number (using array format)
-    const clerkUser = await client.users.createUser({
-      username: data.username,
-      password: data.password,
-      firstName: data.full_name,
-      phoneNumber: [`+91${data.phone}`],  // Passing phone as an array
-    });
-
-    // Optionally add metadata, including role
-    await client.users.updateUser(clerkUser.id, {
-      publicMetadata: {
-        role: "admin",  // You can dynamically set the role if needed
+    // ✅ Step 4: Create new admin role
+    const role = await prisma.role.create({
+      data: {
+        role: 'admin',
+        username: data.username,
+        profileId: profile.id,
       },
     });
+    console.log('New role created:', role);
 
-    // Create admin in Prisma DB
+    // ✅ Step 5: Create admin record
     const admin = await prisma.admin.create({
       data: {
         username: data.username,
-        full_name: data.full_name,
+        name: data.name,
         password: data.password,
         parentName: data.parentName ?? null,
         gender: data.gender,
@@ -48,25 +89,22 @@ export async function POST(req: Request) {
         dob: data.dob ?? null,
         img: data.img ?? null,
         phone: data.phone,
-        clerkId: clerkUser.id,
+        clerk_id: clerkUser.id,
+        profileId: profile.id,
       },
     });
 
     return NextResponse.json({ success: true, admin }, { status: 201 });
-
   } catch (error: any) {
-    console.error("Admin creation error:", error);
+    console.error('Admin creation error:', error);
 
-    if (error.name === "ZodError") {
+    if (error.name === 'ZodError') {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
 
-    // Log more detailed Clerk error message
-    if (error.errors && Array.isArray(error.errors)) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
-    }
-
-
-    return NextResponse.json({ error: error.message || "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

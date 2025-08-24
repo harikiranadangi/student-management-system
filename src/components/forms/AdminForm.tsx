@@ -78,7 +78,7 @@ const AdminForm = ({
       // Prepare the data payload
       const payload = {
         username: data.username,
-        full_name: data.full_name,
+        name: data.name,
         password: data.password,
         parentName: data.parentName ?? null,
         gender: data.gender,
@@ -141,7 +141,7 @@ const AdminForm = ({
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
 
       <div className="flex flex-wrap justify-between gap-4">
-        <InputField label="Full Name" name="full_name" register={register} error={errors?.full_name} />
+        <InputField label="Full Name" name="name" register={register} error={errors?.name} />
         <InputField label="Parent Name" name="parentName" register={register} error={errors?.parentName} />
         <InputField label="Phone" name="phone" register={register} error={errors?.phone} />
         <InputField label="Address" name="address" register={register} error={errors?.address} />

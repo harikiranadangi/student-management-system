@@ -9,22 +9,25 @@ datasource db {
 }
 
 model Admin {
-  id         Int       @id @default(autoincrement())
-  username   String    @unique
-  password   String
-  full_name  String
-  parentName String?
-  gender     String?
-  email      String?
-  phone      String?
-  address    String?
-  dob        DateTime?
-  img        String?
-  bloodType  String?
-  role       String    @default("admin")
-  createdAt  DateTime  @default(now())
-  clerk_id   String?   @unique
+  id           String        @id @default(cuid())
+  username     String        @unique
+  password     String
+  name         String
+  parentName   String?
+  gender       String?
+  email        String?
+  phone        String?
+  address      String?
+  dob          DateTime?
+  img          String?
+  bloodType    String?
+  role         String        @default("admin")
+  createdAt    DateTime      @default(now())
+  clerk_id     String?       @unique
   UserProfiles UserProfile[]
+
+  profile   Profile? @relation("ProfileAdmin", fields: [profileId], references: [id])
+  profileId String?     @unique
 
   @@index([clerk_id])
 }
@@ -178,8 +181,8 @@ model Student {
   gender            Gender
   dob               DateTime
   createdAt         DateTime           @default(now())
-  deletedAt         DateTime?
-  clerk_id          String? // 🔹 parent’s Clerk ID (not unique now)
+  status            StudentStatus      @default(ACTIVE) // 👈 replaces deletedAt
+  clerk_id          String? // parent’s Clerk ID (not unique now)
   academicYear      AcademicYear       @default(Y2024_2025)
   classId           Int
   attendances       Attendance[]
@@ -191,10 +194,14 @@ model Student {
   totalFees         StudentTotalFees?
   cancelledReceipts CancelledReceipt[]
   permissionSlips   PermissionSlip[]
-  UserProfiles UserProfile[]
+  UserProfiles      UserProfile[]
+
+  // 👇 Add these lines
+  profileId String?   @unique
+  profile   Profile?  @relation("ProfileStudent", fields: [profileId], references: [id])
 
   @@index([classId])
-  @@index([clerk_id]) // 🔹 Add index for faster lookups of students by parent
+  @@index([clerk_id]) // faster lookup by parent
 }
 
 model Subject {
@@ -224,6 +231,9 @@ model Teacher {
   supervisor Boolean   @default(false)
   dob        DateTime?
 
+  profile   Profile? @relation("ProfileTeacher", fields: [profileId], references: [id])
+  profileId String?     @unique
+
   classId  Int?    @unique
   clerk_id String? @unique
 
@@ -231,7 +241,7 @@ model Teacher {
   lessons       Lesson[]
   subjects      SubjectTeacher[]
   class         Class?           @relation("ClassToTeacher")
-  UserProfiles UserProfile[]
+  UserProfiles  UserProfile[]
 
   @@index([clerk_id])
 }
@@ -399,14 +409,33 @@ model UserRole {
 model UserProfile {
   id        Int     @id @default(autoincrement())
   clerk_id  String
-  role      String   // "teacher" | "parent" | "student" | "admin"
-  teacherId String?  @unique
+  role      String // "teacher" | "parent" | "student" | "admin"
+  teacherId String? @unique
   studentId String?
-  adminId   Int?
+  adminId   String?
 
-  Teacher   Teacher? @relation(fields: [teacherId], references: [id])
-  Student   Student? @relation(fields: [studentId], references: [id])
-  Admin   Admin? @relation(fields: [adminId], references: [id])
+  Teacher Teacher? @relation(fields: [teacherId], references: [id])
+  Student Student? @relation(fields: [studentId], references: [id])
+  Admin   Admin?   @relation(fields: [adminId], references: [id])
+}
+
+model Profile {
+  id       String   @id @default(cuid())
+  phone    String?  @unique
+  clerk_id String   @unique
+  roles    Role[]
+
+  Student  Student? @relation("ProfileStudent")
+  Teacher  Teacher? @relation("ProfileTeacher")
+  Admin    Admin?   @relation("ProfileAdmin")
+}
+
+model Role {
+  id        Int     @id @default(autoincrement())
+  role      String  // "student" | "teacher" | "admin"
+  username  String  @unique
+  profileId String  // must match Profile.id type
+  profile   Profile @relation(fields: [profileId], references: [id])
 }
 
 
@@ -456,4 +485,11 @@ enum LeaveType {
   PERSONAL
   HALFDAY
   DAILY_PERMISSION
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  TRANSFERRED
+  SUSPENDED
 }

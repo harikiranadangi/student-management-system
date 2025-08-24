@@ -1,4 +1,4 @@
-import ClassFilterDropdown from "@/components/FilterDropdown";
+import ClassFilterDropdown, { StudentStatusFilter } from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SearchParams } from "../../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import StudentStatusDropdown from "@/components/StudentStatusDropdown";
 
 // Define types
 type StudentList = Student & { Class?: { name: string } };
@@ -50,7 +51,7 @@ const renderRow = (item: StudentList, role: string | null) => (
           </button>
         </Link>
         {role === "admin" && (
-          <FormContainer table="student" type="delete" id={item.id} />
+          <StudentStatusDropdown id={item.id} currentStatus={item.status} />
         )}
       </div>
     </td>
@@ -73,7 +74,7 @@ const StudentListPage = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, gradeId, classId, teacherId, ...queryParams } = params;
+  const { page, gradeId, classId, teacherId, studentStatus, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
@@ -106,6 +107,7 @@ const StudentListPage = async ({
         { id: { contains: search } },
       ],
     }),
+    ...(studentStatus && { status: studentStatus as any }),
   };
 
   // Fetch classes list (for dropdown etc.)
@@ -137,6 +139,8 @@ const StudentListPage = async ({
     prisma.student.count({ where: query }),
   ]);
 
+  const Path = `/list/users/students`;
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -144,13 +148,14 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+          <TableSearch />
           <ClassFilterDropdown
             classes={classes}  // ✅ Filtered dynamically based on selected grade
             grades={grades}
-            basePath="/list/users/students"
+            basePath={Path}
           />
+          <StudentStatusFilter basePath={Path} />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            <TableSearch />
             {/* 🔄 Reset Filters Button */}
             <ResetFiltersButton basePath="/list/users/students" />
             <div className="flex items-center self-end gap-4">

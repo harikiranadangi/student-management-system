@@ -90,4 +90,16 @@ export interface StudentFeesTable {
 
 export type Mode = "collect" | "cancel";
 
+// types/index.ts
+export type SafeUser = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  fullName: string | null;
+  imageUrl: string;
+  email?: string;
+  role?: string | null; // make role flexible
+};
+
+
 

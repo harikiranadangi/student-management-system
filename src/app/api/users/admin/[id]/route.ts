@@ -25,7 +25,7 @@ export async function PUT(
       where: { id: adminId },
     });
 
-    if (!existingAdmin || !existingAdmin.clerkId) {
+    if (!existingAdmin || !existingAdmin.clerk_id) {
       return NextResponse.json(
         { success: false, error: "Admin or associated Clerk user not found" },
         { status: 404 }
@@ -33,11 +33,11 @@ export async function PUT(
     }
 
     // Log incoming phone number for debugging
-    console.log("Updating phone number for Clerk user with ID:", existingAdmin.clerkId);
+    console.log("Updating phone number for Clerk user with ID:", existingAdmin.clerk_id);
     console.log("Phone number:", `+91${data.phone}`);
 
     // Step 1: Get the Clerk user details
-    const user = await client.users.getUser(existingAdmin.clerkId);
+    const user = await client.users.getUser(existingAdmin.clerk_id);
 
     const formattedNewPhone = `+91${data.phone}`;
 
@@ -53,8 +53,8 @@ export async function PUT(
       console.log("Phone number is already the current primary. Skipping phone update.");
 
       // Still update user details (without touching the phone)
-      await client.users.updateUser(existingAdmin.clerkId, {
-        firstName: data.full_name,
+      await client.users.updateUser(existingAdmin.clerk_id, {
+        firstName: data.name,
         username: data.username,
         password: data.password,
       });
@@ -77,7 +77,7 @@ export async function PUT(
 
     // Step 3: Create the new phone number
     const newPhone = await client.phoneNumbers.createPhoneNumber({
-      userId: existingAdmin.clerkId,
+      userId: existingAdmin.clerk_id,
       phoneNumber: formattedNewPhone,
     });
 
@@ -87,7 +87,7 @@ export async function PUT(
     });
 
     // Step 5: Set the new phone as primary
-    await client.users.updateUser(existingAdmin.clerkId, {
+    await client.users.updateUser(existingAdmin.clerk_id, {
       primaryPhoneNumberID: newPhone.id,
     });
 
@@ -102,8 +102,8 @@ export async function PUT(
     }
 
     // Step 7: Update user details (such as full name, username, password) in Clerk
-    await client.users.updateUser(existingAdmin.clerkId, {
-      firstName: data.full_name,
+    await client.users.updateUser(existingAdmin.clerk_id, {
+      firstName: data.name,
       username: data.username,
       password: data.password,
     });
@@ -159,8 +159,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     // Delete Clerk user if associated
-    if (admin.clerkId) {
-      await client.users.deleteUser(admin.clerkId);
+    if (admin.clerk_id) {
+      await client.users.deleteUser(admin.clerk_id);
     }
 
     // Delete the admin from Prisma

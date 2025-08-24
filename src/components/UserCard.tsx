@@ -3,16 +3,20 @@ import Image from "next/image";
 
 const UserCard = async ({ type }: { type: "admin" | "teacher" | "student" }) => {
 
-  const modelMap : Record<typeof type, any> = {
-    admin: prisma.admin,
-    teacher: prisma.teacher,
-    student: prisma.student,
-  };
+  let data: number;
 
-  const data = await modelMap[type].count();
-
-  console.log(data)
-
+  if (type === "student") {
+    // Count only active students (you can replace 'ACTIVE' with your status value)
+    data = await prisma.student.count({
+      where: {
+        status: "ACTIVE",
+      },
+    });
+  } else if (type === "teacher") {
+    data = await prisma.teacher.count();
+  } else {
+    data = await prisma.admin.count();
+  }
 
   return (
     <div className="rounded-2xl odd:bg-LamaPurple even:bg-LamaYellow p-4 flex-1 min-w-[130px]">
@@ -29,5 +33,3 @@ const UserCard = async ({ type }: { type: "admin" | "teacher" | "student" }) => 
 };
 
 export default UserCard;
-
-

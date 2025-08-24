@@ -1,57 +1,52 @@
 type GetTermStatusParams = {
-    paidAmount: number;
-    abacusAmount: number;
-    totalFeeAmount: number;
-    dueAmount: number;
-    isPreKg?: boolean; // 👈 New optional flag
-  };
-  
-  type TermStatusResult = { status: string; termsPaid: number };
-  
-  export function getTermStatus({ paidAmount, abacusAmount, totalFeeAmount, dueAmount, isPreKg = false }: GetTermStatusParams): TermStatusResult {
-    const totalPaid = Math.min(paidAmount + abacusAmount, totalFeeAmount);
-  
-    if (isPreKg) {
-      // Special case for Pre KG
-      const termFee = totalFeeAmount / 2; // 3rd and 4th term only
-      const termFees = [0, 0, termFee, termFee]; // 1st and 2nd terms are zero
-  
-      const termsPaid = dueAmount === 0 ? 2 : totalPaid <= 0 ? 0 : termFees.reduce(
-        (count, fee, i) =>
-          totalPaid >= termFees.slice(0, i + 1).reduce((a, b) => a + b, 0)
-            ? count + 1
-            : count,
-        0
-      );
-  
-      const status = termsPaid === 2
-        ? "Fully Paid"
-        : termsPaid === 0
-        ? "Not Paid"
-        : `${termsPaid} Term${termsPaid > 1 ? "s" : ""} Paid`;
-  
-      return { status, termsPaid };
-    } else {
-      // Normal classes
-      const normalTermFee = (totalFeeAmount - abacusAmount) / 4;
-      const secondTermFee = (totalFeeAmount / 4) + abacusAmount;
-      const termFees = [normalTermFee, secondTermFee, normalTermFee, normalTermFee];
-  
-      const termsPaid = dueAmount === 0 ? 4 : totalPaid <= 0 ? 0 : termFees.reduce(
-        (count, fee, i) =>
-          totalPaid >= termFees.slice(0, i + 1).reduce((a, b) => a + b, 0)
-            ? count + 1
-            : count,
-        0
-      );
-  
-      const status = termsPaid === 4
-        ? "Fully Paid"
-        : termsPaid === 0
-        ? "Not Paid"
-        : `${termsPaid} Term${termsPaid > 1 ? "s" : ""} Paid`;
-  
-      return { status, termsPaid };
-    }
+  paidAmount: number;
+  abacusAmount: number;
+  totalFeeAmount: number;
+  dueAmount: number;
+  isPreKg?: boolean;
+};
+
+type TermStatusResult = { status: string; termsPaid: number };
+
+export function getTermStatus({
+  paidAmount,
+  abacusAmount,
+  totalFeeAmount,
+  dueAmount,
+  isPreKg = false,
+}: GetTermStatusParams): TermStatusResult {
+  const totalPaid = Math.min(paidAmount + abacusAmount, totalFeeAmount);
+
+  // 🔹 Step 1: Define term structure dynamically
+  const termFees = isPreKg
+    ? // Pre-KG has only 2 terms
+      [0, 0, totalFeeAmount / 2, totalFeeAmount / 2]
+    : // Normal classes → second term includes abacus
+      [
+        (totalFeeAmount - abacusAmount) / 4, // Term 1
+        totalFeeAmount / 4 + abacusAmount,   // Term 2
+        (totalFeeAmount - abacusAmount) / 4, // Term 3
+        (totalFeeAmount - abacusAmount) / 4, // Term 4
+      ];
+
+  // 🔹 Step 2: Compute how many terms are paid
+  let cumulative = 0;
+  let termsPaid = 0;
+  for (const fee of termFees) {
+    cumulative += fee;
+    if (totalPaid >= cumulative) termsPaid++;
   }
-  
+
+  // 🔹 Step 3: Build status
+  let status: string;
+  if (dueAmount === 0) {
+    status = "Fully Paid";
+    termsPaid = isPreKg ? 2 : 4; // override just in case
+  } else if (termsPaid === 0) {
+    status = "Not Paid";
+  } else {
+    status = `${termsPaid} Term${termsPaid > 1 ? "s" : ""} Paid`;
+  }
+
+  return { status, termsPaid };
+}

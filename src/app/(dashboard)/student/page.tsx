@@ -10,17 +10,29 @@ const StudentPage = async () => {
   const { userId, role } = await fetchUserInfo();
 
   console.log("👤 Clerk userId:", userId);
+  console.log("👤 User role:", role)
+  ;
 
 
   if (!userId || role !== "student") {
     return <p className="text-center text-red-500">❌ Unauthorized or no user found.</p>;
   }
 
+  const cleanUserId = userId.replace(/[\s\u200B-\u200D\uFEFF]/g, "");
+
   // Directly use userId as clerk_id in student table
   const student = await prisma.student.findFirst({
-    where: { clerk_id: userId } as Prisma.StudentWhereUniqueInput,
+    where: { clerk_id: cleanUserId },
     include: { Class: true },
   });
+  console.log("👤 Student data:", student);
+  const raw = await prisma.$queryRawUnsafe<
+    { id: string; name: string; classId: number; clerk_id: string | null }[]
+  >(`SELECT id, name, "classId", clerk_id FROM "Student" WHERE clerk_id = '${userId}'`);
+
+  console.log("RAW query result:", raw);
+
+
 
   if (!student) {
     return <p className="text-center text-red-500">⚠️ No student data available.</p>;

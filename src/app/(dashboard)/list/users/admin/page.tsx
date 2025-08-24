@@ -21,14 +21,14 @@ const renderRow = (item: AdminList, role: string | null) => (
       
       <Image
         src={item.img || "/profile.png"}
-        alt={item.full_name}
+        alt={item.name}
         width={40}
         height={40}
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
 
       <div className="flex flex-col">
-        <h3 className="font-semibold">{item.full_name}</h3>
+        <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs text-gray-500">{item.username}</p>
       </div>
 
@@ -88,7 +88,7 @@ const AdminListPage = async ({
   if (queryParams.search) {
     const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
   query.OR = [
-    { full_name: { contains: searchValue, mode: "insensitive" } },
+    { name: { contains: searchValue, mode: "insensitive" } },
     { username: { contains: (searchValue) } },
   ];
 }

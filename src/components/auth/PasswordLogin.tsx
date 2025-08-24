@@ -2,19 +2,19 @@
 import React, { useEffect, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
-type Props = {
-  identifier: string
+interface Props {
+  phoneNumber: string
   password: string
-  setIdentifier: (val: string) => void
-  setPassword: (val: string) => void
+  setPhoneNumber: React.Dispatch<React.SetStateAction<string>>
+  setPassword: React.Dispatch<React.SetStateAction<string>>
   rememberMe: boolean
-  setRememberMe: (val: boolean) => void
+  setRememberMe: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export default function PasswordLogin({
-  identifier,
+  phoneNumber,
   password,
-  setIdentifier,
+  setPhoneNumber,
   setPassword,
   rememberMe,
   setRememberMe,
@@ -22,36 +22,40 @@ export default function PasswordLogin({
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    const savedId = localStorage.getItem('rememberedIdentifier')
-    if (savedId) setIdentifier(savedId)
+    const savedPhone = localStorage.getItem('rememberedPhone')
+    if (savedPhone) setPhoneNumber(savedPhone)
   }, [])
 
   useEffect(() => {
     if (rememberMe) {
-      localStorage.setItem('rememberedIdentifier', identifier)
+      localStorage.setItem('rememberedPhone', phoneNumber)
     } else {
-      localStorage.removeItem('rememberedIdentifier')
+      localStorage.removeItem('rememberedPhone')
     }
-  }, [identifier, rememberMe])
+  }, [phoneNumber, rememberMe])
 
   return (
     <fieldset className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <label htmlFor="identifier" className="text-sm font-medium text-zinc-950">Username</label>
+        <label htmlFor="phoneNumber" className="text-sm font-medium text-zinc-950">
+          Phone Number
+        </label>
         <input
-          type="text"
-          id="identifier"
-          autoComplete="username"
-          value={identifier}
-          placeholder="Enter Username"
-          onChange={(e) => setIdentifier(e.target.value)}
+          type="tel"
+          id="phoneNumber"
+          autoComplete="tel"
+          value={phoneNumber}
+          placeholder="Enter phone number"
+          onChange={(e) => setPhoneNumber(e.target.value)}
           className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
 
       <div className="flex flex-col gap-2 relative">
-        <label htmlFor="password" className="text-sm font-medium text-zinc-950">Password</label>
+        <label htmlFor="password" className="text-sm font-medium text-zinc-950">
+          Password
+        </label>
         <input
           type={showPassword ? 'text' : 'password'}
           id="password"

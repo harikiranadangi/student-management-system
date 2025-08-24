@@ -59,15 +59,14 @@ const renderRow = (item: StudentList, role: string | null) => {
         />
         <div className="flex flex-col">
           <h3 className="font-semibold">{item.name}</h3>
+          <p className="text-xs">{item.Class?.name ?? "N/A"}</p>
           <p className="text-xs">{item.id}</p>
         </div>
       </td>
 
-      <td>{item.Class?.name ?? "N/A"}</td>
       <td className="hidden md:table-cell">{item.gender}</td>
       <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
-      <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString()}</td>
-      {/* <td className="">{item.phone}</td> */}
+      <td className="">{item.phone}</td>
       <td className="hidden md:table-cell">{paidAmount}</td>
       <td
         className={clsx(
@@ -103,12 +102,10 @@ const renderRow = (item: StudentList, role: string | null) => {
 
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
-  { header: "Class", accessor: "class" },
   { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
   { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
-  { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
-  // { header: "Mobile", accessor: "phone" },
-  { header: "Fees", accessor: "paidAmount", className: "hidden md:table-cell" },
+  { header: "Mobile", accessor: "phone" },
+  { header: "Fees Paid", accessor: "paidAmount", className: "hidden md:table-cell" },
   { header: "Status", accessor: "status", className: "hidden md:table-cell" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
@@ -134,7 +131,7 @@ const StudentFeeListPage = async ({
 
 
   // Build the Prisma query based on filters
-  const query: Prisma.StudentWhereInput = {};
+  const query: Prisma.StudentWhereInput = { status: "ACTIVE"};
 
   // Filter by classId (convert to integer)
   if (classId) {
@@ -191,7 +188,7 @@ const StudentFeeListPage = async ({
         <h1 className="hidden text-lg font-semibold md:block">Fees Collection ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect" />
-          <StatusFilter basePath="/list/collect" />
+          <StatusFilter basePath="/list/fees/collect" />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
             {/* 🔄 Reset Filters Button */}
