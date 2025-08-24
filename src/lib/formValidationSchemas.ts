@@ -59,7 +59,7 @@ export type AnnouncementSchema = z.infer<typeof announcementSchema>;
 
 
 export const adminSchema = z.object({
-  id: z.number().optional(),
+  id: z.string().optional(),
   username: z.string().min(1, { message: "Username is required!" }),
   name: z.string().min(1, { message: "Full Name is required!" }),
   password: z.string().min(5, { message: "Password must be at least 5 characters!" }),

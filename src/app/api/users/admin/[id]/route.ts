@@ -12,7 +12,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const adminId = parseInt(id);
+    const adminId = (id);
     const body = await req.json();
 
     const data = adminSchema.parse({
@@ -137,7 +137,7 @@ export async function PUT(
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const adminId = parseInt(id);
+    const adminId = (id);
 
     if (!adminId) {
       return NextResponse.json(
