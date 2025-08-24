@@ -117,7 +117,7 @@ const TeacherListPage = async ({
     if (normalizedValue !== undefined) {
       switch (key) {
         case "classId":
-          query.classId = normalizedValue;
+          query.classId = parseInt(normalizedValue);
           break;
 
         case "search":
