@@ -102,6 +102,9 @@
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   },
+  "overrides": {
+    "rimraf": "3.0.2"
+  },
   "engines": {
     "node": "22.x"
   },

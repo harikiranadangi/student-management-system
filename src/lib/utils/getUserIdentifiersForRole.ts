@@ -4,25 +4,25 @@ export const getUserIdentifiersForRole = async (role: string | null, userId: str
     if (!userId) return { classId: null, studentId: null };
   
     if (role === "student") {
-      const clerkStudent = await prisma.clerkStudents.findUnique({
-        where: { user_id: userId },
-        select: { student: { select: { classId: true, id: true } } },
+      const clerkStudent = await prisma.profile.findUnique({
+        where: { clerk_id: userId },
+        select: { Student: { select: { classId: true, id: true } } },
       });
   
       return {
-        classId: clerkStudent?.student?.classId ?? null,
-        studentId: clerkStudent?.student?.id ?? null,
+        classId: clerkStudent?.Student?.classId ?? null,
+        studentId: clerkStudent?.Student?.id ?? null,
       };
     }
   
     if (role === "teacher") {
-      const clerkTeacher = await prisma.clerkTeachers.findUnique({
-        where: { user_id: userId },
-        select: { teacher: { select: { classId: true, id: true } } },
+      const clerkTeacher = await prisma.profile.findUnique({
+        where: { clerk_id: userId },
+        select: { Teacher: { select: { classId: true, id: true } } },
       });
   
       return {
-        classId: clerkTeacher?.teacher?.classId ?? null,
+        classId: clerkTeacher?.Teacher?.classId ?? null,
         studentId: null,
       };
     }

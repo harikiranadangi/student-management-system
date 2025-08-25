@@ -41,6 +41,8 @@ SELECT * FROM "Lesson";
 SELECT * FROM "Result";
 SELECT * FROM "Attendance";
 SELECT * FROM "Messages";
+SELECT * FROM "Profiles";
+SELECT * FROM "Messages";
 
 -- 3. Filtered SELECTs / joins
 -- Students in a specific class
