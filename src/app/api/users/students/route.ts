@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     // ✅ Step 4: Create or reuse Profile
     let profile = await prisma.profile.findUnique({
       where: { phone },
-      include: { roles: true },
+      include: { roles: true, activeRole: true },
     });
 
     if (!profile) {
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
           phone,
           clerk_id: parentUser.id,
         },
-        include: { roles: true },
+        include: { roles: true, activeRole: true },
       });
       console.log("New Profile created:", profile);
     } else {
@@ -116,10 +116,20 @@ export async function POST(req: Request) {
       data: {
         role: "student",
         username: generatedUsername,
-        profileId: profile.id, // 🔑 links to profile
+        profileId: profile.id, // 🔑 links to profile,
       },
     });
     console.log("New Role created:", role);
+
+    // If profile has no active role yet, set this new role as active
+    if (!profile.activeRoleId) {
+      await prisma.profile.update({
+        where: { id: profile.id },
+        data: { activeRoleId: role.id },
+      });
+      console.log("Active role set for profile:", role.id);
+    }
+
 
     const existingStudentAccount = await prisma.student.findUnique({
       where: { username: generatedUsername },

@@ -139,6 +139,8 @@ const StudentListPage = async ({
     prisma.student.count({ where: query }),
   ]);
 
+  console.log("Students List:", data)
+
   const Path = `/list/users/students`;
 
 

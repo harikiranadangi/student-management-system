@@ -16,13 +16,13 @@ export const getUserIdentifiersForRole = async (role: string | null, userId: str
     }
   
     if (role === "teacher") {
-      const clerkTeacher = await prisma.clerkTeachers.findUnique({
-        where: { user_id: userId },
-        select: { teacher: { select: { classId: true, id: true } } },
+      const clerkTeacher = await prisma.profile.findUnique({
+        where: { clerk_id: userId },
+        select: { Teacher: { select: { classId: true, id: true } } },
       });
   
       return {
-        classId: clerkTeacher?.teacher?.classId ?? null,
+        classId: clerkTeacher?.Teacher?.classId ?? null,
         studentId: null,
       };
     }
