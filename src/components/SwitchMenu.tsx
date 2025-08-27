@@ -4,15 +4,15 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 
-type Role = { id: number; role: string };
-type Props = { roles: Role[]; activeRoleId?: number | null };
+type Role = { id: string; role: string };
+type Props = { roles: Role[]; activeRoleId?: string };
 
-export default function RoleSwitcher({ roles, activeRoleId }: Props) {
+export default function SwitchMenu({ roles, activeRoleId }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { session } = useClerk();
 
-  // ✅ Remove duplicate role names
+  // ✅ Ensure unique roles by `role`
   const uniqueRoles = useMemo(() => {
     const seen = new Set<string>();
     return roles.filter((r) => {
@@ -22,7 +22,7 @@ export default function RoleSwitcher({ roles, activeRoleId }: Props) {
     });
   }, [roles]);
 
-  async function switchRole(roleId: number) {
+  async function switchRole(roleId: string) {
     if (!roleId) return;
     setLoading(true);
 
@@ -38,10 +38,10 @@ export default function RoleSwitcher({ roles, activeRoleId }: Props) {
         return;
       }
 
-      // Refresh Clerk session to pick up new metadata
+      // Refresh Clerk session
       await session?.reload();
 
-      // Trigger middleware refresh
+      // Refresh UI + middleware checks
       router.refresh();
     } finally {
       setLoading(false);
@@ -51,9 +51,9 @@ export default function RoleSwitcher({ roles, activeRoleId }: Props) {
   return (
     <select
       disabled={loading}
-      value={activeRoleId ?? ""} // ✅ handles null
-      onChange={(e) => switchRole(Number(e.target.value))}
-      className="p-2 rounded-md border text-xs cursor-pointer"
+      onChange={(e) => switchRole(e.target.value)}
+      value={activeRoleId || ""}
+      className="p-2 rounded border"
     >
       <option value="">Switch Role</option>
       {uniqueRoles.map((r) => (

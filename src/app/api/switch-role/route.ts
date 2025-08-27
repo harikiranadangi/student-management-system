@@ -9,9 +9,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { roleId } = await req.json();
-    if (!roleId) {
-      return NextResponse.json({ error: "roleId is required" }, { status: 400 });
+    const { username } = await req.json();
+    if (!username) {
+      return NextResponse.json({ error: "username is required" }, { status: 400 });
     }
 
     // ✅ Find profile with roles
@@ -24,28 +24,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const role = profile.roles.find((r) => r.id === roleId);
+    // ✅ Find role by username for this profile
+    const role = profile.roles.find((r) => r.username === username);
     if (!role) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      return NextResponse.json({ error: "Role not found for this username" }, { status: 404 });
     }
 
     // ✅ Update DB activeRoleId
     await prisma.profile.update({
       where: { id: profile.id },
-      data: { activeRoleId: roleId },
+      data: { activeRoleId: role.id },
     });
 
     const client = await clerkClient();
 
-    // ✅ Update Clerk metadata
+    // ✅ Update Clerk metadata for frontend access
     await client.users.updateUser(userId, {
       publicMetadata: {
         role: role.role,
         activeRoleId: role.id,
+        username: role.username,
       },
     });
 
-    return NextResponse.json({ success: true, activeRole: role });
+    return NextResponse.json({
+      success: true,
+      activeRole: {
+        id: role.id,
+        role: role.role,
+        username: role.username,
+      },
+    });
   } catch (err) {
     console.error("Error in switch-role:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

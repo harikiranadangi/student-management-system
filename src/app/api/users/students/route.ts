@@ -69,9 +69,10 @@ export async function POST(req: Request) {
     } else {
       // 👩‍👩‍👦 If not found, create new parent user in Clerk
       parentUser = await client.users.createUser({
+        username: generatedUsername,
+        password: password,
         firstName: name,
         phoneNumber: [phoneNumber],
-        emailAddress: email ? [email] : [],
       });
 
       await client.users.updateUser(parentUser.id, {
@@ -158,6 +159,7 @@ export async function POST(req: Request) {
       classId,
       academicYear,
       clerk_id: parentUser.id,
+      profileId: profile.id,
     };
 
     // Only add dob if provided

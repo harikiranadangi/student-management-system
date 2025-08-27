@@ -42,7 +42,12 @@ const StudentProfilePage = async () => {
   }
 
   // Fee summary fetch with auth + error handling
-  const cookieHeader = cookies().toString();
+  const cookieStore = cookies();
+  const cookieHeader = (await cookieStore).getAll()
+    .map(({ name, value }) => `${name}=${value}`)
+    .join("; ");
+
+
   const feeRes = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/fees/fee-summary`, {
     cache: "no-store",
     headers: {
