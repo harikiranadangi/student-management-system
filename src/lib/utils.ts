@@ -82,27 +82,28 @@ export async function fetchUserInfo(): Promise<{
 export const getClassIdForRole = async (
   role: string | null,
   userId: string | null
-): Promise<number[] | null | number> => {
-  if (!userId) return null;
+): Promise<number[]> => {
+  if (!userId) return [];
 
   if (role === "student") {
     const students = await prisma.student.findMany({
       where: { clerk_id: userId },
       select: { classId: true },
     });
-    return students.map((s) => s.classId); // return all classIds
+    return students.map((s) => s.classId); // all student classIds
   }
-
 
   if (role === "teacher") {
     const clerkTeacher = await prisma.clerkTeachers.findUnique({
       where: { user_id: userId },
       select: { teacher: { select: { classId: true } } },
     });
-    return clerkTeacher?.teacher?.classId ?? null;
+    return clerkTeacher?.teacher?.classId
+      ? [clerkTeacher.teacher.classId] // wrap in array
+      : [];
   }
 
-  return null;
+  return [];
 };
 
 

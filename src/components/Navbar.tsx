@@ -1,17 +1,34 @@
 import { UserButton } from "@clerk/nextjs";
 import prisma from "@/lib/prisma";
 import Image from "next/image";
-import RoleSwitcher from "./RoleSwitcher";
 import { currentUser } from "@clerk/nextjs/server";
+import SwitchUser from "./SwitchUser";
 
 const Navbar = async () => {
   const user = await currentUser();
 
+  if (!user) return null;
+
   // 🗄️ Fetch the profile + roles from Prisma
   const profile = await prisma.profile.findUnique({
-    where: { clerk_id: user!.id },
-    include: { roles: true, activeRole: true },
+    where: { clerk_id: user.id },
+    include: { users: true, activeUser: true },
   });
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-between px-3 py-4 bg-white shadow-sm">
+        <span className="text-sm text-gray-500">No profile found</span>
+        <UserButton />
+      </div>
+    );
+  }
+
+  const roles = profile.users.map((u) => ({
+    id: u.id,
+    username: u.username,
+    role: u.role,
+  }));
 
   return (
     <div className="flex items-center justify-between px-3 py-4 bg-white shadow-sm">
@@ -38,20 +55,13 @@ const Navbar = async () => {
           </div>
         </div>
 
-        {/* 🔑 ROLE SWITCHER */}
-        {profile && (
-          <RoleSwitcher
-            roles={profile.roles}
-            activeRoleId={profile.activeRoleId}
-          />
-        )}
+        {/* ✅ Role switcher */}
+        <SwitchUser roles={roles} activeUserId={profile.activeUserId} />
 
         <div className="flex flex-col">
-          <span className="text-xs font-medium leading-3">
-            {user?.fullName}
-          </span>
+          <span className="text-xs font-medium leading-3">{user.fullName}</span>
           <span className="text-[10px] text-gray-500 text-right">
-            {profile?.activeRole?.role ?? "No role"}
+            {profile.activeUser?.role ?? "No role"}
           </span>
         </div>
 

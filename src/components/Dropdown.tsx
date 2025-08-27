@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -19,21 +19,27 @@ interface DropdownProps {
 
 export default function Dropdown({ icon, label, items }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+  // Detect desktop vs mobile
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
+  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -41,6 +47,7 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     };
   }, []);
 
+  // Hover handlers for desktop
   const handleMouseEnter = () => {
     if (isDesktop) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -52,10 +59,11 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     if (isDesktop) {
       timeoutRef.current = setTimeout(() => {
         setIsOpen(false);
-      }, 1000); // 3-second delay
+      }, 1000); // delay
     }
   };
 
+  // Ensure hydration consistency
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -70,7 +78,14 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
       onMouseLeave={handleMouseLeave}
     >
       <button
-        onClick={() => { }}
+        onClick={() => !isDesktop && setIsOpen((prev) => !prev)} // toggle on mobile
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsOpen((prev) => !prev);
+          }
+          if (e.key === "Escape") setIsOpen(false);
+        }}
         className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-md transition-all duration-300 ease-in-out"
         aria-haspopup="true"
         aria-expanded={isOpen ? "true" : "false"}
@@ -92,22 +107,21 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
         </svg>
       </button>
 
-      {/* Always mounted, transition-controlled dropdown */}
+      {/* Dropdown Menu */}
       <div
         className={`
-    absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-300 ease-in-out transform origin-top-left
-    ${isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
-    md:left-full md:top-0 md:translate-x-2 left-0 translate-y-1
-  `}
+          absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-300 ease-in-out transform origin-top-left
+          ${isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}
+          md:left-full md:top-0 md:translate-x-2 left-0 translate-y-1
+        `}
         role="menu"
       >
-
-
         <div className="py-2">
           {items.map((item) => (
             <Link
               key={item.label}
               href={item.href}
+              onClick={() => setIsOpen(false)} // close on click
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition-all duration-200 ease-in-out rounded-md whitespace-nowrap"
               role="menuitem"
             >
@@ -118,6 +132,5 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
         </div>
       </div>
     </div>
-
   );
 }

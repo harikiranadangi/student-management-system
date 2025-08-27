@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import Dropdown from "./Dropdown";
 import { useTranslation } from "next-i18next";
+import { useUser } from "@clerk/nextjs";
 
 type Role = "admin" | "teacher" | "student";
 
@@ -20,10 +21,6 @@ interface MenuItemSection {
   items: MenuItem[];
 }
 
-interface MenuProps {
-  role: Role;
-}
-
 const menuItems: MenuItemSection[] = [
   {
     title: "",
@@ -35,20 +32,20 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["admin"] },
-          { icon: '/teacher.png', label: "Teachers", href: "/list/users/teachers", visible: ["admin"] },
-          { icon: '/admin.png', label: "Admins", href: "/list/users/admin", visible: ["admin"] },
+          { icon: "/student.png", label: "Students", href: "/list/users/students", visible: ["admin"] },
+          { icon: "/teacher.png", label: "Teachers", href: "/list/users/teachers", visible: ["admin"] },
+          { icon: "/admin.png", label: "Admins", href: "/list/users/admin", visible: ["admin"] },
         ],
       },
-      { icon: '/student.png', label: "Students", href: "/list/users/students", visible: ["teacher"] },
+      { icon: "/student.png", label: "Students", href: "/list/users/students", visible: ["teacher"] },
       {
         icon: "/attendance.png",
         label: "Attendance",
         href: "#",
         visible: ["admin", "teacher"],
         dropdown: [
-          { icon: '/lesson.png', label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
-          { icon: '/attendance.png', label: "View Attendance", href: "/list/attendance/view", visible: ["admin", "teacher"] },
+          { icon: "/lesson.png", label: "Mark Attendance", href: "/list/attendance/mark_attendance", visible: ["admin", "teacher"] },
+          { icon: "/attendance.png", label: "View Attendance", href: "/list/attendance/view", visible: ["admin", "teacher"] },
         ],
       },
       { icon: "/homework.png", label: "Homeworks", href: "/list/homeworks", visible: ["admin", "teacher", "student"] },
@@ -76,8 +73,8 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin", "teacher"],
         dropdown: [
-          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin",  "teacher"] },
-          { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin","teacher"] },
+          { icon: "/result.png", label: "View Results", href: "/list/results/view", visible: ["admin", "teacher"] },
+          { icon: "/lesson.png", label: "Marks Entry", href: "/list/results/marks-entry", visible: ["admin", "teacher"] },
         ],
       },
       { icon: "/exam.png", label: "Permissions", href: "/list/permissions", visible: ["admin"] },
@@ -87,13 +84,13 @@ const menuItems: MenuItemSection[] = [
         href: "#",
         visible: ["admin"],
         dropdown: [
-          { icon: "/class.png", label: "Grades", href: "/list/reports/bulk-import/grades", visible: ["admin"]  },
-          { icon: "/fees.png", label: "Fees Structure", href: "/list/reports/bulk-import/feestructure", visible: ["admin"]  },
-          { icon: "/class.png", label: "Classes", href: "/list/reports/bulk-import/classes", visible: ["admin"]  },
-          { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"]  },
-          { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"]  },
-          { icon: "/subject.png", label: "Subjects", href: "/list/reports/bulk-import/subjects", visible: ["admin"]  },
-          { icon: "/fees.png", label: "Fee Collection", href: "/list/reports/bulk-import/feecollection", visible: ["admin"]  },
+          { icon: "/class.png", label: "Grades", href: "/list/reports/bulk-import/grades", visible: ["admin"] },
+          { icon: "/fees.png", label: "Fees Structure", href: "/list/reports/bulk-import/feestructure", visible: ["admin"] },
+          { icon: "/class.png", label: "Classes", href: "/list/reports/bulk-import/classes", visible: ["admin"] },
+          { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"] },
+          { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"] },
+          { icon: "/subject.png", label: "Subjects", href: "/list/reports/bulk-import/subjects", visible: ["admin"] },
+          { icon: "/fees.png", label: "Fee Collection", href: "/list/reports/bulk-import/feecollection", visible: ["admin"] },
         ],
       },
     ],
@@ -108,49 +105,55 @@ const menuItems: MenuItemSection[] = [
   },
 ];
 
+/**
+ * Dynamically adjust menu items based on role
+ */
 function updateMenuItem(item: MenuItem, role: Role): MenuItem | null {
+  // Home should redirect to /<role>
   if (item.label === "Home") {
     return { ...item, href: `/${role}` };
   }
 
+  // Profile should redirect to role-specific profile
   if (item.label === "Profile") {
-    const profileHref = {
+    const profileHref: Record<Role, string> = {
       student: "/list/studentprofile",
       teacher: "/list/teacherprofile",
       admin: "/list/adminprofile",
-    }[role];
-    return { ...item, href: profileHref };
+    };
+    return { ...item, href: profileHref[role] };
   }
 
-  const dropdown = item.dropdown?.filter(sub => sub.visible.includes(role));
-  if (item.dropdown && (!dropdown || dropdown.length === 0)) return null;
+  // Filter dropdown items by role
+  const filteredDropdown = item.dropdown?.filter((sub) => sub.visible.includes(role));
+  if (item.dropdown && (!filteredDropdown || filteredDropdown.length === 0)) return null;
 
-  return { ...item, dropdown };
+  return { ...item, dropdown: filteredDropdown };
 }
 
-export default function Menu({ role }: MenuProps) {
+export default function Menu() {
   const { t } = useTranslation();
+  const { user } = useUser();
 
-  const updatedMenu = menuItems
+  // Get role from Clerk user metadata (fallback = student)
+  const role: Role = (user?.publicMetadata?.role as Role) || "student";
+
+  // Filter + transform menu items
+  const updatedMenu: MenuItemSection[] = menuItems
     .map((section) => {
       const filteredItems = section.items
         .map((item) => updateMenuItem(item, role))
         .filter((item): item is MenuItem => !!item)
         .filter((item) => item.visible.includes(role));
 
-      if (filteredItems.length === 0) return null;
-
-      return {
-        ...section,
-        items: filteredItems,
-      };
+      return filteredItems.length ? { ...section, items: filteredItems } : null;
     })
     .filter((section): section is MenuItemSection => section !== null);
 
   return (
     <div className="mt-4 text-sm">
       {updatedMenu.map((section) => (
-        <div className="flex flex-col gap-2" key={section.title}>
+        <div key={section.title} className="flex flex-col gap-2">
           {section.title && (
             <span className="hidden my-4 mb-4 font-light text-black-400 lg:block">
               {t(section.title)}
@@ -161,8 +164,8 @@ export default function Menu({ role }: MenuProps) {
               <Dropdown key={item.label} icon={item.icon} label={t(item.label)} items={item.dropdown} />
             ) : (
               <Link
-                href={item.href}
                 key={item.label}
+                href={item.href}
                 className="flex items-center justify-center gap-6 py-2 text-black-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
               >
                 <Image src={item.icon} alt={item.label} width={20} height={20} />
