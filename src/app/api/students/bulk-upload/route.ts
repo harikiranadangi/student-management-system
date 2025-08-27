@@ -70,9 +70,9 @@ export async function POST(req: NextRequest) {
       }
 
       // ✅ Step 1: Ensure Profile exists for this phone
-      let profile = await prisma.profile.findUnique({
+      let profile = await prisma.profile.findFirst({
         where: { phone },
-        include: { roles: true },
+        include: { users: true },
       });
 
       if (!profile) {
@@ -81,16 +81,16 @@ export async function POST(req: NextRequest) {
             phone,
             clerk_id: providedClerkId || "", // temporary empty if Clerk not created yet
           },
-          include: { roles: true },
+          include: { users: true },
         });
       }
 
       // ✅ Step 2: Ensure Student Role exists for this profile
       const studentUsername = `s${id}`;
-      let role = profile.roles.find((r) => r.role === "student");
+      let role = profile.users.find((r) => r.role === "student");
 
       if (!role) {
-        role = await prisma.role.create({
+        role = await prisma.linkedUser.create({
           data: {
             role: "student",
             username: studentUsername,

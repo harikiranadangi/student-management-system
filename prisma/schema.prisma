@@ -25,8 +25,8 @@ model Admin {
   createdAt  DateTime  @default(now())
   clerk_id   String?   @unique
 
-  profile   Profile? @relation("ProfileAdmin", fields: [profileId], references: [id])
-  profileId String?  @unique
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  profileId String?
 
   @@index([clerk_id])
 }
@@ -195,8 +195,8 @@ model Student {
   permissionSlips   PermissionSlip[]
 
   // 👇 Add these lines
-  profileId String?  @unique
-  profile   Profile? @relation("ProfileStudent", fields: [profileId], references: [id])
+  profileId String?
+  profile   Profile? @relation(fields: [profileId], references: [id])
 
   @@index([classId])
   @@index([clerk_id]) // faster lookup by parent
@@ -229,8 +229,8 @@ model Teacher {
   supervisor Boolean   @default(false)
   dob        DateTime?
 
-  profile   Profile? @relation("ProfileTeacher", fields: [profileId], references: [id])
-  profileId String?  @unique
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  profileId String?
 
   classId  Int?    @unique
   clerk_id String? @unique
@@ -399,9 +399,9 @@ model Profile {
   activeUser   LinkedUser?  @relation("ActiveUser", fields: [activeUserId], references: [id])
 
   // Opposite sides for Admin, Student, Teacher
-  admin   Admin?   @relation("ProfileAdmin")
-  student Student? @relation("ProfileStudent")
-  teacher Teacher? @relation("ProfileTeacher")
+  admin   Admin[]
+  student Student[]
+  teacher Teacher[]
 }
 
 model LinkedUser {

@@ -25,6 +25,7 @@ JOIN information_schema.columns c
 -- 2. Basic SELECT queries
 
 -- Retrieve all records
+SELECT * FROM "Admin";
 SELECT * FROM "Student";
 SELECT * FROM "Teacher";
 SELECT * FROM "Class";
@@ -42,7 +43,7 @@ SELECT * FROM "Result";
 SELECT * FROM "Attendance";
 SELECT * FROM "Messages";
 SELECT * FROM "Profile";
-SELECT * FROM "Role";
+SELECT * FROM "LinkedUser";
 
 -- 3. Filtered SELECTs / joins
 -- Students in a specific class
@@ -119,6 +120,8 @@ LIMIT 10;
 SELECT id, clerk_id, length(clerk_id), encode(clerk_id::bytea, 'escape')
 FROM "Student"
 WHERE id = 15616;
+
+DELETE FROM "class";
 
 
 

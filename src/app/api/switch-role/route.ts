@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     // ✅ Find profile with roles
     const profile = await prisma.profile.findUnique({
       where: { clerk_id: userId },
-      include: { roles: true },
+      include: { users: true },
     });
 
     if (!profile) {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Find role by username for this profile
-    const role = profile.roles.find((r) => r.username === username);
+    const role = profile.users.find((r) => r.username === username);
     if (!role) {
       return NextResponse.json({ error: "Role not found for this username" }, { status: 404 });
     }
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     // ✅ Update DB activeRoleId
     await prisma.profile.update({
       where: { id: profile.id },
-      data: { activeRoleId: role.id },
+      data: { activeUserId: role.id },
     });
 
     const client = await clerkClient();

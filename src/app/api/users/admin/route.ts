@@ -35,9 +35,9 @@ export async function POST(req: Request) {
     });
 
     // ✅ Step 2: Find or create profile
-    let profile = await prisma.profile.findUnique({
+    let profile = await prisma.profile.findFirst({
       where: { phone: data.phone },
-      include: { roles: true },
+      include: { users: true },
     });
 
     if (!profile) {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           phone: data.phone,
           clerk_id: clerkUser.id,
         },
-        include: { roles: true },
+        include: { users: true },
       });
       console.log('New profile created:', profile);
     } else {
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Step 3: Check if username already exists for a role
-    const existingRole = await prisma.role.findUnique({
+    const existingRole = await prisma.linkedUser.findFirst({
       where: { username: data.username },
     });
 
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Step 4: Create new admin role
-    const role = await prisma.role.create({
+    const role = await prisma.linkedUser.create({
       data: {
         role: 'admin',
         username: data.username,

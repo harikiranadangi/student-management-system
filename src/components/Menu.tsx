@@ -4,9 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import Dropdown from "./Dropdown";
 import { useTranslation } from "next-i18next";
-import { useUser } from "@clerk/nextjs";
 
 type Role = "admin" | "teacher" | "student";
+
+interface MenuProps {
+  role: Role;
+}
 
 interface MenuItem {
   icon: string;
@@ -86,9 +89,9 @@ const menuItems: MenuItemSection[] = [
         dropdown: [
           { icon: "/class.png", label: "Grades", href: "/list/reports/bulk-import/grades", visible: ["admin"] },
           { icon: "/fees.png", label: "Fees Structure", href: "/list/reports/bulk-import/feestructure", visible: ["admin"] },
+          { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"] },
           { icon: "/class.png", label: "Classes", href: "/list/reports/bulk-import/classes", visible: ["admin"] },
           { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"] },
-          { icon: "/teacher.png", label: "Teachers", href: "/list/reports/bulk-import/teachers", visible: ["admin"] },
           { icon: "/subject.png", label: "Subjects", href: "/list/reports/bulk-import/subjects", visible: ["admin"] },
           { icon: "/fees.png", label: "Fee Collection", href: "/list/reports/bulk-import/feecollection", visible: ["admin"] },
         ],
@@ -131,12 +134,8 @@ function updateMenuItem(item: MenuItem, role: Role): MenuItem | null {
   return { ...item, dropdown: filteredDropdown };
 }
 
-export default function Menu() {
+export default function Menu({ role }: MenuProps) {
   const { t } = useTranslation();
-  const { user } = useUser();
-
-  // Get role from Clerk user metadata (fallback = student)
-  const role: Role = (user?.publicMetadata?.role as Role) || "student";
 
   // Filter + transform menu items
   const updatedMenu: MenuItemSection[] = menuItems

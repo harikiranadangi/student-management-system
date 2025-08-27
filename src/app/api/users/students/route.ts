@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { studentschema } from '@/lib/formValidationSchemas';
+import { toast } from 'react-toastify';
 
 // Clerk User type alias (avoids import conflict)
 const client = await clerkClient();
@@ -79,13 +80,13 @@ export async function POST(req: Request) {
         publicMetadata: { role: 'student' },
       });
 
-      console.log('New parent created in Clerk:', parentUser.id);
+      console.log('New User created in Clerk:', parentUser.id);
     }
 
     // ✅ Step 4: Create or reuse Profile
     let profile = await prisma.profile.findUnique({
-      where: { phone },
-      include: { roles: true, activeRole: true },
+      where: { clerk_id: parentUser.id },
+      include: { users: true, activeUser: true },
     });
 
     if (!profile) {
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
           phone,
           clerk_id: parentUser.id,
         },
-        include: { roles: true, activeRole: true },
+        include: { users: true, activeUser: true },
       });
       console.log("New Profile created:", profile);
     } else {
@@ -102,7 +103,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Step 5: Ensure Role (student) exists for this profile
-    const existingRole = await prisma.role.findUnique({
+    const existingRole = await prisma.linkedUser.findFirst({
       where: { username: generatedUsername },
     });
 
@@ -113,7 +114,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const role = await prisma.role.create({
+    const role = await prisma.linkedUser.create({
       data: {
         role: "student",
         username: generatedUsername,
@@ -123,10 +124,10 @@ export async function POST(req: Request) {
     console.log("New Role created:", role);
 
     // If profile has no active role yet, set this new role as active
-    if (!profile.activeRoleId) {
+    if (!profile.activeUserId) {
       await prisma.profile.update({
         where: { id: profile.id },
-        data: { activeRoleId: role.id },
+        data: { activeUserId: role.id },
       });
       console.log("Active role set for profile:", role.id);
     }
@@ -216,7 +217,7 @@ export async function POST(req: Request) {
 
     console.log('Fee structures assigned:', matchingFeeStructures);
 
-    return NextResponse.json(student, { status: 201 });
+    return NextResponse.json(student, { status: 201 }); toast.success('Student created successfully!');
   } catch (error: any) {
     console.error('Error details:', JSON.stringify(error, null, 2));
 

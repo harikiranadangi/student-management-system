@@ -17,14 +17,14 @@ export async function POST(req: Request) {
     // ✅ Find profile with roles
     const profile = await prisma.profile.findUnique({
       where: { clerk_id: userId },
-      include: { roles: true },
+      include: { users: true },
     });
 
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const role = profile.roles.find((r) => r.id === roleId);
+    const role = profile.users.find((r) => r.id === roleId);
     if (!role) {
       return NextResponse.json({ error: "Role not found" }, { status: 404 });
     }
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     // ✅ Update DB activeRoleId
     await prisma.profile.update({
       where: { id: profile.id },
-      data: { activeRoleId: roleId },
+      data: { activeUserId: roleId },
     });
 
     const client = await clerkClient();
