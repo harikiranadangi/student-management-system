@@ -25,8 +25,9 @@ model Admin {
   createdAt  DateTime  @default(now())
   clerk_id   String?   @unique
 
-  profile   Profile? @relation(fields: [profileId], references: [id])
-  profileId String?
+  profile    Profile?     @relation(fields: [profileId], references: [id])
+  profileId  String?
+  LinkedUser LinkedUser[]
 
   @@index([clerk_id])
 }
@@ -198,6 +199,9 @@ model Student {
   profileId String?
   profile   Profile? @relation(fields: [profileId], references: [id])
 
+  linkedUserId String?     @unique
+  linkedUser   LinkedUser? @relation(fields: [linkedUserId], references: [id])
+
   @@index([classId])
   @@index([clerk_id]) // faster lookup by parent
 }
@@ -239,6 +243,9 @@ model Teacher {
   lessons       Lesson[]
   subjects      SubjectTeacher[]
   class         Class?           @relation("ClassToTeacher")
+
+  linkedUserId String?     @unique
+  linkedUser   LinkedUser? @relation(fields: [linkedUserId], references: [id])
 
   @@index([clerk_id])
 }
@@ -412,6 +419,11 @@ model LinkedUser {
   profile   Profile @relation(fields: [profileId], references: [id])
 
   activeFor Profile? @relation("ActiveUser")
+
+  student Student?
+  teacher Teacher?
+  admin   Admin?   @relation(fields: [adminId], references: [id])
+  adminId String?
 }
 
 enum LessonDay {
