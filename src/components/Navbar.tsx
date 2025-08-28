@@ -9,10 +9,23 @@ const Navbar = async () => {
 
   if (!user) return null;
 
-  // 🗄️ Fetch the profile + roles from Prisma
+  // 🗄️ Fetch the profile + linked users
   const profile = await prisma.profile.findUnique({
     where: { clerk_id: user.id },
-    include: { users: true, activeUser: true },
+    include: {
+      users: {
+        include: {
+          admin: true,
+          teacher: true,
+          student: {
+            include: {
+              Class: true,
+            },
+          },
+        },
+      },
+      activeUser: true,
+    },
   });
 
   if (!profile) {
@@ -24,9 +37,16 @@ const Navbar = async () => {
     );
   }
 
+  // 🎯 Build roles array
   const roles = profile.users.map((u) => ({
     id: u.id,
     username: u.username,
+    name:
+      u.admin?.name ??
+      u.teacher?.name ??
+      u.student?.name ??
+      u.username, // fallback
+    className: u.student?.Class?.name ?? undefined,
     role: u.role,
   }));
 
@@ -42,12 +62,14 @@ const Navbar = async () => {
         />
       </div>
 
-      {/* ICONS AND USER */}
+      {/* ICONS + USER */}
       <div className="flex items-center justify-end w-full gap-6">
+        {/* Messages */}
         <div className="flex items-center justify-center bg-white rounded-full cursor-pointer w-7 h-7">
           <Image src="/message.png" alt="Messages" width={20} height={20} />
         </div>
 
+        {/* Announcements */}
         <div className="relative flex items-center justify-center bg-white rounded-full cursor-pointer w-7 h-7">
           <Image src="/announcement.png" alt="Announcements" width={20} height={20} />
           <div className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-purple-500 rounded-full -top-3 -right-3">
@@ -56,8 +78,12 @@ const Navbar = async () => {
         </div>
 
         {/* ✅ Role switcher */}
-        <SwitchUser roles={roles} activeUserId={profile.activeUserId} />
+        <SwitchUser
+          roles={roles}
+          activeUsername={profile.activeUser?.username ?? null}
+        />
 
+        {/* User info */}
         <div className="flex flex-col">
           <span className="text-xs font-medium leading-3">{user.fullName}</span>
           <span className="text-[10px] text-gray-500 text-right">

@@ -2,17 +2,19 @@
 import { useTransition } from "react";
 
 type Role = {
-  id: string;              // 👈 Prisma LinkedUser.id is String
-  username: string;
-  role: string;            // maps to LinkedUser.type
+  id: string;         // LinkedUser.id (not used for switching)
+  username: string;   // used for switching
+  name: string;       // display name (from Admin/Teacher/Student)
+  className?: string; // optional for students
+  role: string;       // LinkedUser.type
 };
 
 interface Props {
   roles: Role[];
-  activeUserId?: string | null;   // 👈 match schema
+  activeUsername?: string | null;
 }
 
-export default function SwitchUser({ roles, activeUserId }: Props) {
+export default function SwitchUser({ roles, activeUsername }: Props) {
   const [isPending, startTransition] = useTransition();
 
   async function handleSwitch(username: string) {
@@ -29,13 +31,13 @@ export default function SwitchUser({ roles, activeUserId }: Props) {
   return (
     <select
       className="px-2 py-1 text-sm border rounded"
-      value={roles.find((r) => r.id === activeUserId)?.username ?? ""}
+      value={activeUsername ?? ""}
       onChange={(e) => handleSwitch(e.target.value)}
       disabled={isPending}
     >
       {roles.map((r) => (
         <option key={r.id} value={r.username}>
-          {r.username} ({r.role})
+          {r.name} {r.className ? `(${r.className})` : ""}
         </option>
       ))}
     </select>
