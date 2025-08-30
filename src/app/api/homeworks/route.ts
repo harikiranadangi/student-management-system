@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { z } from "zod";
 import { homeworkSchema } from "@/lib/formValidationSchemas";
 import { v4 as uuidv4 } from "uuid";
 

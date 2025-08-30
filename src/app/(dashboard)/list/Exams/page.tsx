@@ -35,7 +35,7 @@ const formatDateTime = (date: Date, time: string) => {
 const renderRow = (item: Exams, role: string | null) =>
   item.examGradeSubjects.map((egs, idx) => (
     <tr
-      key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`} // or use egs.id if it exists
+      key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`}
       className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
     >
       <td className="hidden md:table-cell">
@@ -77,11 +77,11 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "admin" || role === "teacher"
     ? [
-      {
-        header: "Actions",
-        accessor: "action",
-      },
-    ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
     : []),
 ];
 
@@ -92,102 +92,89 @@ const ExamsList = async ({
 }) => {
   const params = await searchParams;
   const { page, date, gradeId, ...queryParams } = params;
-  const p = page ? (Array.isArray(page) ? page[0] : page) : "1"; // Handle page being a string[] or string
-  const { role } = await fetchUserInfo();
+  const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
+  const { role, userId } = await fetchUserInfo();
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
-  const teacherId = Array.isArray(params.teacherId) ? params.teacherId[0] : params.teacherId;
-
-
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "id";
+  const teacherId = Array.isArray(params.teacherId)
+    ? params.teacherId[0]
+    : params.teacherId;
 
   let query: Prisma.ExamWhereInput = {};
+  let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
 
-  let teacherGradeIds: number[] = [];
-
-  if (teacherId) {
+  // 🔹 Role-based filtering
+  if (role === "teacher" && teacherId) {
     const teacherClasses = await prisma.class.findMany({
       where: { supervisorId: teacherId },
-      include: { Grade: true },
+      select: { gradeId: true },
     });
-
-    teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+    const teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+    examGradeSubjectsFilter.gradeId = { in: teacherGradeIds };
   }
 
-  // Title filter
+  if (role === "student" && userId) {
+    const student = await prisma.student.findUnique({
+      where: { id: userId },
+      select: { Class: { select: { gradeId: true } } },
+    });
+    if (student?.Class?.gradeId) {
+      examGradeSubjectsFilter.gradeId = student.Class.gradeId;
+    }
+  }
+
+  // 🔹 Title filter
   if (queryParams.title) {
     query.title = {
-      contains: Array.isArray(queryParams.title) ? queryParams.title[0] : queryParams.title,
+      contains: Array.isArray(queryParams.title)
+        ? queryParams.title[0]
+        : queryParams.title,
       mode: "insensitive",
     };
   }
 
-  let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
-
-  // Apply date filter (handle date being string | string[])
+  // 🔹 Date filter
   if (date) {
     const selectedDate = Array.isArray(date) ? date[0] : date;
     const dateObj = new Date(selectedDate);
-    const startDate = startOfDay(dateObj);
-    const endDate = endOfDay(dateObj);
-
     examGradeSubjectsFilter.date = {
-      gte: startDate,
-      lt: endDate,
+      gte: startOfDay(dateObj),
+      lt: endOfDay(dateObj),
     };
   }
 
-  // Apply search filter (by subject or grade level)
+  // 🔹 Search filter (by subject or grade level)
   if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    const searchValue = Array.isArray(queryParams.search)
+      ? queryParams.search[0]
+      : queryParams.search;
     examGradeSubjectsFilter.OR = [
-      {
-        Subject: {
-          name: {
-            contains: searchValue,
-            mode: "insensitive",
-          },
-        },
-      },
-      {
-        Grade: {
-          level: {
-            contains: searchValue,
-            mode: "insensitive",
-          },
-        },
-      },
+      { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
+      { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
     ];
   }
 
-  // Apply grade filter
+  // 🔹 Grade filter (manual dropdown)
   if (gradeId) {
     examGradeSubjectsFilter.gradeId = Number(gradeId);
   }
 
-  // Merge all filters under examGradeSubjects.some
+  // 🔹 Merge examGradeSubjects filter
   if (Object.keys(examGradeSubjectsFilter).length > 0) {
-    query.examGradeSubjects = {
-      some: examGradeSubjectsFilter,
-    };
+    query.examGradeSubjects = { some: examGradeSubjectsFilter };
   }
 
-  // Fetch exams and count
+  // 🔹 Fetch exams
   const [exams, count] = await prisma.$transaction([
     prisma.exam.findMany({
       where: query,
-      orderBy: [
-        { [sortKey]: sortOrder },
-        { id: "desc" },
-      ],
+      orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       include: {
-        examGradeSubjects: {
-          include: {
-            Grade: true,
-            Subject: true,
-          },
-        },
+        examGradeSubjects: { include: { Grade: true, Subject: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
@@ -195,7 +182,7 @@ const ExamsList = async ({
     prisma.exam.count({ where: query }),
   ]);
 
-  // Fetch dropdown data
+  // Dropdown filter data
   const classes = await prisma.class.findMany();
   const grades = await prisma.grade.findMany();
 
@@ -208,11 +195,15 @@ const ExamsList = async ({
           <TitleFilterDropdown basePath="/list/exams" />
           <DateFilter basePath="/list/exams" />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/exams" hideClassFilter={false} />
+            <ClassFilterDropdown
+              classes={classes}
+              grades={grades}
+              basePath="/list/exams"
+              showClassFilter={false}
+            />
           )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <TableSearch />
-            {/* 🔄 Reset Filters Button */}
             <ResetFiltersButton basePath="/list/exams" />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">

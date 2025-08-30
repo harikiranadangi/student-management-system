@@ -7,21 +7,15 @@ import clsx from "clsx";
 
 const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GENERAL" }) => {
   try {
-    const { userId, role } = await fetchUserInfo();
+    const { userId, role, students } = await fetchUserInfo();
     if (!userId || !role) return <div>Error: Could not fetch user info</div>;
 
     let classId: number | null = null;
 
-    // Get student's class if role is student
+    // ✅ Use students array from fetchUserInfo
     if (role === "student") {
-      const student = await prisma.student.findFirst({
-        where: { clerk_id: userId },
-        include: { Class: true },
-      });
-
-
+      const student = students?.[0];
       if (!student) return <div>Error: Student not found</div>;
-
       classId = student.classId ?? null;
     }
 
@@ -84,3 +78,4 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
 };
 
 export default Messages;
+  

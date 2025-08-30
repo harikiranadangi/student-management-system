@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { Ban, Check, LogOut, MoreVertical, UserCheck, UserX } from "lucide-react";
-import { Button } from "@/lib/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
 const statusOptions = [

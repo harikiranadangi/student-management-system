@@ -22,10 +22,10 @@ interface ClassFilterProps {
   classes: ClassType[];
   grades: GradeType[];
   basePath: string;
-  hideClassFilter?: boolean;
+  showClassFilter?: boolean;
 }
 
-const ClassFilterDropdown = ({ classes, grades, basePath, hideClassFilter = true }: ClassFilterProps) => {
+const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true }: ClassFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -85,7 +85,7 @@ const ClassFilterDropdown = ({ classes, grades, basePath, hideClassFilter = true
       </div>
 
       {/* Class Dropdown */}
-      {hideClassFilter && (
+      {showClassFilter && (
         <div className="relative w-full md:w-auto">
           <select
             className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"

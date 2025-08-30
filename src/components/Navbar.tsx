@@ -82,16 +82,6 @@ const Navbar = async () => {
           roles={roles}
           activeUsername={profile.activeUser?.username ?? null}
         />
-
-        {/* User info */}
-        <div className="flex flex-col">
-          <span className="text-xs font-medium leading-3">{user.fullName}</span>
-          <span className="text-[10px] text-gray-500 text-right">
-            {profile.activeUser?.role ?? "No role"}
-          </span>
-        </div>
-
-        <UserButton />
       </div>
     </div>
   );

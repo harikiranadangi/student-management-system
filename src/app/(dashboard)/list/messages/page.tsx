@@ -11,7 +11,6 @@ import { getUserIdentifiersForRole } from "@/lib/utils/getUserIdentifiersForRole
 import SortButton from "@/components/SortButton";
 import { SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
-import { number } from "zod";
 
 
 
@@ -57,11 +56,8 @@ const renderRow = (item: MessageList, role: string | null) => (
       </>
     )}
 
-
     {/* Message */}
     <td className="p-4 whitespace-pre-line px-0">{item.message}</td>
-
-
 
     {/* Actions */}
     <td>
@@ -131,7 +127,7 @@ const MessagesList = async ({
   const { page, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
   // Fetch user info and role
-  const { userId, role } = await fetchUserInfo();
+  const { userId, role, } = await fetchUserInfo();
   const { classId } = await getUserIdentifiersForRole(role, userId);
 
 
@@ -145,15 +141,26 @@ const MessagesList = async ({
   // Initialize Prisma query object
   const query: Prisma.MessagesWhereInput = {};
 
-  
+
 
   // Filter by gradeId (apply conditionally to Class relation)
   const userClassId = await getClassIdForRole(role, userId);
 
 
-  if (userClassId || classId) {
-    query.classId = Number(userClassId) ?? Number(classId);
+  if (role === "student" && (userClassId || classId)) {
+    query.OR = [
+      { classId: Number(userClassId) ?? Number(classId) },
+      { classId: null },
+    ];
+  } else if (role === "teacher" && classId) {
+    query.OR = [
+      { classId: Number(classId) },
+      { classId: null },
+    ];
+  } else if (role === "admin") {
+    // admin → no restriction, sees all
   }
+
 
 
   // Dynamically add filters based on query parameters

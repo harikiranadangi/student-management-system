@@ -4,19 +4,17 @@ export const dynamic = "force-dynamic";
 import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import EventCalendar from "@/components/EventCalendar";
+import UnauthorizedReload from "@/components/UnauthorizedReload";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const StudentPage = async () => {
   const { userId, role, students } = await fetchUserInfo();
 
   // 🔒 Only allow student role
   if (!userId || role !== "student") {
-    return (
-      <p className="text-center text-red-500">
-        ❌ Unauthorized or no student user found.
-      </p>
-    );
+    return <UnauthorizedReload/>
   }
 
   // Students array should contain the active student

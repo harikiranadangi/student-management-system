@@ -15,7 +15,7 @@ export default clerkMiddleware(async (auth, req) => {
 
     // 👇 FIX: use metadata (not publicMetadata)
     const role = (sessionClaims?.metadata as { role?: string })?.role;
-    console.log("✅ Resolved role:", role);
+    console.log("✅ role:", role);
 
     if (!role) {
       const url = new URL(req.url);

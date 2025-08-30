@@ -17,14 +17,11 @@ interface UserInfo {
 
 // ------------------ Helpers ------------------
 async function getStudentInfo(linkedUserId: string) {
-  console.log("[getStudentInfo] Looking up student with linkedUserId:", linkedUserId);
 
   const student = await prisma.student.findUnique({
     where: { linkedUserId },
     select: { id: true, classId: true, name: true },
   });
-
-  console.log("[getStudentInfo] Result:", student);
 
   if (!student) return [];
 
@@ -38,14 +35,12 @@ async function getStudentInfo(linkedUserId: string) {
 }
 
 async function getTeacherInfo(linkedUserId: string) {
-  console.log("[getTeacherInfo] Looking up teacher with linkedUserId:", linkedUserId);
 
   const teacher = await prisma.teacher.findUnique({
     where: { linkedUserId },
     select: { id: true, classId: true },
   });
 
-  console.log("[getTeacherInfo] Result:", teacher);
 
   return teacher
     ? { teacherId: teacher.id, classId: teacher.classId ?? undefined }
@@ -56,10 +51,8 @@ async function getTeacherInfo(linkedUserId: string) {
 export async function fetchUserInfo(): Promise<UserInfo> {
   try {
     const { userId: clerkId } = await auth();
-    console.log("[fetchUserInfo] Clerk userId:", clerkId);
 
     if (!clerkId) {
-      console.warn("[fetchUserInfo] No Clerk user found");
       return { userId: null, role: null };
     }
 
@@ -70,20 +63,14 @@ export async function fetchUserInfo(): Promise<UserInfo> {
       },
     });
 
-    console.log("[fetchUserInfo] Profile:", profile);
-
     const active = profile?.activeUser;
     if (!active) {
-      console.warn("[fetchUserInfo] No activeUser found in profile");
       return { userId: null, role: null };
     }
-
-    console.log("[fetchUserInfo] Active user:", active);
 
     // Student
     if (active.role === "student") {
       const students = await getStudentInfo(active.id);
-      console.log("[fetchUserInfo] Returning student info:", students);
 
       return {
         userId: active.id,
@@ -95,7 +82,6 @@ export async function fetchUserInfo(): Promise<UserInfo> {
     // Teacher
     if (active.role === "teacher") {
       const teacherInfo = await getTeacherInfo(active.id);
-      console.log("[fetchUserInfo] Returning teacher info:", teacherInfo);
 
       return {
         userId: active.id,
@@ -104,12 +90,8 @@ export async function fetchUserInfo(): Promise<UserInfo> {
       };
     }
 
-    // Fallback (admin, etc.)
-    console.log("[fetchUserInfo] Returning fallback role:", active.role);
-
     return { userId: active.id, role: active.role };
   } catch (error) {
-    console.error("[fetchUserInfo] Error:", error);
     return { userId: null, role: null };
   }
 }
@@ -119,7 +101,6 @@ export const getClassIdForRole = async (
   role: string | null,
   userId: string | null
 ): Promise<number[]> => {
-  console.log("[getClassIdForRole] role:", role, "userId:", userId);
 
   if (!userId || !role) return [];
 
@@ -128,7 +109,6 @@ export const getClassIdForRole = async (
       where: { linkedUserId: userId },
       select: { classId: true },
     });
-    console.log("[getClassIdForRole] Student classId:", student?.classId);
     return student?.classId ? [student.classId] : [];
   }
 
@@ -137,7 +117,6 @@ export const getClassIdForRole = async (
       where: { linkedUserId: userId },
       select: { classId: true },
     });
-    console.log("[getClassIdForRole] Teacher classId:", teacher?.classId);
     return teacher?.classId ? [teacher.classId] : [];
   }
 
@@ -154,8 +133,6 @@ export const currentWorkWeek = (): Date => {
   startOfWeek.setDate(today.getDate() + diff);
   startOfWeek.setHours(0, 0, 0, 0);
 
-  console.log("[currentWorkWeek] Start of current work week:", startOfWeek);
-
   return startOfWeek;
 };
 
@@ -163,7 +140,6 @@ export const currentWorkWeek = (): Date => {
 export function adjustScheduleToCurrentWeek(
   data: { start: Date; end: Date; title: string }[]
 ) {
-  console.log("[adjustScheduleToCurrentWeek] Input events:", data);
 
   const today = new Date();
   const currentDay = today.getDay();
@@ -189,8 +165,6 @@ export function adjustScheduleToCurrentWeek(
 
     return { title: event.title, start, end };
   });
-
-  console.log("[adjustScheduleToCurrentWeek] Adjusted events:", adjusted);
 
   return adjusted;
 }
