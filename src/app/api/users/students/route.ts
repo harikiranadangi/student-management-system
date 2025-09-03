@@ -161,6 +161,7 @@ export async function POST(req: Request) {
       academicYear,
       clerk_id: parentUser.id,
       profileId: profile.id,
+      linkedUserId: role.id,
     };
 
     // Only add dob if provided

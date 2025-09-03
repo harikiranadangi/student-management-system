@@ -12,7 +12,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar"; // ✅ use shadcn ui avatar
+} from "@/components/ui/avatar"; 
 import { Check } from "lucide-react";
 
 type Role = {
@@ -27,6 +27,16 @@ type Role = {
 interface Props {
   roles: Role[];
   activeUsername?: string | null;
+}
+
+// ✅ Helper to get initials (first + last name)
+function getInitials(name?: string) {
+  if (!name) return "?";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? "?";
+  return (
+    (parts[0][0] ?? "").toUpperCase() + (parts[parts.length - 1][0] ?? "").toUpperCase()
+  );
 }
 
 export default function SwitchUser({ roles, activeUsername }: Props) {
@@ -58,7 +68,9 @@ export default function SwitchUser({ roles, activeUsername }: Props) {
             {activeRole?.imageUrl ? (
               <AvatarImage src={activeRole.imageUrl} alt={activeRole.name} />
             ) : (
-              <AvatarFallback>{activeRole?.name?.[0] ?? "?"}</AvatarFallback>
+              <AvatarFallback>
+                {getInitials(activeRole?.name)}
+              </AvatarFallback>
             )}
           </Avatar>
         </motion.button>
@@ -87,12 +99,17 @@ export default function SwitchUser({ roles, activeUsername }: Props) {
                 {r.imageUrl ? (
                   <AvatarImage src={r.imageUrl} alt={r.name} />
                 ) : (
-                  <AvatarFallback>{r.name[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    {getInitials(r.name)}
+                  </AvatarFallback>
                 )}
               </Avatar>
 
               <div className="flex flex-col flex-1">
-                <span className="text-sm">{r.name}</span>
+                {/* ✅ No wrap + truncate */}
+                <span className="text-sm font-semibold uppercase whitespace-nowrap truncate">
+                  {r.name}
+                </span>
                 <span className="text-xs text-gray-500">
                   {r.className ?? r.role}
                 </span>

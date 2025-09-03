@@ -7,7 +7,6 @@ import EventCalendar from "@/components/EventCalendar";
 import UnauthorizedReload from "@/components/UnauthorizedReload";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils";
-import { redirect } from "next/navigation";
 
 const StudentPage = async () => {
   const { userId, role, students } = await fetchUserInfo();

@@ -42,12 +42,13 @@ const renderRow = (item: TeachersList, role: string | null) => (
 
     {/* Directly use the strings from subjects and classes */}
     <td className="hidden w-32 md:table-cell">{item.class ? item.class.name : "No Class"}</td>
-    {/* <td className="px-2 w-36 md:table-cell">{item.phone}</td> */}
-    <td className="hidden w-32 truncate md:table-cell">
+    <td className="px-2 w-36 md:table-cell">{item.phone}</td>
+    {/* <td className="hidden w-32 truncate md:table-cell">
       {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
-    </td>
+    </td> */}
     <td className="hidden md:table-cell">{item.gender}</td>
     <td className="hidden md:table-cell">{item.dob ? new Date(item.dob).toLocaleDateString() : "N/A"}</td>
+    <td className="hidden md:table-cell">{item.address}</td>
 
     {/* Actions Column */}
     <td className="p-2">
@@ -61,7 +62,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
           <>
             <FormContainer table="teacher" type="delete" id={item.id} />
           </>
-        )}
+        )} 
       </div>
     </td>
   </tr>
@@ -71,11 +72,11 @@ const renderRow = (item: TeachersList, role: string | null) => (
 const getColumns = (role: string | null) => [
   { header: "Name", accessor: "info" },
   { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
-  // { header: "Phone", accessor: "phone", className: "lg:table-cell" },
-  { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
+  { header: "Phone", accessor: "phone", className: "lg:table-cell" },
+  // { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
   { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
   { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
-  // { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
+  { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action", },] : []),];
 
 

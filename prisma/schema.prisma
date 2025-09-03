@@ -25,9 +25,11 @@ model Admin {
   createdAt  DateTime  @default(now())
   clerk_id   String?   @unique
 
-  profile    Profile?     @relation(fields: [profileId], references: [id])
-  profileId  String?
-  LinkedUser LinkedUser[]
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  profileId String?
+
+  linkedUserId String?     @unique
+  linkedUser   LinkedUser? @relation(fields: [linkedUserId], references: [id])
 
   @@index([clerk_id])
 }
@@ -422,8 +424,7 @@ model LinkedUser {
 
   student Student?
   teacher Teacher?
-  admin   Admin?   @relation(fields: [adminId], references: [id])
-  adminId String?
+  admin   Admin?
 }
 
 enum LessonDay {

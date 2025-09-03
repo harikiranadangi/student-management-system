@@ -1,36 +1,37 @@
 // src/app/api/users/students/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
+// src/app/api/users/students/[id]/route.ts
 import prisma from "@/lib/prisma";
 import { clerkClient } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
 import { studentschema } from "@/lib/formValidationSchemas";
+import { revalidatePath } from "next/cache";
 
 const client = await clerkClient();
 
-// PUT - Update student
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> } // 👈 keep as you asked
 ) {
   try {
-    const { id } = await params;
+    const { id } = await params; // since it's a Promise in your code
     const studentId = id;
     const body = await req.json();
 
-    const data = studentschema.parse({
-      ...body,
-      id: studentId,
-    });
+    // ✅ Validate with Zod
+    const parsed = studentschema.safeParse({ ...body, id: studentId });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, errors: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
 
+    const data = parsed.data;
+
+    // 🔍 Find existing student
     const existingStudent = await prisma.student.findUnique({
       where: { id: studentId },
-      include: {
-        Class: {
-          select: {
-            gradeId: true,
-          },
-        },
-      },
+      include: { linkedUser: true },
     });
 
     if (!existingStudent || !existingStudent.clerk_id) {
@@ -41,83 +42,96 @@ export async function PUT(
     }
 
     const user = await client.users.getUser(existingStudent.clerk_id);
-    const formattedNewPhone = `+91${data.phone}`;
-    const password = data.phone;
+    const formattedPhone = `+91${data.phone}`;
+    const updatedUsername = `s${studentId}`;
 
-    const existingPhone = user.phoneNumbers.find(
-      (phone) => phone.phoneNumber === formattedNewPhone
+    // 🔑 Check if phone already exists
+    const phoneAlreadyAdded = user.phoneNumbers.find(
+      (ph) => ph.phoneNumber === formattedPhone
     );
 
-    const updatedUsername = `s${data.id}`;
-    const isPrimary =
-      existingPhone && existingPhone.id === user.primaryPhoneNumberId;
-
-    if (existingPhone && isPrimary) {
-      await client.users.updateUser(existingStudent.clerk_id, {
-        firstName: data.name,
-        username: updatedUsername,
-        password: password,
-      });
-    } else if (existingPhone && !isPrimary) {
-      return NextResponse.json(
-        { success: false, error: "Phone number already associated with this user" },
-        { status: 422 }
-      );
-    } else {
+    if (!phoneAlreadyAdded) {
+      // Add new phone
       const newPhone = await client.phoneNumbers.createPhoneNumber({
         userId: existingStudent.clerk_id,
-        phoneNumber: formattedNewPhone,
+        phoneNumber: formattedPhone,
       });
 
       await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
         verified: true,
       });
 
+      // Set as primary
       await client.users.updateUser(existingStudent.clerk_id, {
         primaryPhoneNumberID: newPhone.id,
       });
 
-      const oldPhones = user.phoneNumbers.filter(
-        (phone) => phone.id !== newPhone.id
-      );
-
-      for (const oldPhone of oldPhones) {
-        await client.phoneNumbers.deletePhoneNumber(oldPhone.id);
+      // Remove old phones
+      for (const ph of user.phoneNumbers) {
+        if (ph.phoneNumber !== formattedPhone) {
+          await client.phoneNumbers.deletePhoneNumber(ph.id);
+        }
       }
-
-      await client.users.updateUser(existingStudent.clerk_id, {
-        firstName: data.name,
-        username: updatedUsername,
-        password: password,
-      });
     }
 
-    const { gradeId, dob, ...otherData } = data;
+    // ✅ Update Clerk user basic info
+    await client.users.updateUser(existingStudent.clerk_id, {
+      firstName: data.name,
+    });
+
+    // ✅ Update Student in Prisma
+    const { dob, classId, gradeId, ...otherData } = data;
 
     const studentData: any = {
       ...otherData,
-    };
+      ...(dob ? { dob: new Date(dob) } : {}),
 
-    // ✅ Safely parse dob
-    if (dob) {
-      studentData.dob = new Date(dob);
-    }
+      // ✅ Only connect class
+      ...(classId ? { Class: { connect: { id: Number(classId) } } } : {}),
+    };
 
     const updatedStudent = await prisma.student.update({
       where: { id: studentId },
       data: studentData,
+      include: {
+        Class: {
+          include: {
+            Grade: true, // fetch grade too if needed
+          },
+        },
+      },
     });
+
+
+    // ✅ Sync LinkedUser + Profile
+    if (existingStudent.linkedUser) {
+      await prisma.linkedUser.update({
+        where: { id: existingStudent.linkedUser.id },
+        data: {
+          username: updatedUsername,
+          profile: {
+            update: {
+              phone: data.phone,
+            },
+          },
+        },
+      });
+    }
+
+    revalidatePath("/list/users/students");
 
     return NextResponse.json({ success: true, updatedStudent }, { status: 200 });
   } catch (error: any) {
     console.error("PUT /api/users/students/[id] error:", error);
     if (error.errors) console.error("Clerk error details:", error.errors);
+
     return NextResponse.json(
       { success: false, error: error.message },
       { status: error.name === "ZodError" ? 400 : 500 }
     );
   }
 }
+
 
 // PATCH - Update student status (Active, Inactive, Transferred, Suspended)
 export async function PATCH(

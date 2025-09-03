@@ -6,16 +6,17 @@ import { revalidatePath } from "next/cache";
 
 const client = await clerkClient();
 
-// PUT - Update teacher
+// ✅ PUT - Update teacher
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const teacherId = id;
     const body = await req.json();
 
+    // ✅ Validate with schema
     const data = teacherschema.parse({ ...body, id: teacherId });
 
     const existingTeacher = await prisma.teacher.findUnique({
@@ -29,81 +30,75 @@ export async function PUT(
       );
     }
 
-    const user = await client.users.getUser(teacherId);
+    // 🔍 Clerk user
+    const user = await client.users.getUser(existingTeacher.clerk_id!);
     const formattedNewPhone = `+91${data.phone}`;
-    const existingPhone = user.phoneNumbers.find(
-      (p) => p.phoneNumber === formattedNewPhone
-    );
-
     const updatedUsername = data.username || `t${teacherId}`;
-    const isPrimary = existingPhone?.id === user.primaryPhoneNumberId;
 
-    if (existingPhone && isPrimary) {
-      await client.users.updateUser(teacherId, {
-        firstName: data.name,
-        username: updatedUsername,
-        password: data.phone,
-      });
-    } else if (existingPhone && !isPrimary) {
-      return NextResponse.json(
-        { success: false, error: "Phone number already associated with this user" },
-        { status: 422 }
+    // 🔍 Check if number is already in use by another Clerk user
+    const usersWithPhone = await client.users.getUserList({
+      phoneNumber: [formattedNewPhone],
+    });
+
+    if (usersWithPhone.totalCount > 0) {
+      const otherUser = usersWithPhone.data.find(
+        (u) => u.id !== existingTeacher.clerk_id
       );
-    } else {
-      const newPhone = await client.phoneNumbers.createPhoneNumber({
-        userId: teacherId,
-        phoneNumber: formattedNewPhone,
-      });
-
-      await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
-        verified: true,
-      });
-
-      await client.users.updateUser(teacherId, {
-        primaryPhoneNumberID: newPhone.id,
-      });
-
-      const oldPhones = user.phoneNumbers.filter(
-        (p) => p.id !== newPhone.id
-      );
-
-      for (const phone of oldPhones) {
-        await client.phoneNumbers.deletePhoneNumber(phone.id);
+      if (otherUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Phone number already in use by another account",
+          },
+          { status: 422 }
+        );
       }
-
-      await client.users.updateUser(teacherId, {
-        firstName: data.name,
-        username: updatedUsername,
-        password: updatedUsername,
-      });
     }
 
-    const {
-      dob,
-      subjects,
-      ...restData
-    } = data;
+    // 1. Add new phone number
+    const newPhone = await client.phoneNumbers.createPhoneNumber({
+      userId: existingTeacher.clerk_id!,
+      phoneNumber: formattedNewPhone,
+    });
+
+    // 2. Verify it
+    await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
+      verified: true,
+    });
+
+    // 3. Set new number as primary
+    await client.users.updateUser(existingTeacher.clerk_id!, {
+      firstName: data.name,
+      username: updatedUsername,
+      password: data.phone, // ⚠️ consider not using phone as password
+      primaryPhoneNumberID: newPhone.id,
+    });
+
+    // 4. Now delete all NON-primary numbers
+    const freshUser = await client.users.getUser(existingTeacher.clerk_id!);
+
+    for (const phone of freshUser.phoneNumbers) {
+      if (phone.id !== newPhone.id) {
+        try {
+          await client.phoneNumbers.deletePhoneNumber(phone.id);
+          console.log("Deleted old phone:", phone.phoneNumber);
+        } catch (err) {
+          console.warn("Failed to delete old phone:", phone.phoneNumber, err);
+        }
+      }
+    }
+
+    // ✅ Update Teacher in DB
+    const { dob, subjects, password, ...restData } = data;
 
     const updateData: any = {
       ...restData,
       dob: dob ? new Date(dob) : undefined,
     };
 
-    // ✅ Update teacher record
     const updatedTeacher = await prisma.teacher.update({
       where: { id: teacherId },
       data: updateData,
-    });
-
-    // ✅ Update ClerkTeachers
-    await prisma.clerkTeachers.update({
-      where: { clerk_id: teacherId },
-      data: {
-        username: updatedUsername,
-        password: data.phone,
-        full_name: data.name,
-        publicMetadata: { role: "teacher" },
-      },
     });
 
     // ✅ Update subject-class mappings
@@ -137,11 +132,11 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete teacher
+// ✅ DELETE - Delete teacher
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const teacherId = id;
@@ -157,21 +152,12 @@ export async function DELETE(
       );
     }
 
-    if (teacher.id) {
-      await client.users.deleteUser(teacher.id);
-    }
-
-    await prisma.teacher.delete({
-      where: { id: teacherId },
-    });
-
-    await prisma.clerkTeachers.deleteMany({
-      where: { teacherId },
-    });
-
-    await prisma.subjectTeacher.deleteMany({
-      where: { teacherId },
-    });
+    // Run Prisma + Clerk deletions in parallel
+    await Promise.all([
+      teacher.clerk_id ? client.users.deleteUser(teacher.clerk_id) : null,
+      prisma.teacher.delete({ where: { id: teacherId } }),
+      prisma.subjectTeacher.deleteMany({ where: { teacherId } }),
+    ]);
 
     revalidatePath("/list/users/teachers");
 
@@ -179,10 +165,10 @@ export async function DELETE(
       { success: true, message: "Teacher deleted successfully" },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("DELETE /api/users/teachers/[id] error:", error);
     return NextResponse.json(
-      { success: false, error: "Delete failed" },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }

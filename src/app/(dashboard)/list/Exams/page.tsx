@@ -182,6 +182,8 @@ const ExamsList = async ({
     prisma.exam.count({ where: query }),
   ]);
 
+  console.log("Exams :", exams);
+
   // Dropdown filter data
   const classes = await prisma.class.findMany();
   const grades = await prisma.grade.findMany();

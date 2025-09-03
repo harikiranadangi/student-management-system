@@ -90,7 +90,14 @@ export async function POST(req: Request) {
         img: data.img ?? null,
         phone: data.phone,
         clerk_id: clerkUser.id,
-        profileId: profile.id,
+        // ✅ This connects admin <-> linkedUser
+        profile: {
+          connect: { id: profile.id },
+        },
+        // ✅ This connects admin <-> linkedUser
+        linkedUser: {
+          connect: { id: role.id },
+        },
       },
     });
 

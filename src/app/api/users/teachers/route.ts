@@ -1,8 +1,12 @@
-import { User } from '@clerk/backend';
 import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { teacherschema } from '@/lib/formValidationSchemas';
+import { toast } from 'react-toastify';
+
+// Clerk client setup
+const client = await clerkClient();
+type ClerkUser = Awaited<ReturnType<typeof client.users.getUser>>;
 
 export async function POST(req: Request) {
   try {
@@ -12,16 +16,19 @@ export async function POST(req: Request) {
     const result = teacherschema.safeParse(body);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      return NextResponse.json({ message: 'Validation failed', errors }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Validation failed', errors },
+        { status: 400 }
+      );
     }
 
     const {
-      id: requestedId,  // Ensure this is the id you're receiving
+      id: requestedId,
       username,
       password,
-      parentName,
       name,
       phone,
+      parentName,
       address,
       dob,
       email,
@@ -33,59 +40,120 @@ export async function POST(req: Request) {
 
     console.log('Received teacher data:', result.data);
 
-    // ✅ Step 2: Use provided username as id (no auto-generation)
-    const generatedUsername = username;  // Using provided username as the id
-    const finalPassword = password && password !== "" ? password : phone;
+    // ✅ Step 2: Use provided username as Teacher ID
+    const id = requestedId ?? username;
+    const generatedUsername = username;
+    const finalPassword = password && password !== '' ? password : phone;
     const phoneNumber = `+91${phone}`;
 
-    // ✅ Step 3: Check if Clerk user already exists
-    const client = await clerkClient();
-    const existingUsers = await client.users.getUserList({ username: [generatedUsername] });
+    const existingUsers = await client.users.getUserList({
+      phoneNumber: [phoneNumber],
+    });
 
-    const userExists = existingUsers.data.some(
-      (u) => u.username === generatedUsername
-    );
+    let teacherUser: ClerkUser;
 
-    if (userExists) {
+    if (existingUsers.data.length > 0) {
+      teacherUser = existingUsers.data[0];  // Reuse existing Clerk user
+      console.log("Reusing existing Clerk user:", teacherUser.id);
+    } else {
+      teacherUser = await client.users.createUser({
+        username: generatedUsername,
+        password: finalPassword,
+        firstName: name,
+        phoneNumber: [phoneNumber],
+      });
+
+      await client.users.updateUser(teacherUser.id, {
+        publicMetadata: { role: 'teacher' },
+      });
+    }
+
+
+    console.log('Clerk Teacher User created:', teacherUser.id);
+
+    // ✅ Step 4: Create or reuse Profile
+    let profile = await prisma.profile.findUnique({
+      where: { clerk_id: teacherUser.id },
+      include: { users: true, activeUser: true },
+    });
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          phone,
+          clerk_id: teacherUser.id,
+        },
+        include: { users: true, activeUser: true },
+      });
+      console.log('New Profile created:', profile);
+    } else {
+      console.log('Existing Profile reused:', profile);
+    }
+
+    // ✅ Step 5: Ensure Linked Role (teacher) exists
+    const existingRole = await prisma.linkedUser.findFirst({
+      where: { username: generatedUsername },
+    });
+
+    if (existingRole) {
       return NextResponse.json(
-        { message: `Username "${generatedUsername}" already exists!` },
+        { message: `Teacher username "${generatedUsername}" already exists!` },
         { status: 409 }
       );
     }
 
-    // ✅ Step 4: Create Clerk user
-    const user = await client.users.createUser({
-      username: generatedUsername,  // Using username as id
-      password: finalPassword,
-      firstName: name,
-      phoneNumber: [phoneNumber],
-    });
-
-    await client.users.updateUser(user.id, {
-      publicMetadata: { role: 'teacher' },
-    });
-
-    console.log('Clerk user created:', user.id);
-
-    // ✅ Step 5: Create Teacher in Prisma with username as id
-    const teacher = await prisma.teacher.create({
+    const role = await prisma.linkedUser.create({
       data: {
-        id: generatedUsername,  // Using username as the id
-        username: generatedUsername,  // This will be the same as id
-        name,
-        parentName: parentName ?? null,
-        dob: dob ? new Date(dob) : new Date(),
-        email: email ?? null,
-        phone,
-        address,
-        gender,
-        clerk_id: user.id,
-        img: img ?? null,
-        bloodType: bloodType ?? 'Under Investigation',
+        role: 'teacher',
+        username: generatedUsername,
+        profileId: profile.id,
       },
     });
+    console.log('New Role created:', role);
 
-    // ✅ Step 6: Create SubjectTeacher entries if subjects exist
+    // If profile has no active role yet, set this role as active
+    if (!profile.activeUserId) {
+      await prisma.profile.update({
+        where: { id: profile.id },
+        data: { activeUserId: role.id },
+      });
+      console.log('Active role set for profile:', role.id);
+    }
+
+    // ✅ Step 6: Create Teacher record
+    const existingTeacher = await prisma.teacher.findUnique({
+      where: { username: generatedUsername },
+    });
+
+    if (existingTeacher) {
+      return NextResponse.json(
+        { message: `Teacher username "${generatedUsername}" already exists in DB!` },
+        { status: 409 }
+      );
+    }
+
+    const teacherData: any = {
+      id,
+      username: generatedUsername,
+      name,
+      parentName: parentName ?? null,
+      dob: dob ? new Date(dob) : new Date(),
+      email: email ?? null,
+      phone,
+      address,
+      gender,
+      clerk_id: teacherUser.id,
+      img: img ?? null,
+      bloodType: bloodType ?? 'Under Investigation',
+      profileId: profile.id,
+      linkedUserId: role.id,
+    };
+
+    const teacher = await prisma.teacher.create({ data: teacherData });
+
+    console.log('Teacher created in DB:', teacher);
+
+    // ✅ Step 7: Assign subjects
     if (subjects && Array.isArray(subjects)) {
       const validSubjects = subjects.filter(
         (sub: any) => sub.subjectId && sub.classId
@@ -103,32 +171,14 @@ export async function POST(req: Request) {
       }
     }
 
-    console.log('Teacher created in database:', teacher);
-
-    // ✅ Step 7: Create ClerkTeachers entry
-    const clerkTeacher = await prisma.clerkTeachers.create({
-      data: {
-        clerk_id: user.id,
-        user_id: user.id,
-        username: generatedUsername,  // Using username as id
-        password: finalPassword,
-        full_name: name,
-        role: 'teacher',
-        teacherId: teacher.id,
-        publicMetadata: { role: 'teacher' },
-      },
-    });
-
-    console.log('Clerk teacher metadata created:', clerkTeacher);
-
     return NextResponse.json(teacher, { status: 201 });
-
+    toast.success('Teacher created successfully!');
   } catch (error: any) {
-    console.error('Error in teacher creation:', JSON.stringify(error, null, 2));
+    console.error('Error details:', JSON.stringify(error, null, 2));
 
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { message: 'Username already exists in the system.' },
+        { message: 'Unique constraint failed (probably username exists).' },
         { status: 409 }
       );
     }

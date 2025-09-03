@@ -176,6 +176,7 @@ CREATE TABLE "public"."Student" (
     "academicYear" "public"."AcademicYear" NOT NULL DEFAULT 'Y2024_2025',
     "classId" INTEGER NOT NULL,
     "profileId" TEXT,
+    "linkedUserId" TEXT,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -208,6 +209,7 @@ CREATE TABLE "public"."Teacher" (
     "profileId" TEXT,
     "classId" INTEGER,
     "clerk_id" TEXT,
+    "linkedUserId" TEXT,
 
     CONSTRAINT "Teacher_pkey" PRIMARY KEY ("id")
 );
@@ -354,52 +356,24 @@ CREATE TABLE "public"."PermissionSlip" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."User" (
-    "id" TEXT NOT NULL,
-    "clerkId" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."UserRole" (
-    "id" SERIAL NOT NULL,
-    "role" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-
-    CONSTRAINT "UserRole_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."UserProfile" (
-    "id" SERIAL NOT NULL,
-    "clerk_id" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
-    "teacherId" TEXT,
-    "studentId" TEXT,
-    "adminId" TEXT,
-
-    CONSTRAINT "UserProfile_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "public"."Profile" (
     "id" TEXT NOT NULL,
-    "phone" TEXT,
     "clerk_id" TEXT NOT NULL,
+    "phone" TEXT,
+    "activeUserId" TEXT,
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Role" (
-    "id" SERIAL NOT NULL,
-    "role" TEXT NOT NULL,
+CREATE TABLE "public"."LinkedUser" (
+    "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
+    "adminId" TEXT,
 
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LinkedUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -415,9 +389,6 @@ CREATE UNIQUE INDEX "Admin_username_key" ON "public"."Admin"("username");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Admin_clerk_id_key" ON "public"."Admin"("clerk_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Admin_profileId_key" ON "public"."Admin"("profileId");
 
 -- CreateIndex
 CREATE INDEX "Admin_clerk_id_idx" ON "public"."Admin"("clerk_id");
@@ -474,7 +445,7 @@ CREATE UNIQUE INDEX "Result_studentId_examId_subjectId_key" ON "public"."Result"
 CREATE UNIQUE INDEX "Student_username_key" ON "public"."Student"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Student_profileId_key" ON "public"."Student"("profileId");
+CREATE UNIQUE INDEX "Student_linkedUserId_key" ON "public"."Student"("linkedUserId");
 
 -- CreateIndex
 CREATE INDEX "Student_classId_idx" ON "public"."Student"("classId");
@@ -489,13 +460,13 @@ CREATE UNIQUE INDEX "Subject_name_key" ON "public"."Subject"("name");
 CREATE UNIQUE INDEX "Teacher_username_key" ON "public"."Teacher"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Teacher_profileId_key" ON "public"."Teacher"("profileId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Teacher_classId_key" ON "public"."Teacher"("classId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Teacher_clerk_id_key" ON "public"."Teacher"("clerk_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Teacher_linkedUserId_key" ON "public"."Teacher"("linkedUserId");
 
 -- CreateIndex
 CREATE INDEX "Teacher_clerk_id_idx" ON "public"."Teacher"("clerk_id");
@@ -531,16 +502,10 @@ CREATE INDEX "CancelledReceipt_term_idx" ON "public"."CancelledReceipt"("term");
 CREATE INDEX "CancelledReceipt_originalReceiptNo_idx" ON "public"."CancelledReceipt"("originalReceiptNo");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_clerkId_key" ON "public"."User"("clerkId");
+CREATE UNIQUE INDEX "Profile_clerk_id_key" ON "public"."Profile"("clerk_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserProfile_teacherId_key" ON "public"."UserProfile"("teacherId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Profile_phone_key" ON "public"."Profile"("phone");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Role_username_key" ON "public"."Role"("username");
+CREATE UNIQUE INDEX "Profile_activeUserId_key" ON "public"."Profile"("activeUserId");
 
 -- CreateIndex
 CREATE INDEX "_SubjectGrades_B_index" ON "public"."_SubjectGrades"("B");
@@ -606,7 +571,13 @@ ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_classId_fkey" FOREIGN KEY
 ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_linkedUserId_fkey" FOREIGN KEY ("linkedUserId") REFERENCES "public"."LinkedUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."Teacher" ADD CONSTRAINT "Teacher_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Teacher" ADD CONSTRAINT "Teacher_linkedUserId_fkey" FOREIGN KEY ("linkedUserId") REFERENCES "public"."LinkedUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ClerkTeachers" ADD CONSTRAINT "ClerkTeachers_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "public"."Teacher"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -651,19 +622,13 @@ ALTER TABLE "public"."CancelledReceipt" ADD CONSTRAINT "CancelledReceipt_student
 ALTER TABLE "public"."PermissionSlip" ADD CONSTRAINT "PermissionSlip_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "public"."Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserRole" ADD CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Profile" ADD CONSTRAINT "Profile_activeUserId_fkey" FOREIGN KEY ("activeUserId") REFERENCES "public"."LinkedUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserProfile" ADD CONSTRAINT "UserProfile_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "public"."Teacher"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."LinkedUser" ADD CONSTRAINT "LinkedUser_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserProfile" ADD CONSTRAINT "UserProfile_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."UserProfile" ADD CONSTRAINT "UserProfile_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "public"."Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Role" ADD CONSTRAINT "Role_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."LinkedUser" ADD CONSTRAINT "LinkedUser_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "public"."Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_SubjectGrades" ADD CONSTRAINT "_SubjectGrades_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Grade"("id") ON DELETE CASCADE ON UPDATE CASCADE;

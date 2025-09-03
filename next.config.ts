@@ -1,20 +1,22 @@
 import type { NextConfig } from "next";
+import i18nConfig from "./next-i18next.config";
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https", // Protocol of the external image
-        hostname: "images.pexels.com", // Hostname of the external source
-        pathname: "**", // Allow all paths
+        protocol: "https",
+        hostname: "images.pexels.com",
+        pathname: "**",
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com", // Add Cloudinary domain
-        pathname: "**", // Allow all paths from this domain
+        hostname: "res.cloudinary.com",
+        pathname: "**",
       },
     ],
   },
+  i18n: i18nConfig.i18n, // ✅ add this line
 };
 
 export default nextConfig;

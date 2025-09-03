@@ -1,10 +1,11 @@
-// next-i18next.config.js
-module.exports = {
-    i18n: {
-      defaultLocale: 'en',
-      locales: ['en', 'fr'], // Add more locales as needed
-    },
-  };
+// next-i18next.config.ts
+import type { UserConfig } from "next-i18next";
 
-  
-export default module.exports;
+const config: UserConfig = {
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en", "fr"], // add more locales as needed
+  },
+};
+
+export default config;
