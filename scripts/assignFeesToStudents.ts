@@ -9,6 +9,7 @@ async function assignFeesToExistingStudents() {
     try {
         // Fetch all students with their class and grade
         const students = await prisma.student.findMany({
+            where: { status: "ACTIVE" },
             include: {
                 Class: {
                     include: {

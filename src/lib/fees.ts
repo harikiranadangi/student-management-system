@@ -2,6 +2,7 @@ import prisma from "./prisma";
 
 export async function getGroupedStudentFees() {
   const students = await prisma.student.findMany({
+    where: { status: "ACTIVE" },
     include: {
       studentFees: {
         include: {

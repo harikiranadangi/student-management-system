@@ -5,6 +5,7 @@ import { calculateStudentFeeReport } from "@/lib/fees/feeUtils";
 export async function getFullStudentFeesReport() {
   try {
     const allStudents = await prisma.student.findMany({
+      where: { status: "ACTIVE" },
       include: {
         Class: {
           include: {

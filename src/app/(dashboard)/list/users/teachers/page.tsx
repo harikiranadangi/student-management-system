@@ -13,6 +13,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { SearchParams } from "../../../../../../types";
 import SortButton from "@/components/SortButton";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import { GenderFilter } from "@/components/FilterDropdown";
 
 // Define types
 type TeachersList = Teacher & {
@@ -62,7 +63,7 @@ const renderRow = (item: TeachersList, role: string | null) => (
           <>
             <FormContainer table="teacher" type="delete" id={item.id} />
           </>
-        )} 
+        )}
       </div>
     </td>
   </tr>
@@ -115,7 +116,7 @@ const TeacherListPage = async ({
   // Inside the loop
   for (const [key, value] of Object.entries(queryParams)) {
     const normalizedValue = normalize(value);
-    if (normalizedValue !== undefined) {
+    if (normalizedValue !== undefined && normalizedValue !== "") {
       switch (key) {
         case "classId":
           query.classId = parseInt(normalizedValue);
@@ -126,6 +127,10 @@ const TeacherListPage = async ({
             { name: { contains: normalizedValue, mode: "insensitive" } },
             { class: { name: { contains: normalizedValue, mode: "insensitive" } } }
           ];
+          break;
+
+        case "gender":   // 👈 Add this
+          query.gender = normalizedValue as any; // Prisma expects Gender enum
           break;
 
         default:
@@ -168,17 +173,19 @@ const TeacherListPage = async ({
   ]);
 
 
-
+ const Path = "/list/users/teachers" 
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* Header Section */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Teachers</h1>
+        <h1 className="hidden text-lg font-semibold md:block">All Teachers ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
+          <GenderFilter basePath={Path} />
+
           {/* 🔄 Reset Filters Button */}
-          <ResetFiltersButton basePath="/list/users/teachers" />
+          <ResetFiltersButton basePath={Path}  />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />

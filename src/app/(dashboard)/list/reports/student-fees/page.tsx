@@ -104,7 +104,7 @@ const StudentListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-  const query: Prisma.StudentWhereInput = {};
+  const query: Prisma.StudentWhereInput = { status: "ACTIVE" };
 
   if (classId) query.classId = Number(classId);
   if (gradeId) query.Class = { gradeId: Number(gradeId) };

@@ -1,11 +1,8 @@
 'use client';
-
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 
 type Exam = { id: number; title: string };
-type Grade = { id: number; level: string };
-type Class = { id: number; section: string; name: string };
 type Result = {
   id: number;
   marks: number;
@@ -17,90 +14,71 @@ type Result = {
 
 export default function ResultsViewer() {
   const [exams, setExams] = useState<Exam[]>([]);
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
   const [results, setResults] = useState<Result[]>([]);
-
   const [selectedExamId, setSelectedExamId] = useState<number>();
-  const [selectedGradeId, setSelectedGradeId] = useState<number>();
-  const [selectedClassId, setSelectedClassId] = useState<number>();
-  const [role, setRole] = useState<string>();
+  const [role, setRole] = useState<'student' | 'teacher' | 'admin'>();
   const [studentId, setStudentId] = useState<string>();
-
+  const [teacherClassId, setTeacherClassId] = useState<number>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Fetch user first, then exams + grades
+  // Fetch user info + exams
   useEffect(() => {
     const init = async () => {
       try {
         const userRes = await axios.get('/api/users/me');
-        const { role, classId, studentId } = userRes.data;
+        const { role, studentId, classId } = userRes.data;
         setRole(role);
-        if (role === 'teacher') setSelectedClassId(Number(classId));
         if (role === 'student') setStudentId(studentId);
+        if (role === 'teacher') setTeacherClassId(Number(classId));
 
-        const [examRes, gradeRes] = await Promise.all([
-          axios.get('/api/exams'),
-          axios.get('/api/grades'),
-        ]);
-        setExams(examRes.data.exams);
-        setGrades(gradeRes.data);
+        const examsRes = await axios.get('/api/exams');
+        setExams(examsRes.data.exams);
       } catch (err) {
-        console.error('Init failed', err);
+        console.error(err);
       }
     };
-
     init();
   }, []);
 
-  // 🔹 Fetch classes when grade changes
-  useEffect(() => {
-    if (!selectedGradeId) return;
-    axios
-      .get(`/api/classes?gradeId=${selectedGradeId}`)
-      .then((res) => setClasses(res.data))
-      .catch((err) => console.error('Failed to fetch classes', err));
-  }, [selectedGradeId]);
-
-  // 🔹 Fetch results
   const fetchResults = async () => {
     setLoading(true);
     setError(null);
     try {
-      let params: any = {};
-      if (role === 'student' && studentId) {
-        params.studentId = studentId;
-      } else if (selectedExamId && selectedGradeId && selectedClassId) {
-        params = {
-          examId: selectedExamId,
-          gradeId: selectedGradeId,
-          classId: selectedClassId,
-        };
-      } else {
-        setError('Please select all required fields.');
+      if (!selectedExamId) {
+        setError('Please select an exam.');
         setLoading(false);
         return;
       }
 
+      let params: any = { examId: selectedExamId };
+
+      if (role === 'student') {
+        params.studentId = studentId;
+      } else if (role === 'teacher') {
+        if (!teacherClassId) {
+          setError('No class assigned.');
+          setLoading(false);
+          return;
+        }
+        params.classId = teacherClassId;
+      }
+
       const res = await axios.get('/api/results', { params });
       setResults(res.data.results);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       setError('Failed to fetch results.');
-      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Prepare table data
-  const subjects = useMemo(() => {
-    return Array.from(new Set(results.map((r) => r.Subject.name))).sort();
-  }, [results]);
+  const subjects = useMemo(() => Array.from(new Set(results.map(r => r.Subject.name))).sort(), [results]);
 
   const studentMap = useMemo(() => {
     const map = new Map<string, { name: string; marks: Record<string, number> }>();
-    results.forEach((r) => {
+    results.forEach(r => {
       if (!map.has(r.Student.id)) {
         map.set(r.Student.id, { name: r.Student.name, marks: {} });
       }
@@ -115,78 +93,35 @@ export default function ResultsViewer() {
     <div className="p-6 space-y-6 bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-semibold text-gray-800">Exam Results</h2>
 
-      {/* 🔹 Filters */}
       <div className="flex flex-wrap items-center gap-4 px-2 py-4 bg-gray-50 rounded-lg">
-        {/* Exam dropdown (visible to all) */}
+        {/* Exam Dropdown */}
         <select
-          onChange={(e) => setSelectedExamId(Number(e.target.value))}
-          defaultValue=""
+          onChange={e => setSelectedExamId(Number(e.target.value))}
+          value={selectedExamId ?? ''}
           className="px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="" disabled>Select Exam</option>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>
-              {exam.title}
-            </option>
+          {exams.map(exam => (
+            <option key={exam.id} value={exam.id}>{exam.title}</option>
           ))}
         </select>
 
-        {/* Grade/Class dropdowns → only for teacher/admin */}
-        {role !== 'student' && (
-          <>
-            <select
-              onChange={(e) => setSelectedGradeId(Number(e.target.value))}
-              defaultValue=""
-              className="px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="" disabled>Select Grade</option>
-              {grades.map((grade) => (
-                <option key={grade.id} value={grade.id}>
-                  {grade.level}
-                </option>
-              ))}
-            </select>
-
-            <select
-              onChange={(e) => setSelectedClassId(Number(e.target.value))}
-              value={selectedClassId ?? ""}
-              className="px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="" disabled>Select Class</option>
-              {classes.map((cls) => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.section}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-
-        {/* Fetch button */}
+        {/* Fetch Button */}
         <button
           onClick={fetchResults}
-          disabled={
-            loading ||
-            (role !== 'student' && (!selectedExamId || !selectedGradeId || !selectedClassId)) ||
-            (role === 'student' && !studentId)
-          }
+          disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-md shadow transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Loading...' : role === 'student' ? 'Fetch My Results' : 'Fetch Results'}
+          {loading ? 'Loading...' : 'Fetch Results'}
         </button>
       </div>
 
-      {/* 🔹 Error */}
       {error && <div className="text-center text-red-600">{error}</div>}
 
-      {/* 🔹 No results */}
       {results.length === 0 && !loading && (
-        <div className="text-gray-700 text-center py-6">
-          No results available for the selected criteria.
-        </div>
+        <div className="text-gray-700 text-center py-6">No results available.</div>
       )}
 
-      {/* 🔹 Results table */}
       {results.length > 0 && (
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-sm border border-gray-300 rounded-md overflow-hidden">
@@ -195,51 +130,31 @@ export default function ResultsViewer() {
                 <th className="px-2 py-2 border text-center">S.No</th>
                 <th className="px-2 py-2 border text-center">Student ID</th>
                 <th className="px-4 py-2 border text-center">Student Name</th>
-                {subjects.map((subj) => (
-                  <th key={subj} className="px-2 py-2 border text-center">
-                    {subj}
-                  </th>
+                {subjects.map(subj => (
+                  <th key={subj} className="px-2 py-2 border text-center">{subj}</th>
                 ))}
                 <th className="px-2 py-2 border text-center font-semibold">Total</th>
                 <th className="px-2 py-2 border text-center font-semibold">Percentage</th>
               </tr>
             </thead>
             <tbody>
-              {studentRows.map(([studentId, student], idx) => {
+              {studentRows.map(([id, student], idx) => {
                 const subjectMaxMap = new Map<string, number>();
-                results.forEach((r) => {
-                  if (!subjectMaxMap.has(r.Subject.name)) {
-                    subjectMaxMap.set(r.Subject.name, r.maxMarks);
-                  }
+                results.forEach(r => {
+                  if (!subjectMaxMap.has(r.Subject.name)) subjectMaxMap.set(r.Subject.name, r.maxMarks);
                 });
-
-                const total = subjects.reduce(
-                  (sum, subj) => sum + (student.marks[subj] ?? 0),
-                  0
-                );
-                const maxTotal = subjects.reduce(
-                  (sum, subj) => sum + (subjectMaxMap.get(subj) ?? 0),
-                  0
-                );
-                const percentage =
-                  maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : '0.0';
+                const total = subjects.reduce((sum, subj) => sum + (student.marks[subj] ?? 0), 0);
+                const maxTotal = subjects.reduce((sum, subj) => sum + (subjectMaxMap.get(subj) ?? 0), 0);
+                const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : '0.0';
 
                 return (
-                  <tr key={studentId} className="even:bg-slate-50 hover:bg-purple-50">
+                  <tr key={id} className="even:bg-slate-50 hover:bg-purple-50">
                     <td className="px-2 py-2 border text-center">{idx + 1}</td>
-                    <td className="px-2 py-2 border text-center">{studentId}</td>
+                    <td className="px-2 py-2 border text-center">{id}</td>
                     <td className="px-4 py-2 border">{student.name}</td>
-                    {subjects.map((subj) => (
-                      <td key={subj} className="px-4 py-2 border text-center">
-                        {student.marks[subj] ?? '-'}
-                      </td>
-                    ))}
-                    <td className="px-2 py-2 border text-center font-medium text-blue-700">
-                      {total}
-                    </td>
-                    <td className="px-2 py-2 border text-center font-medium text-blue-700">
-                      {percentage}%
-                    </td>
+                    {subjects.map(subj => <td key={subj} className="px-4 py-2 border text-center">{student.marks[subj] ?? '-'}</td>)}
+                    <td className="px-2 py-2 border text-center font-medium text-blue-700">{total}</td>
+                    <td className="px-2 py-2 border text-center font-medium text-blue-700">{percentage}%</td>
                   </tr>
                 );
               })}

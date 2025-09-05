@@ -1,4 +1,4 @@
-import ClassFilterDropdown, { StudentStatusFilter } from "@/components/FilterDropdown";
+import ClassFilterDropdown, { GenderFilter, StudentStatusFilter } from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
@@ -51,8 +51,12 @@ const renderRow = (item: StudentList, role: string | null) => (
           </button>
         </Link>
         {role === "admin" && (
-          <StudentStatusDropdown id={item.id} currentStatus={item.status} />
+          <>
+            <FormContainer table="student" type="delete" id={item.id} />
+            <StudentStatusDropdown id={item.id} currentStatus={item.status} />
+          </>
         )}
+
       </div>
     </td>
   </tr>
@@ -74,7 +78,7 @@ const StudentListPage = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, gradeId, classId, teacherId, studentStatus, ...queryParams } = params;
+  const { page, gradeId, classId, teacherId, studentStatus, gender, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
@@ -97,7 +101,6 @@ const StudentListPage = async ({
     ...(grade && { gradeId: Number(grade) }),
   };
 
-  // Final query
   const query: Prisma.StudentWhereInput = {
     ...(classIdNum && { classId: classIdNum }),
     ...(Object.keys(classFilter).length && { Class: classFilter }),
@@ -108,10 +111,12 @@ const StudentListPage = async ({
       ],
     }),
     ...(studentStatus && { status: studentStatus as any }),
+    ...(gender && { gender: gender as any }),  // 👈 Added gender filter
     ...(role === "teacher" && teacherClassId
       ? { classId: teacherClassId }
       : {}),
   };
+
 
   console.log("TeacherClassId from fetchUserInfo:", teacherClassId, "Role:", role);
 
@@ -163,10 +168,11 @@ const StudentListPage = async ({
             grades={grades}
             basePath={Path}
           />
+          <GenderFilter basePath={Path} />
           <StudentStatusFilter basePath={Path} />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             {/* 🔄 Reset Filters Button */}
-            <ResetFiltersButton basePath="/list/users/students" />
+            <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="" width={14} height={14} />

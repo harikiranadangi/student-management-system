@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 
     // Step 4: Fetch student + class info for absentees
     const absentStudents = await prisma.student.findMany({
-      where: { id: { in: Array.from(absentStudentIds) } },
+      where: { id: { in: Array.from(absentStudentIds) }, status: "ACTIVE" },
       select: {
         id: true,
         name: true,

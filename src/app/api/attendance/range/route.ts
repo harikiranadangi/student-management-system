@@ -39,7 +39,7 @@ export async function GET(req: Request) {
   const studentIds = [...new Set(attendance.map((a) => a.studentId))];
 
   const students = await prisma.student.findMany({
-    where: { id: { in: studentIds } },
+    where: { id: { in: studentIds }, status: "ACTIVE" },
     include: {
       Class: true, // 👈 important to show class name in frontend
     },

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       if (!toClass) continue;
 
       const students = await prisma.student.findMany({
-        where: { Class: { gradeId: fromGrade.id } },
+        where: { Class: { gradeId: fromGrade.id }, status: "ACTIVE" },
       });
 
       if (students.length === 0) continue;

@@ -421,6 +421,7 @@ enum LessonDay {
   THURSDAY
   FRIDAY
   SATURDAY
+  SUNDAY
 }
 
 enum Gender {

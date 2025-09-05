@@ -173,7 +173,7 @@ export type ExamSchema = z.infer<typeof examSchema>;
 // Define the lessons schema with zod
 export const lessonsSchema = z.object({
   id: z.number().optional(),
-  day: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]),
+  day: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"], { message: "Day is required" }),
   startTime: z.string(),
   endTime: z.string(),
   subjectId: z.number(),

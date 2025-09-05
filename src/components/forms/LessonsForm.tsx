@@ -126,7 +126,7 @@ const LessonForm = ({
             {...register("day")}
           >
             <option value="">Select Day</option>
-            {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].map((day) => (
+            {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY","SUNDAY"].map((day) => (
               <option value={day} key={day}>
                 {day}
               </option>

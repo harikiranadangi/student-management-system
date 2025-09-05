@@ -243,6 +243,7 @@ async function main() {
 
 
   const students = await prisma.student.findMany({
+    where: {status: "ACTIVE"},
     include: {
       Class: {
         include: {

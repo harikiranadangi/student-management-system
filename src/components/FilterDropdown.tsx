@@ -1,6 +1,7 @@
 "use client";
+import { LessonDay } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type ClassType = {
   id: number;
@@ -14,8 +15,8 @@ type GradeType = {
   level: string;
 };
 
+type DayFilterProps = { basePath: string };
 type StatusFilterProps = { basePath: string };
-
 type StudentStatusFilterProps = { basePath: string };
 
 interface ClassFilterProps {
@@ -25,6 +26,7 @@ interface ClassFilterProps {
   showClassFilter?: boolean;
 }
 
+/* ---------------- Class Filter ---------------- */
 const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true }: ClassFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,13 +75,9 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
           onChange={handleGradeChange}
           value={selectedGradeId || ""}
         >
-          <option value="" disabled>
-            Select Grade
-          </option>
+          <option value="" disabled>Select Grade</option>
           {grades.map((grade) => (
-            <option key={grade.id} value={grade.id}>
-              {grade.level}
-            </option>
+            <option key={grade.id} value={grade.id}>{grade.level}</option>
           ))}
         </select>
       </div>
@@ -93,17 +91,13 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
             value={selectedClassId || ""}
             disabled={!selectedGradeId}
           >
-            <option value="" disabled>
-              {"Select Class"}
-            </option>
+            <option value="" disabled>Select Class</option>
             {filteredClasses
               .sort((a, b) => (a.section ?? "").localeCompare(b.section ?? ""))
               .map((cls) => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.section}
-                </option>
-              ))}
-
+                <option key={cls.id} value={cls.id}>{cls.section}</option>
+              ))
+            }
           </select>
         </div>
       )}
@@ -111,21 +105,16 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
   );
 };
 
-export default ClassFilterDropdown;
-
-// Date Filter Component
+/* ---------------- Date Filter ---------------- */
 const DateFilter = ({ basePath }: { basePath: string }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = event.target.value;
-    const params = new URLSearchParams(searchParams);
-    if (newDate) {
-      params.set("date", newDate);
-    } else {
-      params.delete("date");
-    }
+    const params = new URLSearchParams(searchParams.toString());
+    if (newDate) params.set("date", newDate);
+    else params.delete("date");
     router.push(`${basePath}?${params.toString()}`);
   };
 
@@ -140,16 +129,12 @@ const DateFilter = ({ basePath }: { basePath: string }) => {
   );
 };
 
-export { DateFilter };
-
-export const StatusFilter = ({ basePath }: StatusFilterProps) => {
+/* ---------------- Status Filters ---------------- */
+const StatusFilter = ({ basePath }: StatusFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Current status (defaults to "Not Paid")
   const currentStatus = searchParams.get("status") || "Status";
 
-  // ✅ Ensure URL has a default status if not set
   useEffect(() => {
     if (!searchParams.get("status")) {
       const params = new URLSearchParams(searchParams.toString());
@@ -160,13 +145,8 @@ export const StatusFilter = ({ basePath }: StatusFilterProps) => {
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = event.target.value;
     const params = new URLSearchParams(searchParams.toString());
-
-    if (newStatus) {
-      params.set("status", newStatus);
-    } else {
-      params.delete("status");
-    }
-
+    if (newStatus) params.set("status", newStatus);
+    else params.delete("status");
     router.push(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
@@ -188,15 +168,11 @@ export const StatusFilter = ({ basePath }: StatusFilterProps) => {
   );
 };
 
-
-export const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
+const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Get current status from URL (or default to ACTIVE)
   const currentStatus = searchParams.get("studentStatus") || "ACTIVE";
 
-  // ✅ Ensure URL always has studentStatus=ACTIVE on first load
   useEffect(() => {
     if (!searchParams.get("studentStatus")) {
       const params = new URLSearchParams(searchParams.toString());
@@ -208,13 +184,8 @@ export const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
   const handleStudentStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = event.target.value;
     const params = new URLSearchParams(searchParams.toString());
-
-    if (newStatus) {
-      params.set("studentStatus", newStatus);
-    } else {
-      params.delete("studentStatus");
-    }
-
+    if (newStatus) params.set("studentStatus", newStatus);
+    else params.delete("studentStatus");
     router.push(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
@@ -234,3 +205,95 @@ export const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
     </div>
   );
 };
+
+/* ---------------- Gender Filter ---------------- */
+const GenderFilter = ({ basePath }: { basePath: string }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentGender = searchParams.get("gender") || "";
+
+  useEffect(() => {
+    if (!searchParams.get("gender")) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("gender", "");
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, basePath, router]);
+
+  const handleGenderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newGender = event.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    if (newGender) params.set("gender", newGender);
+    else params.delete("gender");
+    router.push(`${basePath}?${params.toString()}`, { scroll: false });
+  };
+
+  return (
+    <div className="relative w-full md:w-auto mt-4 md:mt-0">
+      <select
+        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        onChange={handleGenderChange}
+        value={currentGender}
+      >
+        <option value="">All Genders</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+    </div>
+  );
+};
+
+/* ---------------- Day Filter ---------------- */
+export const getTodayLessonDay = (): LessonDay => {
+  const days: LessonDay[] = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+  const today = new Date().getDay(); // 0 = Sunday, 1 = Monday
+  return days[today === 0 ? 6 : today - 1];
+};
+
+const DayFilter = ({ basePath }: DayFilterProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [selectedDay, setSelectedDay] = useState<LessonDay>(getTodayLessonDay());
+
+  useEffect(() => {
+    const dayFromUrl = searchParams.get("day") as LessonDay | null;
+
+    if (dayFromUrl && Object.values(LessonDay).includes(dayFromUrl)) {
+      setSelectedDay(dayFromUrl);
+    } else {
+      const today = getTodayLessonDay();
+      setSelectedDay(today);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("day", today);
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, basePath, router]);
+
+  const handleDayChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDay = event.target.value as LessonDay;
+    setSelectedDay(newDay);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("day", newDay);
+    router.push(`${basePath}?${params.toString()}`, { scroll: false });
+  };
+
+  return (
+    <div className="relative w-full md:w-auto">
+      <select
+        value={selectedDay}
+        onChange={handleDayChange}
+        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+      >
+        {Object.values(LessonDay).map((day) => (
+          <option key={day} value={day}>
+            {day.charAt(0) + day.slice(1).toLowerCase()}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+/* ---------------- Exports ---------------- */
+export { DayFilter, DateFilter, StatusFilter, StudentStatusFilter, GenderFilter };
+export default ClassFilterDropdown;

@@ -196,6 +196,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 // Fetch students based on the class
                 const studentMessages = await prisma.student.findMany({
+                    where: { status: "ACTIVE" },
                     select: { id: true, name: true, classId: true },
                 });
 
@@ -220,6 +221,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 // Fetch students based on the class
                 const studentpermissions = await prisma.student.findMany({
+                    where: { status: "ACTIVE" },
                     select: { id: true, name: true, classId: true },
                 });
 
@@ -256,6 +258,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 });
 
                 const studentResults = await prisma.student.findMany({
+                    where: { status: "ACTIVE" },
                     select: { id: true, name: true, classId: true },
                 });
 

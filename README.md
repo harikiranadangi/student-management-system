@@ -27,7 +27,7 @@ Ideal for **schools, colleges**, and **training centers**, this platform helps d
 | Backend | Next.js API Routes, Prisma ORM |
 | Database | PostgreSQL |
 | Auth | Clerk or Auth.js (optional) |
-| Deployment | Vercel / Railway / Digital Ocean |
+| Deployment | Render |
 
 
 ***

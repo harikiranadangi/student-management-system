@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (classId) {
       // Fetch students filtered by classId
       students = await prisma.student.findMany({
-        where: { classId: Number(classId) },
+        where: { classId: Number(classId), status: "ACTIVE" },
         include: {
           Class: true, // Include Class details if needed
         },
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     } else if (gradeId) {
       // Fetch students filtered by gradeId through Class relation
       students = await prisma.student.findMany({
-        where: {
+        where: {  status: "ACTIVE",
           Class: {
             gradeId: Number(gradeId),
           },
@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     } else {
       // Fetch all students
       students = await prisma.student.findMany({
+        where: { status: "ACTIVE" },
         include: {
           Class: true,
         },

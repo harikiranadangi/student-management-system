@@ -9,6 +9,7 @@ import { fetchUserInfo } from "@/lib/utils";
 import { Admin, Prisma } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../../types";
+import { GenderFilter } from "@/components/FilterDropdown";
 
 type AdminList = Admin
 
@@ -18,7 +19,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-2 p-2">
-      
+
       <Image
         src={item.img || "/profile.png"}
         alt={item.name}
@@ -41,7 +42,7 @@ const renderRow = (item: AdminList, role: string | null) => (
     <td className="p-2">
 
       <div className="flex items-center gap-2">
-        
+
         {role === "admin" && (
           <>
             <FormContainer table="admin" type="update" data={item} />
@@ -52,7 +53,7 @@ const renderRow = (item: AdminList, role: string | null) => (
       </div>
 
     </td>
-    
+
   </tr>
 );
 
@@ -84,13 +85,36 @@ const AdminListPage = async ({
   // Initialize Prisma query object
   const query: Prisma.AdminWhereInput = {};
 
-  if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
-  query.OR = [
-    { name: { contains: searchValue, mode: "insensitive" } },
-    { username: { contains: (searchValue) } },
-  ];
-}
+  // Normalize helper
+  const normalize = (value: string | string[] | undefined): string | undefined => {
+    if (Array.isArray(value)) return value[0];
+    return value;
+  };
+
+  // Build filters from queryParams
+  for (const [key, value] of Object.entries(queryParams)) {
+    const normalizedValue = normalize(value);
+
+    if (normalizedValue !== undefined && normalizedValue !== "") {
+      switch (key) {
+        case "search":
+          query.OR = [
+            { name: { contains: normalizedValue, mode: "insensitive" } },
+            { username: { contains: normalizedValue, mode: "insensitive" } },
+          ];
+          break;
+
+        case "gender": // 👈 supports Male / Female
+          query.gender = normalizedValue as any;
+          break;
+
+        // add more cases later (e.g., status) if needed
+        default:
+          break;
+      }
+    }
+  }
+
 
   // Fetch students and include related fields (classes, etc.)
   const [data, count] = await prisma.$transaction([
@@ -106,16 +130,19 @@ const AdminListPage = async ({
   // Debugging: Log the fetched data
   console.log("Admin Data:", JSON.stringify(data, null, 2));
 
+  const Path = "/list/users/admin"
+
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
 
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
 
-        <h1 className="hidden text-lg font-semibold md:block">Admins List</h1>
+        <h1 className="hidden text-lg font-semibold md:block">Admins List ({count})</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
 
           <TableSearch />
+          <GenderFilter basePath={Path} />
 
           <div className="flex items-center self-end gap-4">
 
@@ -127,7 +154,7 @@ const AdminListPage = async ({
             <SortButton sortKey="id" />
 
             <FormContainer table="admin" type="create" />
-            
+
 
           </div>
 
