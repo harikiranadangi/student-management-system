@@ -56,11 +56,11 @@ const getColumns = (role: string | null) => {
 
   return role === "admin" || role === "teacher"
     ? [
-        ...baseColumns.slice(0, 1),
-        adminTeacherColumns[0],
-        ...baseColumns.slice(1),
-        adminTeacherColumns[1],
-      ]
+      ...baseColumns.slice(0, 1),
+      adminTeacherColumns[0],
+      ...baseColumns.slice(1),
+      adminTeacherColumns[1],
+    ]
     : baseColumns;
 };
 
@@ -70,11 +70,11 @@ const HomeworkListPage = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const { page, gradeId, classId, date, ...queryParams } = params;
+  const { page, gradeId, date, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
-  const { role, userId } = await fetchUserInfo();
+  const { role, userId, classId } = await fetchUserInfo();
   const columns = getColumns(role);
 
   // Sorting
@@ -97,7 +97,31 @@ const HomeworkListPage = async ({
   const endDate = endOfDay(selectedDateUTC);
 
   // Get role-specific classIds
-  const userClassIds = await getClassIdForRole(role, userId);
+  let userClassIds: number[] = [];
+
+  if (role === "teacher" && userId) {
+    const teacher = await prisma.teacher.findUnique({
+      where: { linkedUserId: userId },
+      select: { classId: true },
+    });
+
+    if (teacher?.classId) {
+      userClassIds = [teacher.classId];
+    }
+  }
+
+  else if (role === "student" && userId) {
+    // Student → their one class
+    const student = await prisma.student.findFirst({
+      where: { linkedUserId: userId },
+      select: { classId: true },
+    });
+    if (student?.classId) {
+      userClassIds = [student.classId];
+    }
+  }
+  // Admin → leave userClassIds empty so they can see everything
+
 
   // Build filters dynamically
   const filters: Prisma.HomeworkWhereInput = {
@@ -105,8 +129,8 @@ const HomeworkListPage = async ({
     ...(userClassIds.length > 0
       ? { classId: { in: userClassIds } } // student or teacher
       : classId
-      ? { classId: Number(classId) } // admin filter
-      : {}),
+        ? { classId: Number(classId) } // admin filter
+        : {}),
     ...(gradeId ? { Class: { gradeId: Number(gradeId) } } : {}),
   };
 
@@ -117,6 +141,8 @@ const HomeworkListPage = async ({
       { Class: { name: { contains: queryParams.search as string, mode: "insensitive" } } },
     ];
   }
+
+
 
   // Fetch classes & grades
   const classes = await prisma.class.findMany();

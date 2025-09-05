@@ -15,7 +15,6 @@ import Link from "next/link";
 import { SearchParams } from '../../../../../../types';
 import ResetFiltersButton from '@/components/ResetFiltersButton';
 
-
 // Define types
 type StudentList = Student & {
   Class?: { name: string };
@@ -25,15 +24,14 @@ type StudentList = Student & {
 
 const rawGroupedFees = await getGroupedStudentFees(); // 👈 call here
 
-
 const renderRow = (item: StudentList, role: string | null) => {
   const studentFee = rawGroupedFees.find(fee => fee.studentId === item.id);
 
   const paidAmount = studentFee?.totalPaidAmount ?? 0;
   const abacusAmount = studentFee?.totalAbacusAmount ?? 0;
   const totalFeeAmount = studentFee?.totalFeeAmount ?? 0;
-  const discountAmount = item.totalFees?.totalDiscountAmount ?? 0; // Get discount amount
-  const dueAmount = totalFeeAmount - paidAmount - abacusAmount - discountAmount; // Calculate due amount
+  const discountAmount = item.totalFees?.totalDiscountAmount ?? 0; 
+  const dueAmount = totalFeeAmount - paidAmount - abacusAmount - discountAmount; 
   const isPreKg = item.Class?.name?.trim().toLowerCase() === "pre kg";
 
   const { status } = getTermStatus({
@@ -80,6 +78,7 @@ const renderRow = (item: StudentList, role: string | null) => {
       </td>
 
       <td className="p-2">
+        {role === "admin" && (
         <div className="flex items-center gap-2">
           {/* Collect Fees Button */}
           <Link href={`/list/fees/collect/${item.id}`}>
@@ -95,6 +94,7 @@ const renderRow = (item: StudentList, role: string | null) => {
             </button>
           </Link>
         </div>
+        )}
       </td>
     </tr>
   );
@@ -119,9 +119,8 @@ const StudentFeeListPage = async ({
   const { page, gradeId, classId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-
   // Fetch user info and role
-  const { role } = await fetchUserInfo();
+  const { role, classId: teacherClassId } = await fetchUserInfo();
 
   const columns = getColumns(role);
 
@@ -129,21 +128,17 @@ const StudentFeeListPage = async ({
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
   const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "classId";
 
+  // Build query
+  const query: Prisma.StudentWhereInput = { status: "ACTIVE" };
 
-  // Build the Prisma query based on filters
-  const query: Prisma.StudentWhereInput = { status: "ACTIVE"};
-
-  // Filter by classId (convert to integer)
-  if (classId) {
-    query.classId = Number(classId);
+  if (role === "teacher" && teacherClassId) {
+    query.classId = teacherClassId; // force teacher restriction
+  } else {
+    if (classId) query.classId = Number(classId);
+    if (gradeId) query.Class = { gradeId: Number(gradeId) };
   }
 
-  // Filter by gradeId (apply conditionally to Class relation)
-  if (gradeId) {
-    query.Class = { gradeId: Number(gradeId) };
-  }
-
-  // Search logic
+  // Search
   if (queryParams.search) {
     const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
     query.OR = [
@@ -152,27 +147,25 @@ const StudentFeeListPage = async ({
     ];
   }
 
-  // Fetch only classes that belong to the selected grade (if any)
-  const classes = await prisma.class.findMany({
-    where: gradeId ? { gradeId: Number(gradeId) } : {},
-  });
+  // Fetch classes + grades only for admins
+  const classes = role === "admin" 
+    ? await prisma.class.findMany({ where: gradeId ? { gradeId: Number(gradeId) } : {} })
+    : [];
+  const grades = role === "admin" ? await prisma.grade.findMany() : [];
 
-  // Fetch all grades
-  const grades = await prisma.grade.findMany();
-
-  // Fetch students and count
+  // Students + count
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       orderBy: [
-        { [sortKey]: sortOrder },  // Dynamic sorting (based on user selection)
-        { classId: "asc" },  // Default multi-column sorting
+        { [sortKey]: sortOrder },
+        { classId: "asc" },
         { gender: "desc" },
         { name: "asc" },
       ],
       where: query,
       include: {
         Class: true,
-        totalFees: true,  // Include student fees for each student
+        totalFees: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
@@ -180,34 +173,38 @@ const StudentFeeListPage = async ({
     prisma.student.count({ where: query }),
   ]);
 
-
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP: Description */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Fees Collection ({count})</h1>
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect" />
-          <StatusFilter basePath="/list/fees/collect" />
+        <h1 className="hidden text-lg font-semibold md:block">
+          {role === "teacher"
+            ? `Fees Collection - ${data[0]?.Class?.name ?? "Your Class"} (${count})`
+            : `Fees Collection (${count})`}
+        </h1>
+
+        {role === "admin" && (
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            <TableSearch />
-            {/* 🔄 Reset Filters Button */}
-            <ResetFiltersButton basePath="/list/fees/collect" />
-            <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-                <Image src="/filter.png" alt="" width={14} height={14} />
-              </button>
-              <SortButton sortKey="id" />
-              {/* {role === "admin" && (
-                <FormContainer table="student" type="create" />
-              )} */}
+            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/fees/collect" />
+            <StatusFilter basePath="/list/fees/collect" />
+            <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+              <TableSearch />
+              <ResetFiltersButton basePath="/list/fees/collect" />
+              <div className="flex items-center self-end gap-4">
+                <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+                  <Image src="/filter.png" alt="" width={14} height={14} />
+                </button>
+                <SortButton sortKey="id" />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-      {/* LIST: Description */}
+
+      {/* LIST */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
-      {/* PAGINATION: Description */}
+
+      {/* PAGINATION */}
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );

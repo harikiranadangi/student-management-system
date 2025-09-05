@@ -56,9 +56,9 @@ const menuItems: MenuItemSection[] = [
         icon: "/fees.png",
         label: "Fees",
         href: "#",
-        visible: ["admin"],
+        visible: ["admin", "teacher"],
         dropdown: [
-          { icon: "/fees.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin"] },
+          { icon: "/fees.png", label: "Fee Collection", href: "/list/fees/collect", visible: ["admin", "teacher"], },
           { icon: "/student.png", label: "Student Fee Report", href: "/list/reports/student-fees", visible: ["admin"] },
           { icon: "/report.png", label: "Day Wise Report", href: "/list/reports/daywise-fees", visible: ["admin"] },
           { icon: "/edit.png", label: "Fee Management", href: "/list/fees/feemanagement", visible: ["admin"] },

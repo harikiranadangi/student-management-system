@@ -2,6 +2,8 @@
 export const dynamic = "force-dynamic";
 
 import Messages from "@/components/Announcements";
+import AttendanceCalendar from "@/components/AttendanceCalendar";
+import AttendanceCalendarContainer from "@/components/AttendanceCalendarContainer";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import EventCalendar from "@/components/EventCalendar";
 import UnauthorizedReload from "@/components/UnauthorizedReload";
@@ -13,7 +15,7 @@ const StudentPage = async () => {
 
   // 🔒 Only allow student role
   if (!userId || role !== "student") {
-    return <UnauthorizedReload/>
+    return <UnauthorizedReload />
   }
 
   // Students array should contain the active student
@@ -29,7 +31,7 @@ const StudentPage = async () => {
   // Fetch student with class relation
   const fullStudent = await prisma.student.findUnique({
     where: { id: student.studentId },
-    include: { Class: true },
+    include: { Class: true, attendances: true },
   });
 
   if (!fullStudent?.Class) {
@@ -56,12 +58,16 @@ const StudentPage = async () => {
         <div className="h-full p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">
             Schedule ({fullStudent.Class.name})
+            <BigCalendarContainer type="classId" id={fullStudent.Class.id} />
           </h1>
-          <BigCalendarContainer type="classId" id={fullStudent.Class.id} />
         </div>
       </div>
       <div className="flex flex-col w-full gap-8 xl:w-1/3">
-        <EventCalendar />
+        <AttendanceCalendar attendanceData={fullStudent.attendances.map(a => ({
+          date: a.date,
+          present: a.present // true/false or null for holiday
+        }))} />
+
         <Messages />
       </div>
     </div>

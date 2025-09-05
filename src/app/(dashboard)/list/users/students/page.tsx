@@ -78,7 +78,7 @@ const StudentListPage = async ({
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   // Fetch user info and role
-  const { role } = await fetchUserInfo();
+  const { role, classId: teacherClassId } = await fetchUserInfo();
 
   const columns = getColumns(role);
 
@@ -100,7 +100,7 @@ const StudentListPage = async ({
   // Final query
   const query: Prisma.StudentWhereInput = {
     ...(classIdNum && { classId: classIdNum }),
-    ...(Object.keys(classFilter).length && { Class: classFilter }),  // ✅ FIXED HERE
+    ...(Object.keys(classFilter).length && { Class: classFilter }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" } },
@@ -108,7 +108,14 @@ const StudentListPage = async ({
       ],
     }),
     ...(studentStatus && { status: studentStatus as any }),
+    ...(role === "teacher" && teacherClassId
+      ? { classId: teacherClassId }
+      : {}),
   };
+
+  console.log("TeacherClassId from fetchUserInfo:", teacherClassId, "Role:", role);
+
+
 
   // Fetch classes list (for dropdown etc.)
   const classes = await prisma.class.findMany({

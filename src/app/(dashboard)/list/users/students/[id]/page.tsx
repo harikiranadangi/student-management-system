@@ -1,4 +1,5 @@
 import Messages from "@/components/Announcements";
+import AttendanceCalendar from "@/components/AttendanceCalendar";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
@@ -30,6 +31,7 @@ const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
+      attendances: true,
       Class: {
         include: {
           Teacher: true,
@@ -98,7 +100,7 @@ const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
                 </div>
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/phone.png" alt="" width={14} height={14} />
-                  {/* <span>{student.phone || "-"}</span> */}
+                  <span>{student.phone || "-"}</span>
                 </div>
               </div>
             </div>
@@ -198,8 +200,12 @@ const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
             </Link>
           </div>
         </div>
+        <AttendanceCalendar attendanceData={student.attendances.map(a => ({
+          date: a.date,
+          present: a.present // true/false or null for holiday
+        }))} />
+        <Messages />
         <Performance />
-        <Messages/>
       </div>
     </div>
   );

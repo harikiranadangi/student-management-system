@@ -40,6 +40,7 @@ CREATE TABLE "public"."Admin" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "clerk_id" TEXT,
     "profileId" TEXT,
+    "linkedUserId" TEXT,
 
     CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
 );
@@ -215,20 +216,6 @@ CREATE TABLE "public"."Teacher" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."ClerkTeachers" (
-    "clerk_id" VARCHAR NOT NULL,
-    "user_id" TEXT,
-    "username" TEXT NOT NULL,
-    "password" VARCHAR NOT NULL,
-    "full_name" VARCHAR NOT NULL,
-    "role" VARCHAR NOT NULL DEFAULT 'teacher',
-    "teacherId" VARCHAR,
-    "publicMetadata" JSONB DEFAULT '{}',
-
-    CONSTRAINT "ClerkTeachers_pkey" PRIMARY KEY ("clerk_id")
-);
-
--- CreateTable
 CREATE TABLE "public"."SubjectTeacher" (
     "subjectId" INTEGER NOT NULL,
     "teacherId" TEXT NOT NULL,
@@ -371,7 +358,6 @@ CREATE TABLE "public"."LinkedUser" (
     "username" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
-    "adminId" TEXT,
 
     CONSTRAINT "LinkedUser_pkey" PRIMARY KEY ("id")
 );
@@ -389,6 +375,9 @@ CREATE UNIQUE INDEX "Admin_username_key" ON "public"."Admin"("username");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Admin_clerk_id_key" ON "public"."Admin"("clerk_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_linkedUserId_key" ON "public"."Admin"("linkedUserId");
 
 -- CreateIndex
 CREATE INDEX "Admin_clerk_id_idx" ON "public"."Admin"("clerk_id");
@@ -472,15 +461,6 @@ CREATE UNIQUE INDEX "Teacher_linkedUserId_key" ON "public"."Teacher"("linkedUser
 CREATE INDEX "Teacher_clerk_id_idx" ON "public"."Teacher"("clerk_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ClerkTeachers_user_id_key" ON "public"."ClerkTeachers"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ClerkTeachers_username_key" ON "public"."ClerkTeachers"("username");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ClerkTeachers_teacherId_key" ON "public"."ClerkTeachers"("teacherId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "FeeStructure_gradeId_term_academicYear_key" ON "public"."FeeStructure"("gradeId", "term", "academicYear");
 
 -- CreateIndex
@@ -512,6 +492,9 @@ CREATE INDEX "_SubjectGrades_B_index" ON "public"."_SubjectGrades"("B");
 
 -- AddForeignKey
 ALTER TABLE "public"."Admin" ADD CONSTRAINT "Admin_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Admin" ADD CONSTRAINT "Admin_linkedUserId_fkey" FOREIGN KEY ("linkedUserId") REFERENCES "public"."LinkedUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."class" ADD CONSTRAINT "class_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "public"."Grade"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -580,9 +563,6 @@ ALTER TABLE "public"."Teacher" ADD CONSTRAINT "Teacher_profileId_fkey" FOREIGN K
 ALTER TABLE "public"."Teacher" ADD CONSTRAINT "Teacher_linkedUserId_fkey" FOREIGN KEY ("linkedUserId") REFERENCES "public"."LinkedUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ClerkTeachers" ADD CONSTRAINT "ClerkTeachers_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "public"."Teacher"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "public"."SubjectTeacher" ADD CONSTRAINT "SubjectTeacher_classId_fkey" FOREIGN KEY ("classId") REFERENCES "public"."class"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -626,9 +606,6 @@ ALTER TABLE "public"."Profile" ADD CONSTRAINT "Profile_activeUserId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "public"."LinkedUser" ADD CONSTRAINT "LinkedUser_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."LinkedUser" ADD CONSTRAINT "LinkedUser_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "public"."Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_SubjectGrades" ADD CONSTRAINT "_SubjectGrades_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Grade"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -35,16 +35,23 @@ async function getStudentInfo(linkedUserId: string) {
 }
 
 async function getTeacherInfo(linkedUserId: string) {
-
   const teacher = await prisma.teacher.findUnique({
     where: { linkedUserId },
-    select: { id: true, classId: true },
+    select: { id: true },
   });
 
+  if (!teacher) return {};
 
-  return teacher
-    ? { teacherId: teacher.id, classId: teacher.classId ?? undefined }
-    : {};
+  const teacherClass = await prisma.class.findUnique({
+    where: { supervisorId: teacher.id },
+    select: { id: true, name: true },
+  });
+
+  return {
+    teacherId: teacher.id,
+    classId: teacherClass?.id,   // ✅ Now we have the right classId
+    className: teacherClass?.name,
+  };
 }
 
 // ------------------ Main ------------------

@@ -76,13 +76,17 @@ export async function POST(req: NextRequest) {
       });
 
       if (!profile) {
+        const normalizedClerkId =
+          providedClerkId && providedClerkId.trim() !== "" ? providedClerkId : null;
+
         profile = await prisma.profile.create({
           data: {
             phone,
-            clerk_id: providedClerkId || "", // temporary empty if Clerk not created yet
+            clerk_id: normalizedClerkId,
           },
           include: { users: true },
         });
+        console.log(`Created profile for phone: ${phone} (Profile ID: ${profile.id})`);
       }
 
       // ✅ Step 2: Ensure Student Role exists for this profile
