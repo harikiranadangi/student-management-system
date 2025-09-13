@@ -47,3 +47,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const homeworks = await prisma.homework.findMany({
+      orderBy: { date: "desc" },
+      include: {
+        Class: {
+          select: {
+            name: true,
+            students: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Add type for frontend
+    const formatted = homeworks.map(hw => ({ ...hw, type: "HOMEWORK" }));
+
+    return NextResponse.json(formatted, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching homeworks:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch homeworks" },
+      { status: 500 }
+    );
+  }
+}
+
+

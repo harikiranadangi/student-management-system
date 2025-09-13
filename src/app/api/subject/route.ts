@@ -64,3 +64,34 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
+
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const gradeId = searchParams.get("gradeId");
+
+    let subjects;
+
+    if (gradeId) {
+      // Fetch subjects by grade
+      subjects = await prisma.subject.findMany({
+        where: {
+          grades: { some: { id: Number(gradeId) } },
+        },
+        include: { grades: true },
+      });
+    } else {
+      // Fetch all subjects
+      subjects = await prisma.subject.findMany({
+        include: { grades: true },
+      });
+    }
+
+    return NextResponse.json(subjects, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching subjects:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}
+    

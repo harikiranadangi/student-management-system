@@ -138,3 +138,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to save attendance" }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const absentees = await prisma.messages.findMany({
+      where: { type: "ABSENT" },
+      orderBy: { date: "desc" },
+      include: {
+        Student: { select: { name: true } },
+        Class: { select: { name: true, section: true } },
+      },
+    });
+
+    return NextResponse.json(absentees, { status: 200 });
+  } catch (err) {
+    console.error("Error fetching attendance messages:", err);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch attendance messages" },
+      { status: 500 }
+    );
+  }
+}

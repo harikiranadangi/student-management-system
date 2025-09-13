@@ -89,3 +89,23 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const messages = await prisma.messages.findMany({
+      orderBy: { date: "desc" }, // latest first
+      include: {
+        Student: { select: { name: true } },
+        Class: { select: { name: true } },
+      },
+    });
+
+    return NextResponse.json(messages, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch messages" },
+      { status: 500 }
+    );
+  }
+}

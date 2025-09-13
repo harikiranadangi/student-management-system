@@ -189,3 +189,94 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const username = searchParams.get("username");
+    const id = searchParams.get("id");
+    const classId = searchParams.get("classId");
+    const gender = searchParams.get("gender");
+
+    let whereClause: any = {};
+
+    // 🎯 Filter by ID
+    if (id) {
+      const teacher = await prisma.teacher.findUnique({
+        where: { id },
+        include: {
+          profile: { include: { users: true, activeUser: true } },
+          subjects: { include: { subject: true, class: true } },
+        },
+      });
+
+      if (!teacher) {
+        return NextResponse.json(
+          { message: `Teacher with id "${id}" not found` },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(teacher, { status: 200 });
+    }
+
+    // 🎯 Filter by Username
+    if (username) {
+      const teacher = await prisma.teacher.findUnique({
+        where: { username },
+        include: {
+          profile: { include: { users: true, activeUser: true } },
+          subjects: { include: { subject: true, class: true } },
+        },
+      });
+
+      if (!teacher) {
+        return NextResponse.json(
+          { message: `Teacher with username "${username}" not found` },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(teacher, { status: 200 });
+    }
+
+    // 🎯 Add gender filter
+    if (gender) {
+      whereClause.gender = gender;
+    }
+
+    // 🎯 Add class filter (teachers who teach in a class)
+    let teachers;
+    if (classId) {
+      teachers = await prisma.teacher.findMany({
+        where: {
+          ...whereClause,
+          subjects: {
+            some: { classId: classId },
+          },
+        },
+        include: {
+          profile: { include: { users: true, activeUser: true } },
+          subjects: { include: { subject: true, class: true } },
+        },
+      });
+    } else {
+      teachers = await prisma.teacher.findMany({
+        where: whereClause,
+        include: {
+          profile: { include: { users: true, activeUser: true } },
+          subjects: { include: { subject: true, class: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    return NextResponse.json(teachers, { status: 200 });
+  } catch (error: any) {
+    console.error("GET Teachers Error:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch teachers", error: error.message },
+      { status: 500 }
+    );
+  }
+}

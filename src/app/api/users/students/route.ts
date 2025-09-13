@@ -1,8 +1,9 @@
 import prisma from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { studentschema } from '@/lib/formValidationSchemas';
 import { toast } from 'react-toastify';
+import { StudentStatus } from '@prisma/client';
 
 // Clerk User type alias (avoids import conflict)
 const client = await clerkClient();
@@ -231,6 +232,79 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// ---------------------- GET ----------------------
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const classId = searchParams.get("classId");
+  const gradeId = searchParams.get("gradeId");
+  const gender = searchParams.get("gender");
+  const search = searchParams.get("search");
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "50", 10); // default 50
+
+  try {
+    // Base condition
+    const where: any = { status: StudentStatus.ACTIVE };
+
+    if (classId) {
+      where.classId = Number(classId);
+    }
+
+    if (gender) {
+      where.gender = gender;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { parentName: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { username: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // ✅ Only add grade filter if provided
+    if (gradeId) {
+      where.Class = {
+        gradeId: Number(gradeId),
+      };
+    }
+
+    // Pagination offset
+    const skip = (page - 1) * limit;
+
+    // Fetch students + count
+    const [students, total] = await Promise.all([
+      prisma.student.findMany({
+        where,
+        include: { Class: true },
+        orderBy: [{ classId: "asc" }, { gender: "desc" }, { name: "asc" }],
+        skip,
+        take: limit,
+      }),
+      prisma.student.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      data: students,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Error fetching students:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to fetch students" },
       { status: 500 }
     );
   }

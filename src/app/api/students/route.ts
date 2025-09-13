@@ -1,49 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { StudentStatus } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const classId = searchParams.get("classId");
   const gradeId = searchParams.get("gradeId");
+  const gender = searchParams.get("gender");
+  const search = searchParams.get("search");
 
   try {
-    let students;
+    const where: any = { status: StudentStatus.ACTIVE };
 
     if (classId) {
-      // Fetch students filtered by classId
-      students = await prisma.student.findMany({
-        where: { classId: Number(classId), status: "ACTIVE" },
-        include: {
-          Class: true, // Include Class details if needed
-        },
-      });
-    } else if (gradeId) {
-      // Fetch students filtered by gradeId through Class relation
-      students = await prisma.student.findMany({
-        where: {  status: "ACTIVE",
-          Class: {
-            gradeId: Number(gradeId),
-          },
-        },
-        include: {
-          Class: true,
-        },
-      });
-    } else {
-      // Fetch all students
-      students = await prisma.student.findMany({
-        where: { status: "ACTIVE" },
-        include: {
-          Class: true,
-        },
-      });
+      where.classId = Number(classId);
     }
 
+    if (gradeId) {
+      where.Class = {
+        ...(where.Class || {}),
+        gradeId: Number(gradeId),
+      };
+    }
+
+    if (gender) {
+      where.gender = gender; // ✅ filter by gender
+    }
+
+    if (search) {
+      where.name = { contains: search, mode: "insensitive" };
+    }
+
+    const students = await prisma.student.findMany({
+      where,
+      include: {
+        Class: true,
+      },
+      orderBy: [
+        { classId: "asc" },
+        { gender: "desc" },
+        { name: "asc" },
+      ],
+    });
+
     return NextResponse.json(students);
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error fetching students:", error);
     return NextResponse.json(
-      { error: "Failed to fetch students" },
+      { error: error.message || "Failed to fetch students" },
       { status: 500 }
     );
   }
