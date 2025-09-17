@@ -3,12 +3,12 @@ export const dynamic = "force-dynamic";
 
 import Messages from "@/components/Announcements";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
-import AttendanceCalendarContainer from "@/components/AttendanceCalendarContainer";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
+import ClassTimetableContainer from "@/components/ClassTimetableContainer";
 import EventCalendar from "@/components/EventCalendar";
 import UnauthorizedReload from "@/components/UnauthorizedReload";
 import prisma from "@/lib/prisma";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 
 const StudentPage = async () => {
   const { userId, role, students } = await fetchUserInfo();
@@ -57,9 +57,9 @@ const StudentPage = async () => {
       <div className="w-full xl:w-2/3">
         <div className="h-full p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">
-            Schedule ({fullStudent.Class.name})
-            <BigCalendarContainer type="classId" id={fullStudent.Class.id} />
-          </h1>
+            Time-Table ({fullStudent.Class.name})
+            <ClassTimetableContainer classId={fullStudent.Class.id} />
+            </h1>
         </div>
       </div>
       <div className="flex flex-col w-full gap-8 xl:w-1/3">

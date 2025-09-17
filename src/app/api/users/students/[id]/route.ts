@@ -1,6 +1,5 @@
 // src/app/api/users/students/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-// src/app/api/users/students/[id]/route.ts
 import prisma from "@/lib/prisma";
 import { clerkClient } from "@clerk/nextjs/server";
 import { studentschema } from "@/lib/formValidationSchemas";

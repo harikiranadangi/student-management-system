@@ -5,7 +5,7 @@ import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import prisma from "@/lib/prisma";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";

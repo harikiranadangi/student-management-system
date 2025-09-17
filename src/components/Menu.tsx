@@ -101,7 +101,7 @@ const menuItems: MenuItemSection[] = [
   {
     title: "OTHERS",
     items: [
-      { icon: "/profile.png", label: "Profile", href: "/list/profile", visible: ["teacher", "student", "admin"] },
+      { icon: "/profile.png", label: "Profile", href: "/list/profiles", visible: ["teacher", "student", "admin"] },
       { icon: "/setting.png", label: "Settings", href: "/settings", visible: ["admin", "teacher", "student"] },
       { icon: "/logout.png", label: "Logout", href: "/logout", visible: ["admin", "teacher", "student"] },
     ],
@@ -120,9 +120,9 @@ function updateMenuItem(item: MenuItem, role: Role): MenuItem | null {
   // Profile should redirect to role-specific profile
   if (item.label === "Profile") {
     const profileHref: Record<Role, string> = {
-      student: "/list/studentprofile",
-      teacher: "/list/teacherprofile",
-      admin: "/list/adminprofile",
+      student: "/list/profiles/student",
+      teacher: "/list/profiles/teacher",
+      admin: "/list/profiles/admin",
     };
     return { ...item, href: profileHref[role] };
   }

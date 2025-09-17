@@ -239,7 +239,7 @@ button {
   background-color: #F87171; /* red */
 }
 .holiday-day::after {
-  background-color: #FBBF24; /* yellow */
+  background-color: #FFF59D; /* yellow */
 }
 
 /* Ensure day number appears above circle */
@@ -258,3 +258,12 @@ button {
   color: red; /* Optional, default is already red */
 }
 
+.not-marked-day {
+  background: #facc15 !important; /* Tailwind yellow-400 */
+  color: black !important;
+  border-radius: 50%;
+}
+
+.hidden-sunday {
+  display: none !important;
+}

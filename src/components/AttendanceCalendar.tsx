@@ -30,12 +30,32 @@ const AttendanceCalendar = ({ attendanceData }: Props) => {
 
   useEffect(() => {
     const map: { [key: string]: string } = {};
+
+    // First, mark given attendance data
     attendanceData.forEach((att) => {
       const day = formatDate(att.date);
       if (att.present === true) map[day] = "present-day";
       else if (att.present === false) map[day] = "absent-day";
       else map[day] = "holiday-day"; // null → holiday
     });
+
+    // Mark missing records till today as Holiday (excluding Sundays)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    // Loop all days of current month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const key = formatDate(date);
+
+      // only mark till today
+      if (date <= today && !map[key] && date.getDay() !== 0) {
+        map[key] = "holiday-day"; // treat missing attendance as holiday
+      }
+    }
+
     setTileClassNameMap(map);
   }, [attendanceData]);
 
@@ -69,11 +89,11 @@ const AttendanceCalendar = ({ attendanceData }: Props) => {
           <span>Absent</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full bg-yellow-400 border border-gray-300"></span>
+          <span className="w-4 h-4 rounded-full bg-yellow-200 border border-gray-300"></span>
           <span>Holiday</span>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

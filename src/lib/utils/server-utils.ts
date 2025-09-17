@@ -1,0 +1,95 @@
+// src/lib/server-utils.ts
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
+
+interface UserInfo {
+  userId: string | null;
+  role: string | null;
+  students?: { studentId: string; classId: number; name: string }[];
+  teacherId?: string;
+  classId?: number;
+}
+
+async function getStudentInfo(linkedUserId: string) {
+  const student = await prisma.student.findUnique({
+    where: { linkedUserId },
+    select: { id: true, classId: true, name: true },
+  });
+
+  if (!student) return [];
+  return [{ studentId: student.id, classId: student.classId, name: student.name }];
+}
+
+async function getTeacherInfo(linkedUserId: string) {
+  const teacher = await prisma.teacher.findUnique({
+    where: { linkedUserId },
+    select: { id: true },
+  });
+
+  if (!teacher) return {};
+
+  const teacherClass = await prisma.class.findUnique({
+    where: { supervisorId: teacher.id },
+    select: { id: true, name: true },
+  });
+
+  return {
+    teacherId: teacher.id,
+    classId: teacherClass?.id,
+    className: teacherClass?.name,
+  };
+}
+
+export async function fetchUserInfo(): Promise<UserInfo> {
+  try {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) return { userId: null, role: null };
+
+    const profile = await prisma.profile.findUnique({
+      where: { clerk_id: clerkId },
+      select: { activeUser: { select: { id: true, role: true } } },
+    });
+
+    const active = profile?.activeUser;
+    if (!active) return { userId: null, role: null };
+
+    if (active.role === "student") {
+      const students = await getStudentInfo(active.id);
+      return { userId: active.id, role: "student", students };
+    }
+
+    if (active.role === "teacher") {
+      const teacherInfo = await getTeacherInfo(active.id);
+      return { userId: active.id, role: "teacher", ...teacherInfo };
+    }
+
+    return { userId: active.id, role: active.role };
+  } catch {
+    return { userId: null, role: null };
+  }
+}
+
+export async function getClassIdForRole(
+  role: string | null,
+  userId: string | null
+): Promise<number[]> {
+  if (!userId || !role) return [];
+
+  if (role === "student") {
+    const student = await prisma.student.findUnique({
+      where: { linkedUserId: userId },
+      select: { classId: true },
+    });
+    return student?.classId ? [student.classId] : [];
+  }
+
+  if (role === "teacher") {
+    const teacher = await prisma.teacher.findUnique({
+      where: { linkedUserId: userId },
+      select: { classId: true },
+    });
+    return teacher?.classId ? [teacher.classId] : [];
+  }
+
+  return [];
+}

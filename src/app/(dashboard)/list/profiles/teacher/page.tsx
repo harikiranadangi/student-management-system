@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import prisma from "@/lib/prisma";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";

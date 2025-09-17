@@ -5,7 +5,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { Exam, Prisma, ExamGradeSubject, Grade, Subject } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
 import Image from "next/image";

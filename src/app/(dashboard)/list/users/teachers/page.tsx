@@ -9,7 +9,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { Class, Prisma, Student, Subject, Teacher } from "@prisma/client";
 import Link from "next/link";
 import FormContainer from "@/components/FormContainer";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { SearchParams } from "../../../../../../types";
 import SortButton from "@/components/SortButton";
 import ResetFiltersButton from "@/components/ResetFiltersButton";

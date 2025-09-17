@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 
 type ClassType = {
   id: number;
-  name: string;
   section: string | null;
   gradeId: number;
 };

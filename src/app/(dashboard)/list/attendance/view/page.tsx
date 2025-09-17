@@ -1,5 +1,5 @@
 import ViewAttendancePage from "@/components/ViewAttendancePage";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 
 export default async function Page() {
   const user = await fetchUserInfo();

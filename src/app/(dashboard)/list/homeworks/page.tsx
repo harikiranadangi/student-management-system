@@ -6,12 +6,12 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { fetchUserInfo, getClassIdForRole } from "@/lib/utils";
 import { Class, Homework, Prisma } from "@prisma/client";
 import Image from "next/image";
 import SortButton from "@/components/SortButton";
 import { SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 
 type Homeworks = Homework & { Class: Class };
 

@@ -8,7 +8,7 @@ import TableSearch from "@/components/TableSearch";
 import { getGroupedStudentFees } from "@/lib/fees";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { fetchUserInfo } from "@/lib/utils";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { FeeStructure, Prisma, StudentFees, StudentTotalFees } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../../types";

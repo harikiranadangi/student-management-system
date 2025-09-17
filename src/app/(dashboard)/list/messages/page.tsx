@@ -1,7 +1,6 @@
 import { Class, Messages, Prisma, Student } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { fetchUserInfo, getClassIdForRole } from "@/lib/utils";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -10,6 +9,7 @@ import Image from "next/image";
 import SortButton from "@/components/SortButton";
 import { SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import { fetchUserInfo, getClassIdForRole } from "@/lib/utils/server-utils";
 
 type MessageList = Messages & { Student: Student; Class: Class };
 
