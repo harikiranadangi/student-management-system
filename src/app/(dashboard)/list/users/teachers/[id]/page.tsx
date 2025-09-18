@@ -2,6 +2,7 @@ import Messages from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
+import TeacherTimetableContainer from "@/components/TeacherTimetableContainer";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
@@ -119,7 +120,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
 
                 <div className="flex items-center w-full gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
                   <Image src="/phone.png" alt="" width={14} height={14} />
-                  {/* <span>{teacherData.phone}</span> */}
+                  <span>{teacherData.phone}</span>
                 </div>
               </div>
             </div>
@@ -170,7 +171,7 @@ const SingleTeacherPage = async ({ params }: TeacherSinglePageProps) => {
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Teacher&apos;s Schedule</h1>
-          <BigCalendarContainer type="teacherId" id={teacherData.id} />
+          <TeacherTimetableContainer teacherId={teacherData.id} />
         </div>
 
       </div>

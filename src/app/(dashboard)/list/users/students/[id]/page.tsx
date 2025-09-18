@@ -1,6 +1,6 @@
 import Messages from "@/components/Announcements";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
-import BigCalendarContainer from "@/components/BigCalendarContainer";
+import ClassTimetableContainer from "@/components/ClassTimetableContainer";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
@@ -34,6 +34,7 @@ const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
       attendances: true,
       Class: {
         include: {
+          Grade: true,
           Teacher: true,
           _count: { select: { lessons: true } },
         },
@@ -167,7 +168,7 @@ const SingleStudentPage = async ({ params }: StudentSinglePageProps) => {
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Student&apos;s Schedule</h1>
-          <BigCalendarContainer type="classId" id={student.Class.id} />
+          <ClassTimetableContainer classId={student.Class.id} />
         </div>
       </div>
       {/* RIGHT */}

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import ClassTimetableContainer from "@/components/ClassTimetableContainer";
-import ClassFilterDropdown, { DayFilter } from "@/components/FilterDropdown";
+import ClassFilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 
 export const dynamic = "force-dynamic";

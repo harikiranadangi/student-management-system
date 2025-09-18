@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Validate with zod
+    // Validate input
     const validated = lessonsSchema.parse(body);
 
     function timeStringToDate(timeStr: string): Date {
@@ -19,26 +19,43 @@ export async function POST(req: Request) {
       return date;
     }
 
-    // Fetch the subject to get its name
+    const startTime = timeStringToDate(validated.startTime);
+    const endTime = timeStringToDate(validated.endTime);
+
+    // Check if the subject exists
     const subject = await prisma.subject.findUnique({
       where: { id: validated.subjectId },
     });
+    
 
     if (!subject) {
       return NextResponse.json({ message: "Subject not found" }, { status: 404 });
     }
 
+    // Delete any existing lesson for the same class, day, startTime, and endTime
+    await prisma.lesson.deleteMany({
+      where: {
+        classId: validated.classId,
+        day: validated.day,
+        startTime,
+        endTime,
+      },
+    });
+
+    // Create the new lesson
     const lesson = await prisma.lesson.create({
       data: {
-        title: subject.name, // set title using subject name
+        title: subject.name,
         day: validated.day,
-        startTime: timeStringToDate(validated.startTime),
-        endTime: timeStringToDate(validated.endTime),
+        startTime,
+        endTime,
         subjectId: validated.subjectId,
         classId: validated.classId,
         teacherId: validated.teacherId,
       },
     });
+
+    console.log("Created lesson:", lesson);
 
     return NextResponse.json(lesson, { status: 201 });
   } catch (error) {
