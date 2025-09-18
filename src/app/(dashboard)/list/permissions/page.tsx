@@ -21,34 +21,38 @@ type PermissionWithRelations = PermissionSlip & {
 };
 
 // 🔹 Render Table Row
-const renderRow = (item: PermissionWithRelations, role: string | null) => (
-  <tr
-    key={item.id}
-    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
-  >
-    <td>
-      {new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }).format(new Date(item.timeIssued))}
-    </td>
-    <td>{item.student.name}</td>
-    <td>{item.student.Class?.name ?? "N/A"}</td>
-    <td>{item.leaveType}</td>
-    <td>{item.description || "-"}</td>
-    <td>{item.withWhom}</td>
-    <td>{item.relation}</td>
-    {(role === "admin" || role === "teacher") && (
-      <td>
-        <div className="flex items-center gap-2">
-          <FormContainer table="permissions" type="update" data={item} />
-          <FormContainer table="permissions" type="delete" id={item.id} />
-        </div>
-      </td>
-    )}
-  </tr>
-);
+const renderRow = (item: PermissionWithRelations, role: string | null) => {
+  const localTime = new Date(item.timeIssued).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  });
+
+  return (
+    <tr
+      key={item.id}
+      className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    >
+      <td>{localTime}</td>
+      <td>{item.student.name}</td>
+      <td>{item.student.Class?.name ?? "N/A"}</td>
+      <td>{item.leaveType}</td>
+      <td>{item.description || "-"}</td>
+      <td>{item.withWhom}</td>
+      <td>{item.relation}</td>
+      {(role === "admin" || role === "teacher") && (
+        <td>
+          <div className="flex items-center gap-2">
+            <FormContainer table="permissions" type="update" data={item} />
+            <FormContainer table="permissions" type="delete" id={item.id} />
+          </div>
+        </td>
+      )}
+    </tr>
+  );
+};
+
 
 // 🔹 Table Columns
 const getColumns = (role: string | null) => [
@@ -99,7 +103,7 @@ const PermissionSlipListPage = async ({
   query.student = {
     ...(classId ? { classId: Number(classId) } : {}),
     ...(gradeId ? { Class: { gradeId: Number(gradeId) } } : {}),
-     ...(search ? { name: { contains: String(search), mode: "insensitive" } } : {}),
+    ...(search ? { name: { contains: String(search), mode: "insensitive" } } : {}),
   };
 
   // 🔹 Restrict by role (teacher/student)
