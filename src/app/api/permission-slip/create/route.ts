@@ -2,6 +2,8 @@ import { slipSchema } from "@/lib/formValidationSchemas";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fs from "fs";
+import path from "path";
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,27 +58,46 @@ export async function POST(req: NextRequest) {
 
     const pdfDoc = await PDFDocument.create();
 
-    // 9cm x 9cm in points
+    // Page size: 9cm x 9cm in points
     const pageWidth = 255;
     const pageHeight = 255;
 
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
-    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Title
+    // --- EMBED LOGO DIRECTLY FROM PUBLIC FOLDER ---
+    const logoPath = path.join(process.cwd(), "public", "logo.png");
+    const logoBytes = fs.readFileSync(logoPath);
+    const logoImage = await pdfDoc.embedPng(logoBytes);
+
+    // Scale down the logo
+    const logoDims = logoImage.scale(0.07);
+
+    // Draw logo at top center
+    page.drawImage(logoImage, {
+      x: (pageWidth - logoDims.width) / 2,
+      y: pageHeight - logoDims.height - 10,
+      width: logoDims.width,
+      height: logoDims.height,
+    });
+
+    // Title below logo (centered)
     page.drawText("KOTAK SALESIAN SCHOOL", {
-      x: 40,
-      y: pageHeight - 30,
-      size: 12,
-      font,
+      x: (pageWidth - fontBold.widthOfTextAtSize("KOTAK SALESIAN SCHOOL", 11)) / 2,
+      y: pageHeight - logoDims.height - 25,
+      size: 11,
+      font: fontBold,
       color: rgb(0, 0, 0),
     });
+
+    // Subtitle: GATE SLIP (centered)
     page.drawText("GATE SLIP", {
-      x: 95,
-      y: pageHeight - 45,
+      x: (pageWidth - fontRegular.widthOfTextAtSize("GATE SLIP", 10)) / 2,
+      y: pageHeight - logoDims.height - 40,
       size: 10,
-      font: regularFont,
+      font: fontRegular,
+      color: rgb(0, 0, 0),
     });
 
     // Content
@@ -91,42 +112,44 @@ export async function POST(req: NextRequest) {
       `Relation: ${data.relation || "-"}`,
     ];
 
-    let y = pageHeight - 70;
+    let y = pageHeight - logoDims.height - 65; // start after header block
     for (const line of lines) {
       page.drawText(line, {
         x: 20,
         y,
         size: 9,
-        font: regularFont,
+        font: fontRegular,
+        color: rgb(0, 0, 0),
       });
       y -= 14;
     }
 
-    // Footer: Signature fields
+    // Footer
     page.drawText("Principal Signature", {
       x: 20,
       y: 20,
       size: 9,
-      font: regularFont,
+      font: fontRegular,
     });
 
     page.drawText("Signature", {
       x: pageWidth - 80,
       y: 20,
       size: 9,
-      font: regularFont,
+      font: fontRegular,
     });
 
-    // Save the PDF and convert to base64
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
-
-    return NextResponse.json({
-      success: true,
-      slip: newSlip,
-      gateSlipPdf: `data:application/pdf;base64,${pdfBase64}`,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        slip: newSlip,
+        gateSlipPdf: `data:application/pdf;base64,${pdfBase64}`,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Permission slip creation error:", error);
     return NextResponse.json(

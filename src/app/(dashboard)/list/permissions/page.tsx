@@ -1,25 +1,26 @@
-import { startOfDay, endOfDay } from "date-fns";
 import ClassFilterDropdown, { DateFilter } from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
+import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Grade, PermissionSlip, Prisma, Student } from "@prisma/client";
-import Image from "next/image";
-import SortButton from "@/components/SortButton";
-import ResetFiltersButton from "@/components/ResetFiltersButton";
-import { SearchParams } from "../../../../../types";
-import ExportButton from "@/components/ExportButton";
 import { fetchUserInfo, getClassIdForRole } from "@/lib/utils/server-utils";
+import { Prisma, PermissionSlip, Student, Class, Grade } from "@prisma/client";
+import Image from "next/image";
+import { SearchParams } from "../../../../../types";
+import ResetFiltersButton from "@/components/ResetFiltersButton";
+import ExportButton from "@/components/ExportButton";
 
+// 🔹 Types
 type PermissionWithRelations = PermissionSlip & {
   student: Student & {
     Class: Class & { Grade: Grade };
   };
 };
 
+// 🔹 Render Table Row
 const renderRow = (item: PermissionWithRelations, role: string | null) => (
   <tr
     key={item.id}
@@ -49,6 +50,7 @@ const renderRow = (item: PermissionWithRelations, role: string | null) => (
   </tr>
 );
 
+// 🔹 Table Columns
 const getColumns = (role: string | null) => [
   { header: "Issued Time", accessor: "timeIssued" },
   { header: "Student", accessor: "student" },
@@ -57,48 +59,58 @@ const getColumns = (role: string | null) => [
   { header: "Description", accessor: "description" },
   { header: "Person Name", accessor: "withWhom" },
   { header: "Relation", accessor: "relation" },
-  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+  ...(role === "admin" || role === "teacher"
+    ? [{ header: "Actions", accessor: "action" }]
+    : []),
 ];
 
-const PermissionSlipListPage = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+const PermissionSlipListPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const params = await searchParams;
-  const { page, gradeId, classId, date, ...queryParams } = params;
+  const { page, gradeId, classId, date, search } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
+  // 🔹 User Info
   const { role, userId } = await fetchUserInfo();
+  const userClassIds = await getClassIdForRole(role, userId); // array
   const columns = getColumns(role);
 
+  // 🔹 Sorting
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const sortKey =
+    Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
 
-  const rawDate = Array.isArray(date) ? date[0] : date;
-  const selectedDate = new Date(rawDate ?? new Date().toISOString().split("T")[0]);
-  const selectedDateUTC = new Date(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth(), selectedDate.getUTCDate());
-  const startDate = startOfDay(selectedDateUTC);
-  const endDate = endOfDay(selectedDateUTC);
+  // 🔹 Query Builder
+  const query: Prisma.PermissionSlipWhereInput = {};
 
-  const query: Prisma.PermissionSlipWhereInput = {
-    date: { gte: startDate, lt: endDate },
-  };
+  // Date filter
+  if (date) {
+    const rawDate = Array.isArray(date) ? date[0] : date;
+    const selectedDate = new Date(rawDate);
+    const startDate = new Date(selectedDate.setHours(0, 0, 0, 0));
+    const endDate = new Date(selectedDate.setHours(23, 59, 59, 999));
+    query.date = { gte: startDate, lte: endDate };
+  }
 
+  // Student/Class/Grade filters
   query.student = {
-    AND: [
-      ...(classId ? [{ classId: Number(classId) }] : []),
-      ...(gradeId
-        ? [
-          {
-            Class: {
-              gradeId: Number(gradeId),
-            },
-          },
-        ]
-        : []),
-    ],
+    ...(classId ? { classId: Number(classId) } : {}),
+    ...(gradeId ? { Class: { gradeId: Number(gradeId) } } : {}),
+     ...(search ? { name: { contains: String(search), mode: "insensitive" } } : {}),
   };
 
-  const userClassId = await getClassIdForRole(role, userId);
-  if (userClassId) query.student = { classId: Number(userClassId) };
+  // 🔹 Restrict by role (teacher/student)
+  if (userClassIds.length > 0) {
+    query.student = {
+      ...(query.student || {}),
+      classId: { in: userClassIds },
+    };
+  }
 
+  // 🔹 Fetch Data
   const [data, count] = await prisma.$transaction([
     prisma.permissionSlip.findMany({
       where: query,
@@ -116,35 +128,51 @@ const PermissionSlipListPage = async ({ searchParams }: { searchParams: Promise<
     prisma.permissionSlip.count({ where: query }),
   ]);
 
+  // 🔹 For filters
   const grades = await prisma.grade.findMany();
   const classes = await prisma.class.findMany();
 
+  const Path = "/list/permissions";
+
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+      {/* 🔹 TOP Section */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Permission Slips</h1>
-        <div className="flex items-center gap-4">
-          <DateFilter basePath="/list/permissions" />
+        <h1 className="hidden text-lg font-semibold md:block">
+          Permission Slips ({count})
+        </h1>
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+          <TableSearch />
+          <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/permissions" />
+            <ClassFilterDropdown
+              classes={classes}
+              grades={grades}
+              basePath={Path}
+            />
           )}
-          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            <TableSearch />
-            <ResetFiltersButton basePath="/list/permissions" />
-            <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-                <Image src="/filter.png" alt="" width={14} height={14} />
-              </button>
-              <SortButton sortKey="id" />
-              {(role === "admin") && (
-                <FormContainer table="permissions" type="create" />
-              )}
-              <ExportButton data={data} fileName="Permission_Slips" />
-            </div>
+          <ResetFiltersButton basePath={Path} />
+          <div className="flex items-center gap-4">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
+            </button>
+            <SortButton sortKey="id" />
+            {(role === "admin" || role === "teacher") && (
+              <FormContainer table="permissions" type="create" />
+            )}
+            <ExportButton data={data} fileName="Permission_Slips" />
           </div>
         </div>
       </div>
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+
+      {/* 🔹 TABLE */}
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
+
+      {/* 🔹 PAGINATION */}
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );
