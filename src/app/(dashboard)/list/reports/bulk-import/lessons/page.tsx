@@ -1,0 +1,14 @@
+import BulkLessonsUpload from "@/components/BulkUpload/BulkLessonsUpload";
+import SampleCSVPreview from "@/components/SampleCSVPreview";
+
+export default function ReportsPage() {
+  return (
+    <div className="">
+      <h1 className="text-xl font-bold mb-4">Bulk Import</h1>
+      <BulkLessonsUpload />
+      <div className="mt-10">
+        <SampleCSVPreview type="lessons" />
+      </div>
+    </div>
+  );
+}

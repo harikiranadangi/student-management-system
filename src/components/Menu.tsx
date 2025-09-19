@@ -94,6 +94,7 @@ const menuItems: MenuItemSection[] = [
           { icon: "/student.png", label: "Students", href: "/list/reports/bulk-import/students", visible: ["admin"] },
           { icon: "/subject.png", label: "Subjects", href: "/list/reports/bulk-import/subjects", visible: ["admin"] },
           { icon: "/fees.png", label: "Fee Collection", href: "/list/reports/bulk-import/feecollection", visible: ["admin"] },
+          { icon: "/lesson.png", label: "Time Table", href: "/list/reports/bulk-import/lessons", visible: ["admin"] },
         ],
       },
     ],

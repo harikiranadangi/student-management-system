@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 interface SampleCSVPreviewProps {
-    type: "student" | "teacher" | "grades" | "classes" | "feestructure" | "subjects" | "feecollection";
+    type: "student" | "teacher" | "grades" | "classes" | "feestructure" | "subjects" | "feecollection" | "lessons";
 }
 
 const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
@@ -175,6 +175,52 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
             ];
             break;
 
+            case "lessons":
+             sampleRows = [
+                {
+                    id: "l001",
+                    classId: "1",
+                    subjectId: "101",
+                    teacherId: "201",
+                    day: "MONDAY",
+                    startTime: "09:00",
+                    endTime: "09:45",
+                    academicYear: "Y2024_2025",
+                },
+                {
+                    id: "l002",
+                    classId: "1",
+                    subjectId: "102",
+                    teacherId: "202",
+                    day: "MONDAY",
+                    startTime: "09:46",
+                    endTime: "10:30",
+                    academicYear: "Y2024_2025",
+                },
+                {
+                    id: "l003",
+                    classId: "1",
+                    subjectId: "103",
+                    teacherId: "203",
+                    day: "TUESDAY",
+                    startTime: "10:31",
+                    endTime: "11:15",
+                    academicYear: "Y2024_2025",
+                },
+                {
+                    id: "l004",
+                    classId: "2",
+                    subjectId: "104",
+                    teacherId: "204",
+                    day: "WEDNESDAY",
+                    startTime: "11:16",
+                    endTime: "12:00",
+                    academicYear: "Y2024_2025",
+                },
+            ];
+            break;
+
+
         default: // student
             sampleRows = [
                 {
@@ -221,6 +267,7 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
         feestructure: "/sample/feeStructure-bulk-template.csv",
         subjects: "/sample/subjects-bulk-template.csv",
         feecollection: "/sample/fees-bulk-template.csv",
+        lessons: "/sample/lessons-bulk-template.csv",
     };
 
     const titleMap = {
@@ -231,6 +278,7 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
         feestructure: "Fee Structure",
         subjects: "Subject",
         feecollection: "Fee Collection",
+        lessons: "Lessons",
     };
 
     return (
