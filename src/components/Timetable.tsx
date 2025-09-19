@@ -1,10 +1,10 @@
 "use client";
 
-import { SCHOOL_PERIODS, SATURDAY_PERIODS } from "@/lib/utils/periods";
+import { PERIOD_TIMINGS } from "@/lib/utils/periods";
 
 type Lesson = {
   day: string;
-  period: number | null;
+  period: keyof typeof PERIOD_TIMINGS | null; // PERIOD1, PERIOD2, BREAK1...
   subject: string;
   teacher?: string;
   class?: string;
@@ -19,6 +19,7 @@ const SUBJECT_COLORS = [
 ];
 
 export default function Timetable({ lessons }: { lessons: Lesson[] }) {
+  // Map subjects → consistent color
   const subjectColorMap: Record<string, { bg: string; text: string }> = {};
   let colorIndex = 0;
   lessons.forEach(l => {
@@ -28,7 +29,8 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
     }
   });
 
-  const maxRows = SCHOOL_PERIODS.length;
+  // Get all defined periods (keys of PERIOD_TIMINGS)
+  const periodKeys = Object.keys(PERIOD_TIMINGS) as (keyof typeof PERIOD_TIMINGS)[];
 
   return (
     <div className="overflow-x-auto p-4">
@@ -43,45 +45,48 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
         </thead>
 
         <tbody>
-          {Array.from({ length: maxRows }).map((_, rowIndex) => {
-            const period = SCHOOL_PERIODS[rowIndex];
-            const isBreakOrLunch = typeof period.id !== "number";
+          {periodKeys.map((periodKey) => {
+            const { start, end } = PERIOD_TIMINGS[periodKey];
+            const isBreakOrLunch = periodKey.startsWith("BREAK") || periodKey === "LUNCH";
 
             if (isBreakOrLunch) {
               return (
-                <tr key={`break-${rowIndex}`}>
+                <tr key={periodKey}>
                   <td
                     colSpan={DAYS.length + 1}
                     className="border border-gray-300 bg-gray-100 text-center italic font-semibold py-2"
                   >
-                    {period.id === "lunch" ? "Lunch Break" : "Break"} ({period.start} - {period.end})
+                    {periodKey === "LUNCH" ? "Lunch Break" : "Break"} ({start} - {end})
                   </td>
                 </tr>
               );
             }
 
             return (
-              <tr key={`period-${period.id}-${rowIndex}`} className="hover:bg-blue-50">
+              <tr key={periodKey} className="hover:bg-blue-50">
+                {/* Period column */}
                 <td className="border border-gray-300 p-3 font-semibold text-center">
-                  Period {period.id}<br />
-                  <span className="text-xs text-gray-500">{period.start} - {period.end}</span>
+                  {periodKey.replace("PERIOD", "Period ")}<br />
+                  <span className="text-xs text-gray-500">{start} - {end}</span>
                 </td>
 
+                {/* Lessons by day */}
                 {DAYS.map(day => {
-                  const isSaturday = day === "SATURDAY";
-                  const periods = isSaturday ? SATURDAY_PERIODS : SCHOOL_PERIODS;
-                  const periodData = periods[rowIndex];
-                  if (!periodData || typeof periodData.id !== "number") return <td key={`${day}-${rowIndex}`} className="border border-gray-300"></td>;
+                  const lessonData = lessons.find(l => l.day === day && l.period === periodKey);
 
-                  const lessonData = lessons.find(l => l.day === day && l.period === periodData.id);
-
-                  if (!lessonData) return <td key={`${day}-${periodData.id}`} className="border border-gray-300 text-center">-</td>;
+                  if (!lessonData) {
+                    return (
+                      <td key={`${day}-${periodKey}`} className="border border-gray-300 text-center">-</td>
+                    );
+                  }
 
                   const color = subjectColorMap[lessonData.subject];
 
                   return (
-                    <td key={`${day}-${periodData.id}`} className="border border-gray-300 p-2">
-                      <div className={`rounded-lg p-3 shadow-md ${color.bg} ${color.text} hover:scale-105 transition-transform duration-150`}>
+                    <td key={`${day}-${periodKey}`} className="border border-gray-300 p-2">
+                      <div
+                        className={`rounded-lg p-3 shadow-md ${color.bg} ${color.text} hover:scale-105 transition-transform duration-150`}
+                      >
                         <div className="font-semibold text-sm">{lessonData.subject}</div>
                         {lessonData.class && <div className="text-xs">{lessonData.class}</div>}
                         {lessonData.teacher && <div className="text-xs">{lessonData.teacher}</div>}

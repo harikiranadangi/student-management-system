@@ -170,16 +170,31 @@ export const examSchema = z.object({
 
 export type ExamSchema = z.infer<typeof examSchema>;
 
-// Define the lessons schema with zod
+
 export const lessonsSchema = z.object({
   id: z.number().optional(),
-  day: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"], { message: "Day is required" }),
-  startTime: z.string(),
-  endTime: z.string(),
+  day: z.enum(
+    ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+    { message: "Day is required" }
+  ),
+  period: z.enum([
+    "PERIOD1",
+    "PERIOD2",
+    "PERIOD3",
+    "PERIOD4",
+    "PERIOD5",
+    "PERIOD6",
+    "PERIOD7",
+    "PERIOD8",
+    "BREAK1",
+    "BREAK2",
+    "LUNCH",
+  ], { message: "Period is required" }),
   subjectId: z.number(),
   classId: z.number(),
   teacherId: z.string(),
 });
+
 
 // Infer the form data type from the schema
 export type LessonsSchema = z.infer<typeof lessonsSchema>;

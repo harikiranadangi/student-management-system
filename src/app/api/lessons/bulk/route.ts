@@ -4,15 +4,6 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { lessonsSchema } from "@/lib/formValidationSchemas";
 
-
-
-function timeStringToDate(timeStr: string): Date {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -31,18 +22,20 @@ export async function POST(req: Request) {
     for (let i = 0; i < lessons.length; i++) {
       const row = lessons[i];
 
+      // validate row using zod schema
       const parsed = lessonsSchema.safeParse(row);
       if (!parsed.success) {
-        errors.push(`Row ${i + 2}: ${parsed.error.errors.map(e => e.message).join(", ")}`);
+        errors.push(
+          `Row ${i + 2}: ${parsed.error.errors
+            .map((e) => e.message)
+            .join(", ")}`
+        );
         continue;
       }
 
       const validated = parsed.data;
 
-      const startTime = timeStringToDate(validated.startTime);
-      const endTime = timeStringToDate(validated.endTime);
-
-      // Ensure subject exists
+      // ensure subject exists
       const subject = await prisma.subject.findUnique({
         where: { id: validated.subjectId },
       });
@@ -51,22 +44,21 @@ export async function POST(req: Request) {
         continue;
       }
 
-      // Delete existing lesson if overlap
+      // delete existing lesson for same class, day, period
       await prisma.lesson.deleteMany({
         where: {
           classId: validated.classId,
           day: validated.day,
-          startTime,
-          endTime,
+          period: validated.period,
         },
       });
 
+      // create new lesson
       await prisma.lesson.create({
         data: {
           title: subject.name,
           day: validated.day,
-          startTime,
-          endTime,
+          period: validated.period,
           subjectId: validated.subjectId,
           classId: validated.classId,
           teacherId: validated.teacherId,

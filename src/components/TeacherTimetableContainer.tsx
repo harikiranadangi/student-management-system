@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import Timetable from "./Timetable";
-import { getPeriodFromStartTime } from "@/lib/utils/periods";
 
 const TeacherTimetableContainer = async ({ teacherId }: { teacherId: string }) => {
   const lessons = await prisma.lesson.findMany({
@@ -11,7 +10,7 @@ const TeacherTimetableContainer = async ({ teacherId }: { teacherId: string }) =
   const mapped = lessons
     .map((lesson) => ({
       day: lesson.day, // LessonDay enum
-      period: getPeriodFromStartTime(lesson.startTime),
+      period: lesson.period,
       subject: lesson.Subject.name,
       class: lesson.Class.name, // show class for teacher timetable
       teacher: lesson.Teacher.name,

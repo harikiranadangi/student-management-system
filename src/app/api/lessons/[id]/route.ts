@@ -52,8 +52,7 @@ export async function PUT(req: NextRequest,
       data: {
         title: subject.name, // set title using subject name
         day: validated.day,
-        startTime: timeStringToDate(validated.startTime),
-        endTime: timeStringToDate(validated.endTime),
+        period: validated.period,
         subjectId: validated.subjectId,
         classId: validated.classId,
         teacherId: validated.teacherId,

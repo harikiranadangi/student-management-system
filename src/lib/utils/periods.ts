@@ -1,45 +1,57 @@
-import moment from "moment";
+import { Period } from "@prisma/client";
 
-export const SCHOOL_PERIODS = [
-  { id: 1, start: "09:00", end: "10:00" },
-  { id: 2, start: "10:01", end: "10:40" },
-  { id: "break1", start: "10:41", end: "10:50" },
-  { id: 3, start: "10:51", end: "11:30" },
-  { id: 4, start: "11:31", end: "12:30" },
-  { id: "lunch", start: "12:30", end: "13:10" },
-  { id: 5, start: "13:11", end: "14:00" },
-  { id: 6, start: "14:01", end: "14:40" },
-  { id: "break2", start: "14:41", end: "14:50" },
-  { id: 7, start: "14:51", end: "15:30" },
-  { id: 8, start: "15:31", end: "16:10" },
-] as const;
+// All school periods (Mon–Fri full day)
+export const PERIOD_TIMINGS: Record<Period, { start: string; end: string }> = {
+  PERIOD1: { start: "09:00", end: "10:00" },
+  PERIOD2: { start: "10:01", end: "10:40" },
+  BREAK1: { start: "10:41", end: "10:50" },
+  PERIOD3: { start: "10:51", end: "11:30" },
+  PERIOD4: { start: "11:31", end: "12:30" },
+  LUNCH: { start: "12:30", end: "13:10" },
+  PERIOD5: { start: "13:11", end: "14:00" },
+  PERIOD6: { start: "14:01", end: "14:40" },
+  BREAK2: { start: "14:41", end: "14:50" },
+  PERIOD7: { start: "14:51", end: "15:30" },
+  PERIOD8: { start: "15:31", end: "16:10" },
+};
 
-// Half-day periods for Saturday
-export const SATURDAY_PERIODS = [
-  { id: 1, start: "09:00", end: "10:00" },
-  { id: 2, start: "10:01", end: "10:40" },
-  { id: "break1", start: "10:41", end: "10:50" },
-  { id: 3, start: "10:51", end: "11:30" },
-  { id: 4, start: "11:31", end: "12:30" },
-  { id: 5, start: "12:31", end: "13:10" }, // last period ends by 1:10
-  
-] as const;
-
-// Narrow type to only numeric periods
-type NumericPeriod = Extract<(typeof SCHOOL_PERIODS)[number]["id"], number>;
+// Half-day schedule for Saturday
+export const SATURDAY_PERIODS: Period[] = [
+  "PERIOD1",
+  "PERIOD2",
+  "BREAK1",
+  "PERIOD3",
+  "PERIOD4",
+  "PERIOD5", // Ends at 1:10
+];
 
 /**
- * Get numeric period from a date
- * @param date Date object
- * @param isSaturday boolean to choose Saturday periods
- * @returns NumericPeriod | null
+ * Convert "HH:mm" to total minutes for comparison
  */
-export function getPeriodFromStartTime(date: Date, isSaturday = false): NumericPeriod | null {
-  const time = moment(date).format("HH:mm");
-  const periods = isSaturday ? SATURDAY_PERIODS : SCHOOL_PERIODS;
+function toMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
 
-  const period = periods.find(
-    (p) => typeof p.id === "number" && time >= p.start && time <= p.end
-  );
-  return (period?.id as NumericPeriod) ?? null;
+/**
+ * Get current period enum from a Date
+ */
+export function getPeriodFromStartTime(
+  date: Date,
+  isSaturday = false
+): Period | null {
+  const currentMinutes = date.getHours() * 60 + date.getMinutes();
+  const periods = isSaturday ? SATURDAY_PERIODS : (Object.keys(PERIOD_TIMINGS) as Period[]);
+
+  for (const period of periods) {
+    const { start, end } = PERIOD_TIMINGS[period];
+    const startMins = toMinutes(start);
+    const endMins = toMinutes(end);
+
+    if (currentMinutes >= startMins && currentMinutes <= endMins) {
+      return period;
+    }
+  }
+
+  return null;
 }

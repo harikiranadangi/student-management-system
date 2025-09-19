@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { lessonsSchema, LessonsSchema } from "@/lib/formValidationSchemas";
-import InputField from "../InputField";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -20,7 +19,7 @@ const LessonForm = ({
   relatedData?: any;
 }) => {
   const router = useRouter();
-  const { classes = [], teachers = [] } = relatedData || {};
+  const { classes = [], teachers = [], grades = [] } = relatedData || {};
   const [subjects, setSubjects] = useState<{ id: number; name: string }[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | undefined>(undefined);
 
@@ -52,7 +51,7 @@ const LessonForm = ({
         if (!res.ok) throw new Error(result.error || "Failed to fetch subjects");
 
         setSubjects(result.subjects);
-        setValue("subjectId", 0); // assuming your form accepts "" and the dropdown supports it
+        setValue("subjectId", 0);
       } catch (error) {
         toast.error((error as Error).message);
       }
@@ -60,25 +59,14 @@ const LessonForm = ({
     fetchSubjects();
   }, [classIdWatch, setValue]);
 
-  // For edit case, format time and reset form
+  // For edit case, reset form with existing data
   useEffect(() => {
     if (type === "update" && data) {
-      const formatTime = (value: any) => {
-        try {
-          const date = new Date(value);
-          return isNaN(date.getTime()) ? "" : date.toTimeString().slice(0, 5);
-        } catch {
-          return "";
-        }
-      };
-
       reset({
         ...data,
-        startTime: formatTime(data.startTime),
-        endTime: formatTime(data.endTime),
+        period: data.period || undefined,
       });
 
-      // preload subjects if classId exists
       if (data.classId) {
         setSelectedClassId(data.classId);
       }
@@ -86,7 +74,7 @@ const LessonForm = ({
   }, [data, reset, type]);
 
   const onSubmit = async (formData: LessonsSchema) => {
-    console.log("Submitting form with data:", formData); 
+    console.log("Submitting form with data:", formData);
     try {
       const url = type === "create" ? "/api/lessons" : `/api/lessons/${formData?.id}`;
       const method = type === "create" ? "POST" : "PUT";
@@ -135,23 +123,31 @@ const LessonForm = ({
           {errors.day?.message && <p className="text-xs text-red-400">{errors.day.message}</p>}
         </div>
 
-        {/* Start Time */}
-        <InputField
-          label="Start Time"
-          name="startTime"
-          register={register}
-          error={errors.startTime}
-          type="time"
-        />
-
-        {/* End Time */}
-        <InputField
-          label="End Time"
-          name="endTime"
-          register={register}
-          error={errors.endTime}
-          type="time"
-        />
+        {/* Period */}
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Period</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm"
+            {...register("period")}
+          >
+            <option value="">Select Period</option>
+            {[
+              "PERIOD1",
+              "PERIOD2",
+              "PERIOD3",
+              "PERIOD4",
+              "PERIOD5",
+              "PERIOD6",
+              "PERIOD7",
+              "PERIOD8",
+            ].map((period) => (
+              <option key={period} value={period}>
+                {period}
+              </option>
+            ))}
+          </select>
+          {errors.period?.message && <p className="text-xs text-red-400">{errors.period.message}</p>}
+        </div>
 
         {/* Class */}
         <div className="flex flex-col w-full md:w-1/4">

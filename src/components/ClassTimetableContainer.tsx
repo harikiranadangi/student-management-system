@@ -11,7 +11,7 @@ const ClassTimetableContainer = async ({ classId }: { classId: number }) => {
   const mapped = lessons
     .map((lesson) => ({
       day: lesson.day, // LessonDay enum
-      period: getPeriodFromStartTime(lesson.startTime),
+      period: lesson.period,
       subject: lesson.Subject.name,
       teacher: lesson.Teacher.name,
       class: lesson.Class.name,
