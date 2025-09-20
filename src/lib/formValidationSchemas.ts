@@ -190,6 +190,7 @@ export const lessonsSchema = z.object({
     "BREAK2",
     "LUNCH",
   ], { message: "Period is required" }),
+  gradeId: z.number({ message: "Grade is required" }),
   subjectId: z.number(),
   classId: z.number(),
   teacherId: z.string(),

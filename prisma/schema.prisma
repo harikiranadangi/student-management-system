@@ -73,7 +73,7 @@ model Lesson {
   day       LessonDay
   startTime DateTime?
   endTime   DateTime?
-  period    Period?
+  period    Period
   subjectId Int
   classId   Int
   teacherId String

@@ -192,7 +192,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
           >
             <option value="">Select Class</option>
             {classes.map((cls) => (
-              <option key={cls.id} value={cls.id}>{cls.name}</option>
+              <option key={cls.id} value={cls.id}>{cls.section}</option>
             ))}
           </select>
         </div>

@@ -41,26 +41,26 @@ const LessonsListPage = async ({
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      <h1 className="text-lg font-semibold mb-6">Timetable</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold mb-6">Timetable</h1>
 
-      {/* Filters + Form aligned */}
-      <div className="flex flex-wrap items-center justify-between mb-6">
-        <div className="flex flex-wrap gap-4">
-          <TableSearch />
-          {/* Teacher Dropdown (client component) */}
-          <TeacherFilterDropdown teachers={teacherData} />
-          {/* Class Dropdown */}
-          <ClassFilterDropdown
-            classes={classData}
-            grades={gradeData}
-            basePath={Path}
-          />
-          {/* Form on the right */}
-          <FormContainer table="lesson" type="create" />
-          <ResetFiltersButton basePath={Path} />
-
+        {/* Filters + Form aligned */}
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+          <div className="flex flex-wrap gap-4">
+            <TableSearch />
+            {/* Teacher Dropdown (client component) */}
+            <TeacherFilterDropdown teachers={teacherData} />
+            {/* Class Dropdown */}
+            <ClassFilterDropdown
+              classes={classData}
+              grades={gradeData}
+              basePath={Path}
+            />
+            {/* Form on the right */}
+            <FormContainer table="lesson" type="create" />
+            <ResetFiltersButton basePath={Path} />
+          </div>
         </div>
-
       </div>
 
       {/* Server-side Timetable */}

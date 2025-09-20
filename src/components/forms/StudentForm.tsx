@@ -191,8 +191,8 @@ const StudentForm = ({
             disabled={filteredClasses.length === 0}
           >
             <option value="" disabled>Select class</option>
-            {filteredClasses.map((cls: { id: number; name: string }) => (
-              <option value={cls.id} key={cls.id}>{cls.name}</option>
+            {filteredClasses.map((cls: { id: number; section: string }) => (
+              <option value={cls.id} key={cls.id}>{cls.section}</option>
             ))}
           </select>
           {errors.classId?.message && (

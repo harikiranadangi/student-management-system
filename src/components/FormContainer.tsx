@@ -116,31 +116,33 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
             case "lesson":
 
+                const lessonGrades = await prisma.grade.findMany({
+                    select: { id: true, level: true },
+                });
+
+                const lessonClasses = await prisma.class.findMany({
+                    include: {
+                        _count: { select: { students: true } },
+                        Grade: true, // ✅ important
+                    },
+                });
+
                 // Fetch related data for dropdowns or selection options
                 const lessonSubjects = await prisma.subject.findMany({
                     select: { id: true, name: true },
                 });
 
-                const lessonClasses = await prisma.class.findMany({
-                    select: { id: true, name: true },
-                });
 
                 const lessonTeachers = await prisma.teacher.findMany({
                     select: { id: true, name: true },
                 });
-
-                const lessonGrades = await prisma.grade.findMany({
-                    select: { id: true, level: true },
-                });
-
-
 
                 relatedData = { subjects: lessonSubjects, classes: lessonClasses, teachers: lessonTeachers, grades: lessonGrades };
                 break;
 
             case 'homework':
                 const classHomework = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true, section:true }, // ✅ include gradeId
+                    select: { id: true, name: true, gradeId: true, section: true }, // ✅ include gradeId
                 });
 
                 const gradeHomework = await prisma.grade.findMany({
@@ -189,15 +191,17 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                     select: { id: true, level: true },
                 });
 
-                // Fetch classes based on the grade
-                const classMessages = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true }, // Including gradeId to associate classes with grades
-                });
-
                 // Fetch students based on the class
                 const studentMessages = await prisma.student.findMany({
                     where: { status: "ACTIVE" },
                     select: { id: true, name: true, classId: true },
+                });
+
+                const classMessages = await prisma.class.findMany({
+                    include: {
+                        _count: { select: { students: true } },
+                        Grade: true, // ✅ important
+                    },
                 });
 
                 // Organize the data in a structured way
@@ -216,7 +220,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 // Fetch classes based on the grade
                 const classpermissions = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true, section:true }, // Including gradeId to associate classes with grades
+                    select: { id: true, name: true, gradeId: true, section: true }, // Including gradeId to associate classes with grades
                 });
 
                 // Fetch students based on the class

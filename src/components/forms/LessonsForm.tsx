@@ -20,8 +20,17 @@ const LessonForm = ({
 }) => {
   const router = useRouter();
   const { classes = [], teachers = [], grades = [] } = relatedData || {};
+
   const [subjects, setSubjects] = useState<{ id: number; name: string }[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState<number | undefined>(undefined);
+  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(data?.gradeId || null);
+  const [filteredClasses, setFilteredClasses] = useState(
+    data?.gradeId ? classes.filter((cls: any) => cls.gradeId === data.gradeId) : []
+  );
+
+  const [state, setState] = useState<{ success: boolean; error: string | null }>({
+    success: false,
+    error: null,
+  });
 
   const {
     register,
@@ -59,6 +68,16 @@ const LessonForm = ({
     fetchSubjects();
   }, [classIdWatch, setValue]);
 
+  // Update filteredClasses when grade changes
+  useEffect(() => {
+    if (selectedGradeId !== null) {
+      const related = classes.filter((cls: any) => cls.gradeId === selectedGradeId);
+      setFilteredClasses(related);
+    } else {
+      setFilteredClasses([]);
+    }
+  }, [selectedGradeId, classes]);
+
   // For edit case, reset form with existing data
   useEffect(() => {
     if (type === "update" && data) {
@@ -66,15 +85,10 @@ const LessonForm = ({
         ...data,
         period: data.period || undefined,
       });
-
-      if (data.classId) {
-        setSelectedClassId(data.classId);
-      }
     }
   }, [data, reset, type]);
 
   const onSubmit = async (formData: LessonsSchema) => {
-    console.log("Submitting form with data:", formData);
     try {
       const url = type === "create" ? "/api/lessons" : `/api/lessons/${formData?.id}`;
       const method = type === "create" ? "POST" : "PUT";
@@ -115,9 +129,7 @@ const LessonForm = ({
           >
             <option value="">Select Day</option>
             {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY","SUNDAY"].map((day) => (
-              <option value={day} key={day}>
-                {day}
-              </option>
+              <option value={day} key={day}>{day}</option>
             ))}
           </select>
           {errors.day?.message && <p className="text-xs text-red-400">{errors.day.message}</p>}
@@ -131,44 +143,48 @@ const LessonForm = ({
             {...register("period")}
           >
             <option value="">Select Period</option>
-            {[
-              "PERIOD1",
-              "PERIOD2",
-              "PERIOD3",
-              "PERIOD4",
-              "PERIOD5",
-              "PERIOD6",
-              "PERIOD7",
-              "PERIOD8",
-            ].map((period) => (
-              <option key={period} value={period}>
-                {period}
-              </option>
+            {["PERIOD1","PERIOD2","PERIOD3","PERIOD4","PERIOD5","PERIOD6","PERIOD7","PERIOD8"].map((period) => (
+              <option key={period} value={period}>{period}</option>
             ))}
           </select>
           {errors.period?.message && <p className="text-xs text-red-400">{errors.period.message}</p>}
         </div>
 
-        {/* Class */}
+        {/* Grade */}
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Grade</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm"
+            {...register("gradeId", { valueAsNumber: true })}
+            defaultValue={data?.gradeId ?? ""}
+            onChange={(e) => setSelectedGradeId(parseInt(e.target.value))}
+          >
+            <option value="">Select Grade</option>
+            {grades.map((grade: { id: number; level: number }) => (
+              <option key={grade.id} value={grade.id}>{grade.level}</option>
+            ))}
+          </select>
+          {errors.gradeId?.message && <p className="text-xs text-red-400">{errors.gradeId.message}</p>}
+        </div>
+
+        {/* Class (filtered by Grade) */}
         <div className="flex flex-col w-full md:w-1/4">
           <label className="text-xs text-gray-500">Class</label>
           <select
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm"
             {...register("classId", { valueAsNumber: true })}
+            defaultValue={data?.classId ?? ""}
+            disabled={filteredClasses.length === 0}
           >
             <option value="">Select Class</option>
-            {classes.map((cls: { id: number; name: string }) => (
-              <option key={cls.id} value={cls.id}>
-                {cls.name}
-              </option>
+            {filteredClasses.map((cls: { id: number; section: string }) => (
+              <option key={cls.id} value={cls.id}>{cls.section}</option>
             ))}
           </select>
-          {errors.classId?.message && (
-            <p className="text-xs text-red-400">{errors.classId.message}</p>
-          )}
+          {errors.classId?.message && <p className="text-xs text-red-400">{errors.classId.message}</p>}
         </div>
 
-        {/* Subject (depends on class) */}
+        {/* Subject (depends on Class) */}
         <div className="flex flex-col w-full md:w-1/4">
           <label className="text-xs text-gray-500">Subject</label>
           <select
@@ -177,14 +193,10 @@ const LessonForm = ({
           >
             <option value="">Select Subject</option>
             {subjects.map((sub) => (
-              <option key={sub.id} value={sub.id}>
-                {sub.name}
-              </option>
+              <option key={sub.id} value={sub.id}>{sub.name}</option>
             ))}
           </select>
-          {errors.subjectId?.message && (
-            <p className="text-xs text-red-400">{errors.subjectId.message}</p>
-          )}
+          {errors.subjectId?.message && <p className="text-xs text-red-400">{errors.subjectId.message}</p>}
         </div>
 
         {/* Teacher */}
@@ -196,14 +208,10 @@ const LessonForm = ({
           >
             <option value="">Select Teacher</option>
             {teachers.map((teacher: { id: string; name: string }) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.name}
-              </option>
+              <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
             ))}
           </select>
-          {errors.teacherId?.message && (
-            <p className="text-xs text-red-400">{errors.teacherId.message}</p>
-          )}
+          {errors.teacherId?.message && <p className="text-xs text-red-400">{errors.teacherId.message}</p>}
         </div>
       </div>
 

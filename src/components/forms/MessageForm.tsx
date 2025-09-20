@@ -8,7 +8,6 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { getMessageContent } from "@/lib/utils/messageUtils";
-import { string } from "zod";
 
 const useApiRequest = () => {
   const makeRequest = async (url: string, method: string, body: any) => {
@@ -190,9 +189,9 @@ const MessageForm = ({
           })}
         >
           <option value="">Select Class</option>
-          {filteredClasses.map((cls: { id: number; name: string }) => (
+          {filteredClasses.map((cls: { id: number; section: string }) => (
             <option key={cls.id} value={cls.id}>
-              {cls.name}
+              {cls.section}
             </option>
           ))}
         </select>
