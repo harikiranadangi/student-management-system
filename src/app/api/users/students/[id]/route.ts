@@ -9,10 +9,10 @@ const client = await clerkClient();
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // 👈 keep as you asked
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params; // since it's a Promise in your code
+    const { id } = await params;
     const studentId = id;
     const body = await req.json();
 
@@ -44,32 +44,42 @@ export async function PUT(
     const formattedPhone = `+91${data.phone}`;
     const updatedUsername = `s${studentId}`;
 
-    // 🔑 Check if phone already exists
-    const phoneAlreadyAdded = user.phoneNumbers.find(
-      (ph) => ph.phoneNumber === formattedPhone
-    );
+    // 🔑 Compare new vs old phone
+    const currentPhone = user.phoneNumbers.find(
+      (ph) => ph.id === user.primaryPhoneNumberId
+    )?.phoneNumber;
 
-    if (!phoneAlreadyAdded) {
-      // Add new phone
-      const newPhone = await client.phoneNumbers.createPhoneNumber({
-        userId: existingStudent.clerk_id,
-        phoneNumber: formattedPhone,
-      });
+    if (formattedPhone !== currentPhone) {
+      try {
+        // Add new phone
+        const newPhone = await client.phoneNumbers.createPhoneNumber({
+          userId: existingStudent.clerk_id,
+          phoneNumber: formattedPhone,
+        });
 
-      await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
-        verified: true,
-      });
+        await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
+          verified: true,
+        });
 
-      // Set as primary
-      await client.users.updateUser(existingStudent.clerk_id, {
-        primaryPhoneNumberID: newPhone.id,
-      });
+        // Make it primary
+        await client.users.updateUser(existingStudent.clerk_id, {
+          primaryPhoneNumberID: newPhone.id,
+        });
 
-      // Remove old phones
-      for (const ph of user.phoneNumbers) {
-        if (ph.phoneNumber !== formattedPhone) {
-          await client.phoneNumbers.deletePhoneNumber(ph.id);
+        // Remove old numbers
+        for (const ph of user.phoneNumbers) {
+          if (ph.phoneNumber !== formattedPhone) {
+            await client.phoneNumbers.deletePhoneNumber(ph.id);
+          }
         }
+      } catch (err: any) {
+        if (err.errors?.[0]?.code === "form_identifier_exists") {
+          return NextResponse.json(
+            { success: false, error: "Phone number already exists in another account" },
+            { status: 400 }
+          );
+        }
+        throw err;
       }
     }
 
@@ -84,8 +94,6 @@ export async function PUT(
     const studentData: any = {
       ...otherData,
       ...(dob ? { dob: new Date(dob) } : {}),
-
-      // ✅ Only connect class
       ...(classId ? { Class: { connect: { id: Number(classId) } } } : {}),
     };
 
@@ -95,12 +103,11 @@ export async function PUT(
       include: {
         Class: {
           include: {
-            Grade: true, // fetch grade too if needed
+            Grade: true,
           },
         },
       },
     });
-
 
     // ✅ Sync LinkedUser + Profile
     if (existingStudent.linkedUser) {
@@ -127,96 +134,6 @@ export async function PUT(
     return NextResponse.json(
       { success: false, error: error.message },
       { status: error.name === "ZodError" ? 400 : 500 }
-    );
-  }
-}
-
-
-// PATCH - Update student status (Active, Inactive, Transferred, Suspended)
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const studentId = id;
-    const { status } = await req.json();
-
-    if (!["ACTIVE", "INACTIVE", "TRANSFERRED", "SUSPENDED"].includes(status)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid status value" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Sending status update:", status);
-
-
-    const updatedStudent = await prisma.student.update({
-      where: { id: studentId },
-      data: { status },
-    });
-
-    revalidatePath("/list/users/students");
-
-    return NextResponse.json({ success: true, updatedStudent }, { status: 200 });
-  } catch (error) {
-    console.error("PATCH /api/users/students/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: "Status update failed" },
-      { status: 500 }
-    );
-  }
-}
-
-
-
-// DELETE - Delete student
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const studentId = id;
-
-    if (!studentId) {
-      return NextResponse.json(
-        { success: false, error: "No valid ID provided" },
-        { status: 400 }
-      );
-    }
-
-    const student = await prisma.student.findUnique({
-      where: { id: studentId },
-    });
-
-    if (!student) {
-      return NextResponse.json(
-        { success: false, error: "Student not found" },
-        { status: 404 }
-      );
-    }
-
-    if (student.clerk_id) {
-      await client.users.deleteUser(student.clerk_id);
-    }
-
-    await prisma.student.delete({
-      where: { id: studentId },
-    });
-
-    revalidatePath("/list/users/students");
-
-    return NextResponse.json(
-      { success: true, message: "Student deleted successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("DELETE /api/users/students/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: "Delete failed" },
-      { status: 500 }
     );
   }
 }

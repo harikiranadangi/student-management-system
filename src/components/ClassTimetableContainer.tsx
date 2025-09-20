@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import Timetable from "./Timetable";
-import { getPeriodFromStartTime } from "@/lib/utils/periods";
 
 const ClassTimetableContainer = async ({ classId }: { classId: number }) => {
   const lessons = await prisma.lesson.findMany({

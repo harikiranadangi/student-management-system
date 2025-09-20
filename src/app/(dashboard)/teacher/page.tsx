@@ -2,8 +2,8 @@
 export const dynamic = "force-dynamic";
 
 import Messages from "@/components/Announcements";
-import BigCalendarContainer from "@/components/BigCalendarContainer";
 import EventCalendar from "@/components/EventCalendar";
+import TeacherTimetableContainer from "@/components/TeacherTimetableContainer";
 import UnauthorizedReload from "@/components/UnauthorizedReload";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
@@ -47,7 +47,7 @@ const TeacherPage = async () => {
           <h1 className="text-xl font-semibold">
             Schedule ({fullTeacher.class.name})
           </h1>
-          <BigCalendarContainer type="teacherId" id={fullTeacher.id} />
+          <TeacherTimetableContainer teacherId={fullTeacher.id} />
         </div>
       </div>
       <div className="flex flex-col w-full gap-8 xl:w-1/3">

@@ -23,70 +23,72 @@ export async function PUT(
       where: { id: teacherId },
     });
 
-    if (!existingTeacher) {
+    if (!existingTeacher || !existingTeacher.clerk_id) {
       return NextResponse.json(
-        { success: false, error: "Teacher not found" },
+        { success: false, error: "Teacher not found or missing Clerk ID" },
         { status: 404 }
       );
     }
 
     // 🔍 Clerk user
-    const user = await client.users.getUser(existingTeacher.clerk_id!);
+    const user = await client.users.getUser(existingTeacher.clerk_id);
     const formattedNewPhone = `+91${data.phone}`;
     const updatedUsername = data.username || `t${teacherId}`;
 
-    // 🔍 Check if number is already in use by another Clerk user
-    const usersWithPhone = await client.users.getUserList({
-      phoneNumber: [formattedNewPhone],
-    });
+    // 🔑 Compare current vs new phone
+    const currentPhone = user.phoneNumbers.find(
+      (ph) => ph.id === user.primaryPhoneNumberId
+    )?.phoneNumber;
 
-    if (usersWithPhone.totalCount > 0) {
-      const otherUser = usersWithPhone.data.find(
-        (u) => u.id !== existingTeacher.clerk_id
-      );
-      if (otherUser) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Phone number already in use by another account",
-          },
-          { status: 422 }
-        );
+    if (formattedNewPhone !== currentPhone) {
+      try {
+        // 1. Add new phone number
+        const newPhone = await client.phoneNumbers.createPhoneNumber({
+          userId: existingTeacher.clerk_id,
+          phoneNumber: formattedNewPhone,
+        });
+
+        // 2. Verify it
+        await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
+          verified: true,
+        });
+
+        // 3. Set new number as primary
+        await client.users.updateUser(existingTeacher.clerk_id, {
+          primaryPhoneNumberID: newPhone.id,
+        });
+
+        // 4. Remove old phones
+        for (const ph of user.phoneNumbers) {
+          if (ph.phoneNumber !== formattedNewPhone) {
+            try {
+              await client.phoneNumbers.deletePhoneNumber(ph.id);
+              console.log("Deleted old phone:", ph.phoneNumber);
+            } catch (err) {
+              console.warn("Failed to delete old phone:", ph.phoneNumber, err);
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.errors?.[0]?.code === "form_identifier_exists") {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Phone number already exists in another account",
+            },
+            { status: 400 }
+          );
+        }
+        throw err;
       }
     }
 
-    // 1. Add new phone number
-    const newPhone = await client.phoneNumbers.createPhoneNumber({
-      userId: existingTeacher.clerk_id!,
-      phoneNumber: formattedNewPhone,
-    });
-
-    // 2. Verify it
-    await client.phoneNumbers.updatePhoneNumber(newPhone.id, {
-      verified: true,
-    });
-
-    // 3. Set new number as primary
-    await client.users.updateUser(existingTeacher.clerk_id!, {
+    // ✅ Update Clerk user basic info
+    await client.users.updateUser(existingTeacher.clerk_id, {
       firstName: data.name,
       username: updatedUsername,
-      password: data.phone, // ⚠️ consider not using phone as password
-      primaryPhoneNumberID: newPhone.id,
+      // ⚠️ Do not set phone as password in production!
     });
-
-    // 4. Now delete all NON-primary numbers
-    const freshUser = await client.users.getUser(existingTeacher.clerk_id!);
-
-    for (const phone of freshUser.phoneNumbers) {
-      if (phone.id !== newPhone.id) {
-        try {
-          await client.phoneNumbers.deletePhoneNumber(phone.id);
-          console.log("Deleted old phone:", phone.phoneNumber);
-        } catch (err) {
-          console.warn("Failed to delete old phone:", phone.phoneNumber, err);
-        }
-      }
-    }
 
     // ✅ Update Teacher in DB
     const { dob, subjects, password, ...restData } = data;
@@ -120,6 +122,8 @@ export async function PUT(
         });
       }
     }
+
+    revalidatePath("/list/users/teachers");
 
     return NextResponse.json({ success: true, updatedTeacher }, { status: 200 });
   } catch (error: any) {

@@ -6,6 +6,7 @@ import FormContainer from "@/components/FormContainer";
 import TeacherFilterDropdown from "@/components/dropdowns/teachers";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import TableSearch from "@/components/TableSearch";
+import { fetchUserInfo } from "@/lib/utils/server-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,19 @@ const LessonsListPage = async ({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
   const params = await searchParams;
+  const { role, teacherId: userTeacherId, classId: userClassId } = await fetchUserInfo();
 
+  // Normalize query params
+  const selectedTeacherId = Array.isArray(params.teacherId)
+    ? params.teacherId[0]
+    : params.teacherId;
+  const selectedClassId = Array.isArray(params.classId)
+    ? Number(params.classId[0])
+    : params.classId
+    ? Number(params.classId)
+    : undefined;
+
+  // Fetch data for dropdowns
   const classes = await prisma.class.findMany({ include: { Grade: true } });
   const grades = await prisma.grade.findMany();
   const teachers = await prisma.teacher.findMany();
@@ -29,47 +42,46 @@ const LessonsListPage = async ({
   const gradeData = grades.map((g) => ({ id: g.id, level: g.level }));
   const teacherData = teachers.map((t) => ({ id: t.id, name: t.name }));
 
-  const selectedClassId = Number(
-    Array.isArray(params?.classId) ? params?.classId[0] : params?.classId
-  );
-
-  const selectedTeacherId = Array.isArray(params?.teacherId)
-    ? params?.teacherId[0]
-    : params?.teacherId;
-
-  const Path = "/list/lessons"
+  const Path = "/list/lessons";
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold mb-6">Timetable</h1>
 
-        {/* Filters + Form aligned */}
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <div className="flex flex-wrap gap-4">
-            <TableSearch />
-            {/* Teacher Dropdown (client component) */}
-            <TeacherFilterDropdown teachers={teacherData} />
-            {/* Class Dropdown */}
-            <ClassFilterDropdown
-              classes={classData}
-              grades={gradeData}
-              basePath={Path}
-            />
-            {/* Form on the right */}
-            <FormContainer table="lesson" type="create" />
-            <ResetFiltersButton basePath={Path} />
+        {/* Filters only for admin */}
+        {role === "admin" && (
+          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+            <div className="flex flex-wrap gap-4">
+              <TableSearch />
+              <TeacherFilterDropdown teachers={teacherData} />
+              <ClassFilterDropdown
+                classes={classData}
+                grades={gradeData}
+                basePath={Path}
+              />
+              <FormContainer table="lesson" type="create" />
+              <ResetFiltersButton basePath={Path} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Server-side Timetable */}
-      {selectedTeacherId ? (
-        <TeacherTimetableContainer teacherId={selectedTeacherId} />
+      {/* Role-based timetable rendering */}
+      {role === "admin" ? (
+        selectedTeacherId ? (
+          <TeacherTimetableContainer teacherId={selectedTeacherId} />
+        ) : (
+          <ClassTimetableContainer
+            classId={selectedClassId || classes[0]?.id || 1}
+          />
+        )
+      ) : role === "teacher" ? (
+        <TeacherTimetableContainer teacherId={userTeacherId || ""} />
+      ) : role === "student" ? (
+        <ClassTimetableContainer classId={userClassId || classes[0]?.id || 1} />
       ) : (
-        <ClassTimetableContainer
-          classId={selectedClassId || classes[0]?.id || 1}
-        />
+        <p className="text-gray-500">No timetable available</p>
       )}
     </div>
   );
