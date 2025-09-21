@@ -8,7 +8,7 @@ const getStartOfWeek = (date: Date) => {
   const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   const startOfWeek = new Date(date);
   startOfWeek.setDate(date.getDate() - daysSinceMonday);
-  startOfWeek.setHours(0, 0, 0, 0); // Set to start of the day
+  startOfWeek.setHours(0, 0, 0, 0);
   return startOfWeek;
 };
 
@@ -18,7 +18,7 @@ const getEndOfWeek = (date: Date) => {
   const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
   const endOfWeek = new Date(date);
   endOfWeek.setDate(date.getDate() + daysUntilSunday);
-  endOfWeek.setHours(23, 59, 59, 999); // Set to end of the day
+  endOfWeek.setHours(23, 59, 59, 999);
   return endOfWeek;
 };
 
@@ -40,7 +40,6 @@ const AttendanceChartContainer = async () => {
     },
   });
 
-
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const attendanceMap: { [key: string]: { present: number; absent: number } } = {
     Mon: { present: 0, absent: 0 },
@@ -56,7 +55,6 @@ const AttendanceChartContainer = async () => {
     const dayIndex = itemDate.getDay() === 0 ? 6 : itemDate.getDay() - 1;
     const dayName = daysOfWeek[dayIndex];
 
-    // 🔥 Debug logs
     if (attendanceMap[dayName]) {
       if (item.present) {
         attendanceMap[dayName].present += 1;
@@ -66,7 +64,6 @@ const AttendanceChartContainer = async () => {
     }
   });
 
-
   const data = daysOfWeek.map((day) => ({
     name: day,
     present: attendanceMap[day].present,
@@ -74,12 +71,12 @@ const AttendanceChartContainer = async () => {
   }));
 
   return (
-    <div className="h-full p-4 bg-white rounded-lg">
+    <div className="h-full p-4 bg-white dark:bg-gray-900 rounded-lg">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Attendance</h1>
+        <h1 className="text-lg font-semibold text-gray-500 dark:text-gray-300">Attendance</h1>
         <Image src="/moreDark.png" alt="More" width={20} height={20} />
       </div>
-      <AttendanceChart data={data} />
+      <AttendanceChart data={data} darkMode={true} />
     </div>
   );
 };

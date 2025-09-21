@@ -15,19 +15,17 @@ import SortButton from "@/components/SortButton";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import { GenderFilter } from "@/components/FilterDropdown";
 
-// Define types
+// -------------------- Types --------------------
 type TeachersList = Teacher & {
-  subjects: { Subject: Subject }[]; // ✅ Fetches Subject details
-  class?: Class & { students: Student[] } | null; // ✅ Fetch multiple classes with students
+  subjects: { Subject: Subject }[];
+  class?: Class & { students: Student[] } | null;
 };
 
-// Function to render a table row
+// -------------------- Table Row --------------------
 const renderRow = (item: TeachersList, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight">
-
-    {/* Info Column */}
+  <tr className="text-sm border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700" key={item.id}>
+    {/* Info */}
     <td className="flex items-center gap-2 p-2">
-      {/* Use a default image if item.img is not available */}
       <Image
         src={item.img || (item.gender === "Male" ? "/maleteacher.png" : "/femaleteacher.png")}
         alt={item.name}
@@ -35,159 +33,122 @@ const renderRow = (item: TeachersList, role: string | null) => (
         height={40}
         className="object-cover w-10 h-10 rounded-full md:hidden xl:block"
       />
-      <div className="flex flex-col ">
-        <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs">{item?.id}</p>
+      <div className="flex flex-col">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</h3>
+        <p className="text-xs text-gray-600 dark:text-gray-400">{item.id}</p>
       </div>
     </td>
 
-    {/* Directly use the strings from subjects and classes */}
-    <td className="hidden w-32 md:table-cell">{item.class ? item.class.name : "No Class"}</td>
-    <td className="px-2 w-36 md:table-cell">{item.phone}</td>
-    {/* <td className="hidden w-32 truncate md:table-cell">
-      {item.subjects?.map((ts) => ts.Subject?.name).join(", ") || "No subjects"}
-    </td> */}
-    <td className="hidden md:table-cell">{item.gender}</td>
-    <td className="hidden md:table-cell">{item.dob ? new Date(item.dob).toLocaleDateString() : "N/A"}</td>
-    <td className="hidden md:table-cell">{item.address}</td>
+    {/* Class */}
+    <td className="hidden w-32 md:table-cell text-gray-700 dark:text-gray-200">
+      {item.class ? item.class.name : "No Class"}
+    </td>
 
-    {/* Actions Column */}
+    {/* Phone */}
+    <td className="px-2 w-36 md:table-cell text-gray-700 dark:text-gray-200">{item.phone}</td>
+
+    {/* Gender */}
+    <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{item.gender}</td>
+
+    {/* DOB */}
+    <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
+      {item.dob ? new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, "-") : "N/A"}
+    </td>
+
+    {/* Address */}
+    <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{item.address}</td>
+
+    {/* Actions */}
     <td className="p-2">
       <div className="flex items-center gap-2">
         <Link href={`/list/users/teachers/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky dark:bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
           </button>
         </Link>
-        {role === "admin" && (
-          <>
-            <FormContainer table="teacher" type="delete" id={item.id} />
-          </>
-        )}
+        {role === "admin" && <FormContainer table="teacher" type="delete" id={item.id} />}
       </div>
     </td>
   </tr>
 );
 
-// Define table columns
+// -------------------- Columns --------------------
 const getColumns = (role: string | null) => [
   { header: "Name", accessor: "info" },
   { header: "Classes", accessor: "classes", className: "hidden md:table-cell" },
   { header: "Phone", accessor: "phone", className: "lg:table-cell" },
-  // { header: "Subjects", accessor: "subjects", className: "hidden md:table-cell" },
   { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
   { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
   { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
-  ...(role === "admin" ? [{ header: "Actions", accessor: "action", },] : []),];
+  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+];
 
-
-const TeacherListPage = async ({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) => {
-
-  // Fetch user info and role
+// -------------------- Page --------------------
+const TeacherListPage = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
   const { role } = await fetchUserInfo();
-
   const columns = getColumns(role);
-
-  // Await the searchParams first
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-  // Initialize Prisma query object
   const query: Prisma.TeacherWhereInput = {};
 
-  // Normalize value to string
-  const normalize = (value: string | string[] | undefined): string | undefined => {
-    if (Array.isArray(value)) return value[0];
-    return value;
-  };
+  const normalize = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);
 
-  // Sorting
-  const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
-  const search = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
-  const teacher = Array.isArray(queryParams.teacherId) ? queryParams.teacherId[0] : queryParams.teacherId;
-
-
-  // Inside the loop
+  // -------------------- Filter Parsing --------------------
   for (const [key, value] of Object.entries(queryParams)) {
     const normalizedValue = normalize(value);
-    if (normalizedValue !== undefined && normalizedValue !== "") {
-      switch (key) {
-        case "classId":
-          query.classId = parseInt(normalizedValue);
-          break;
+    if (!normalizedValue) continue;
 
-        case "search":
-          query.OR = [
-            { name: { contains: normalizedValue, mode: "insensitive" } },
-            { class: { name: { contains: normalizedValue, mode: "insensitive" } } }
-          ];
-          break;
-
-        case "gender":   // 👈 Add this
-          query.gender = normalizedValue as any; // Prisma expects Gender enum
-          break;
-
-        default:
-          break;
-      }
+    switch (key) {
+      case "classId":
+        query.classId = parseInt(normalizedValue);
+        break;
+      case "search":
+        query.OR = [
+          { name: { contains: normalizedValue, mode: "insensitive" } },
+          { class: { name: { contains: normalizedValue, mode: "insensitive" } } },
+        ];
+        break;
+      case "gender":
+        query.gender = normalizedValue as any;
+        break;
+      default:
+        break;
     }
   }
 
-
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
-      orderBy: [
-        { [sortKey]: sortOrder }],
       where: query,
+      orderBy: [{ id: "asc" }],
       include: {
-        subjects: {
-          include: {
-            subject: true, // Fetch Subject details
-          },
-        },
-        class: {
-          include: {
-            students: true, // Fetch students in the class
-            Grade: {
-              include: {
-                examGradeSubjects: { // Join through ExamGradeSubject
-                  include: {
-                    Exam: true, // Fetch related exams
-                  },
-                },
-              },
-            },
-          },
-        },
+        subjects: { include: { subject: true } },
+        class: { include: { students: true } },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
-    prisma.teacher.count({ where: query }), // Count teachers for pagination
+    prisma.teacher.count({ where: query }),
   ]);
 
-
- const Path = "/list/users/teachers" 
+  const Path = "/list/users/teachers";
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Teachers ({count})</h1>
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md dark:bg-gray-900">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden md:block">
+          All Teachers ({count})
+        </h1>
+
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <GenderFilter basePath={Path} />
+          <ResetFiltersButton basePath={Path} />
 
-          {/* 🔄 Reset Filters Button */}
-          <ResetFiltersButton basePath={Path}  />
-          <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+          <div className="flex items-center gap-4">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <SortButton sortKey="id" />
@@ -196,10 +157,14 @@ const TeacherListPage = async ({
         </div>
       </div>
 
-      {/* Table Section */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      {/* Table */}
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
 
-      {/* Pagination Section */}
+      {/* Pagination */}
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );

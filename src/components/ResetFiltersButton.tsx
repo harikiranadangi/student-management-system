@@ -20,7 +20,7 @@ const ResetFiltersButton = ({ basePath }: ResetFiltersButtonProps) => {
       className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow"
       title="Reset All Filters"
     >
-      <RotateCcw className="w-4 h-4" />
+      <RotateCcw className="w-4 h-4 text-black" />
     </button>
   );
 };

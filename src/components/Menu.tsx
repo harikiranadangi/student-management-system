@@ -155,18 +155,27 @@ export default function Menu({ role }: MenuProps) {
       {updatedMenu.map((section) => (
         <div key={section.title} className="flex flex-col gap-2">
           {section.title && (
-            <span className="hidden my-4 mb-4 font-light text-black-400 lg:block">
+            <span className="hidden my-4 mb-4 font-light text-gray-500 dark:text-gray-400 lg:block">
               {t(section.title)}
             </span>
           )}
           {section.items.map((item) =>
             item.dropdown ? (
-              <Dropdown key={item.label} icon={item.icon} label={t(item.label)} items={item.dropdown} />
+              <Dropdown
+                key={item.label}
+                icon={item.icon}
+                label={t(item.label)}
+                items={item.dropdown}
+              />
             ) : (
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center justify-center gap-6 py-2 text-black-500 rounded-md lg:justify-start md:px-4 hover:bg-LamaSkyLight"
+                className="flex items-center justify-center gap-6 py-2 
+                           rounded-md md:px-4 
+                           text-gray-700 dark:text-gray-200 
+                           hover:bg-LamaSkyLight dark:hover:bg-gray-700
+                           lg:justify-start"
               >
                 <Image src={item.icon} alt={item.label} width={20} height={20} />
                 <span className="hidden lg:block">{t(item.label)}</span>

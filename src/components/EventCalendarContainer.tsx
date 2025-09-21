@@ -12,10 +12,12 @@ const EventCalendarContainer = ({
     : searchParams.date;
 
   return (
-    <div className="p-4 bg-white rounded-md">
+    <div className="p-4 bg-white dark:bg-gray-900 rounded-md">
       <EventCalendar />
       <div className="flex items-center justify-between">
-        <h1 className="my-4 text-xl font-semibold">Events</h1>
+        <h1 className="my-4 text-xl font-semibold text-black dark:text-gray-300">
+          Events
+        </h1>
         <Image src="/moreDark.png" alt="" width={20} height={20} />
       </div>
       <div className="flex flex-col gap-4">

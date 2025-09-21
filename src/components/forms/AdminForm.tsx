@@ -89,14 +89,14 @@ const AdminForm = ({
         img: img ?? null,
         phone: data.phone,
       };
-  
+
       // URL for the API
       const url = type === "create" ? "/api/users/admin" : `/api/users/admin/${data.id}`;
-  
+
       // Make the API request
       const method = type === "create" ? "POST" : "PUT";
       const result = await makeRequest(url, method, payload);
-  
+
       // Handle the result
       setState({ success: result.success, error: !result.success });
     } catch (error: any) {
@@ -108,10 +108,10 @@ const AdminForm = ({
 
   const handleDelete = async () => {
     if (!data?.id) return;
-  
+
     const confirmDelete = window.confirm("Are you sure you want to delete this admin?");
     if (!confirmDelete) return;
-  
+
     try {
       const result = await makeRequest(`/api/users/admin/${data.id}`, "DELETE", {});
       setState({ success: result.success, error: !result.success });
@@ -122,7 +122,7 @@ const AdminForm = ({
       toast.error(`Delete failed: ${error.message}`);
     }
   };
-  
+
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-8">
@@ -148,14 +148,31 @@ const AdminForm = ({
 
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label className="text-xs text-gray-500">Blood Type</label>
-          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("bloodType")}>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("bloodType")}
+          >
             <option value="" disabled>Select Blood Type</option>
-            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"].map((type) => (
-              <option key={type} value={type}>{type}</option>
+            {[
+              { label: "A+", value: "A_POS" },
+              { label: "A-", value: "A_NEG" },
+              { label: "B+", value: "B_POS" },
+              { label: "B-", value: "B_NEG" },
+              { label: "AB+", value: "AB_POS" },
+              { label: "AB-", value: "AB_NEG" },
+              { label: "O+", value: "O_POS" },
+              { label: "O-", value: "O_NEG" },
+            ].map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
             ))}
           </select>
-          {errors?.bloodType?.message && <p className="text-xs text-red-400">{errors.bloodType.message}</p>}
+          {errors?.bloodType?.message && (
+            <p className="text-xs text-red-400">{errors.bloodType.message}</p>
+          )}
         </div>
+
 
         <InputField label="Birthday" name="dob" type="date" register={register} error={errors?.dob} />
       </div>

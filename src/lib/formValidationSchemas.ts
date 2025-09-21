@@ -61,11 +61,15 @@ export const adminSchema = z.object({
   username: z.string().min(1, { message: "Username is required!" }),
   name: z.string().min(1, { message: "Full Name is required!" }),
   password: z.string().min(5, { message: "Password must be at least 5 characters!" }),
-  parentName: z.string().optional(),
+  parentName: z.string(),
   gender: z.enum(["Male", "Female"], { message: "Gender is required!" }),
   email: z.string().email({ message: "Invalid email!" }).optional(),
   address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"]).optional(),
+  // ✅ Match Prisma BloodType enum
+  bloodType: z.enum(
+    ["A_POS", "A_NEG", "B_POS", "B_NEG", "AB_POS", "AB_NEG", "O_POS", "O_NEG"],
+    { message: "Invalid blood type!" }
+  ).optional(),
   dob: z.coerce.date().optional(),
   img: z.string().optional().nullable(),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone must be 10 digits!" }),
@@ -77,7 +81,7 @@ export const slipSchema = z.object({
   studentId: z.string().min(1, "Student is required"),
   gradeId: z.number().optional(),
   classId: z.number().optional(),
-  leaveType: z.enum(["SICK", "PERSONAL", "HALFDAY","DAILY_PERMISSION"], {
+  leaveType: z.enum(["SICK", "PERSONAL", "HALFDAY", "DAILY_PERMISSION"], {
     required_error: "Leave type is required",
   }),
   subReason: z.string().optional(),

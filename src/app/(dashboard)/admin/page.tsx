@@ -2,9 +2,9 @@ import Messages from "@/components/Announcements";
 import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import CountChartContainer from "@/components/CountChartContainer";
 import EventCalendarContainer from "@/components/EventCalendarContainer";
-import FinanceChart from "@/components/FinanceChart";
 import UserCard from "@/components/UserCard";
 import { SearchParams } from "../../../../types";
+import FinanceChartContainer from "@/components/FinanceChartContainer";
 
 interface PageProps {
   searchParams: Promise<SearchParams>;
@@ -14,8 +14,8 @@ const AdminPage = async ({ searchParams }: PageProps) => {
   const resolvedSearchParams = await searchParams;
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:flex-row">
-      {/* LEFT */}
+    <div className="flex flex-col gap-4 p-4 lg:flex-row bg-white dark:bg-gray-900 text-black dark:text-white">
+      {/* LEFT COLUMN */}
       <div className="flex flex-col w-full gap-8 lg:w-2/3">
         {/* USER CARDS */}
         <div className="flex flex-wrap justify-between gap-4">
@@ -25,28 +25,32 @@ const AdminPage = async ({ searchParams }: PageProps) => {
         </div>
 
         {/* MIDDLE CHARTS */}
-        <div className="flex gap-4 lg:flex-row">
+        <div className="flex flex-col gap-4 lg:flex-row">
           {/* COUNT CHART */}
-          <div className="w-full lg:w-1/3 h-[450px]">
+          <div className="w-full lg:w-1/3 h-[450px] bg-white dark:bg-gray-800 rounded-md shadow-md">
             <CountChartContainer />
           </div>
 
           {/* ATTENDANCE CHART */}
-          <div className="w-full lg:w-2/3 h-[450px]">
+          <div className="w-full lg:w-2/3 h-[450px] bg-white dark:bg-gray-800 rounded-md shadow-md">
             <AttendanceChartContainer />
           </div>
         </div>
 
-        {/* BOTTOM CHART */}
-        <div className="w-full h-[500px]">
-          <FinanceChart />
+        {/* FINANCE CHART */}
+        <div className="w-full h-[400px] bg-white dark:bg-gray-800 rounded-md shadow-md">
+          <FinanceChartContainer />
         </div>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT COLUMN */}
       <div className="flex flex-col w-full gap-8 lg:w-1/3">
-        <EventCalendarContainer searchParams={resolvedSearchParams} />
-        <Messages />
+        <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-0">
+          <EventCalendarContainer searchParams={resolvedSearchParams} />
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-0">
+          <Messages />
+        </div>
       </div>
     </div>
   );

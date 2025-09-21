@@ -77,11 +77,11 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "admin" || role === "teacher"
     ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
+      {
+        header: "Actions",
+        accessor: "action",
+      },
+    ]
     : []),
 ];
 
@@ -105,82 +105,90 @@ const ExamsList = async ({
     : params.teacherId;
 
   let query: Prisma.ExamWhereInput = {};
-  let examGradeSubjectsFilter: Prisma.ExamGradeSubjectWhereInput = {};
+  // Collect all filters into one object
+let examGradeSubjectsWhere: Prisma.ExamGradeSubjectWhereInput = {};
 
-  // 🔹 Role-based filtering
-  if (role === "teacher" && teacherId) {
-    const teacherClasses = await prisma.class.findMany({
-      where: { supervisorId: teacherId },
-      select: { gradeId: true },
-    });
-    const teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
-    examGradeSubjectsFilter.gradeId = { in: teacherGradeIds };
+// Teacher restriction
+if (role === "teacher" && teacherId) {
+  const teacherClasses = await prisma.class.findMany({
+    where: { supervisorId: teacherId },
+    select: { gradeId: true },
+  });
+  const teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+  examGradeSubjectsWhere.gradeId = { in: teacherGradeIds };
+}
+
+// Student restriction
+if (role === "student" && userId) {
+  const student = await prisma.student.findUnique({
+    where: { id: userId },
+    select: { Class: { select: { gradeId: true } } },
+  });
+  if (student?.Class?.gradeId) {
+    examGradeSubjectsWhere.gradeId = student.Class.gradeId;
   }
+}
 
-  if (role === "student" && userId) {
-    const student = await prisma.student.findUnique({
-      where: { id: userId },
-      select: { Class: { select: { gradeId: true } } },
-    });
-    if (student?.Class?.gradeId) {
-      examGradeSubjectsFilter.gradeId = student.Class.gradeId;
-    }
-  }
+// Date filter
+if (date) {
+  const selectedDate = Array.isArray(date) ? date[0] : date;
+  const dateObj = new Date(selectedDate);
+  examGradeSubjectsWhere.date = {
+    gte: startOfDay(dateObj),
+    lt: endOfDay(dateObj),
+  };
+}
 
-  // 🔹 Title filter
-  if (queryParams.title) {
-    query.title = {
-      contains: Array.isArray(queryParams.title)
-        ? queryParams.title[0]
-        : queryParams.title,
-      mode: "insensitive",
-    };
-  }
+// Search filter
+if (queryParams.search) {
+  const searchValue = Array.isArray(queryParams.search)
+    ? queryParams.search[0]
+    : queryParams.search;
+  examGradeSubjectsWhere.OR = [
+    { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
+    { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
+  ];
+}
 
-  // 🔹 Date filter
-  if (date) {
-    const selectedDate = Array.isArray(date) ? date[0] : date;
-    const dateObj = new Date(selectedDate);
-    examGradeSubjectsFilter.date = {
-      gte: startOfDay(dateObj),
-      lt: endOfDay(dateObj),
-    };
-  }
+// Grade filter
+if (gradeId) {
+  examGradeSubjectsWhere.gradeId = Number(gradeId);
+}
 
-  // 🔹 Search filter (by subject or grade level)
-  if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search)
-      ? queryParams.search[0]
-      : queryParams.search;
-    examGradeSubjectsFilter.OR = [
-      { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
-      { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
-    ];
-  }
+// Exam title filter (applies on exam itself, not examGradeSubjects)
+if (queryParams.title) {
+  query.title = {
+    contains: Array.isArray(queryParams.title)
+      ? queryParams.title[0]
+      : queryParams.title,
+    mode: "insensitive",
+  };
+}
 
-  // 🔹 Grade filter (manual dropdown)
-  if (gradeId) {
-    examGradeSubjectsFilter.gradeId = Number(gradeId);
-  }
+// Apply conditions
+if (Object.keys(examGradeSubjectsWhere).length > 0) {
+  query.examGradeSubjects = { some: examGradeSubjectsWhere };
+}
 
-  // 🔹 Merge examGradeSubjects filter
-  if (Object.keys(examGradeSubjectsFilter).length > 0) {
-    query.examGradeSubjects = { some: examGradeSubjectsFilter };
-  }
-
-  // 🔹 Fetch exams
-  const [exams, count] = await prisma.$transaction([
-    prisma.exam.findMany({
-      where: query,
-      orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
-      include: {
-        examGradeSubjects: { include: { Grade: true, Subject: true } },
+const [exams, count] = await prisma.$transaction([
+  prisma.exam.findMany({
+    where: query,
+    orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
+    include: {
+      examGradeSubjects: {
+        where: Object.keys(examGradeSubjectsWhere).length
+          ? examGradeSubjectsWhere
+          : undefined,
+        include: { Grade: true, Subject: true },
       },
-      take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
-    }),
-    prisma.exam.count({ where: query }),
-  ]);
+    },
+    take: ITEM_PER_PAGE,
+    skip: ITEM_PER_PAGE * (parseInt(p) - 1),
+  }),
+  prisma.exam.count({ where: query }),
+]);
+
+
 
   console.log("Exams :", exams);
 
@@ -196,8 +204,9 @@ const ExamsList = async ({
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">All Exams</h1>
         <div className="flex items-center gap-4">
-          <TitleFilterDropdown basePath= {Path}/>
-          <DateFilter basePath={Path}/>
+          <TableSearch />
+          <TitleFilterDropdown basePath={Path} />
+          <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
             <ClassFilterDropdown
               classes={classes}
@@ -207,8 +216,7 @@ const ExamsList = async ({
             />
           )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            <TableSearch />
-            <ResetFiltersButton basePath={Path}/>
+            <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="Filter" width={14} height={14} />

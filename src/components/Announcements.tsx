@@ -5,14 +5,17 @@ import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { Prisma } from "@prisma/client";
 import clsx from "clsx";
 
-const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GENERAL" }) => {
+const Messages = async ({
+  type = "ANNOUNCEMENT",
+}: {
+  type?: "ANNOUNCEMENT" | "GENERAL";
+}) => {
   try {
     const { userId, role, students } = await fetchUserInfo();
     if (!userId || !role) return <div>Error: Could not fetch user info</div>;
 
     let classId: number | null = null;
 
-    // ✅ Use students array from fetchUserInfo
     if (role === "student") {
       const student = students?.[0];
       if (!student) return <div>Error: Student not found</div>;
@@ -22,10 +25,7 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
     const whereCondition: Prisma.MessagesWhereInput = {
       type,
       ...(role !== "admin" && {
-        OR: [
-          { classId: classId ?? undefined },
-          { classId: null }, // school-wide
-        ],
+        OR: [{ classId: classId ?? undefined }, { classId: null }],
       }),
     };
 
@@ -41,10 +41,14 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
     if (data.length === 0) return <div>No announcements available</div>;
 
     return (
-      <div className="p-4 bg-white rounded-md">
+      <div className="p-4 bg-white dark:bg-gray-900 rounded-md">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Announcements</h1>
-          <span className="text-xs text-gray-400 cursor-pointer">View All</span>
+          <h1 className="text-xl font-semibold text-black dark:text-gray-200">
+            Announcements
+          </h1>
+          <span className="text-xs text-gray-400 dark:text-gray-200 cursor-pointer">
+            View All
+          </span>
         </div>
 
         <div className="flex flex-col gap-4 mt-4">
@@ -55,17 +59,21 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
                 "bg-LamaSkyLight": index === 0,
                 "bg-LamaPurple": index === 1,
                 "bg-LamaYellow": index === 2,
+                "dark:text-gray-500": true, // ensure text contrast
               })}
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-medium">
-                  {msg.Class?.name ?? (type === "GENERAL" ? "General Message" : "Announcement")}
+                <h2 className="font-medium dark:text-black">
+                  {msg.Class?.name ??
+                    (type === "GENERAL" ? "General Message" : "Announcement")}
                 </h2>
-                <span className="px-1 py-1 text-xs text-black-500 bg-white rounded-md">
+                <span className="px-1 py-1 text-xs bg-white text-gray-600 dark:bg-black dark:text-white rounded-md">
                   {new Intl.DateTimeFormat("en-GB").format(msg.date)}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-black-500">{msg.message}</p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-black">
+                {msg.message}
+              </p>
             </div>
           ))}
         </div>
@@ -78,4 +86,3 @@ const Messages = async ({ type = "ANNOUNCEMENT" }: { type?: "ANNOUNCEMENT" | "GE
 };
 
 export default Messages;
-  

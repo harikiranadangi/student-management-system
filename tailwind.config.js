@@ -2,7 +2,7 @@ import animate from "tailwindcss-animate";
 
 /** @type {import('tailwindcss').Config} */
 const config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -23,6 +23,7 @@ const config = {
         LamaYellow: "#FAE27C",
         LamaYellowLight: "#FEFCE8",
         LamaGreen: "#29bf12",
+        LamaRed: "#d00000",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

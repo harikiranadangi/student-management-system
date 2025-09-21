@@ -1,9 +1,9 @@
+// src/app/layout.tsx  (NO "use client" here ❌)
+
 import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ProfileProvider } from "@/components/context/ProfileContext";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // 👈 import styles
+import ClientProviders from "../../providers";
 
 const inter = Inter({ subsets: ["latin"], fallback: ["Arial", "sans-serif"] });
 
@@ -15,14 +15,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className} min-h-screen flex flex-col`}>
-          <ProfileProvider>
-            {children}
-          </ProfileProvider>
-
-          {/* 👇 Add ToastContainer only once in your app */}
-          <ToastContainer position="bottom-right" theme="dark" />
+          <ClientProviders>{children}</ClientProviders>
         </body>
       </html>
     </ClerkProvider>

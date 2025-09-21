@@ -25,6 +25,13 @@ interface ClassFilterProps {
   showClassFilter?: boolean;
 }
 
+/* ---------------- Common Select Styles ---------------- */
+const selectClasses =
+  "w-full py-2 pl-4 pr-10 text-sm rounded-full appearance-none md:w-auto " +
+  "border border-gray-300 text-gray-700 bg-white " +
+  "focus:ring-2 focus:ring-LamaSky focus:outline-none " +
+  "dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800";
+
 /* ---------------- Class Filter ---------------- */
 const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true }: ClassFilterProps) => {
   const router = useRouter();
@@ -70,13 +77,17 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
       {/* Grade Dropdown */}
       <div className="relative w-full md:w-auto">
         <select
-          className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+          className={selectClasses}
           onChange={handleGradeChange}
           value={selectedGradeId || ""}
         >
-          <option value="" disabled>Select Grade</option>
+          <option value="" disabled>
+            Select Grade
+          </option>
           {grades.map((grade) => (
-            <option key={grade.id} value={grade.id}>{grade.level}</option>
+            <option key={grade.id} value={grade.id}>
+              {grade.level}
+            </option>
           ))}
         </select>
       </div>
@@ -85,18 +96,21 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
       {showClassFilter && (
         <div className="relative w-full md:w-auto">
           <select
-            className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+            className={selectClasses}
             onChange={handleClassChange}
             value={selectedClassId || ""}
             disabled={!selectedGradeId}
           >
-            <option value="" disabled>Select Class</option>
+            <option value="" disabled>
+              Select Class
+            </option>
             {filteredClasses
               .sort((a, b) => (a.section ?? "").localeCompare(b.section ?? ""))
               .map((cls) => (
-                <option key={cls.id} value={cls.id}>{cls.section}</option>
-              ))
-            }
+                <option key={cls.id} value={cls.id}>
+                  {cls.section}
+                </option>
+              ))}
           </select>
         </div>
       )}
@@ -122,7 +136,7 @@ const DateFilter = ({ basePath }: { basePath: string }) => {
       <input
         type="date"
         onChange={handleDateChange}
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        className={selectClasses}
       />
     </div>
   );
@@ -152,7 +166,7 @@ const StatusFilter = ({ basePath }: StatusFilterProps) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        className={selectClasses}
         onChange={handleStatusChange}
         value={currentStatus}
       >
@@ -191,7 +205,7 @@ const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        className={selectClasses}
         onChange={handleStudentStatusChange}
         value={currentStatus}
       >
@@ -230,7 +244,7 @@ const GenderFilter = ({ basePath }: { basePath: string }) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        className={selectClasses}
         onChange={handleGenderChange}
         value={currentGender}
       >
@@ -281,7 +295,7 @@ const DayFilter = ({ basePath }: DayFilterProps) => {
       <select
         value={selectedDay}
         onChange={handleDayChange}
-        className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
+        className={selectClasses}
       >
         {Object.values(LessonDay).map((day) => (
           <option key={day} value={day}>

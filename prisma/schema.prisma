@@ -11,28 +11,30 @@ datasource db {
 model Admin {
   id         String    @id @default(cuid())
   username   String    @unique
-  password   String
+  password   String    // Should always be hashed before storing
   name       String
-  parentName String?
-  gender     String?
-  email      String?
-  phone      String?
-  address    String?
-  dob        DateTime?
+  parentName String
+  gender     Gender   @default(Male)// Use enum for controlled values
+  email      String   @unique
+  phone      String   @unique
+  address    String
+  dob        DateTime
   img        String?
-  bloodType  String?
-  role       String    @default("admin")
+  bloodType  BloodType // Use enum for blood types
+  role       String @default("admin")
   createdAt  DateTime  @default(now())
   clerk_id   String?   @unique
 
-  profile   Profile? @relation(fields: [profileId], references: [id])
-  profileId String?
+  // Relations
+  profile      Profile?    @relation(fields: [profileId], references: [id])
+  profileId    String?
 
-  linkedUserId String?     @unique
   linkedUser   LinkedUser? @relation(fields: [linkedUserId], references: [id])
+  linkedUserId String?     @unique
 
-  @@index([clerk_id])
+  @@index([username, email, phone])
 }
+
 
 model Grade {
   id                Int                @id @default(autoincrement())
@@ -484,4 +486,16 @@ enum Period {
   BREAK2
   LUNCH
 
+}
+
+
+enum BloodType {
+  A_POS
+  A_NEG
+  B_POS
+  B_NEG
+  AB_POS
+  AB_NEG
+  O_POS
+  O_NEG
 }

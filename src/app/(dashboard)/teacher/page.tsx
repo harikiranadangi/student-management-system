@@ -45,7 +45,7 @@ const TeacherPage = async () => {
       <div className="w-full xl:w-2/3">
         <div className="h-full p-4 bg-white rounded-md">
           <h1 className="text-xl font-semibold">
-            Schedule ({fullTeacher.class.name})
+            Schedule
           </h1>
           <TeacherTimetableContainer teacherId={fullTeacher.id} />
         </div>

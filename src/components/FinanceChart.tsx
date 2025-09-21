@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -18,57 +17,28 @@ type ChartData = {
   collected: number;
 };
 
-export default function FinanceChart() {
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [loading, setLoading] = useState(true);
+type FinanceChartProps = {
+  data: ChartData[];
+};
 
-  useEffect(() => {
-    async function fetchChartData() {
-      try {
-        const res = await fetch("/api/fees/daily-summary");
-        const data = await res.json();
+const formatDateTick = (dateStr: string) => {
+  const dateObj = new Date(dateStr);
+  return dateObj.toLocaleString("en-US", { month: "short", day: "numeric" });
+};
 
-        // Ensure sorted data by date in ascending order
-        const sorted = data
-          .map((item: any) => ({
-            date: item.date,
-            collected: item.collected,
-          }))
-          .sort((a: ChartData, b: ChartData) => {
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          });
-
-        setChartData(sorted);
-      } catch (error) {
-        console.error("Failed to fetch chart data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchChartData();
-  }, []);
-
-  const formatDateTick = (dateStr: string) => {
-    const dateObj = new Date(dateStr);
-    return dateObj.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  if (loading) return <div>Loading chart...</div>;
-
+export default function FinanceChart({ data }: FinanceChartProps) {
   return (
-    <div className="w-full h-[400px] p-4 bg-white rounded-xl shadow">
+    <div className="w-full h-[400px] p-4 bg-white dark:bg-gray-900 rounded-xl shadow">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-lg font-semibold">Payments Collected (Last 30 Days)</h1>
+        <h1 className="text-lg font-semibold text-black dark:text-gray-300">
+          Payments Collected (Last 30 Days)
+        </h1>
         <Image src="/moreDark.png" alt="More options" width={20} height={20} />
       </div>
 
       <ResponsiveContainer width="100%" height="90%">
         <AreaChart
-          data={chartData}
+          data={data}
           margin={{ top: 5, right: 30, left: 25, bottom: 5 }}
         >
           <defs>
@@ -78,23 +48,30 @@ export default function FinanceChart() {
             </linearGradient>
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#ccc dark:stroke-gray-700" />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#6b7280" }}
+            tick={{ fill: "#6b7280", color: "currentColor" }}
             tickFormatter={formatDateTick}
             tickLine={false}
             axisLine={false}
             tickMargin={10}
           />
           <YAxis
-            tick={{ fill: "#6b7280" }}
+            tick={{ fill: "#6b7280", color: "currentColor" }}
             tickLine={false}
             axisLine={false}
             tickMargin={20}
           />
-          <Tooltip />
-          <Legend align="center" verticalAlign="top" wrapperStyle={{ paddingTop: "10px", paddingBottom: "30px" }} />
+          <Tooltip
+            contentStyle={{ backgroundColor: "#fff", color: "#000" }}
+            wrapperStyle={{ zIndex: 1000 }}
+          />
+          <Legend
+            align="center"
+            verticalAlign="top"
+            wrapperStyle={{ paddingTop: "10px", paddingBottom: "30px", color: "#000" }}
+          />
           <Area
             type="monotone"
             dataKey="collected"

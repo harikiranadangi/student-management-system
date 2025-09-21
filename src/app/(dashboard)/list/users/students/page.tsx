@@ -14,14 +14,13 @@ import { SearchParams } from "../../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import StudentStatusDropdown from "@/components/StudentStatusDropdown";
 
-// Define types
 type StudentList = Student & { Class?: { name: string } };
 
-// Function to render a table row
+// Render a single table row
 const renderRow = (item: StudentList, role: string | null) => (
   <tr
     key={item.id}
-    className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    className="text-sm border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700"
   >
     <td className="flex items-center gap-2 p-2">
       <Image
@@ -37,53 +36,48 @@ const renderRow = (item: StudentList, role: string | null) => (
       </div>
     </td>
 
-    <td>{item.Class?.name ?? "N/A"}</td>
-    <td className="hidden md:table-cell">{item.gender}</td>
-    <td className="hidden md:table-cell">{item.parentName || 'N/A'}</td>
-    <td className="hidden md:table-cell">{new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, '-')}</td>
+    {role === "admin" && <td>{item.Class?.name ?? "N/A"}</td>}
+    <td className="hidden md:table-cell">{item.parentName || "N/A"}</td>
+    <td className="hidden md:table-cell">
+      {new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, "-")}
+    </td>
     <td className="hidden md:table-cell">{item.phone}</td>
 
     <td className="p-2">
       <div className="flex items-center gap-2">
         <Link href={`/list/users/students/${item.id}`}>
-          <button className="flex items-center justify-center rounded-full w-7 h-7 bg-LamaSky">
+          <button className="flex items-center justify-center w-7 h-7 rounded-full bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
           </button>
         </Link>
+
         {role === "admin" && (
           <>
             <FormContainer table="student" type="delete" id={item.id} />
             <StudentStatusDropdown id={item.id} currentStatus={item.status} />
           </>
         )}
-
       </div>
     </td>
   </tr>
 );
 
+// Define table columns dynamically based on role
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
-  { header: "Class", accessor: "class" },
-  { header: "Gender", accessor: "gender", className: "hidden md:table-cell" },
+  ...(role === "admin" ? [{ header: "Class", accessor: "class" }] : []),
   { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
   { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },
   { header: "Mobile", accessor: "phone", className: "hidden md:table-cell" },
-  ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
+  { header: "Actions", accessor: "action" },
 ];
 
-const StudentListPage = async ({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) => {
+const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
   const params = await searchParams;
   const { page, gradeId, classId, teacherId, studentStatus, gender, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-  // Fetch user info and role
   const { role, classId: teacherClassId } = await fetchUserInfo();
-
   const columns = getColumns(role);
 
   // Sorting
@@ -95,7 +89,6 @@ const StudentListPage = async ({
   const grade = Array.isArray(gradeId) ? gradeId[0] : gradeId;
   const classIdNum = Array.isArray(classId) ? Number(classId[0]) : classId ? Number(classId) : undefined;
 
-  // Build Class filter conditionally
   const classFilter: Prisma.ClassWhereInput = {
     ...(teacher && { supervisorId: teacher }),
     ...(grade && { gradeId: Number(grade) }),
@@ -111,26 +104,16 @@ const StudentListPage = async ({
       ],
     }),
     ...(studentStatus && { status: studentStatus as any }),
-    ...(gender && { gender: gender as any }),  // 👈 Added gender filter
-    ...(role === "teacher" && teacherClassId
-      ? { classId: teacherClassId }
-      : {}),
+    ...(gender && { gender: gender as any }),
+    ...(role === "teacher" && teacherClassId ? { classId: teacherClassId } : {}),
   };
 
-
-  console.log("TeacherClassId from fetchUserInfo:", teacherClassId, "Role:", role);
-
-
-
-  // Fetch classes list (for dropdown etc.)
   const classes = await prisma.class.findMany({
     where: gradeId ? { gradeId: Number(gradeId) } : {},
   });
 
-  // Fetch grades list
   const grades = await prisma.grade.findMany();
 
-  // Fetch students data + count (Pagination)
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       orderBy: [
@@ -140,54 +123,48 @@ const StudentListPage = async ({
         { name: "asc" },
       ],
       where: query,
-      include: {
-        Class: {
-
-        },
-      },
+      include: { Class: true },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
     prisma.student.count({ where: query }),
   ]);
 
-  console.log("Students List:", data)
-
   const Path = `/list/users/students`;
 
-
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* TOP: Description */}
-      <div className="flex items-center justify-between">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
+      {/* Top Controls */}
+      <div className="flex items-center justify-between mb-3">
         <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
+
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
-          <ClassFilterDropdown
-            classes={classes}  // ✅ Filtered dynamically based on selected grade
-            grades={grades}
-            basePath={Path}
-          />
+          {role === "admin" && (
+            <>
+              <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} />
+              <StudentStatusFilter basePath={Path} />
+            </>
+          )}
           <GenderFilter basePath={Path} />
-          <StudentStatusFilter basePath={Path} />
+
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            {/* 🔄 Reset Filters Button */}
             <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              {role === "admin" && (
-                <FormContainer table="student" type="create" />
-              )}
+              {role === "admin" && <FormContainer table="student" type="create" />}
             </div>
           </div>
         </div>
       </div>
-      {/* LIST: Description */}
+
+      {/* Table */}
       <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
-      {/* PAGINATION: Description */}
+
+      {/* Pagination */}
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );

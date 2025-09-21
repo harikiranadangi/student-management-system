@@ -25,7 +25,6 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Detect desktop vs mobile
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     handleResize();
@@ -33,7 +32,6 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -47,7 +45,6 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     };
   }, []);
 
-  // Hover handlers for desktop
   const handleMouseEnter = () => {
     if (isDesktop) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -59,11 +56,10 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
     if (isDesktop) {
       timeoutRef.current = setTimeout(() => {
         setIsOpen(false);
-      }, 1000); // delay
+      }, 1000);
     }
   };
 
-  // Ensure hydration consistency
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -77,8 +73,9 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Main button */}
       <button
-        onClick={() => !isDesktop && setIsOpen((prev) => !prev)} // toggle on mobile
+        onClick={() => !isDesktop && setIsOpen((prev) => !prev)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -86,7 +83,10 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
           }
           if (e.key === "Escape") setIsOpen(false);
         }}
-        className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-md transition-all duration-300 ease-in-out"
+        className="flex items-center gap-3 w-full px-4 py-2 
+                   text-gray-700 dark:text-gray-200 
+                   hover:bg-blue-100 dark:hover:bg-gray-700 
+                   rounded-md transition-all duration-300 ease-in-out"
         aria-haspopup="true"
         aria-expanded={isOpen ? "true" : "false"}
       >
@@ -107,10 +107,13 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
         </svg>
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown menu */}
       <div
         className={`
-          absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-300 ease-in-out transform origin-top-left
+          absolute z-50 mt-2 w-56 rounded-md shadow-lg 
+          bg-white dark:bg-gray-800 
+          ring-1 ring-black/10 dark:ring-white/10
+          transition-all duration-300 ease-in-out transform origin-top-left
           ${isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}
           md:left-full md:top-0 md:translate-x-2 left-0 translate-y-1
         `}
@@ -121,8 +124,12 @@ export default function Dropdown({ icon, label, items }: DropdownProps) {
             <Link
               key={item.label}
               href={item.href}
-              onClick={() => setIsOpen(false)} // close on click
-              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition-all duration-200 ease-in-out rounded-md whitespace-nowrap"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-2 text-sm 
+                         text-gray-700 dark:text-gray-200 
+                         hover:bg-blue-100 dark:hover:bg-gray-700 
+                         transition-all duration-200 ease-in-out 
+                         rounded-md whitespace-nowrap"
               role="menuitem"
             >
               <Image src={item.icon} alt={item.label} width={18} height={18} className="min-w-[18px]" />
