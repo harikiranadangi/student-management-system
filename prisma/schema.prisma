@@ -15,12 +15,12 @@ model Admin {
   name       String
   parentName String
   gender     Gender   @default(Male)// Use enum for controlled values
-  email      String   @unique
+  email      String?   @unique
   phone      String   @unique
   address    String
-  dob        DateTime
+  dob        DateTime?
   img        String?
-  bloodType  BloodType // Use enum for blood types
+  bloodType  BloodType? // Use enum for blood types
   role       String @default("admin")
   createdAt  DateTime  @default(now())
   clerk_id   String?   @unique
