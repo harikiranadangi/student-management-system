@@ -1,4 +1,4 @@
-import BulkClassUpload from "@/components/BulkUpload/BulkClassUpload";
+import BulkClassUpload from "@/components/BulkUpload/classes";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {

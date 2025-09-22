@@ -138,19 +138,19 @@ export default function Page() {
 
   if (isLoading || !isUserLoaded || !isSessionLoaded) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4 animate-fadeIn">
-        <div className="w-12 h-12 border-4 border-gray-300 rounded-full border-t-LamaYellow animate-spin"></div>
-        <div className="text-lg font-semibold text-gray-700">Checking session...</div>
+      <div className="flex flex-col items-center justify-center h-screen space-y-4 animate-fadeIn bg-gray-50 dark:bg-gray-900">
+        <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 rounded-full border-t-LamaYellow animate-spin"></div>
+        <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Checking session...</div>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-center w-full min-h-screen bg-gradient-to-br from-LamaPurple to-LamaYellow px-4 py-10 sm:py-16">
-      <form onSubmit={handleSignIn} className="flex flex-col gap-6 w-full max-w-md p-10 bg-white rounded-3xl shadow-2xl">
+    <div className="flex items-center justify-center w-full min-h-screen bg-gradient-to-br from-LamaPurple to-LamaYellow dark:from-gray-800 dark:to-gray-900 px-4 py-10 sm:py-16">
+      <form className="flex flex-col gap-6 w-full max-w-md p-10 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl" onSubmit={handleSignIn}>
         <header className="text-center mb-6">
           <img src="/logo.png" alt="Kotak Salesian School Logo" className="w-24 h-24 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900">Kotak Salesian School</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Kotak Salesian School</h1>
         </header>
 
         <ErrorMessage message={error} />
@@ -188,7 +188,7 @@ export default function Page() {
         <button
           type="submit"
           disabled={isSending || (loginMethod === 'otp' && !pendingVerification && resendTimer > 0)}
-          className="w-full px-4 py-3 text-base font-semibold text-white bg-zinc-700 rounded-xl hover:bg-LamsPurple transition-all duration-200 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-4 py-3 text-base font-semibold text-white bg-zinc-700 dark:bg-zinc-600 rounded-xl hover:bg-LamaPurple dark:hover:bg-LamaPurpleLight transition-all duration-200 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           {loginMethod === 'password'
             ? 'Sign In'

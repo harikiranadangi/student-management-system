@@ -82,24 +82,24 @@ export default function BulkFeeUpload() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded shadow">
+    <div className="space-y-6 p-6 bg-white dark:bg-gray-900 text-black dark:text-white rounded shadow">
       <h1 className="text-xl font-semibold">Bulk Upload Fees</h1>
 
       <input
         type="file"
         accept=".csv"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-black hover:file:bg-LamaPurpleLight"
+        className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple dark:file:bg-indigo-700 file:text-black dark:file:text-white hover:file:bg-LamaPurpleLight dark:hover:file:bg-indigo-600"
       />
 
       {message && (
-        <div className="text-green-700 font-medium border border-green-200 bg-green-50 p-2 rounded">
+        <div className="text-green-700 dark:text-green-400 font-medium border border-green-200 dark:border-green-600 bg-green-50 dark:bg-green-900 p-2 rounded">
           {message}
         </div>
       )}
 
       {errors.length > 0 && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 border rounded">
+        <div className="p-4 text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900 border rounded">
           <p className="font-semibold">Upload completed with errors:</p>
           <ul className="list-disc list-inside">
             {errors.map((err, idx) => (
@@ -110,12 +110,15 @@ export default function BulkFeeUpload() {
       )}
 
       {records.length > 0 && (
-        <div className="overflow-auto border border-gray-200 rounded max-h-96">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-100">
+        <div className="overflow-auto border border-gray-200 dark:border-gray-700 rounded max-h-96">
+          <table className="min-w-full text-sm text-left border-collapse">
+            <thead className="bg-gray-100 dark:bg-gray-800">
               <tr>
                 {Object.keys(records[0]).map((key) => (
-                  <th key={key} className="px-4 py-2 border-b font-semibold text-gray-700">
+                  <th
+                    key={key}
+                    className="px-4 py-2 border-b font-semibold text-gray-700 dark:text-gray-300 dark:border-gray-600"
+                  >
                     {key}
                   </th>
                 ))}
@@ -123,9 +126,12 @@ export default function BulkFeeUpload() {
             </thead>
             <tbody>
               {records.map((row, i) => (
-                <tr key={i} className="even:bg-gray-50">
+                <tr
+                  key={i}
+                  className="even:bg-gray-50 dark:even:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800"
+                >
                   {Object.values(row).map((val, j) => (
-                    <td key={j} className="px-4 py-1 border-b text-gray-800">
+                    <td key={j} className="px-4 py-1 border-b text-gray-800 dark:text-gray-200 dark:border-gray-600">
                       {val || "-"}
                     </td>
                   ))}
@@ -139,7 +145,7 @@ export default function BulkFeeUpload() {
       {records.length > 0 && (
         <button
           onClick={handleUpload}
-          className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+          className="px-6 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 disabled:opacity-50"
           disabled={records.length === 0}
         >
           Upload to Server

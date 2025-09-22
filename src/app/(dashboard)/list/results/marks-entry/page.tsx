@@ -21,7 +21,6 @@ export default function MarksEntryForm() {
   const [selectedExamId, setSelectedExamId] = useState<number>();
   const [selectedGradeId, setSelectedGradeId] = useState<number>();
   const [selectedClassId, setSelectedClassId] = useState<number>();
-  
 
   const [marksData, setMarksData] = useState<
     { studentId: string; marks: { [subjectName: string]: string } }[]
@@ -29,20 +28,19 @@ export default function MarksEntryForm() {
 
   // Fetch exams and grades on load
   useEffect(() => {
-    axios.get('/api/exams').then((res) => {
-      console.log(res.data); // Inspect the response
-      setExams(res.data.exams)
-    })
-    axios.get('/api/grades').then((res) => setGrades(res.data)); // You need to create this API if not present
+    axios.get('/api/exams').then((res) => setExams(res.data.exams));
+    axios.get('/api/grades').then((res) => setGrades(res.data));
   }, []);
 
   // Fetch classes on grade change
   useEffect(() => {
     if (!selectedGradeId) return;
-    axios.get(`/api/classes?gradeId=${selectedGradeId}`).then((res) => setClasses(res.data)); // Create if not present
+    axios
+      .get(`/api/classes?gradeId=${selectedGradeId}`)
+      .then((res) => setClasses(res.data));
   }, [selectedGradeId]);
 
-  // Fetch subjects and students on all three selection changes (exam, grade, class)
+  // Fetch subjects and students on selection changes
   useEffect(() => {
     if (!selectedExamTitle || !selectedGradeId || !selectedClassId) return;
     const fetchExamData = async () => {
@@ -97,7 +95,7 @@ export default function MarksEntryForm() {
     };
 
     try {
-      const res = await axios.post('/api/results/bulk-entry', payload);
+      await axios.post('/api/results/bulk-entry', payload);
       toast.success('Marks submitted successfully!');
     } catch (err) {
       console.error(err);
@@ -106,81 +104,68 @@ export default function MarksEntryForm() {
   };
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md shadow-md">
-      <h2 className="text-2xl font-semibold text-gray-800">Enter Marks</h2>
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md shadow-md">
+      <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Enter Marks</h2>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 mt-4">
         <select
           onChange={(e) => setSelectedExamTitle(e.target.value)}
           defaultValue=""
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="" disabled>Select Exam</option>
           {exams.map((exam) => (
-            <option key={exam.id} value={exam.title}>
-              {exam.title}
-            </option>
+            <option key={exam.id} value={exam.title}>{exam.title}</option>
           ))}
         </select>
 
         <select
           onChange={(e) => setSelectedGradeId(Number(e.target.value))}
           defaultValue=""
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="" disabled>Select Grade</option>
           {grades.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.level}
-            </option>
+            <option key={g.id} value={g.id}>{g.level}</option>
           ))}
         </select>
 
         <select
           onChange={(e) => setSelectedClassId(Number(e.target.value))}
           defaultValue=""
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="" disabled>Select Class</option>
           {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
+            <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       </div>
 
       {students.length > 0 && subjects.length > 0 && (
         <div className="overflow-auto mt-4">
-          <table className="min-w-full table-auto border border-gray-300 rounded-lg overflow-hidden">
-            <thead className="bg-LamaPurpleLight text-gray-700">
+          <table className="min-w-full table-auto border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+            <thead className="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
               <tr>
-                <th className="px-4 py-2 text-left border">Student ID</th>
-                <th className="px-4 py-2 text-left border">Student</th>
+                <th className="px-4 py-2 text-left border dark:border-gray-600">Student ID</th>
+                <th className="px-4 py-2 text-left border dark:border-gray-600">Student</th>
                 {subjects.map((subj) => (
-                  <th key={subj.id} className="px-4 py-2 text-left border">
-                    {subj.name}
-                  </th>
+                  <th key={subj.id} className="px-4 py-2 text-left border dark:border-gray-600">{subj.name}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {students.map((student) => (
-                <tr key={student.id} className="even:bg-slate-50 hover:bg-LamaPurpleLight">
-                  <td className="px-4 py-2 border">{student.id}</td>
-                  <td className="px-4 py-2 border">{student.name}</td>
+                <tr key={student.id} className="even:bg-gray-50 dark:even:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <td className="px-4 py-2 border dark:border-gray-600">{student.id}</td>
+                  <td className="px-4 py-2 border dark:border-gray-600">{student.name}</td>
                   {subjects.map((subj) => (
-                    <td key={subj.id} className="px-4 py-2 border">
+                    <td key={subj.id} className="px-4 py-2 border dark:border-gray-600">
                       <input
                         type="number"
-                        value={
-                          marksData.find((entry) => entry.studentId === student.id)
-                            ?.marks[subj.name] || ''
-                        }
-                        onChange={(e) =>
-                          handleMarkChange(student.id, subj.name, e.target.value)
-                        }
-                        className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        value={marksData.find((entry) => entry.studentId === student.id)?.marks[subj.name] || ''}
+                        onChange={(e) => handleMarkChange(student.id, subj.name, e.target.value)}
+                        className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </td>
                   ))}
@@ -195,18 +180,14 @@ export default function MarksEntryForm() {
         <div className="text-center mt-4">
           <button
             onClick={() => {
-              const confirmed = window.confirm("Are you sure you want to submit the marks?");
-              if (confirmed) {
-                handleSubmit();
-              }
+              if (window.confirm('Are you sure you want to submit the marks?')) handleSubmit();
             }}
-            className="bg-green-400 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-md shadow-md transition duration-200"
+            className="bg-green-400 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-md shadow-md transition duration-200"
           >
             Submit Marks
           </button>
         </div>
       )}
-
     </div>
   );
 }

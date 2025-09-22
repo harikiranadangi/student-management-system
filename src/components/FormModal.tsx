@@ -7,7 +7,7 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
-// ✅ Mapping logical table names to API routes
+// Mapping logical table names to API routes
 const deleteActionMap: Record<string, string> = {
   subject: "subject",
   class: "classes",
@@ -27,7 +27,7 @@ const deleteActionMap: Record<string, string> = {
   permissions: "permissions",
 };
 
-// ✅ Dynamic form component imports
+// Dynamic form component imports
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), { loading: () => <h1>Loading...</h1> });
 const StudentForm = dynamic(() => import("./forms/StudentForm"), { loading: () => <h1>Loading...</h1> });
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), { loading: () => <h1>Loading...</h1> });
@@ -41,14 +41,10 @@ const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), { loa
 const MessagesForm = dynamic(() => import("./forms/MessageForm"), { loading: () => <h1>Loading...</h1> });
 const PermissionForm = dynamic(() => import("./forms/PermissionForm"), { loading: () => <h1>Loading...</h1> });
 
-const forms: {
-  [key: string]: (
-    setOpen: Dispatch<SetStateAction<boolean>>,
-    type: "create" | "update",
-    data?: any,
-    relatedData?: any
-  ) => JSX.Element;
-} = {
+const forms: Record<
+  string,
+  (setOpen: Dispatch<SetStateAction<boolean>>, type: "create" | "update", data?: any, relatedData?: any) => JSX.Element
+> = {
   subject: (setOpen, type, data, relatedData) => <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   class: (setOpen, type, data, relatedData) => <ClassForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
   teacher: (setOpen, type, data, relatedData) => <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />,
@@ -65,13 +61,7 @@ const forms: {
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const FormModal = ({
-  table,
-  type,
-  data,
-  id,
-  relatedData,
-}: FormContainerProps & { relatedData?: any }) => {
+const FormModal = ({ table, type, data, id, relatedData }: FormContainerProps & { relatedData?: any }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -82,7 +72,6 @@ const FormModal = ({
 
   const [open, setOpen] = useState(false);
   const [formKey, setFormKey] = useState(Date.now());
-
   const router = useRouter();
 
   const Form = () => {
@@ -90,20 +79,13 @@ const FormModal = ({
       const handleDelete = async () => {
         try {
           const endpoint = deleteActionMap[table];
-          if (!endpoint) {
-            toast.error("Invalid delete target.");
-            return;
-          }
+          if (!endpoint) return toast.error("Invalid delete target.");
 
-          const res = await fetch(`/api/${endpoint}/${id}`, {
-            method: "DELETE",
-          });
-
+          const res = await fetch(`/api/${endpoint}/${id}`, { method: "DELETE" });
           const result = await res.json();
 
-          if (!res.ok || result.error) {
-            toast.error(result.error || "Failed to delete.");
-          } else {
+          if (!res.ok || result.error) toast.error(result.error || "Failed to delete.");
+          else {
             toast.success(`${capitalizeFirstLetter(table)} has been deleted!`);
             setOpen(false);
             router.refresh();
@@ -115,13 +97,13 @@ const FormModal = ({
       };
 
       return (
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 p-4 text-black dark:text-white">
           <span className="font-medium text-center">
             All data will be lost. Are you sure you want to delete this {table}?
           </span>
           <button
             onClick={handleDelete}
-            className="self-center px-4 py-2 text-white bg-red-700 border-none rounded-md w-max"
+            className="self-center px-4 py-2 text-white bg-red-700 rounded-md w-max hover:bg-red-800 transition"
           >
             Delete
           </button>
@@ -130,31 +112,34 @@ const FormModal = ({
     }
 
     if (type === "create" || type === "update") {
-      return forms[table]?.(setOpen, type, data, relatedData) ?? <p>Form not found!</p>;
+      return (
+        <div className="space-y-4 text-black dark:text-white">
+          {forms[table]?.(setOpen, type, data, relatedData) ?? <p>Form not found!</p>}
+        </div>
+      );
     }
 
-    return <p>Form not found!</p>;
+    return <p className="text-black dark:text-white">Form not found!</p>;
   };
 
   return (
     <>
       <button
-        className={`${size} flex items-center justify-center rounded-full ${bgColor}`}
+        className={`${size} flex items-center justify-center rounded-full ${bgColor} dark:brightness-90`}
         onClick={() => setOpen(true)}
       >
         <Image src={`/${type}.png`} alt="" width={16} height={16} />
       </button>
 
       {open && (
-        <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-screen h-screen bg-black bg-opacity-60">
-          <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-white dark:bg-gray-900 text-black dark:text-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%] shadow-lg">
             {/* Reset Button */}
             {(type === "create" || type === "update") && (
               <button
                 type="button"
                 onClick={() => setFormKey(Date.now())}
-                className="absolute top-4 left-4"
+                className="absolute top-4 left-4 text-black dark:text-white"
                 title="Reset"
               >
                 <Image src="/reset.png" alt="Reset" width={14} height={14} />
@@ -169,9 +154,14 @@ const FormModal = ({
               <Image src="/close.png" alt="Close" width={14} height={14} />
             </div>
 
-            {/* Render Form */}
-            <div key={formKey} className="mt-10">
-              <Form />
+            {/* Form Container */}
+            <div
+              key={formKey}
+              className="mt-10 space-y-4"
+            >
+              <div className="space-y-4">
+                <Form />
+              </div>
             </div>
           </div>
         </div>

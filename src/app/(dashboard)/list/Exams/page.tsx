@@ -36,11 +36,9 @@ const renderRow = (item: Exams, role: string | null) =>
   item.examGradeSubjects.map((egs, idx) => (
     <tr
       key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`}
-      className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+      className="text-sm border-b border-gray-200 dark:border-gray-700 even:bg-slate-50 dark:even:bg-gray-800 hover:bg-LamaPurpleLight dark:hover:bg-gray-700"
     >
-      <td className="hidden md:table-cell">
-        {formatDateTime(new Date(egs.date), egs.startTime)}
-      </td>
+      <td className="hidden md:table-cell">{formatDateTime(new Date(egs.date), egs.startTime)}</td>
       <td className="p-4">{egs.Grade.level}</td>
       <td className="p-4">{egs.Subject.name}</td>
       <td className="p-4">{egs.maxMarks}</td>
@@ -58,38 +56,16 @@ const renderRow = (item: Exams, role: string | null) =>
   ));
 
 const getColumns = (role: string | null) => [
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-  },
-  {
-    header: "Subject",
-    accessor: "subject",
-  },
-  {
-    header: "Marks",
-    accessor: "maxMarks",
-  },
+  { header: "Date", accessor: "date", className: "hidden md:table-cell" },
+  { header: "Grade", accessor: "grade" },
+  { header: "Subject", accessor: "subject" },
+  { header: "Marks", accessor: "maxMarks" },
   ...(role === "admin" || role === "teacher"
-    ? [
-      {
-        header: "Actions",
-        accessor: "action",
-      },
-    ]
+    ? [{ header: "Actions", accessor: "action" }]
     : []),
 ];
 
-const ExamsList = async ({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) => {
+const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
   const params = await searchParams;
   const { page, date, gradeId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
@@ -97,136 +73,108 @@ const ExamsList = async ({
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey)
-    ? params.sortKey[0]
-    : params.sortKey || "id";
-  const teacherId = Array.isArray(params.teacherId)
-    ? params.teacherId[0]
-    : params.teacherId;
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const teacherId = Array.isArray(params.teacherId) ? params.teacherId[0] : params.teacherId;
 
   let query: Prisma.ExamWhereInput = {};
-  // Collect all filters into one object
-let examGradeSubjectsWhere: Prisma.ExamGradeSubjectWhereInput = {};
+  let examGradeSubjectsWhere: Prisma.ExamGradeSubjectWhereInput = {};
 
-// Teacher restriction
-if (role === "teacher" && teacherId) {
-  const teacherClasses = await prisma.class.findMany({
-    where: { supervisorId: teacherId },
-    select: { gradeId: true },
-  });
-  const teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
-  examGradeSubjectsWhere.gradeId = { in: teacherGradeIds };
-}
-
-// Student restriction
-if (role === "student" && userId) {
-  const student = await prisma.student.findUnique({
-    where: { id: userId },
-    select: { Class: { select: { gradeId: true } } },
-  });
-  if (student?.Class?.gradeId) {
-    examGradeSubjectsWhere.gradeId = student.Class.gradeId;
+  // Teacher restriction
+  if (role === "teacher" && teacherId) {
+    const teacherClasses = await prisma.class.findMany({
+      where: { supervisorId: teacherId },
+      select: { gradeId: true },
+    });
+    const teacherGradeIds = teacherClasses.map((cls) => cls.gradeId);
+    examGradeSubjectsWhere.gradeId = { in: teacherGradeIds };
   }
-}
 
-// Date filter
-if (date) {
-  const selectedDate = Array.isArray(date) ? date[0] : date;
-  const dateObj = new Date(selectedDate);
-  examGradeSubjectsWhere.date = {
-    gte: startOfDay(dateObj),
-    lt: endOfDay(dateObj),
-  };
-}
+  // Student restriction
+  if (role === "student" && userId) {
+    const student = await prisma.student.findUnique({
+      where: { id: userId },
+      select: { Class: { select: { gradeId: true } } },
+    });
+    if (student?.Class?.gradeId) {
+      examGradeSubjectsWhere.gradeId = student.Class.gradeId;
+    }
+  }
 
-// Search filter
-if (queryParams.search) {
-  const searchValue = Array.isArray(queryParams.search)
-    ? queryParams.search[0]
-    : queryParams.search;
-  examGradeSubjectsWhere.OR = [
-    { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
-    { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
-  ];
-}
+  // Date filter
+  if (date) {
+    const selectedDate = Array.isArray(date) ? date[0] : date;
+    const dateObj = new Date(selectedDate);
+    examGradeSubjectsWhere.date = {
+      gte: startOfDay(dateObj),
+      lt: endOfDay(dateObj),
+    };
+  }
 
-// Grade filter
-if (gradeId) {
-  examGradeSubjectsWhere.gradeId = Number(gradeId);
-}
+  // Search filter
+  if (queryParams.search) {
+    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    examGradeSubjectsWhere.OR = [
+      { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
+      { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
+    ];
+  }
 
-// Exam title filter (applies on exam itself, not examGradeSubjects)
-if (queryParams.title) {
-  query.title = {
-    contains: Array.isArray(queryParams.title)
-      ? queryParams.title[0]
-      : queryParams.title,
-    mode: "insensitive",
-  };
-}
+  // Grade filter
+  if (gradeId) examGradeSubjectsWhere.gradeId = Number(gradeId);
 
-// Apply conditions
-if (Object.keys(examGradeSubjectsWhere).length > 0) {
-  query.examGradeSubjects = { some: examGradeSubjectsWhere };
-}
+  // Exam title filter
+  if (queryParams.title) {
+    query.title = {
+      contains: Array.isArray(queryParams.title) ? queryParams.title[0] : queryParams.title,
+      mode: "insensitive",
+    };
+  }
 
-const [exams, count] = await prisma.$transaction([
-  prisma.exam.findMany({
-    where: query,
-    orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
-    include: {
-      examGradeSubjects: {
-        where: Object.keys(examGradeSubjectsWhere).length
-          ? examGradeSubjectsWhere
-          : undefined,
-        include: { Grade: true, Subject: true },
+  // Apply conditions
+  if (Object.keys(examGradeSubjectsWhere).length > 0) query.examGradeSubjects = { some: examGradeSubjectsWhere };
+
+  const [exams, count] = await prisma.$transaction([
+    prisma.exam.findMany({
+      where: query,
+      orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
+      include: {
+        examGradeSubjects: {
+          where: Object.keys(examGradeSubjectsWhere).length ? examGradeSubjectsWhere : undefined,
+          include: { Grade: true, Subject: true },
+        },
       },
-    },
-    take: ITEM_PER_PAGE,
-    skip: ITEM_PER_PAGE * (parseInt(p) - 1),
-  }),
-  prisma.exam.count({ where: query }),
-]);
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (parseInt(p) - 1),
+    }),
+    prisma.exam.count({ where: query }),
+  ]);
 
-
-
-  console.log("Exams :", exams);
-
-  // Dropdown filter data
   const classes = await prisma.class.findMany();
   const grades = await prisma.grade.findMany();
-
   const Path = "/list/exams";
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
       {/* HEADER */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Exams</h1>
+        <h1 className="hidden text-lg font-semibold md:block text-black dark:text-white">All Exams</h1>
         <div className="flex items-center gap-4">
           <TableSearch />
           <TitleFilterDropdown basePath={Path} />
           <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown
-              classes={classes}
-              grades={grades}
-              basePath={Path}
-              showClassFilter={false}
-            />
+            <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} showClassFilter={false} />
           )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
                 <Image src="/filter.png" alt="Filter" width={14} height={14} />
               </button>
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
                 <Image src="/sort.png" alt="Sort" width={14} height={14} />
               </button>
-              {(role === "admin" || role === "teacher") && (
-                <FormContainer table="exam" type="create" />
-              )}
+              {(role === "admin" || role === "teacher") && <FormContainer table="exam" type="create" />}
             </div>
           </div>
         </div>
@@ -234,11 +182,7 @@ const [exams, count] = await prisma.$transaction([
 
       {/* TABLE */}
       <div className="space-y-6">
-        <Table
-          columns={columns}
-          renderRow={(item) => renderRow(item, role)}
-          data={exams}
-        />
+        <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={exams} />
       </div>
 
       {/* PAGINATION */}

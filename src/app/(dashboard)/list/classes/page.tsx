@@ -16,15 +16,17 @@ type ClassList = Class & {
   Grade: Grade;
 };
 
-
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
     key={item.id}
-    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight
+               dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700"
   >
-    <td className="flex items-center gap-4 p-4">{item.Grade.level} - {item.section}</td>
-    <td className="hidden md:table-cell">
-      {item.Teacher ? `${item.Teacher.name}` : "No Class Teacher"}
+    <td className="flex items-center gap-4 p-4 text-black dark:text-white">
+      {item.Grade.level} - {item.section}
+    </td>
+    <td className="hidden md:table-cell text-black dark:text-white">
+      {item.Teacher ? item.Teacher.name : "No Class Teacher"}
     </td>
     <td>
       <div className="flex items-center gap-2">
@@ -67,7 +69,7 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
         query.supervisorId = val;
         break;
       case "search":
-        query.name = { contains: val };
+        query.name = { contains: val, mode: "insensitive" };
         break;
       default:
         break;
@@ -89,15 +91,15 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
   ]);
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
+      {/* Top Controls */}
+      <div className="flex items-center justify-between mb-3">
         <h1 className="hidden text-lg font-semibold md:block">All Classes</h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
-          {/* 🔄 Reset Filters Button */}
           <ResetFiltersButton basePath="/list/classes" />
           <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:brightness-90">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
             <SortButton sortKey="id" />
@@ -106,7 +108,10 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
         </div>
       </div>
 
+      {/* Table */}
       <Table columns={getColumns(role)} renderRow={(item) => renderRow(item, role)} data={data} />
+
+      {/* Pagination */}
       <Pagination page={currentPage} count={count} />
     </div>
   );

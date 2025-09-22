@@ -45,16 +45,16 @@ const LessonsListPage = async ({
   const Path = "/list/lessons";
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold mb-6">Timetable</h1>
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-lg font-semibold text-black dark:text-white">Timetable</h1>
 
         {/* Filters only for admin */}
         {role === "admin" && (
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <div className="flex flex-wrap gap-4">
               <TableSearch />
-              <TeacherFilterDropdown teachers={teacherData} />
+              <TeacherFilterDropdown teachers={teacherData}  />
               <ClassFilterDropdown
                 classes={classData}
                 grades={gradeData}
@@ -81,7 +81,7 @@ const LessonsListPage = async ({
       ) : role === "student" ? (
         <ClassTimetableContainer classId={userClassId || classes[0]?.id || 1} />
       ) : (
-        <p className="text-gray-500">No timetable available</p>
+        <p className="text-gray-500 dark:text-gray-400">No timetable available</p>
       )}
     </div>
   );

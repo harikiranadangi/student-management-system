@@ -15,25 +15,26 @@ import { fetchUserInfo } from "@/lib/utils/server-utils";
 
 type Homeworks = Homework & { Class: Class };
 
+// Render a single table row
 const renderRow = (item: Homeworks, role: string | null) => (
   <tr
     key={item.id}
-    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    className="text-sm border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700"
   >
-    <td>
-      {new Intl.DateTimeFormat("en-GB")
-        .format(new Date(item.date))
-        .replace(/\//g, "-")}
+    <td className="p-2 text-gray-700 dark:text-gray-200">
+      {new Intl.DateTimeFormat("en-GB").format(new Date(item.date)).replace(/\//g, "-")}
     </td>
 
     {(role === "admin" || role === "teacher") && (
-      <td>{item.Class?.name ?? "N/A"}</td>
+      <td className="p-2 text-gray-700 dark:text-gray-200">
+        {item.Class?.name ?? "N/A"}
+      </td>
     )}
 
-    <td className="flex items-center p-4">{item.description}</td>
+    <td className="p-2 text-gray-800 dark:text-gray-200">{item.description}</td>
 
     {(role === "admin" || role === "teacher") && (
-      <td>
+      <td className="p-2">
         <div className="flex items-center gap-2">
           <FormContainer table="homework" type="update" data={item} />
           <FormContainer table="homework" type="delete" id={item.id} />
@@ -43,60 +44,31 @@ const renderRow = (item: Homeworks, role: string | null) => (
   </tr>
 );
 
-const getColumns = (role: string | null) => {
-  const baseColumns = [
-    { header: "Date", accessor: "date" },
-    { header: "Description", accessor: "description" },
-  ];
+// Define table columns dynamically
+const getColumns = (role: string | null) => [
+  { header: "Date", accessor: "date" },
+  ...(role === "admin" || role === "teacher" ? [{ header: "Class", accessor: "class" }] : []),
+  { header: "Description", accessor: "description" },
+  ...(role === "admin" || role === "teacher" ? [{ header: "Actions", accessor: "action" }] : []),
+];
 
-  const adminTeacherColumns = [
-    { header: "Class", accessor: "class" },
-    { header: "Actions", accessor: "action" },
-  ];
-
-  return role === "admin" || role === "teacher"
-    ? [
-      ...baseColumns.slice(0, 1),
-      adminTeacherColumns[0],
-      ...baseColumns.slice(1),
-      adminTeacherColumns[1],
-    ]
-    : baseColumns;
-};
-
-const HomeworkListPage = async ({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) => {
+const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
   const params = await searchParams;
-  const { page, gradeId, date, ...queryParams } = params;
+  const { page, gradeId, date, classId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-  // Fetch user info and role
-  const { role, userId, classId } = await fetchUserInfo();
+  const { role, userId, classId: teacherClassId } = await fetchUserInfo();
   const columns = getColumns(role);
 
   // Sorting
-  const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey)
-    ? params.sortKey[0]
-    : params.sortKey || "id";
+  const sortOrder = params.sort === "desc" ? "desc" : "asc";
+  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "date";
 
-  // Handle date
   const rawDate = Array.isArray(date) ? date[0] : date;
-  const selectedDate = new Date(
-    rawDate ?? new Date().toISOString().split("T")[0]
-  );
-  const selectedDateUTC = new Date(
-    selectedDate.getUTCFullYear(),
-    selectedDate.getUTCMonth(),
-    selectedDate.getUTCDate()
-  );
-  const startDate = startOfDay(selectedDateUTC);
-  const endDate = endOfDay(selectedDateUTC);
+  const selectedDate = new Date(rawDate ?? new Date().toISOString().split("T")[0]);
+  const startDate = startOfDay(selectedDate);
+  const endDate = endOfDay(selectedDate);
 
-  // Get role-specific classIds
   let userClassIds: number[] = [];
 
   if (role === "teacher" && userId) {
@@ -104,37 +76,25 @@ const HomeworkListPage = async ({
       where: { linkedUserId: userId },
       select: { classId: true },
     });
-
-    if (teacher?.classId) {
-      userClassIds = [teacher.classId];
-    }
-  }
-
-  else if (role === "student" && userId) {
-    // Student → their one class
+    if (teacher?.classId) userClassIds = [teacher.classId];
+  } else if (role === "student" && userId) {
     const student = await prisma.student.findFirst({
       where: { linkedUserId: userId },
       select: { classId: true },
     });
-    if (student?.classId) {
-      userClassIds = [student.classId];
-    }
+    if (student?.classId) userClassIds = [student.classId];
   }
-  // Admin → leave userClassIds empty so they can see everything
 
-
-  // Build filters dynamically
   const filters: Prisma.HomeworkWhereInput = {
     date: { gte: startDate, lt: endDate },
     ...(userClassIds.length > 0
-      ? { classId: { in: userClassIds } } // student or teacher
+      ? { classId: { in: userClassIds } }
       : classId
-        ? { classId: Number(classId) } // admin filter
-        : {}),
+      ? { classId: Number(classId) }
+      : {}),
     ...(gradeId ? { Class: { gradeId: Number(gradeId) } } : {}),
   };
 
-  // Extra filters (search box, etc.)
   if (queryParams.search) {
     filters.OR = [
       { description: { contains: queryParams.search as string, mode: "insensitive" } },
@@ -142,19 +102,12 @@ const HomeworkListPage = async ({
     ];
   }
 
-
-
-  // Fetch classes & grades
   const classes = await prisma.class.findMany();
   const grades = await prisma.grade.findMany();
 
-  // Fetch data & count
   const [data, count] = await prisma.$transaction([
     prisma.homework.findMany({
-      orderBy: [
-        { [sortKey]: sortOrder },
-        { id: "desc" }, // fallback sort
-      ],
+      orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       where: filters,
       include: { Class: true },
       take: ITEM_PER_PAGE,
@@ -163,46 +116,36 @@ const HomeworkListPage = async ({
     prisma.homework.count({ where: filters }),
   ]);
 
+  const Path = `/list/homeworks`;
+
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      {/* TOP: Controls */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">Homeworks</h1>
-        <div className="flex items-center gap-4">
-          <DateFilter basePath="/list/homeworks" />
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
+      {/* Top Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-4">
+        <h1 className="text-lg font-semibold">Homeworks ({count})</h1>
+
+        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+          <TableSearch />
+          <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown
-              classes={classes}
-              grades={grades}
-              basePath="/list/homeworks"
-            />
+            <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} />
           )}
-          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-            <TableSearch />
-            <ResetFiltersButton basePath="/list/homeworks" />
-            <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
-                <Image src="/filter.png" alt="" width={14} height={14} />
-              </button>
+          <ResetFiltersButton basePath={Path} />
 
-              <SortButton sortKey="id" />
-
-              {(role === "admin" || role === "teacher") && (
-                <FormContainer table="homework" type="create" />
-              )}
-            </div>
+          <div className="flex items-center gap-4">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-yellow-600">
+              <Image src="/filter.png" alt="" width={14} height={14} />
+            </button>
+            <SortButton sortKey={sortKey} />
+            {(role === "admin" || role === "teacher") && <FormContainer table="homework" type="create" />}
           </div>
         </div>
       </div>
 
-      {/* LIST */}
-      <Table
-        columns={columns}
-        renderRow={(item) => renderRow(item, role)}
-        data={data}
-      />
+      {/* Table */}
+      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
 
-      {/* PAGINATION */}
+      {/* Pagination */}
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );

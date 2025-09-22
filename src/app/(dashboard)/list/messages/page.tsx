@@ -16,37 +16,53 @@ type MessageList = Messages & { Student: Student; Class: Class };
 const renderRow = (item: MessageList, role: string | null) => (
   <tr
     key={item.id}
-    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+    className="text-sm border-b border-gray-200 dark:border-gray-700 even:bg-slate-50 dark:even:bg-gray-800 hover:bg-LamaPurpleLight dark:hover:bg-gray-700 transition-colors"
   >
-    <td className="hidden md:table-cell w-24">
+    <td className="hidden md:table-cell w-24 text-gray-700 dark:text-gray-200">
       {new Date(item.date).toLocaleDateString("en-GB").replace(/\//g, "-")}
     </td>
 
     {(role === "teacher" || role === "admin") && (
       <>
-        <td className="hidden md:table-cell capitalize w-32">{item.type.toLowerCase()}</td>
+        <td className="hidden md:table-cell capitalize w-32 text-gray-700 dark:text-gray-200">
+          {item.type.toLowerCase()}
+        </td>
         <td>
           <div className="flex flex-col">
             {item.Student ? (
               <>
-                <h3 className="font-semibold">{item.Student.name}</h3>
-                <p className="text-xs">{item.studentId}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                  {item.Student.name}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {item.studentId}
+                </p>
               </>
             ) : (
               <>
-                <h3 className="font-semibold text-gray-500 italic">Class / School-wide</h3>
-                <p className="text-xs text-gray-400">No specific student</p>
+                <h3 className="font-semibold text-gray-500 dark:text-gray-400 italic">
+                  Class / School-wide
+                </h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  No specific student
+                </p>
               </>
             )}
           </div>
         </td>
-        <td className="hidden md:table-cell w-24">
-          {item.Class?.name ?? <span className="text-gray-400 italic">All Classes</span>}
+        <td className="hidden md:table-cell w-24 text-gray-700 dark:text-gray-200">
+          {item.Class?.name ?? (
+            <span className="text-gray-400 dark:text-gray-500 italic">
+              All Classes
+            </span>
+          )}
         </td>
       </>
     )}
 
-    <td className="p-4 whitespace-pre-line px-0">{item.message}</td>
+    <td className="p-4 whitespace-pre-line px-0 text-gray-800 dark:text-gray-200">
+      {item.message}
+    </td>
 
     <td>
       <div className="flex items-center gap-2">
@@ -65,13 +81,21 @@ const getColumns = (role: string | null) => [
   { header: "Date", accessor: "date", className: "hidden md:table-cell" },
   ...(role === "teacher" || role === "admin"
     ? [
-      { header: "Type", accessor: "type", className: "hidden md:table-cell" },
-      { header: "Student Name", accessor: "student", className: "hidden md:table-cell" },
-      { header: "Class", accessor: "class", className: "hidden md:table-cell" },
-    ]
+        { header: "Type", accessor: "type", className: "hidden md:table-cell" },
+        {
+          header: "Student Name",
+          accessor: "student",
+          className: "hidden md:table-cell",
+        },
+        {
+          header: "Class",
+          accessor: "class",
+          className: "hidden md:table-cell",
+        },
+      ]
     : []),
   { header: "Message", accessor: "message", className: "hidden md:table-cell" },
-  ...((role === "admin" || role === "teacher" )? [{ header: "Actions", accessor: "action" }] : []),
+  ...((role === "admin" || role === "teacher") ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
 const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
@@ -102,9 +126,9 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
   } else if (role === "teacher") {
     roleFilter.OR = teacherClassId
       ? [
-        { classId: teacherClassId },
-        { classId: null, studentId: null },
-      ]
+          { classId: teacherClassId },
+          { classId: null, studentId: null },
+        ]
       : [{ classId: null, studentId: null }];
   }
 
@@ -125,8 +149,6 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
     ? { AND: [roleFilter, searchFilter] }
     : roleFilter;
 
-
-
   const [data, count] = await prisma.$transaction([
     prisma.messages.findMany({
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
@@ -139,18 +161,22 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
   ]);
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 dark:text-gray-100 rounded-md transition-colors duration-300">
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Messages ({count})</h1>
+        <h1 className="hidden text-lg font-semibold md:block">
+          All Messages ({count})
+        </h1>
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <ResetFiltersButton basePath="/list/messages" />
           <div className="flex items-center self-end gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
             <SortButton sortKey="id" />
-            {(role === "admin" || role === "teacher") && <FormContainer table="messages" type="create" />}
+            {(role === "admin" || role === "teacher") && (
+              <FormContainer table="messages" type="create" />
+            )}
           </div>
         </div>
       </div>

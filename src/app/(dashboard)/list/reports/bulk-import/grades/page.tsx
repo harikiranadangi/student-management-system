@@ -1,4 +1,4 @@
-import BulkGradeUpload from "@/components/BulkUpload/BulkGradeUpload";
+import BulkGradeUpload from "@/components/BulkUpload/grades";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {

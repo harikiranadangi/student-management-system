@@ -1,4 +1,4 @@
-import UploadStudentsPage from "@/components/BulkUpload/BulkUploadStudents";
+import UploadStudentsPage from "@/components/BulkUpload/students";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {

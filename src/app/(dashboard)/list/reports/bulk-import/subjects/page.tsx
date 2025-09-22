@@ -1,4 +1,4 @@
-import BulkSubjectUpload from "@/components/BulkUpload/BulkSubjectUpload";
+import BulkSubjectUpload from "@/components/BulkUpload/subjects";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {

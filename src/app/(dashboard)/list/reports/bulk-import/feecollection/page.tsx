@@ -1,4 +1,4 @@
-import BulkFeesUpload from "@/components/BulkUpload/BulkFeesUpload";
+import BulkFeesUpload from "@/components/BulkUpload/fees";
 import SampleCSVPreview from "@/components/SampleCSVPreview";
 
 export default function ReportsPage() {

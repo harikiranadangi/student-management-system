@@ -82,7 +82,7 @@ export default function BulkTeacherUpload() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded shadow">
+    <div className="space-y-6 p-6 bg-white dark:bg-gray-900 text-black dark:text-white rounded shadow">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-semibold">Bulk Upload Teachers</h1>
       </div>
@@ -91,11 +91,11 @@ export default function BulkTeacherUpload() {
         type="file"
         accept=".csv"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple file:text-black hover:file:bg-LamaPurpleLight"
+        className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-LamaPurple dark:file:bg-purple-700 file:text-black dark:file:text-white hover:file:bg-LamaPurpleLight dark:hover:file:bg-purple-600"
       />
 
       {errors.length > 0 && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 border rounded">
+        <div className="p-4 text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900 border rounded">
           <p className="font-semibold">Validation Errors:</p>
           <ul className="mt-2 list-disc list-inside">
             {errors.map((err, i) => (
@@ -106,20 +106,27 @@ export default function BulkTeacherUpload() {
       )}
 
       {teachers.length > 0 && (
-        <div className="overflow-auto border border-gray-200 rounded max-h-96">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-100">
+        <div className="overflow-auto border border-gray-200 dark:border-gray-700 rounded max-h-96">
+          <table className="min-w-full text-sm text-left border-collapse">
+            <thead className="bg-gray-100 dark:bg-gray-800">
               <tr>
                 {Object.keys(teachers[0]).map((key) => (
-                  <th key={key} className="px-4 py-2 border-b">{key}</th>
+                  <th
+                    key={key}
+                    className="px-4 py-2 border-b text-gray-700 dark:text-gray-300 dark:border-gray-600"
+                  >
+                    {key}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {teachers.map((teacher, i) => (
-                <tr key={i} className="even:bg-gray-50">
+                <tr key={i} className="even:bg-gray-50 dark:even:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800">
                   {Object.values(teacher).map((val, j) => (
-                    <td key={j} className="px-4 py-1 border-b">{val || "-"}</td>
+                    <td key={j} className="px-4 py-1 border-b dark:border-gray-600">
+                      {val || "-"}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -132,13 +139,15 @@ export default function BulkTeacherUpload() {
         <button
           onClick={handleUpload}
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50"
         >
           {loading ? "Uploading..." : "Upload to Server"}
         </button>
       )}
 
-      {message && <p className="text-green-600 font-medium">{message}</p>}
+      {message && (
+        <p className="text-green-600 dark:text-green-400 font-medium">{message}</p>
+      )}
     </div>
   );
 }

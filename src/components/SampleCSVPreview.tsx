@@ -175,8 +175,8 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
             ];
             break;
 
-            case "lessons":
-             sampleRows = [
+        case "lessons":
+            sampleRows = [
                 {
                     id: "l001",
                     classId: "1",
@@ -283,18 +283,18 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
 
     return (
         <div className="space-y-3">
-            <h2 className="text-base font-semibold text-gray-700 flex items-center gap-1">
+            <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                 📄 {titleMap[type]} CSV Preview
             </h2>
 
-            <div className="overflow-auto border border-gray-200 rounded">
+            <div className="overflow-auto border border-gray-200 dark:border-gray-700 rounded">
                 <table className="min-w-full text-xs text-left border-collapse">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gray-100 dark:bg-gray-800">
                         <tr>
                             {Object.keys(sampleRows[0]).map((key) => (
                                 <th
                                     key={key}
-                                    className="px-3 py-2 border-b text-gray-700 whitespace-nowrap"
+                                    className="px-3 py-2 border-b text-gray-700 dark:text-gray-300 dark:border-gray-600 whitespace-nowrap"
                                 >
                                     {key}
                                 </th>
@@ -303,9 +303,12 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
                     </thead>
                     <tbody>
                         {sampleRows.map((row, i) => (
-                            <tr key={i} className="even:bg-gray-50">
+                            <tr key={i} className="even:bg-gray-50 dark:even:bg-gray-700">
                                 {Object.values(row).map((val, j) => (
-                                    <td key={j} className="px-3 py-1 border-b whitespace-nowrap">
+                                    <td
+                                        key={j}
+                                        className="px-3 py-1 border-b dark:border-gray-600 whitespace-nowrap"
+                                    >
                                         {val || "-"}
                                     </td>
                                 ))}
@@ -319,7 +322,7 @@ const SampleCSVPreview = ({ type }: SampleCSVPreviewProps) => {
                 <Link
                     href={downloadLink[type]}
                     download
-                    className="text-sm bg-LamaPurple text-black px-4 py-2 rounded hover:bg-LamaPurpleLight transition"
+                    className="text-sm bg-LamaPurple dark:bg-purple-700 text-black dark:text-white px-4 py-2 rounded hover:bg-LamaPurpleLight dark:hover:bg-purple-600 transition"
                 >
                     Download Sample CSV
                 </Link>

@@ -32,17 +32,17 @@ const renderRow = (item: PermissionWithRelations, role: string | null) => {
   return (
     <tr
       key={item.id}
-      className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+      className="text-sm border-b border-gray-200 dark:border-gray-700 even:bg-slate-50 dark:even:bg-gray-800 hover:bg-LamaPurpleLight dark:hover:bg-gray-700"
     >
-      <td>{localTime}</td>
-      <td>{item.student.name}</td>
-      <td>{item.student.Class?.name ?? "N/A"}</td>
-      <td>{item.leaveType}</td>
-      <td>{item.description || "-"}</td>
-      <td>{item.withWhom}</td>
-      <td>{item.relation}</td>
+      <td className="px-2 py-1">{localTime}</td>
+      <td className="px-2 py-1">{item.student.name}</td>
+      <td className="px-2 py-1">{item.student.Class?.name ?? "N/A"}</td>
+      <td className="px-2 py-1">{item.leaveType}</td>
+      <td className="px-2 py-1">{item.description || "-"}</td>
+      <td className="px-2 py-1">{item.withWhom}</td>
+      <td className="px-2 py-1">{item.relation}</td>
       {(role === "admin" || role === "teacher") && (
-        <td>
+        <td className="px-2 py-1">
           <div className="flex items-center gap-2">
             <FormContainer table="permissions" type="update" data={item} />
             <FormContainer table="permissions" type="delete" id={item.id} />
@@ -52,7 +52,6 @@ const renderRow = (item: PermissionWithRelations, role: string | null) => {
     </tr>
   );
 };
-
 
 // 🔹 Table Columns
 const getColumns = (role: string | null) => [
@@ -139,7 +138,7 @@ const PermissionSlipListPage = async ({
   const Path = "/list/permissions";
 
   return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 text-black dark:text-white rounded-md shadow-md">
       {/* 🔹 TOP Section */}
       <div className="flex items-center justify-between">
         <h1 className="hidden text-lg font-semibold md:block">
@@ -157,7 +156,7 @@ const PermissionSlipListPage = async ({
           )}
           <ResetFiltersButton basePath={Path} />
           <div className="flex items-center gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <SortButton sortKey="id" />

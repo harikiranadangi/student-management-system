@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import DownloadExcelButton from "@/components/DownloadExcelButton";
-import ClassFilterDropdown from "@/components/FilterDropdown";
+import ClassFilterDropdown, { StudentStatusFilter } from "@/components/FilterDropdown";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
@@ -52,9 +52,9 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
   return (
     <tr
       key={item.id}
-      className="text-sm border-b border-gray-100 even:bg-slate-50 hover:bg-LamaPurpleLight"
+      className="text-sm border-b border-gray-100 dark:border-gray-700 even:bg-slate-50 dark:even:bg-gray-800 hover:bg-LamaPurpleLight dark:hover:bg-gray-700 transition-colors"
     >
-      <td className="flex items-center gap-2 p-2">
+      <td className="flex items-center gap-2 p-2 text-gray-800 dark:text-gray-200">
         <Image
           src={item.img || (item.gender === "Male" ? "/male.png" : "/female.png")}
           alt={item.name}
@@ -67,13 +67,12 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
           <p className="text-xs">{item.id}</p>
         </div>
       </td>
-      <td>{item.Class?.name ?? "N/A"}</td>
-      <td className="hidden md:table-cell">{item.parentName || "N/A"}</td>
-      {/* <td>{item.phone}</td> */}
-      <td className="hidden md:table-cell">{totalFees}</td>
-      <td className="hidden md:table-cell">{paidAmount}</td>
-      <td className="hidden md:table-cell">{discountAmount}</td>
-      <td className={`hidden md:table-cell ${dueAmount > 0 ? "text-red-500" : ""}`}>
+      <td className="text-gray-700 dark:text-gray-200">{item.Class?.name ?? "N/A"}</td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{item.parentName || "N/A"}</td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{totalFees}</td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{paidAmount}</td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{discountAmount}</td>
+      <td className={`hidden md:table-cell ${dueAmount > 0 ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
         {dueAmount}
       </td>
     </tr>
@@ -85,7 +84,6 @@ const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
   { header: "Class", accessor: "class" },
   { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
-  // { header: "Mobile", accessor: "phone" },
   { header: "Total Fees", accessor: "totalFees", className: "hidden md:table-cell" },
   { header: "Paid", accessor: "paidAmount", className: "hidden md:table-cell" },
   { header: "Discount Amount", accessor: "discountAmount", className: "hidden md:table-cell" },
@@ -105,10 +103,8 @@ const StudentListPage = async ({
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
   const query: Prisma.StudentWhereInput = { status: "ACTIVE" };
-
   if (classId) query.classId = Number(classId);
   if (gradeId) query.Class = { gradeId: Number(gradeId) };
-
   if (queryParams.search) {
     const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
     query.OR = [
@@ -117,7 +113,6 @@ const StudentListPage = async ({
     ];
   }
 
-  // Sorting
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
   const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "classId";
 
@@ -128,19 +123,9 @@ const StudentListPage = async ({
     prisma.student.findMany({
       where: query,
       include: {
-        Class: {
-          include: {
-            Grade: {
-              include: { feestructure: true },
-            },
-          },
-        },
+        Class: { include: { Grade: { include: { feestructure: true } } } },
         totalFees: true,
-        studentFees: {
-          include: {
-            feeStructure: true, // ✅ This is the fix!
-          },
-        },
+        studentFees: { include: { feeStructure: true } },
       },
       orderBy: [
         { [sortKey]: sortOrder },
@@ -154,24 +139,25 @@ const StudentListPage = async ({
     prisma.student.count({ where: query }),
   ]);
 
-
   const columns = getColumns(role);
 
-  return (
-    <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
-      <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
+  const Path = "/list/reports/student-fees"
 
-        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
-          <ClassFilterDropdown classes={classes} grades={grades} basePath="/list/reports/student-fees" />
-          <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+  return (
+    <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
+      <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-4">
+        <h1 className="text-lg font-semibold">All Students ({count})</h1>
+
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+          <ClassFilterDropdown classes={classes} grades={grades} basePath={Path}  />
+          <StudentStatusFilter basePath={Path} />
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full">
             <TableSearch />
-            <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+            <div className="flex items-center gap-4">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaSkyYellow dark:bg-LamaSkyYellow">
                 <Image src="/filter.png" alt="filter" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              {/* Optional: Excel Export component */}
               <DownloadExcelButton />
             </div>
           </div>

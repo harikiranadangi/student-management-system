@@ -18,7 +18,10 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
   const today = new Date().toISOString().split("T")[0];
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
-  const [records, setRecords] = useState<AttendanceResponse>({ attendance: [], students: [] });
+  const [records, setRecords] = useState<AttendanceResponse>({
+    attendance: [],
+    students: [],
+  });
   const [grades, setGrades] = useState<Grade[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<string | number>("");
@@ -57,7 +60,6 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
           setClasses([]);
         }
       } else if (role === "teacher" && teacherClassId) {
-        // For teacher, fetch only their assigned class
         const classRes = await fetch(`/api/classes?id=${teacherClassId}`);
         const classData = await classRes.json();
         setClasses(classData);
@@ -109,9 +111,9 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
     );
 
     worksheet.columns = [
-      { header: "Student ID", key: "studentId", width: 15 },
-      { header: "Student Name", key: "studentName", width: 25 },
-      { header: "Class", key: "className", width: 15 },
+      { header: "Student ID", key: "studentId", width: 12 },
+      { header: "Student Name", key: "studentName", width: 30 },
+      { header: "Class", key: "className", width: 12 },
       ...uniqueDates.map((date) => ({ header: date, key: date, width: 12 })),
     ];
 
@@ -142,64 +144,70 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Attendance Report</h1>
+    <div className="p-4 space-y-4 bg-white dark:bg-gray-900 min-h-screen rounded-md">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attendance Report</h1>
 
+      {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
-        {/* Date filters */}
         <div>
-          <label className="block text-sm font-medium">From:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">From:</label>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="border px-2 py-1 rounded"
+            className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">To:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">To:</label>
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="border px-2 py-1 rounded"
+            className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
           />
         </div>
 
-        {/* Grade/Class filters (admin only, disabled for teachers) */}
-        <div>
-          <label className="block text-sm font-medium">Grade:</label>
-          <select
-            className="border px-2 py-1 rounded"
-            value={selectedGrade}
-            onChange={(e) => setSelectedGrade(e.target.value)}
-            disabled={role === "teacher"}
-          >
-            <option value="">Select Grade</option>
-            {grades.map((g) => (
-              <option key={g.id} value={g.id}>{g.level}</option>
-            ))}
-          </select>
-        </div>
+        {role === "admin" && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade:</label>
+              <select
+                className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
+                value={selectedGrade}
+                onChange={(e) => setSelectedGrade(e.target.value)}
+              >
+                <option value="">Select Grade</option>
+                {grades.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.level}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium">Class:</label>
-          <select
-            className="border px-2 py-1 rounded"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            disabled={role === "teacher" || !selectedGrade}
-          >
-            <option value="">Select Class</option>
-            {classes.map((cls) => (
-              <option key={cls.id} value={cls.id}>{cls.section}</option>
-            ))}
-          </select>
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Class:</label>
+              <select
+                className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                disabled={!selectedGrade}
+              >
+                <option value="">Select Class</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.section}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
 
         <button
           onClick={fetchAttendance}
-          className="bg-green-600 text-white px-3 py-1 rounded"
+          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
         >
           Get Attendance
         </button>
@@ -210,14 +218,14 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
         <input
           type="text"
           placeholder="Search by name or ID"
-          className="border px-2 py-1 rounded"
+          className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as any)}
-          className="border px-2 py-1 rounded"
+          className="border px-2 py-1 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:border-gray-700"
         >
           <option value="all">All</option>
           <option value="present">Present</option>
@@ -225,7 +233,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
         </select>
         <button
           onClick={exportToExcel}
-          className="bg-blue-600 text-white px-3 py-1 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
         >
           Export Excel
         </button>
@@ -234,15 +242,15 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
       {/* Attendance table */}
       {filteredAttendance.length > 0 ? (
         <div className="overflow-x-auto mt-4">
-          <table className="min-w-full bg-white border table-auto">
+          <table className="min-w-full border table-fixed bg-white dark:bg-gray-800 dark:border-gray-700">
             <thead>
-              <tr className="bg-gray-200 text-left text-sm">
-                <th className="p-2 border w-auto">Student ID</th>
-                <th className="p-2 border">Student Name</th>
-                <th className="p-2 border">Class</th>
-                <th className="p-2 border w-auto">Date</th>
-                <th className="p-2 border w-auto">Status</th>
-                <th className="p-2 border w-auto">Action</th>
+              <tr className="bg-gray-200 dark:bg-gray-700 text-left text-sm text-gray-900 dark:text-gray-100">
+                <th className="p-2 border dark:border-gray-700 w-28">Date</th>
+                <th className="p-2 border dark:border-gray-700 w-20">ID</th>
+                <th className="p-2 border dark:border-gray-700 w-64">Student Name</th>
+                <th className="p-2 border dark:border-gray-700 w-28">Class</th>
+                <th className="p-2 border dark:border-gray-700 w-24">Status</th>
+                <th className="p-2 border dark:border-gray-700 w-24">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -250,17 +258,25 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
                 const student = records.students.find((s) => s.id === a.studentId);
                 if (!student) return null;
                 return (
-                  <tr key={a.id} className="border-b text-sm">
-                    <td className="p-1 border w-auto">{student.id}</td>
-                    <td className="p-2 border">{student.name}</td>
-                    <td className="p-2 border">{student.Class?.name || "N/A"}</td>
-                    <td className="p-1 border w-auto">{new Date(a.date).toLocaleDateString()}</td>
-                    <td className="p-1 border w-auto">{a.present ? "Present" : "Absent"}</td>
-                    <td className="p-1 border w-auto">
+                  <tr
+                    key={a.id}
+                    className="border-b text-sm text-gray-900 dark:text-gray-100 dark:border-gray-700"
+                  >
+                    <td className="p-1 border dark:border-gray-700">
+                      {new Date(a.date).toLocaleDateString()}
+                    </td>
+                    <td className="p-1 border dark:border-gray-700">{student.id}</td>
+                    <td className="p-2 border dark:border-gray-700 truncate">{student.name}</td>
+                    <td className="p-2 border dark:border-gray-700">{student.Class?.name || "N/A"}</td>
+                    <td className="p-1 border dark:border-gray-700">
+                      {a.present ? "Present" : "Absent"}
+                    </td>
+                    <td className="p-1 border dark:border-gray-700">
                       <button
                         onClick={() => updateAttendance(a.id, a.present)}
-                        className={`px-2 py-1 text-white rounded ${a.present ? "bg-green-500" : "bg-red-500"
-                          }`}
+                        className={`px-2 py-1 text-white rounded ${
+                          a.present ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                        }`}
                       >
                         Edit
                       </button>
@@ -271,11 +287,9 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
             </tbody>
           </table>
         </div>
-
       ) : (
-        <p className="mt-4 text-gray-600">No attendance records found.</p>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">No attendance records found.</p>
       )}
     </div>
-
   );
 }

@@ -95,6 +95,7 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
   };
 
   const query: Prisma.StudentWhereInput = {
+    status: {"equals": "ACTIVE"},
     ...(classIdNum && { classId: classIdNum }),
     ...(Object.keys(classFilter).length && { Class: classFilter }),
     ...(search && {
