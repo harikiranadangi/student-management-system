@@ -51,7 +51,7 @@ const TableSearch = () => {
       className="relative w-full md:w-auto flex items-center rounded-full border border-gray-300 pl-4 pr-2 gap-2 focus-within:ring-2 focus-within:ring-LamaSky focus-within:outline-none"
       onSubmit={(e) => e.preventDefault()}
     >
-      <Image src="/search.png" alt="Search" width={14} height={14} />
+      <img src="/search.png" alt="Search" width={14} height={14} />
       <input
         ref={inputRef}
         type="text"

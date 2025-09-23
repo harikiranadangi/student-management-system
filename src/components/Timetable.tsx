@@ -34,12 +34,18 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
 
   return (
     <div className="overflow-x-auto p-4">
-      <table className="table-auto border-collapse w-full text-sm shadow-lg rounded-lg overflow-hidden">
+      <table className="table-auto border-collapse w-full text-sm shadow-lg rounded-lg overflow-hidden bg-white dark:bg-gray-900">
         <thead>
-          <tr className="bg-gradient-to-r from-[#C3EBFA] via-[#CFCEFF] to-[#C3EBFA] text-[#0C4A6E] uppercase text-xs tracking-wider">
-            <th className="border border-gray-300 p-3 text-left">Period</th>
+          <tr className="bg-gradient-to-r from-[#C3EBFA] via-[#CFCEFF] to-[#C3EBFA] text-[#0C4A6E] dark:text-[#EDF9FD] uppercase text-xs tracking-wider">
+            <th className="border border-gray-300 p-3 dark:text-gray-700 text-left">Period</th>
             {DAYS.map(day => (
-              <th key={day} className="border border-gray-300 p-3 text-left">{day}</th>
+              <th
+                key={day}
+                className="border border-gray-300 p-3 text-center align-middle dark:text-gray-700"
+              >
+                {day}
+              </th>
+
             ))}
           </tr>
         </thead>
@@ -54,7 +60,7 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
                 <tr key={periodKey}>
                   <td
                     colSpan={DAYS.length + 1}
-                    className="border border-gray-300 bg-gray-100 text-center italic font-semibold py-2"
+                    className="border border-gray-300 bg-gray-100 dark:bg-gray-700 text-center italic font-semibold py-2"
                   >
                     {periodKey === "LUNCH" ? "Lunch Break" : "Break"} ({start} - {end})
                   </td>
@@ -63,11 +69,12 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
             }
 
             return (
-              <tr key={periodKey} className="hover:bg-blue-50">
+              <tr key={periodKey}>
+
                 {/* Period column */}
-                <td className="border border-gray-300 p-3 font-semibold text-center">
+                <td className="border border-gray-300 p-3 font-semibold text-center text-gray-800 dark:text-gray-200">
                   {periodKey.replace("PERIOD", "Period ")}<br />
-                  <span className="text-xs text-gray-500">{start} - {end}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{start} - {end}</span>
                 </td>
 
                 {/* Lessons by day */}
@@ -76,7 +83,7 @@ export default function Timetable({ lessons }: { lessons: Lesson[] }) {
 
                   if (!lessonData) {
                     return (
-                      <td key={`${day}-${periodKey}`} className="border border-gray-300 text-center">-</td>
+                      <td key={`${day}-${periodKey}`} className="border border-gray-300 text-center text-gray-500 dark:text-gray-400">-</td>
                     );
                   }
 

@@ -115,13 +115,13 @@ const ExportButton = ({ data, fileName }: Props) => {
     <div className="flex gap-2">
       <button
         onClick={exportToExcel}
-        className="text-xs px-2 py-1 border rounded bg-green-100 hover:bg-green-200"
+        className="text-xs px-3 py-2 border rounded bg-LamaYellow hover:bg-LamaPurple dark:bg-LamaYellow dark:hover:bg-LamaPurple dark:text-black "
       >
         Excel
       </button>
       <button
         onClick={exportToPDF}
-        className="text-xs px-2 py-1 border rounded bg-red-100 hover:bg-red-200"
+        className="text-xs px-3 py-2 border rounded bg-LamaYellow hover:bg-LamaPurple dark:bg-LamaYellow dark:hover:bg-LamaPurple dark:text-black"
       >
         PDF
       </button>

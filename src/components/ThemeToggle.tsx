@@ -15,7 +15,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition"
+      className="flex items-center justify-center w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black transition"
       title="Toggle Theme"
     >
       {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}

@@ -2,7 +2,6 @@ import Messages from "@/components/Announcements";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import ClassTimetableContainer from "@/components/ClassTimetableContainer";
 import FormContainer from "@/components/FormContainer";
-import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import prisma from "@/lib/prisma";
 import { fetchUserInfo } from "@/lib/utils/server-utils";

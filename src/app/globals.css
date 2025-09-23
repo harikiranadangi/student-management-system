@@ -2,143 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-.react-calendar {
-  width: 100% !important;
-  border: none !important;
-  font-family: "Inter", sans-serif !important;
-}
-
-.react-calendar__navigation__label__labelText {
-  font-weight: 600;
-}
-
-.react-calendar__tile--active {
-  background-color: #c3ebfa !important;
-  color: black !important;
-}
-
-.rbc-btn-group:first-child {
-  display: none !important;
-}
-
-.rbc-toolbar-label {
-  text-align: right !important;
-  padding: 0px 20px !important;
-}
-
-.rbc-btn-group:last-child {
-  font-size: 13px !important;
-}
-
-.rbc-btn-group:last-child button {
-  border: none !important;
-  background-color: #f1f0ff !important;
-  margin-left: 2px !important;
-}
-
-.rbc-toolbar button.rbc-active {
-  background-color: #dbdafe !important;
-  box-shadow: none !important;
-}
-
-.rbc-time-view {
-  border-color: #eee !important;
-}
-
-.rbc-time-header {
-  display: none !important;
-}
-
-.rbc-time-content {
-  border: none !important;
-}
-
-.rbc-time-gutter.rbc-time-column {
-  font-size: 12px !important;
-}
-
-.rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
-  padding: 0px 20px !important;
-}
-
-.rbc-timeslot-group {
-  background-color: #f7fdff !important;
-}
-
-.rbc-day-slot {
-  font-size: 14px !important;
-}
-
-.rbc-event {
-  border: none !important;
-  color: black !important;
-  padding: 10px !important;
-  margin: 10px !important;
-  width: 99% !important;
-}
-
-/* Make time gutter wider */
-.rbc-time-gutter {
-  width: 120px !important;
-  min-width: 120px !important;
-}
-
-/* Center time labels in the middle of the gutter cell */
-.rbc-time-gutter .rbc-label {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 100% !important;
-  text-align: center !important;
-}
-
-
-.rbc-event:nth-child(1) {
-  background-color: #e2f8ff !important;
-}
-.rbc-event:nth-child(2) {
-  background-color: #fefce8 !important;
-}
-.rbc-event:nth-child(3) {
-  background-color: #f2f1ff !important;
-}
-.rbc-event:nth-child(4) {
-  background-color: #fdf2fb !important;
-}
-.rbc-event:nth-child(5) {
-  background-color: #e2f8ff !important;
-}
-.rbc-event:nth-child(6) {
-  background-color: #fefce8 !important;
-}
-.rbc-event:nth-child(7) {
-  background-color: #f2f1ff !important;
-}
-.rbc-event:nth-child(8) {
-  background-color: #fdf2fb !important;
-}
-
-.rbc-event-label{
-  color: gray !important;
-  margin-bottom: 5px;
-}
-
-/* globals.css or other CSS file */
-.menu-item {
-  background-color: #f0f8ff;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.menu-item:hover {
-  background-color: #add8e6; /* Light blue on hover */
-}
-
-
-
-
+/* ======================
+   Global Layout + Theme
+====================== */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -167,6 +33,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -193,77 +60,90 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-
-
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 button {
-  caret-color: transparent !important; /* hide blinking text cursor */
-  user-select: none !important;        /* prevent accidental text selection */
+  @apply select-none;
+  caret-color: transparent !important;
 }
 
+/* ======================
+   React Calendar Styles
+====================== */
+.react-calendar {
+  width: 100% !important;
+  border: none !important;
+  font-family: "Inter", sans-serif !important;
+  @apply bg-white dark:bg-gray-900 rounded-lg p-2;
+}
+
+/* Calendar navigation (month label + arrows) */
+.react-calendar__navigation button {
+  @apply text-black dark:text-white font-medium px-2;
+}
+.react-calendar__navigation button:disabled {
+  @apply text-gray-400 dark:text-gray-500;
+}
+
+/* Weekday headers (Mon, Tue, etc.) */
+.react-calendar__month-view__weekdays__weekday {
+  @apply text-gray-700 dark:text-gray-200 font-semibold;
+}
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+}
+
+/* Calendar tiles */
 .react-calendar__tile {
-  position: relative; /* needed for absolute positioning */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0; /* remove extra padding */
+  @apply relative flex items-center justify-center p-0 transition-colors duration-150;
 }
-
 .react-calendar__tile::after {
   content: "";
-  position: absolute;
-  width: 24px;       /* circle size */
-  height: 24px;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;        /* behind the number */
+  @apply absolute w-6 h-6 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0;
+}
+.react-calendar__tile > abbr {
+  @apply relative z-10;
 }
 
-/* Different colors for attendance status */
+.holiday-day > abbr {
+  @apply text-black dark:text-black;
+}
+
+/* Attendance status circles */
 .present-day::after {
-  background-color: #34D399; /* green */
+  @apply bg-green-500 dark:bg-green-600;
 }
 .absent-day::after {
-  background-color: #F87171; /* red */
+  @apply bg-red-500 dark:bg-red-600;
 }
 .holiday-day::after {
-  background-color: #FFF59D; /* yellow */
+  @apply bg-LamaYellow dark:bg-LamaYellow;
 }
 
-/* Ensure day number appears above circle */
-.react-calendar__tile > abbr {
-  position: relative;
-  z-index: 1;
-}
-
-/* Saturday only (remove red) */
+/* Saturdays → black text */
 .react-calendar__month-view__days__day--weekend:nth-child(7n-1) {
-  color: inherit; /* Use default text color */
+  @apply text-black dark:text-white;
 }
 
-/* Keep Sunday red (default) */
+/* Sundays → red text */
 .react-calendar__month-view__days__day--weekend:nth-child(7n+2) {
-  color: red; /* Optional, default is already red */
+  @apply text-red-500 dark:text-red-500;
 }
 
-.not-marked-day {
-  background: #facc15 !important; /* Tailwind yellow-400 */
-  color: black !important;
-  border-radius: 50%;
-}
-
+/* Hidden Sundays */
 .hidden-sunday {
-  display: none !important;
+  @apply hidden !important;
+}
+
+/* Unmarked / normal days (except Sundays) */
+.react-calendar__tile:not(.present-day):not(.absent-day):not(.holiday-day):not(.react-calendar__month-view__days__day--weekend) {
+  @apply text-black dark:text-white bg-transparent dark:bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors duration-150;
 }
