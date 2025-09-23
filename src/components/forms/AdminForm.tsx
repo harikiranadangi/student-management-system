@@ -91,7 +91,7 @@ const AdminForm = ({
       };
 
       // URL for the API
-      const url = type === "create" ? "/api/users/admin" : `/api/users/admin/${data.id}`;
+      const url = type === "create" ? "/api/users/admins" : `/api/users/admins/${data.id}`;
 
       // Make the API request
       const method = type === "create" ? "POST" : "PUT";
@@ -113,7 +113,7 @@ const AdminForm = ({
     if (!confirmDelete) return;
 
     try {
-      const result = await makeRequest(`/api/users/admin/${data.id}`, "DELETE", {});
+      const result = await makeRequest(`/api/users/admins/${data.id}`, "DELETE", {});
       setState({ success: result.success, error: !result.success });
       toast("Admin deleted successfully!");
       setOpen(false);

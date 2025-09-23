@@ -35,57 +35,6 @@ const deleteAdmin = async (id: number) => {
 
 
 
-// export const deleteAdmins = async (prevState: any, formData: FormData) => {
-//     const id = formData.get("id");
-//     const numericId = (id);
-
-//     if (!numericId) {
-//         return {
-//             success: false,
-//             error: true,
-//             message: "No ID provided",
-//         };
-//     }
-
-//     try {
-//         // Fetch the admin to check if it exists
-//         const admin = await prisma.admin.findUnique({
-//             where: { id: numericId },
-//         });
-
-//         if (!admin) {
-//             return {
-//                 success: false,
-//                 error: true,
-//                 message: "Admin not found",
-//             };
-//         }
-
-//         // Delete Clerk user if associated
-//         if (admin.clerkId) {
-//             await client.users.deleteUser(admin.clerkId);
-//         }
-
-//         // Delete the admin from Prisma
-//         await prisma.admin.delete({
-//             where: { id: numericId },
-//         });
-
-//         return {
-//             success: true,
-//             error: false,
-//         };
-//     } catch (error) {
-//         console.error("Error deleting admin:", error);
-//         return {
-//             success: false,
-//             error: true,
-//             message: "Delete failed",
-//         };
-//     }
-// };
-
-
 // * ---------------------------------------------- SUBJECT SCHEMA --------------------------------------------------------
 
 // * Example deleteMessages function

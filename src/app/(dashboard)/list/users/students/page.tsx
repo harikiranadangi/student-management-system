@@ -53,7 +53,7 @@ const renderRow = (item: StudentList, role: string | null) => (
 
         {role === "admin" && (
           <>
-            <FormContainer table="student" type="delete" id={item.id} />
+            {/* <FormContainer table="student" type="delete" id={item.id} /> */}
             <StudentStatusDropdown id={item.id} currentStatus={item.status} />
           </>
         )}

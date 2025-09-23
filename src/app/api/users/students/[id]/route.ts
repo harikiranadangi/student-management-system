@@ -137,3 +137,72 @@ export async function PUT(
     );
   }
 }
+
+// 🚀 Hard DELETE endpoint
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const studentId = id;
+
+    // 🔍 Find student with linked data
+    const existingStudent = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { linkedUser: true },
+    });
+
+    if (!existingStudent) {
+      return NextResponse.json(
+        { success: false, error: "Student not found" },
+        { status: 404 }
+      );
+    }
+
+    // 🔍 Check if any other student has the same phone number
+    const otherStudentsWithSamePhone = await prisma.student.findMany({
+      where: {
+        phone: existingStudent.phone,
+        id: { not: studentId }, // exclude current student
+      },
+    });
+
+    // 🗑️ Delete Clerk user only if no other student has the same phone
+    if (existingStudent.clerk_id && otherStudentsWithSamePhone.length === 0) {
+      try {
+        await client.users.deleteUser(existingStudent.clerk_id);
+      } catch (err) {
+        console.warn(
+          "Warning: Clerk user not deleted, may not exist.",
+          existingStudent.clerk_id
+        );
+      }
+    }
+
+    // 🗑️ Delete linkedUser if exists
+    if (existingStudent.linkedUser) {
+      await prisma.linkedUser.delete({
+        where: { id: existingStudent.linkedUser.id },
+      });
+    }
+
+    // 🗑️ Delete Student
+    await prisma.student.delete({
+      where: { id: studentId },
+    });
+
+    revalidatePath("/list/users/students");
+
+    return NextResponse.json(
+      { success: true, message: "Student deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("DELETE /api/users/students/[id] error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
