@@ -35,7 +35,7 @@ const OTPLogin = ({
     <fieldset className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label htmlFor="phone" className="text-md font-medium text-zinc-950">Mobile Number</label>
+          <label htmlFor="phone" className="text-md font-medium text-zinc-950 dark:text-white">Mobile Number</label>
           {pendingVerification && (
             <button
               type="button"

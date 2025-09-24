@@ -24,7 +24,7 @@ export default function LoginMethodToggle({ loginMethod, setLoginMethod, setPend
           key={method}
           type="button"
           onClick={() => handleToggle(method as LoginMethod)}
-          className={`px-4 py-2 text-sm rounded-lg ${loginMethod === method ? 'bg-zinc-700 text-white' : 'bg-gray-100'}`}
+          className={`px-4 py-2 text-sm rounded-lg ${loginMethod === method ? 'bg-zinc-700 text-white dark:text-white' : 'bg-gray-100 dark:text-white'}`}
         >
           {method === 'password' ? 'PASSWORD' : 'OTP LOGIN'}
         </button>

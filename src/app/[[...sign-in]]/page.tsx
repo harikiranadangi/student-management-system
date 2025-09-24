@@ -188,7 +188,7 @@ export default function Page() {
         <button
           type="submit"
           disabled={isSending || (loginMethod === 'otp' && !pendingVerification && resendTimer > 0)}
-          className="w-full px-4 py-3 text-base font-semibold text-white bg-zinc-700 dark:bg-zinc-600 rounded-xl hover:bg-LamaPurple dark:hover:bg-LamaPurpleLight transition-all duration-200 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-4 py-3 text-base font-semibold text-white dark:text-black bg-zinc-700 dark:bg-zinc-600 rounded-xl hover:bg-LamaPurple dark:hover:bg-LamaPurple transition-all duration-200 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           {loginMethod === 'password'
             ? 'Sign In'

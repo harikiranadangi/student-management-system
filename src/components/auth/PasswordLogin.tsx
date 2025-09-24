@@ -37,7 +37,7 @@ export default function PasswordLogin({
   return (
     <fieldset className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <label htmlFor="phoneNumber" className="text-sm font-medium text-zinc-950">
+        <label htmlFor="phoneNumber" className="text-sm font-medium text-zinc-950 dark:text-white">
           Phone Number
         </label>
         <input
@@ -53,7 +53,7 @@ export default function PasswordLogin({
       </div>
 
       <div className="flex flex-col gap-2 relative">
-        <label htmlFor="password" className="text-sm font-medium text-zinc-950">
+        <label htmlFor="password" className="text-sm font-medium text-zinc-950 dark:text-white ">
           Password
         </label>
         <input
