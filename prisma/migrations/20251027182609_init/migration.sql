@@ -25,20 +25,23 @@ CREATE TYPE "public"."StudentStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'TRANSFERRED
 -- CreateEnum
 CREATE TYPE "public"."Period" AS ENUM ('PERIOD1', 'PERIOD2', 'PERIOD3', 'PERIOD4', 'PERIOD5', 'PERIOD6', 'PERIOD7', 'PERIOD8', 'BREAK1', 'BREAK2', 'LUNCH');
 
+-- CreateEnum
+CREATE TYPE "public"."BloodType" AS ENUM ('A_POS', 'A_NEG', 'B_POS', 'B_NEG', 'AB_POS', 'AB_NEG', 'O_POS', 'O_NEG');
+
 -- CreateTable
 CREATE TABLE "public"."Admin" (
     "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "parentName" TEXT,
-    "gender" TEXT,
+    "parentName" TEXT NOT NULL,
+    "gender" "public"."Gender" NOT NULL DEFAULT 'Male',
     "email" TEXT,
-    "phone" TEXT,
-    "address" TEXT,
+    "phone" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
     "dob" TIMESTAMP(3),
     "img" TEXT,
-    "bloodType" TEXT,
+    "bloodType" "public"."BloodType",
     "role" TEXT NOT NULL DEFAULT 'admin',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "clerk_id" TEXT,
@@ -378,13 +381,19 @@ CREATE TABLE "public"."_SubjectGrades" (
 CREATE UNIQUE INDEX "Admin_username_key" ON "public"."Admin"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Admin_email_key" ON "public"."Admin"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_phone_key" ON "public"."Admin"("phone");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Admin_clerk_id_key" ON "public"."Admin"("clerk_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Admin_linkedUserId_key" ON "public"."Admin"("linkedUserId");
 
 -- CreateIndex
-CREATE INDEX "Admin_clerk_id_idx" ON "public"."Admin"("clerk_id");
+CREATE INDEX "Admin_username_email_phone_idx" ON "public"."Admin"("username", "email", "phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Grade_level_key" ON "public"."Grade"("level");
@@ -445,6 +454,27 @@ CREATE INDEX "Student_classId_idx" ON "public"."Student"("classId");
 
 -- CreateIndex
 CREATE INDEX "Student_clerk_id_idx" ON "public"."Student"("clerk_id");
+
+-- CreateIndex
+CREATE INDEX "Student_status_idx" ON "public"."Student"("status");
+
+-- CreateIndex
+CREATE INDEX "Student_gender_idx" ON "public"."Student"("gender");
+
+-- CreateIndex
+CREATE INDEX "Student_academicYear_idx" ON "public"."Student"("academicYear");
+
+-- CreateIndex
+CREATE INDEX "Student_name_idx" ON "public"."Student"("name");
+
+-- CreateIndex
+CREATE INDEX "Student_phone_idx" ON "public"."Student"("phone");
+
+-- CreateIndex
+CREATE INDEX "Student_status_classId_idx" ON "public"."Student"("status", "classId");
+
+-- CreateIndex
+CREATE INDEX "Student_status_gender_idx" ON "public"."Student"("status", "gender");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Subject_name_key" ON "public"."Subject"("name");

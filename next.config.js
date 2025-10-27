@@ -10,24 +10,28 @@ const nextConfig = {
     ],
   },
 
-  // ✅ Ignore ESLint during builds (dev faster)
+  // ✅ Ignore ESLint during builds (for faster CI/dev)
   eslint: { ignoreDuringBuilds: true },
 
-  // ✅ Standalone output for deployment
+  // ✅ Standalone output (good for Docker / deployment)
   output: "standalone",
 
-  // ✅ Experimental Turbopack + optimizations
-  experimental: {
-    turbo: true,       // enable Turbopack
-    optimizeCss: true, // CSS optimizations
-    scrollRestoration: true, // optional: speeds up navigation
+  // ✅ Turbopack (replaces experimental.turbo)
+  turbopack: {
+    // You can enable or tweak settings later if needed
   },
 
-  // ✅ Make Prisma external to avoid recompilation
+  // ✅ Optional experimental features
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+  },
+
+  // ✅ Avoid rebuilding Prisma client each time
   serverExternalPackages: ["@prisma/client"],
 
-  // Optional: reduce dev-time refresh for large libs
-  transpilePackages: [], // Add any heavy local packages if needed
+  // ✅ Add local libs here if your monorepo grows
+  transpilePackages: [],
 };
 
 export default nextConfig;

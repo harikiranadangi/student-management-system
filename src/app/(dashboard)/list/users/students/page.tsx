@@ -36,7 +36,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       </div>
     </td>
 
-    {role === "admin" && <td>{item.Class?.name ?? "N/A"}</td>}
+    { <td>{item.Class?.name ?? "N/A"}</td>}
     <td className="hidden md:table-cell">{item.parentName || "N/A"}</td>
     <td className="hidden md:table-cell">
       {new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, "-")}
@@ -51,7 +51,7 @@ const renderRow = (item: StudentList, role: string | null) => (
           </button>
         </Link>
 
-        {role === "admin" && (
+        { (
           <>
             {/* <FormContainer table="student" type="delete" id={item.id} /> */}
             <StudentStatusDropdown id={item.id} currentStatus={item.status} />
@@ -95,7 +95,7 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
   };
 
   const query: Prisma.StudentWhereInput = {
-    status: {"equals": "ACTIVE"},
+  status: { equals: "ACTIVE" },
     ...(classIdNum && { classId: classIdNum }),
     ...(Object.keys(classFilter).length && { Class: classFilter }),
     ...(search && {
@@ -132,6 +132,8 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
   ]);
 
   const Path = `/list/users/students`;
+  console.log("ROLE:", role);
+
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
@@ -141,7 +143,7 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
 
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
-          {role === "admin" && (
+          { (
             <>
               <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} />
               <StudentStatusFilter basePath={Path} />
@@ -156,7 +158,7 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              {role === "admin" && <FormContainer table="student" type="create" />}
+              { <FormContainer table="student" type="create" />}
             </div>
           </div>
         </div>
