@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "public"."LessonDay" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY');
+CREATE TYPE "public"."LessonDay" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
 -- CreateEnum
 CREATE TYPE "public"."Gender" AS ENUM ('Male', 'Female');
@@ -21,6 +21,9 @@ CREATE TYPE "public"."LeaveType" AS ENUM ('SICK', 'PERSONAL', 'HALFDAY', 'DAILY_
 
 -- CreateEnum
 CREATE TYPE "public"."StudentStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'TRANSFERRED', 'SUSPENDED');
+
+-- CreateEnum
+CREATE TYPE "public"."Period" AS ENUM ('PERIOD1', 'PERIOD2', 'PERIOD3', 'PERIOD4', 'PERIOD5', 'PERIOD6', 'PERIOD7', 'PERIOD8', 'BREAK1', 'BREAK2', 'LUNCH');
 
 -- CreateTable
 CREATE TABLE "public"."Admin" (
@@ -69,8 +72,9 @@ CREATE TABLE "public"."Lesson" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "day" "public"."LessonDay" NOT NULL,
-    "startTime" TIMESTAMP(3) NOT NULL,
-    "endTime" TIMESTAMP(3) NOT NULL,
+    "startTime" TIMESTAMP(3),
+    "endTime" TIMESTAMP(3),
+    "period" "public"."Period" NOT NULL,
     "subjectId" INTEGER NOT NULL,
     "classId" INTEGER NOT NULL,
     "teacherId" TEXT NOT NULL,
@@ -345,7 +349,7 @@ CREATE TABLE "public"."PermissionSlip" (
 -- CreateTable
 CREATE TABLE "public"."Profile" (
     "id" TEXT NOT NULL,
-    "clerk_id" TEXT NOT NULL,
+    "clerk_id" TEXT,
     "phone" TEXT,
     "activeUserId" TEXT,
 
