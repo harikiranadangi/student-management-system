@@ -1,7 +1,7 @@
-import prisma from '@/lib/prisma';
-import { clerkClient } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { adminSchema } from '@/lib/formValidationSchemas';
+import prisma from "@/lib/prisma";
+import { clerkClient } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { adminSchema } from "@/lib/formValidationSchemas";
 
 export async function POST(req: Request) {
   try {
@@ -13,11 +13,13 @@ export async function POST(req: Request) {
     // ✅ Step 1: Check if a Clerk user already exists for this phone
     const phoneNumber = `+91${data.phone}`;
     let clerkUser;
-    const existingUsers = await client.users.getUserList({ phoneNumber: [phoneNumber] });
+    const existingUsers = await client.users.getUserList({
+      phoneNumber: [phoneNumber],
+    });
 
     if (existingUsers.data.length > 0) {
       clerkUser = existingUsers.data[0];
-      console.log('Existing Clerk user found:', clerkUser.id);
+      console.log("Existing Clerk user found:", clerkUser.id);
     } else {
       // ✅ Create a new Clerk user
       clerkUser = await client.users.createUser({
@@ -27,11 +29,11 @@ export async function POST(req: Request) {
         phoneNumber: [`+91${data.phone}`],
       });
 
-      console.log('New Clerk user created:', clerkUser.id);
+      console.log("New Clerk user created:", clerkUser.id);
     }
 
     await client.users.updateUser(clerkUser.id, {
-      publicMetadata: { role: 'admin' },
+      publicMetadata: { role: "admin" },
     });
 
     // ✅ Step 2: Find or create profile
@@ -48,9 +50,9 @@ export async function POST(req: Request) {
         },
         include: { users: true },
       });
-      console.log('New profile created:', profile);
+      console.log("New profile created:", profile);
     } else {
-      console.log('Existing profile reused:', profile);
+      console.log("Existing profile reused:", profile);
     }
 
     // ✅ Step 3: Check if username already exists for a role
@@ -68,12 +70,12 @@ export async function POST(req: Request) {
     // ✅ Step 4: Create new admin role
     const role = await prisma.linkedUser.create({
       data: {
-        role: 'admin',
+        role: "admin",
         username: data.username,
         profileId: profile.id,
       },
     });
-    console.log('New role created:', role);
+    console.log("New role created:", role);
 
     // ✅ Step 5: Create admin record
     const admin = await prisma.admin.create({
@@ -101,16 +103,39 @@ export async function POST(req: Request) {
       },
     });
 
+    // ✅ Step 6: Set active relationships
+    await prisma.$transaction([
+      prisma.linkedUser.update({
+        where: { id: role.id },
+        data: {
+          activeFor: {
+            connect: { id: profile.id }, // ✅ correct way
+          },
+        },
+      }),
+
+      prisma.profile.update({
+        where: { id: profile.id },
+        data: {
+          activeUser: {
+            connect: { id: role.id }, // ✅ correct way
+          },
+        },
+      }),
+    ]);
+
+    console.log("Active user relationships updated successfully");
+
     return NextResponse.json({ success: true, admin }, { status: 201 });
   } catch (error: any) {
-    console.error('Admin creation error:', error);
+    console.error("Admin creation error:", error);
 
-    if (error.name === 'ZodError') {
+    if (error.name === "ZodError") {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
 
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error.message || "Internal server error" },
       { status: 500 }
     );
   }

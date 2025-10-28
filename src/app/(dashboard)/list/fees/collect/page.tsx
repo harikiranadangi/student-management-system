@@ -150,26 +150,46 @@ const StudentFeeListPage = async ({
     ? params.sortKey[0]
     : params.sortKey || "classId";
 
+  const classIdNum = classId ? Number(classId) : undefined;
+  const classFilter = gradeId ? { gradeId: Number(gradeId) } : {};
+
   const query: Prisma.StudentWhereInput = {
+    // ✅ Always include status (default to "ACTIVE")
     status: {
       equals: (studentStatus as $Enums.StudentStatus) || "ACTIVE",
     },
-  };
-  if (role === "teacher" && teacherClassId) query.classId = teacherClassId;
-  else {
-    if (classId) query.classId = Number(classId);
-    if (gradeId) query.Class = { gradeId: Number(gradeId) };
-  }
 
-  if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search)
-      ? queryParams.search[0]
-      : queryParams.search;
-    query.OR = [
-      { name: { contains: searchValue, mode: "insensitive" } },
-      { id: { contains: searchValue } },
-    ];
-  }
+    // ✅ If role is teacher and teacherClassId exists, override classId
+    ...(role === "teacher" && teacherClassId
+      ? { classId: teacherClassId }
+      : classIdNum
+      ? { classId: classIdNum }
+      : {}),
+
+    // ✅ Add grade filter if applicable
+    ...(Object.keys(classFilter).length > 0 && { Class: classFilter }),
+
+    // ✅ Add search filters (name or id)
+    ...(queryParams.search && {
+      OR: [
+        {
+          name: {
+            contains: Array.isArray(queryParams.search)
+              ? queryParams.search[0]
+              : queryParams.search,
+            mode: "insensitive",
+          },
+        },
+        {
+          id: {
+            contains: Array.isArray(queryParams.search)
+              ? queryParams.search[0]
+              : queryParams.search,
+          },
+        },
+      ],
+    }),
+  };
 
   const classes =
     role === "admin"

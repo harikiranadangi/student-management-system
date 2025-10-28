@@ -46,7 +46,7 @@ const renderRow = (item: StudentList, role: string | null) => (
     <td className="p-2">
       <div className="flex items-center gap-2">
         <Link href={`/list/users/students/${item.id}`}>
-          <button className="flex items-center justify-center w-7 h-7 rounded-full bg-LamaSky">
+          <button className="flex items-center justify-center w-7 h-7 rounded-full bg-LamaSky dark:bg-LamaSky">
             <Image src="/view.png" alt="View" width={16} height={16} />
           </button>
         </Link>
@@ -157,7 +157,7 @@ const query: Prisma.StudentWhereInput = {
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />

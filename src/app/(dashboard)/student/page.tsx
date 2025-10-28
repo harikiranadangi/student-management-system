@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 
 import Messages from "@/components/Announcements";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
-import BigCalendarContainer from "@/components/BigCalendarContainer";
 import ClassTimetableContainer from "@/components/ClassTimetableContainer";
 import EventCalendar from "@/components/EventCalendar";
 import UnauthorizedReload from "@/components/UnauthorizedReload";

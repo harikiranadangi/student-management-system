@@ -56,7 +56,7 @@ const TableSearch = () => {
         ref={inputRef}
         type="text"
         placeholder="Search..."
-        className="w-[200px] md:w-auto p-2 bg-transparent outline-none text-sm text-white"
+        className="w-[200px] md:w-auto p-2 bg-transparent outline-none text-sm text-gray-500 dark:text-white"
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
