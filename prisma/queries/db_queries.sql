@@ -42,7 +42,7 @@ SELECT * FROM "Lesson";
 SELECT * FROM "Result";
 SELECT * FROM "Attendance";
 SELECT * FROM "Messages";
-SELECT * FROM "Profile";
+SELECT * FROM "Profile" WHERE clerk_id is not null;
 SELECT * FROM "LinkedUser";
 
 -- 3. Filtered SELECTs / joins

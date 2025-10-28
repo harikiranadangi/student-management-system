@@ -7,14 +7,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { Ban, Check, LogOut, MoreVertical, UserCheck, UserX } from "lucide-react";
+import {
+  Ban,
+  Check,
+  LogOut,
+  MoreVertical,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation"; // ✅ import router for refresh
 
 const statusOptions = [
-  { value: "ACTIVE", label: "Active", icon: UserCheck, color: "text-green-600" },
+  {
+    value: "ACTIVE",
+    label: "Active",
+    icon: UserCheck,
+    color: "text-green-600",
+  },
   { value: "INACTIVE", label: "Inactive", icon: UserX, color: "text-gray-500" },
-  { value: "TRANSFERRED", label: "Transferred", icon: LogOut, color: "text-blue-600" },
+  {
+    value: "TRANSFERRED",
+    label: "Transferred",
+    icon: LogOut,
+    color: "text-blue-600",
+  },
   { value: "SUSPENDED", label: "Suspended", icon: Ban, color: "text-red-600" },
 ];
 
@@ -26,14 +44,22 @@ export default function StudentStatusDropdown({
   currentStatus: string;
 }) {
   const [status, setStatus] = useState(currentStatus);
+  const router = useRouter(); // ✅ initialize router
 
   const updateStatus = async (newStatus: string) => {
     setStatus(newStatus);
-    await fetch(`/api/users/students/${id}`, {
+
+    const res = await fetch(`/api/users/students/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
+
+    if (res.ok) {
+      router.refresh(); // ✅ refresh page data without full reload
+    } else {
+      console.error("Failed to update status");
+    }
   };
 
   return (
@@ -45,7 +71,6 @@ export default function StudentStatusDropdown({
           </Button>
         </DropdownMenuTrigger>
 
-        {/* no asChild here, wrap animation inside */}
         <DropdownMenuContent side="right" align="start" className="p-0">
           <AnimatePresence>
             <motion.div
@@ -60,7 +85,7 @@ export default function StudentStatusDropdown({
                 return (
                   <DropdownMenuItem
                     key={option.value}
-                    onSelect={() => updateStatus(option.value)} // ✅ correct event
+                    onSelect={() => updateStatus(option.value)}
                     className="flex items-center justify-between cursor-pointer px-2 py-1 rounded hover:bg-gray-100"
                   >
                     {status === option.value && (

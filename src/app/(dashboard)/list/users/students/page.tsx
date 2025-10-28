@@ -7,7 +7,7 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Prisma, Student } from "@prisma/client";
+import { $Enums, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchParams } from "../../../../../../types";
@@ -36,7 +36,7 @@ const renderRow = (item: StudentList, role: string | null) => (
       </div>
     </td>
 
-    { <td>{item.Class?.name ?? "N/A"}</td>}
+    {role === "admin" && <td>{item.Class?.name ?? "N/A"}</td>}
     <td className="hidden md:table-cell">{item.parentName || "N/A"}</td>
     <td className="hidden md:table-cell">
       {new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, "-")}
@@ -51,7 +51,7 @@ const renderRow = (item: StudentList, role: string | null) => (
           </button>
         </Link>
 
-        { (
+        { role === "admin" && (
           <>
             {/* <FormContainer table="student" type="delete" id={item.id} /> */}
             <StudentStatusDropdown id={item.id} currentStatus={item.status} />
@@ -94,20 +94,22 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
     ...(grade && { gradeId: Number(grade) }),
   };
 
-  const query: Prisma.StudentWhereInput = {
-  status: { equals: "ACTIVE" },
-    ...(classIdNum && { classId: classIdNum }),
-    ...(Object.keys(classFilter).length && { Class: classFilter }),
-    ...(search && {
-      OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { id: { contains: search } },
-      ],
-    }),
-    ...(studentStatus && { status: studentStatus as any }),
-    ...(gender && { gender: gender as any }),
-    ...(role === "teacher" && teacherClassId ? { classId: teacherClassId } : {}),
-  };
+const query: Prisma.StudentWhereInput = {
+  status: {
+    equals: (studentStatus as $Enums.StudentStatus) || "ACTIVE",
+  },
+
+  ...(classIdNum && { classId: classIdNum }),
+  ...(Object.keys(classFilter).length && { Class: classFilter }),
+  ...(search && {
+    OR: [
+      { name: { contains: search, mode: "insensitive" } },
+      { id: { contains: search } },
+    ],
+  }),
+  ...(gender && { gender: gender as any }),
+  ...(role === "teacher" && teacherClassId ? { classId: teacherClassId } : {}),
+};
 
   const classes = await prisma.class.findMany({
     where: gradeId ? { gradeId: Number(gradeId) } : {},
@@ -132,8 +134,6 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
   ]);
 
   const Path = `/list/users/students`;
-  console.log("ROLE:", role);
-
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
@@ -143,14 +143,17 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
 
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
-          { (
+          { role === "admin" &&(
             <>
               <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} />
-              <StudentStatusFilter basePath={Path} />
             </>
           )}
           <GenderFilter basePath={Path} />
-
+          { role === "admin" &&(
+            <>
+              <StudentStatusFilter basePath={Path} />
+            </>
+          )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">
@@ -158,7 +161,7 @@ const StudentListPage = async ({ searchParams }: { searchParams: Promise<SearchP
                 <Image src="/filter.png" alt="" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
-              { <FormContainer table="student" type="create" />}
+              { role === "admin" &&<FormContainer table="student" type="create" />}
             </div>
           </div>
         </div>

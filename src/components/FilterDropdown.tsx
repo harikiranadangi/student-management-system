@@ -184,21 +184,15 @@ const StatusFilter = ({ basePath }: StatusFilterProps) => {
 const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentStatus = searchParams.get("studentStatus") || "ACTIVE";
-
-  useEffect(() => {
-    if (!searchParams.get("studentStatus")) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("studentStatus", "ACTIVE");
-      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
-    }
-  }, [searchParams, basePath, router]);
+  const currentStatus = searchParams.get("studentStatus") || "";
 
   const handleStudentStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = event.target.value;
     const params = new URLSearchParams(searchParams.toString());
+
     if (newStatus) params.set("studentStatus", newStatus);
     else params.delete("studentStatus");
+
     router.push(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
@@ -209,7 +203,6 @@ const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
         onChange={handleStudentStatusChange}
         value={currentStatus}
       >
-        <option value="">All Students</option>
         <option value="ACTIVE">Active</option>
         <option value="INACTIVE">Inactive</option>
         <option value="TRANSFERRED">Transferred</option>
@@ -248,7 +241,7 @@ const GenderFilter = ({ basePath }: { basePath: string }) => {
         onChange={handleGenderChange}
         value={currentGender}
       >
-        <option value="">All Genders</option>
+        <option value="">Select Gender</option>
         <option value="Male">Male</option>
         <option value="Female">Female</option>
       </select>

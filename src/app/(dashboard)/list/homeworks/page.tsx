@@ -121,10 +121,10 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
       {/* Top Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-4">
-        <h1 className="text-lg font-semibold">Homeworks ({count})</h1>
+      <div className="flex items-center justify-between mb-3">
+        <h1 className="hidden text-lg font-semibold md:block">Homeworks ({count})</h1>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
@@ -133,7 +133,7 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
           <ResetFiltersButton basePath={Path} />
 
           <div className="flex items-center gap-4">
-            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-yellow-600">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
             <SortButton sortKey={sortKey} />

@@ -206,3 +206,37 @@ export async function DELETE(
     );
   }
 }
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { status } = body;
+
+    if (!status) {
+      return NextResponse.json(
+        { error: "Status is required" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ Update student status
+    const updatedStudent = await prisma.student.update({
+      where: { id: (id) },
+      data: { status },
+    });
+
+    return NextResponse.json({ success: true, data: updatedStudent });
+  } catch (error: any) {
+    console.error("Error updating student:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

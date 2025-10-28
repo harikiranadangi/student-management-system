@@ -1,6 +1,8 @@
 // src/lib/server-utils.ts
+import "server-only";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { cache } from "react";
 
 interface UserInfo {
   userId: string | null;
@@ -40,7 +42,7 @@ async function getTeacherInfo(linkedUserId: string) {
   };
 }
 
-export async function fetchUserInfo(): Promise<UserInfo> {
+export const fetchUserInfo = cache(async (): Promise<UserInfo> => {
   try {
     const { userId: clerkId } = await auth();
     if (!clerkId) return { userId: null, role: null };
@@ -63,11 +65,12 @@ export async function fetchUserInfo(): Promise<UserInfo> {
       return { userId: active.id, role: "teacher", ...teacherInfo };
     }
 
+    // ✅ Admin or others
     return { userId: active.id, role: active.role };
   } catch {
     return { userId: null, role: null };
   }
-}
+});
 
 export async function getClassIdForRole(
   role: string | null,

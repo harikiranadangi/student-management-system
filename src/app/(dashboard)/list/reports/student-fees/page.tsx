@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import DownloadExcelButton from "@/components/DownloadExcelButton";
-import ClassFilterDropdown, { StudentStatusFilter } from "@/components/FilterDropdown";
+import ClassFilterDropdown, {
+  StudentStatusFilter,
+} from "@/components/FilterDropdown";
 import Pagination from "@/components/Pagination";
 import SortButton from "@/components/SortButton";
 import Table from "@/components/Table";
@@ -9,7 +11,12 @@ import { getGroupedStudentFees } from "@/lib/fees";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { FeeStructure, Prisma, StudentFees, StudentTotalFees } from "@prisma/client";
+import {
+  FeeStructure,
+  Prisma,
+  StudentFees,
+  StudentTotalFees,
+} from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../../types";
 
@@ -39,11 +46,12 @@ const rawGroupedFees = await getGroupedStudentFees();
 
 // Render each row
 const renderRow = (item: StudentFeeReportList, role: string | null) => {
-  const studentFee = rawGroupedFees.find(fee => fee.studentId === item.id);
+  const studentFee = rawGroupedFees.find((fee) => fee.studentId === item.id);
 
-  const totalFees = item.Class?.Grade?.feestructure?.reduce((acc, fee) => {
-    return acc + (fee.termFees ?? 0) + (fee.abacusFees ?? 0);
-  }, 0) || 0;
+  const totalFees =
+    item.Class?.Grade?.feestructure?.reduce((acc, fee) => {
+      return acc + (fee.termFees ?? 0) + (fee.abacusFees ?? 0);
+    }, 0) || 0;
 
   const paidAmount = studentFee?.totalPaidAmount ?? 0;
   const discountAmount = studentFee?.totalDiscountAmount ?? 0;
@@ -56,7 +64,9 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
     >
       <td className="flex items-center gap-2 p-2 text-gray-800 dark:text-gray-200">
         <Image
-          src={item.img || (item.gender === "Male" ? "/male.png" : "/female.png")}
+          src={
+            item.img || (item.gender === "Male" ? "/male.png" : "/female.png")
+          }
           alt={item.name}
           width={40}
           height={40}
@@ -67,12 +77,28 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
           <p className="text-xs">{item.id}</p>
         </div>
       </td>
-      <td className="text-gray-700 dark:text-gray-200">{item.Class?.name ?? "N/A"}</td>
-      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{item.parentName || "N/A"}</td>
-      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{totalFees}</td>
-      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{paidAmount}</td>
-      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">{discountAmount}</td>
-      <td className={`hidden md:table-cell ${dueAmount > 0 ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+      <td className="text-gray-700 dark:text-gray-200">
+        {item.Class?.name ?? "N/A"}
+      </td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
+        {item.parentName || "N/A"}
+      </td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
+        {totalFees}
+      </td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
+        {paidAmount}
+      </td>
+      <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
+        {discountAmount}
+      </td>
+      <td
+        className={`hidden md:table-cell ${
+          dueAmount > 0
+            ? "text-red-500 dark:text-red-400"
+            : "text-green-600 dark:text-green-400"
+        }`}
+      >
         {dueAmount}
       </td>
     </tr>
@@ -83,11 +109,27 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
 const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
   { header: "Class", accessor: "class" },
-  { header: "Parent Name", accessor: "parentName", className: "hidden md:table-cell" },
-  { header: "Total Fees", accessor: "totalFees", className: "hidden md:table-cell" },
+  {
+    header: "Parent Name",
+    accessor: "parentName",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Total Fees",
+    accessor: "totalFees",
+    className: "hidden md:table-cell",
+  },
   { header: "Paid", accessor: "paidAmount", className: "hidden md:table-cell" },
-  { header: "Discount Amount", accessor: "discountAmount", className: "hidden md:table-cell" },
-  { header: "Due Amount", accessor: "dueAmount", className: "hidden md:table-cell" },
+  {
+    header: "Discount Amount",
+    accessor: "discountAmount",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Due Amount",
+    accessor: "dueAmount",
+    className: "hidden md:table-cell",
+  },
 ];
 
 // Main page
@@ -96,7 +138,6 @@ const StudentListPage = async ({
 }: {
   searchParams: Promise<SearchParams>;
 }) => {
-
   const { role } = await fetchUserInfo();
   const params = await searchParams;
   const { page, gradeId, classId, ...queryParams } = params;
@@ -106,7 +147,9 @@ const StudentListPage = async ({
   if (classId) query.classId = Number(classId);
   if (gradeId) query.Class = { gradeId: Number(gradeId) };
   if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    const searchValue = Array.isArray(queryParams.search)
+      ? queryParams.search[0]
+      : queryParams.search;
     query.OR = [
       { name: { contains: searchValue, mode: "insensitive" } },
       { id: { contains: searchValue } },
@@ -114,9 +157,13 @@ const StudentListPage = async ({
   }
 
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "classId";
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "classId";
 
-  const classes = await prisma.class.findMany({ where: gradeId ? { gradeId: Number(gradeId) } : {} });
+  const classes = await prisma.class.findMany({
+    where: gradeId ? { gradeId: Number(gradeId) } : {},
+  });
   const grades = await prisma.grade.findMany();
 
   const [data, count] = await prisma.$transaction([
@@ -141,20 +188,24 @@ const StudentListPage = async ({
 
   const columns = getColumns(role);
 
-  const Path = "/list/reports/student-fees"
+  const Path = "/list/reports/student-fees";
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
-      <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-4">
-        <h1 className="text-lg font-semibold">All Students ({count})</h1>
+      <div className="flex items-center justify-between mb-3">
+        <h1 className="hidden text-lg font-semibold md:block">All Students ({count})</h1>
 
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full">
-          <ClassFilterDropdown classes={classes} grades={grades} basePath={Path}  />
+        <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
+          <TableSearch />
+          <ClassFilterDropdown
+            classes={classes}
+            grades={grades}
+            basePath={Path}
+          />
           <StudentStatusFilter basePath={Path} />
           <div className="flex flex-col md:flex-row items-center gap-4 w-full">
-            <TableSearch />
             <div className="flex items-center gap-4">
-              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaSkyYellow dark:bg-LamaSkyYellow">
+              <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
                 <Image src="/filter.png" alt="filter" width={14} height={14} />
               </button>
               <SortButton sortKey="id" />
@@ -164,7 +215,11 @@ const StudentListPage = async ({
         </div>
       </div>
 
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
       <Pagination page={parseInt(p)} count={count} />
     </div>
   );
