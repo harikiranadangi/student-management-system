@@ -31,7 +31,7 @@ const renderRow = (item: Homeworks, role: string | null) => (
       </td>
     )}
 
-    <td className="p-2 text-gray-800 dark:text-gray-200">{item.description}</td>
+    <td className="p-2 text-gray-800 dark:text-gray-200 whitespace-pre-line">{item.description}</td>
 
     {(role === "admin" || role === "teacher") && (
       <td className="p-2">
@@ -57,7 +57,7 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
   const { page, gradeId, date, classId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
 
-  const { role, userId, classId: teacherClassId } = await fetchUserInfo();
+  const { role, userId } = await fetchUserInfo();
   const columns = getColumns(role);
 
   // Sorting

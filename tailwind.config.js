@@ -23,7 +23,7 @@ const config = {
         LamaYellow: "#FAE27C",
         LamaYellowLight: "#FEFCE8",
         LamaGreen: "#29bf12",
-        LamaRed: "#d00000",
+        LamaRed: "#ff7477",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

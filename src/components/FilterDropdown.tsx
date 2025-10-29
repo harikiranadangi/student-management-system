@@ -2,6 +2,7 @@
 import { LessonDay } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { selectClasses } from "../../types";
 
 type ClassType = {
   id: number;
@@ -24,13 +25,6 @@ interface ClassFilterProps {
   basePath: string;
   showClassFilter?: boolean;
 }
-
-/* ---------------- Common Select Styles ---------------- */
-const selectClasses =
-  "w-full py-2 pl-4 pr-10 text-sm rounded-full appearance-none md:w-auto " +
-  "border border-gray-300 text-gray-700 bg-white " +
-  "focus:ring-2 focus:ring-LamaSky focus:outline-none " +
-  "dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800";
 
 /* ---------------- Class Filter ---------------- */
 const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true }: ClassFilterProps) => {

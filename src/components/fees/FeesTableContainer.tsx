@@ -1,30 +1,17 @@
 import React from "react";
 import prisma from "@/lib/prisma";
 import FeesTable from "./FeesTable";
-import { FeeStructure, FeeTransaction } from "@prisma/client";
-
-interface StudentFees {
-  id: number;
-  studentId: string;
-  feeStructureId: number;
-  term: string;
-  paidAmount: number;
-  discountAmount: number;
-  fineAmount: number;
-  abacusPaidAmount?: number | null;
-  receivedDate: string | null;
-  receiptDate: string | null;
-  paymentMode: string | null;
-  feeStructure: FeeStructure;
-  feeTransactions: FeeTransaction[];
-}
+import { StudentFee } from "../../../types";
 
 interface FeesTableContainerProps {
   studentId: string;
   mode: "collect" | "cancel";
 }
 
-const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) => {
+const FeesTableContainer = async ({
+  studentId,
+  mode,
+}: FeesTableContainerProps) => {
   // 1. Fetch Student
   const student = await prisma.student.findUnique({
     where: { id: studentId },
@@ -49,8 +36,10 @@ const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) 
   });
 
   // 4. Merge Data
-  const transformedData: StudentFees[] = feeStructures.map((fee) => {
-    const matchingPayment = studentFees.find((sf) => sf.feeStructureId === fee.id);
+  const transformedData: StudentFee[] = feeStructures.map((fee) => {
+    const matchingPayment = studentFees.find(
+      (sf) => sf.feeStructureId === fee.id
+    );
     return {
       id: matchingPayment?.id || 0,
       feeStructureId: fee.id,
@@ -60,18 +49,28 @@ const FeesTableContainer = async ({ studentId, mode }: FeesTableContainerProps) 
       discountAmount: matchingPayment?.discountAmount || 0,
       fineAmount: matchingPayment?.fineAmount || 0,
       abacusPaidAmount: matchingPayment?.abacusPaidAmount || null,
-      receivedDate: matchingPayment?.receivedDate ? matchingPayment.receivedDate.toISOString() : null,
-      receiptDate: matchingPayment?.receiptDate ? matchingPayment.receiptDate.toISOString() : null,
+      receivedDate: matchingPayment?.receivedDate?.toISOString() ?? null,
+      receiptDate: matchingPayment?.receiptDate?.toISOString() ?? null,
       paymentMode: matchingPayment?.paymentMode || null,
-      feeStructure: fee,
+      feeStructure: {
+        ...fee,
+        startDate: fee.startDate?.toISOString?.() ?? null,
+        dueDate: fee.dueDate?.toISOString?.() ?? null,
+      },
       feeTransactions: matchingPayment?.feeTransactions || [],
     };
   });
 
   // 5. Totals
-  const totalFees = feeStructures.reduce((sum, f) => sum + f.termFees + (f.abacusFees || 0), 0);
+  const totalFees = feeStructures.reduce(
+    (sum, f) => sum + f.termFees + (f.abacusFees || 0),
+    0
+  );
   const totalPaid = transformedData.reduce((sum, f) => sum + f.paidAmount, 0);
-  const totalDiscount = transformedData.reduce((sum, f) => sum + f.discountAmount, 0);
+  const totalDiscount = transformedData.reduce(
+    (sum, f) => sum + f.discountAmount,
+    0
+  );
   const totalDue = totalFees - (totalPaid + totalDiscount);
 
   return (

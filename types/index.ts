@@ -101,5 +101,31 @@ export type SafeUser = {
   role?: string | null; // make role flexible
 };
 
+export const selectClasses =
+  "w-full py-2 pl-4 pr-10 text-sm rounded-full appearance-none md:w-auto " +
+  "border border-gray-300 text-gray-700 bg-white " +
+  "focus:ring-2 focus:ring-LamaSky focus:outline-none " +
+  "dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800";
+
+
+  export interface StudentFee {
+    id: number;
+    studentId: string;
+    feeStructureId: number;
+    term: string;
+    paidAmount: number;
+    discountAmount: number;
+    fineAmount: number;
+    abacusPaidAmount?: number | null;
+    receivedDate: string | null;
+    receiptDate: string | null;
+    paymentMode: string | null;
+    feeStructure: FeeStructure;
+    feeTransactions: FeeTransaction[];
+    collectedAmount?: number;
+    receiptNo?: string | null;
+    remarks?: string | null;
+  }
+
 
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { selectClasses } from "../../../types";
 
 export default function TeacherFilterDropdown({
   teachers,
@@ -26,18 +27,26 @@ export default function TeacherFilterDropdown({
     router.push(`/list/lessons?${params.toString()}`);
   };
 
+
   return (
-    <select
-      className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
-      onChange={handleChange}
-      value={selectedTeacherId}
-    >
-      <option value="">Select Teacher</option>
-      {teachers.map((teacher) => (
-        <option key={teacher.id} value={teacher.id}>
-          {teacher.name}
+  <div className="flex flex-col gap-4 md:flex-row md:items-center">
+    {/* Teacher Dropdown */}
+    <div className="relative w-full md:w-auto">
+      <select
+        className={selectClasses}
+        onChange={handleChange}
+        value={selectedTeacherId || ""}
+      >
+        <option value="" disabled>
+          Select Teacher
         </option>
-      ))}
-    </select>
-  );
+        {teachers.map((teacher) => (
+          <option key={teacher.id} value={teacher.id}>
+            {teacher.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+);
 }

@@ -6,31 +6,11 @@ import {
   flexRender,
   ColumnDef,
 } from "@tanstack/react-table";
-import { FeeStructure, FeeTransaction } from "@prisma/client";
 import { toast } from "react-toastify";
-
-// Types
-interface StudentFees {
-  id: number;
-  studentId: string;
-  feeStructureId: number;
-  term: string;
-  paidAmount: number;
-  discountAmount: number;
-  fineAmount: number;
-  abacusPaidAmount?: number | null;
-  receivedDate: string | null;
-  receiptDate: string | null;
-  paymentMode: string | null;
-  feeStructure: FeeStructure;
-  feeTransactions: FeeTransaction[];
-  collectedAmount?: number;
-  receiptNo?: string | null;
-  remarks?: string | null;
-}
+import { StudentFee } from "../../../types";
 
 interface FeesTableProps {
-  data: StudentFees[];
+  data: StudentFee[];
   mode: "collect" | "cancel";
 }
 
@@ -42,10 +22,11 @@ function formatDate(value: string | Date | undefined | null) {
 }
 
 const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
-  const [rowData, setRowData] = useState<StudentFees[]>(data);
+  const [rowData, setRowData] = useState<StudentFee[]>(data);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStudentFee, setCurrentStudentFee] =
-    useState<StudentFees | null>(null);
+  const [currentStudentFee, setCurrentStudentFee] = useState<StudentFee | null>(
+    null
+  );
   const [amount, setAmount] = useState<number>(0);
   const [receiptDate, setReceiptDate] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
@@ -56,15 +37,22 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
     useState<string>("CASH");
 
   // Helpers
-  function getTotalFees(fee: StudentFees) {
-    return (fee.feeStructure?.termFees ?? 0) + (fee.feeStructure?.abacusFees ?? 0);
+  function getTotalFees(fee: StudentFee) {
+    return (
+      (fee.feeStructure?.termFees ?? 0) + (fee.feeStructure?.abacusFees ?? 0)
+    );
   }
 
-  function calculateDueAmount(fee: StudentFees) {
-    return getTotalFees(fee) - (fee.paidAmount ?? 0) - (fee.discountAmount ?? 0) + (fee.fineAmount ?? 0);
+  function calculateDueAmount(fee: StudentFee) {
+    return (
+      getTotalFees(fee) -
+      (fee.paidAmount ?? 0) -
+      (fee.discountAmount ?? 0) +
+      (fee.fineAmount ?? 0)
+    );
   }
 
-  function getFeeStatus(fee: StudentFees) {
+  function getFeeStatus(fee: StudentFee) {
     const dueAmount = calculateDueAmount(fee);
     return {
       paidAmount: fee.paidAmount ?? 0,
@@ -75,7 +63,7 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   }
 
   // Collect action
-  const handleCollect = useCallback((fee: StudentFees) => {
+  const handleCollect = useCallback((fee: StudentFee) => {
     const dueAmount = calculateDueAmount(fee);
     setCurrentStudentFee(fee);
     setAmount(dueAmount > 0 ? dueAmount : 0);
@@ -83,12 +71,15 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
     setFine(0);
     setReceiptDate(new Date().toISOString().split("T")[0]);
     setReceiptNo(fee.receiptNo || fee.feeTransactions?.[0]?.receiptNo || "");
-    setRemarks(fee.remarks || `Collected Fees for ${fee.term} on ${formatDate(new Date())}`);
+    setRemarks(
+      fee.remarks ||
+        `Collected Fees for ${fee.term} on ${formatDate(new Date())}`
+    );
     setIsModalOpen(true);
   }, []);
 
   // Cancel action
-  const handleCancel = useCallback(async (fee: StudentFees, remarks: string) => {
+  const handleCancel = useCallback(async (fee: StudentFee, remarks: string) => {
     if (!fee.studentId || !fee.term) {
       toast.error("Missing studentId or term");
       return;
@@ -111,7 +102,13 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
       setRowData((prev) =>
         prev.map((f) =>
           f.studentId === fee.studentId && f.term === fee.term
-            ? { ...f, paidAmount: 0, discountAmount: 0, fineAmount: 0, remarks: "Cancelled" }
+            ? {
+                ...f,
+                paidAmount: 0,
+                discountAmount: 0,
+                fineAmount: 0,
+                remarks: "Cancelled",
+              }
             : f
         )
       );
@@ -155,7 +152,14 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
       setRowData((prev) =>
         prev.map((f) =>
           f.id === currentStudentFee.id
-            ? { ...f, paidAmount: f.paidAmount + amount, discountAmount: discount, fineAmount: fine, receiptNo, remarks }
+            ? {
+                ...f,
+                paidAmount: f.paidAmount + amount,
+                discountAmount: discount,
+                fineAmount: fine,
+                receiptNo,
+                remarks,
+              }
             : f
         )
       );
@@ -170,99 +174,101 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
   };
 
   // Columns
-  const columns = React.useMemo<ColumnDef<StudentFees>[]>(() => [
-    { accessorKey: "term", header: "Term" },
-    {
-      accessorFn: (row) => row.feeStructure?.dueDate,
-      id: "dueDate",
-      header: "Due Date",
-      cell: ({ cell }) => formatDate(cell.getValue<string>()),
-    },
-    {
-      accessorFn: (row) => getTotalFees(row),
-      id: "totalFees",
-      header: "Total Fees",
-      cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
-    },
-    {
-      accessorKey: "paidAmount",
-      header: "Paid Amount",
-      cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
-    },
-    {
-      accessorKey: "discountAmount",
-      header: "Discount",
-      cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
-    },
-    {
-      id: "dueAmount",
-      header: "Due Amount",
-      cell: ({ row }) => {
-        const dueAmount = calculateDueAmount(row.original);
-        return (
-          <span className={dueAmount > 0 ? "text-red-500" : "text-green-500"}>
-            ₹{dueAmount.toFixed(2)}
-          </span>
-        );
+  const columns = React.useMemo<ColumnDef<StudentFee>[]>(
+    () => [
+      { accessorKey: "term", header: "Term" },
+      {
+        accessorFn: (row) => row.feeStructure?.dueDate,
+        id: "dueDate",
+        header: "Due Date",
+        cell: ({ cell }) => formatDate(cell.getValue<string>()),
       },
-    },
-    {
-      accessorFn: (row) => row.feeTransactions?.[0]?.receiptNo || "-",
-      id: "receiptNo",
-      header: "FB No",
-    },
-    {
-      accessorFn: (row) => row.receiptDate,
-      id: "receiptDate",
-      header: "Receipt Date",
-      cell: ({ cell }) => formatDate(cell.getValue<string>()),
-    },
-    {
-      accessorFn: (row) => row.feeTransactions?.[0]?.remarks || "-",
-      id: "remarks",
-      header: "Remarks",
-    },
-    { accessorKey: "paymentMode", header: "Payment Mode" },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const { isCollectDisabled, isZero } = getFeeStatus(row.original);
-        if (mode === "collect") {
-          return (
-            !isCollectDisabled && (
-              <button
-                onClick={() => handleCollect(row.original)}
-                className="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600"
-              >
-                Collect
-              </button>
-            )
-          );
-        }
-        if (mode === "cancel") {
-          return (
-            !isZero && (
-              <button
-                onClick={() => handleCancel(row.original, remarks)}
-                className="px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600"
-              >
-                Cancel
-              </button>
-            )
-          );
-        }
-        return null;
+      {
+        accessorFn: (row) => getTotalFees(row),
+        id: "totalFees",
+        header: "Total Fees",
+        cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
       },
-    },
-  ], [mode, handleCollect, handleCancel]);
+      {
+        accessorKey: "paidAmount",
+        header: "Paid Amount",
+        cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
+      },
+      {
+        accessorKey: "discountAmount",
+        header: "Discount",
+        cell: ({ cell }) => `₹${cell.getValue<number>().toFixed(2)}`,
+      },
+      {
+        id: "dueAmount",
+        header: "Due Amount",
+        cell: ({ row }) => {
+          const dueAmount = calculateDueAmount(row.original);
+          return (
+            <span className={dueAmount > 0 ? "text-red-500" : "text-green-500"}>
+              ₹{dueAmount.toFixed(2)}
+            </span>
+          );
+        },
+      },
+      {
+        accessorFn: (row) => row.feeTransactions?.[0]?.receiptNo || "-",
+        id: "receiptNo",
+        header: "FB No",
+      },
+      {
+        accessorFn: (row) => row.receiptDate,
+        id: "receiptDate",
+        header: "Receipt Date",
+        cell: ({ cell }) => formatDate(cell.getValue<string>()),
+      },
+      {
+        accessorFn: (row) => row.feeTransactions?.[0]?.remarks || "-",
+        id: "remarks",
+        header: "Remarks",
+      },
+      { accessorKey: "paymentMode", header: "Payment Mode" },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const { isCollectDisabled, isZero } = getFeeStatus(row.original);
+          if (mode === "collect") {
+            return (
+              !isCollectDisabled && (
+                <button
+                  onClick={() => handleCollect(row.original)}
+                  className="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600"
+                >
+                  Collect
+                </button>
+              )
+            );
+          }
+          if (mode === "cancel") {
+            return (
+              !isZero && (
+                <button
+                  onClick={() => handleCancel(row.original, remarks)}
+                  className="px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600"
+                >
+                  Cancel
+                </button>
+              )
+            );
+          }
+          return null;
+        },
+      },
+    ],
+    [mode, handleCollect, handleCancel]
+  );
 
   const table = useReactTable({
-    data: rowData ?? [],          // ✅ make sure it’s never undefined
+    data: rowData ?? [], // ✅ make sure it’s never undefined
     columns,
     getCoreRowModel: getCoreRowModel(), // ✅ call it (not just pass the fn)
   });
-
 
   return (
     <div className="overflow-x-auto">
@@ -278,7 +284,10 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -308,56 +317,105 @@ const FeesTable: React.FC<FeesTableProps> = ({ data, mode }) => {
 
             {/* Fee Summary */}
             <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-              <p><strong>Total Fees:</strong> ₹{getTotalFees(currentStudentFee)}</p>
-              <p><strong>Paid:</strong> ₹{currentStudentFee.paidAmount || 0}</p>
-              <p><strong>Balance:</strong> ₹{calculateDueAmount(currentStudentFee)}</p>
+              <p>
+                <strong>Total Fees:</strong> ₹{getTotalFees(currentStudentFee)}
+              </p>
+              <p>
+                <strong>Paid:</strong> ₹{currentStudentFee.paidAmount || 0}
+              </p>
+              <p>
+                <strong>Balance:</strong> ₹
+                {calculateDueAmount(currentStudentFee)}
+              </p>
             </div>
 
             {/* Inputs */}
-            <div className="space-y-2">
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-                placeholder="Amount"
-              />
-              <input
-                type="number"
-                value={discount}
-                onChange={(e) => setDiscount(Number(e.target.value))}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-                placeholder="Discount"
-              />
-              <input
-                type="text"
-                value={receiptNo}
-                onChange={(e) => setReceiptNo(e.target.value)}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-                placeholder="FB No"
-              />
-              <textarea
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-                placeholder="Remarks"
-              />
-              <select
-                value={selectedPaymentMode}
-                onChange={(e) => setSelectedPaymentMode(e.target.value)}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-              >
-                <option value="CASH">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="ONLINE">Card</option>
-                <option value="BANK_TRANSFER">Bank Transfer</option>
-              </select>
-              <input
-                type="date"
-                value={receiptDate}
-                onChange={(e) => setReceiptDate(e.target.value)}
-                className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
-              />
+            {/* Inputs */}
+            <div className="w-full space-y-3">
+              {/* Amount */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                  placeholder="Enter amount"
+                />
+              </div>
+
+              {/* Discount */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Discount
+                </label>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(Number(e.target.value))}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                  placeholder="Enter discount"
+                />
+              </div>
+
+              {/* FB No */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  FB No
+                </label>
+                <input
+                  type="text"
+                  value={receiptNo}
+                  onChange={(e) => setReceiptNo(e.target.value)}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                  placeholder="Enter FB No"
+                />
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Remarks
+                </label>
+                <textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                  placeholder="Enter remarks"
+                />
+              </div>
+
+              {/* Payment Mode */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Payment Mode
+                </label>
+                <select
+                  value={selectedPaymentMode}
+                  onChange={(e) => setSelectedPaymentMode(e.target.value)}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                >
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="ONLINE">Card</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                </select>
+              </div>
+
+              {/* Receipt Date */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Receipt Date
+                </label>
+                <input
+                  type="date"
+                  value={receiptDate}
+                  onChange={(e) => setReceiptDate(e.target.value)}
+                  className="w-full border p-2 rounded dark:bg-gray-700 dark:text-gray-100"
+                />
+              </div>
             </div>
 
             {/* Buttons */}
