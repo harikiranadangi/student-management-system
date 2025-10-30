@@ -21,6 +21,13 @@ FROM information_schema.sequences s
 JOIN information_schema.columns c 
   ON s.sequence_name = c.column_default::text LIKE '%' || s.sequence_name || '%';
 
+  SELECT 
+  'ALTER SEQUENCE "' || s.sequence_name || '" RESTART WITH ' ||
+  (SELECT COALESCE(MAX(id), 0) + 1 FROM "Subject") || ';' AS reset_command
+FROM information_schema.sequences s
+WHERE s.sequence_name LIKE '%Subject%id%seq%';
+
+
 
 -- 2. Basic SELECT queries
 
