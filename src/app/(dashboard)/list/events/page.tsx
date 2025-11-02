@@ -6,18 +6,34 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Class, Event, Prisma } from "@prisma/client";
+import { Event, Prisma } from "@prisma/client";
 import Image from "next/image";
 import { SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 
-type Events = Event & { class: Class };
+type GradeType = {
+  id: number;
+  level: string;
+};
+
+type ClassType = {
+  section: string | null;
+  grade?: GradeType | null;
+};
+
+type Events = Event & { class: ClassType | null };
 
 const renderRow = (item: Events, role: string | null) => (
-  <tr key={item.id} className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
+  <tr
+    key={item.id}
+    className="text-sm border-b border-gray-200 even:bg-slate-50 hover:bg-LamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class?.name || "-"}</td>
+    <td>
+      {item.class
+        ? `${item.class.grade?.level ?? ""}${item.class.section ?? ""}`
+        : "-"}
+    </td>
     <td className="hidden md:table-cell">
       {""}
       {new Intl.DateTimeFormat("en-US").format(item.startTime)}
@@ -26,26 +42,25 @@ const renderRow = (item: Events, role: string | null) => (
       {item.startTime.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false
-      }
-      )}
+        hour12: false,
+      })}
     </td>
     <td className="hidden md:table-cell">
       {item.endTime.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false
-      }
-      )}
+        hour12: false,
+      })}
     </td>
     <td>
       <div className="flex items-center gap-2">
-        {role === "admin" || role === "teacher" && (
-          <>
-            <FormContainer table="event" type="update" data={item} />
-            <FormContainer table="event" type="delete" id={item.id} />
-          </>
-        )}
+        {role === "admin" ||
+          (role === "teacher" && (
+            <>
+              <FormContainer table="event" type="update" data={item} />
+              <FormContainer table="event" type="delete" id={item.id} />
+            </>
+          ))}
       </div>
     </td>
   </tr>
@@ -78,11 +93,11 @@ const getColumns = (role: string | null) => [
   },
   ...(role === "admin"
     ? [
-      {
-        header: "Actions",
-        accessor: "action",
-      },
-    ]
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
     : []),
 ];
 
@@ -100,7 +115,9 @@ const EventsList = async ({
   const params = await searchParams;
   // Fixing the 'page' parameter issue
   const pageParam = params.page;
-  const currentPage = Array.isArray(pageParam) ? parseInt(pageParam[0]) : parseInt(pageParam || "1");
+  const currentPage = Array.isArray(pageParam)
+    ? parseInt(pageParam[0])
+    : parseInt(pageParam || "1");
 
   const { ...queryParams } = params;
   const p = currentPage;
@@ -140,14 +157,24 @@ const EventsList = async ({
     prisma.event.findMany({
       where: query,
       include: {
-        Class: true,
+        Class: {
+          select: {
+            id: true,
+            section: true,
+            Grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+          },
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.event.count({ where: query }),
   ]);
-
 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
@@ -165,14 +192,19 @@ const EventsList = async ({
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" || role === "teacher" && (
-              <FormContainer table="event" type="create" />
-            )}
+            {role === "admin" ||
+              (role === "teacher" && (
+                <FormContainer table="event" type="create" />
+              ))}
           </div>
         </div>
       </div>
       {/* LIST: Description */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
       {/* PAGINATION: Description */}
       <Pagination page={p} count={count} />
     </div>

@@ -1,15 +1,30 @@
 // types/index.ts
 
-import { FeeTransaction } from "@prisma/client";
+import {
+  Announcement,
+  Attendance,
+  Class,
+  Exam,
+  ExamGradeSubject,
+  FeeTransaction,
+  Grade,
+  Homework,
+  Messages,
+  PermissionSlip,
+  Prisma,
+  Student,
+  Subject,
+  Teacher,
+} from "@prisma/client";
 
 export type FeeStructure = {
   id: number;
   gradeId: number;
   startDate: string; // or Date, based on usage
-  dueDate: string;   // ✅ Add this line
+  dueDate: string; // ✅ Add this line
   termFees: number;
   abacusFees: number | null;
-  term: string;      // Or enum Term if you have it
+  term: string; // Or enum Term if you have it
   academicYear: string; // Or enum if defined
 };
 
@@ -44,7 +59,7 @@ export type StudentFeeReportList = {
   dob: string;
   phone: string | null;
   gender: string | null;
-  
+
   studentFees?: StudentFees[]; // multiple studentFees with feeStructure inside
   studentTotalFees?: StudentTotalFees | null; // total fees, optional
 
@@ -58,10 +73,14 @@ export type StudentFeeReportList = {
 };
 
 // types.ts
-export type MessageType = "ABSENT" | "FEE_RELATED" | "ANNOUNCEMENT" | "GENERAL" | "FEE_COLLECTION";
+export type MessageType =
+  | "ABSENT"
+  | "FEE_RELATED"
+  | "ANNOUNCEMENT"
+  | "GENERAL"
+  | "FEE_COLLECTION";
 
-export type CurrentState = { success: boolean; error: boolean, };
-
+export type CurrentState = { success: boolean; error: boolean };
 
 // types.ts
 export type SearchParams = { [key: string]: string | string[] | undefined };
@@ -101,31 +120,157 @@ export type SafeUser = {
   role?: string | null; // make role flexible
 };
 
-export const selectClasses =
+export const dropdownUI =
   "w-full py-2 pl-4 pr-10 text-sm rounded-full appearance-none md:w-auto " +
   "border border-gray-300 text-gray-700 bg-white " +
   "focus:ring-2 focus:ring-LamaSky focus:outline-none " +
   "dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800";
 
+export interface StudentFee {
+  id: number;
+  studentId: string;
+  feeStructureId: number;
+  term: string;
+  paidAmount: number;
+  discountAmount: number;
+  fineAmount: number;
+  abacusPaidAmount?: number | null;
+  receivedDate: string | null;
+  receiptDate: string | null;
+  paymentMode: string | null;
+  feeStructure: FeeStructure;
+  feeTransactions: FeeTransaction[];
+  collectedAmount?: number;
+  receiptNo?: string | null;
+  remarks?: string | null;
+}
 
-  export interface StudentFee {
+export type PermissionWithRelations = {
+  id: number;
+  timeIssued: Date;
+  date: Date;
+  leaveType: string;
+  description: string | null;
+  withWhom: string | null;
+  relation: string | null;
+  studentId: string;
+
+  student: {
+    id: string;
+    name: string;
+    classId: number;
+    Class: {
+      id: number;
+      section: string | null;
+      gradeId: number;
+      Grade: {
+        id: number;
+        level: string;
+      };
+    };
+  };
+};
+
+export type Props = {
+  data: {
     id: number;
-    studentId: string;
-    feeStructureId: number;
-    term: string;
-    paidAmount: number;
-    discountAmount: number;
-    fineAmount: number;
-    abacusPaidAmount?: number | null;
-    receivedDate: string | null;
-    receiptDate: string | null;
-    paymentMode: string | null;
-    feeStructure: FeeStructure;
-    feeTransactions: FeeTransaction[];
-    collectedAmount?: number;
-    receiptNo?: string | null;
-    remarks?: string | null;
-  }
+    date: Date;
+    leaveType: string;
+    description: string | null;
+    timeIssued: Date;
+    withWhom: string | null;
+    relation: string | null;
+    student: {
+      id: string;
+      name: string;
+      classId: number;
+      Class: {
+        id: number;
+        section: string | null;
+        gradeId: number;
+        Grade: {
+          id: number;
+          level: string;
+        };
+      };
+    };
+  }[];
+  fileName: string;
+};
 
+export type AnnouncementList = Announcement & { Class: Class };
 
+export type AttendanceResponse = {
+  attendance: Attendance[];
+  students: (Student & { Class: Class })[];
+};
 
+export type ClassList = {
+  id: number;
+  section: string | null;
+  gradeId: number;
+  Grade: {
+    id: number;
+    level: string;
+  };
+  Teacher: {
+    id: string;
+    name: string;
+    classId: number;
+  } | null;
+};
+
+export type Events = Event & { class: Class };
+
+export type Exams = Exam & {
+  examGradeSubjects: {
+    date: Date;
+    startTime: string;
+    maxMarks: number;
+    Grade: { id: number; level: string };
+    Subject: { id: number; name: string };
+  }[];
+};
+
+export type StudentList = {
+  id: string;
+  name: string;
+  gender: string;
+  parentName: string | null;
+  phone: string;
+  img?: string | null;
+  Class?: { name: string | null } | null;
+  totalFees?: { totalDiscountAmount: number | null } | null;
+};
+
+export type FeesList = Grade & {
+  feestructure: FeeStructure[];
+};
+
+export type Homeworks = Homework & {
+  Class: {
+    id: number;
+    gradeId: number;
+    section: string | null;
+    Grade: {
+      id: number;
+      level: string;
+    };
+  };
+};
+
+export type MessageList = Messages & {
+  Student: {
+    id: string;
+    name: string;
+  } | null;
+  Class: {
+    id: number;
+    section: string | null;
+    gradeId: number;
+    Grade: {
+      id: number;
+      level: string;
+    };
+  } | null;
+};

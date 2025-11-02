@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 type Exam = { id: number; title: string; date: string };
 type Grade = { id: number; level: string };
-type Class = { id: number; name: string };
+type Class = { id: number; section: string };
 type Subject = { id: number; name: string };
 type Student = { id: string; name: string };
 
@@ -137,7 +137,7 @@ export default function MarksEntryForm() {
         >
           <option value="" disabled>Select Class</option>
           {classes.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+            <option key={c.id} value={c.id}>{c.section}</option>
           ))}
         </select>
       </div>

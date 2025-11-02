@@ -1,4 +1,4 @@
-import { Class, Messages, Prisma, Student } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import FormContainer from "@/components/FormContainer";
@@ -7,11 +7,9 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import SortButton from "@/components/SortButton";
-import { SearchParams } from "../../../../../types";
+import { MessageList, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import { fetchUserInfo, getClassIdForRole } from "@/lib/utils/server-utils";
-
-type MessageList = Messages & { Student: Student; Class: Class };
 
 const renderRow = (item: MessageList, role: string | null) => (
   <tr
@@ -27,6 +25,7 @@ const renderRow = (item: MessageList, role: string | null) => (
         <td className="hidden md:table-cell capitalize w-32 text-gray-700 dark:text-gray-200">
           {item.type.toLowerCase()}
         </td>
+
         <td>
           <div className="flex flex-col">
             {item.Student ? (
@@ -50,10 +49,25 @@ const renderRow = (item: MessageList, role: string | null) => (
             )}
           </div>
         </td>
-        <td className="hidden md:table-cell w-24 text-gray-700 dark:text-gray-200">
-          {item.Class?.name ?? (
+
+        <td className="hidden md:table-cell w-32 text-gray-700 dark:text-gray-200">
+          {item.Class ? (
+            <>
+              {item.Class.Grade?.level ?? (
+                <span className="text-gray-400 dark:text-gray-500 italic">
+                  No Grade
+                </span>
+              )}
+              {" - "}
+              {item.Class.section ?? (
+                <span className="text-gray-400 dark:text-gray-500 italic">
+                  All Classes
+                </span>
+              )}
+            </>
+          ) : (
             <span className="text-gray-400 dark:text-gray-500 italic">
-              All Classes
+              No Class
             </span>
           )}
         </td>
@@ -77,6 +91,7 @@ const renderRow = (item: MessageList, role: string | null) => (
   </tr>
 );
 
+
 const getColumns = (role: string | null) => [
   { header: "Date", accessor: "date", className: "hidden md:table-cell" },
   ...(role === "teacher" || role === "admin"
@@ -95,10 +110,16 @@ const getColumns = (role: string | null) => [
       ]
     : []),
   { header: "Message", accessor: "message", className: "hidden md:table-cell" },
-  ...((role === "admin" || role === "teacher") ? [{ header: "Actions", accessor: "action" }] : []),
+  ...(role === "admin" || role === "teacher"
+    ? [{ header: "Actions", accessor: "action" }]
+    : []),
 ];
 
-const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+const MessagesList = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const params = await searchParams;
   const { page, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
@@ -108,9 +129,13 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "id";
 
-  const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+  const searchValue = Array.isArray(queryParams.search)
+    ? queryParams.search[0]
+    : queryParams.search;
 
   // Get user class(es)
   const userClassId = await getClassIdForRole(role, userId);
@@ -125,10 +150,7 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
     ];
   } else if (role === "teacher") {
     roleFilter.OR = teacherClassId
-      ? [
-          { classId: teacherClassId },
-          { classId: null, studentId: null },
-        ]
+      ? [{ classId: teacherClassId }, { classId: null, studentId: null }]
       : [{ classId: null, studentId: null }];
   }
 
@@ -153,7 +175,27 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
     prisma.messages.findMany({
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       where: query,
-      include: { Class: true, Student: true },
+      include: {
+        Student: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        Class: {
+          select: {
+            id: true,
+            section: true,
+            gradeId: true,
+            Grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+          },
+        },
+      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
@@ -181,7 +223,11 @@ const MessagesList = async ({ searchParams }: { searchParams: Promise<SearchPara
         </div>
       </div>
 
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
 
       <Pagination page={parseInt(p)} count={count} />
     </div>

@@ -7,18 +7,11 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo, getClassIdForRole } from "@/lib/utils/server-utils";
-import { Prisma, PermissionSlip, Student, Class, Grade } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
-import { SearchParams } from "../../../../../types";
+import { PermissionWithRelations, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import ExportButton from "@/components/ExportButton";
-
-// 🔹 Types
-type PermissionWithRelations = PermissionSlip & {
-  student: Student & {
-    Class: Class & { Grade: Grade };
-  };
-};
 
 // 🔹 Render Table Row
 const renderRow = (item: PermissionWithRelations, role: string | null) => {
@@ -36,7 +29,13 @@ const renderRow = (item: PermissionWithRelations, role: string | null) => {
     >
       <td className="px-2 py-1">{localTime}</td>
       <td className="px-2 py-1">{item.student.name}</td>
-      <td className="px-2 py-1">{item.student.Class?.name ?? "N/A"}</td>
+      <td className="px-2 py-1">
+        {item.student.Class?.Grade?.level
+          ? `${item.student.Class.Grade.level} - ${
+              item.student.Class.section ?? "N/A"
+            }`
+          : "N/A"}
+      </td>
       <td className="px-2 py-1">{item.leaveType}</td>
       <td className="px-2 py-1">{item.description || "-"}</td>
       <td className="px-2 py-1">{item.withWhom}</td>
@@ -83,26 +82,39 @@ const PermissionSlipListPage = async ({
 
   // 🔹 Sorting
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey =
-    Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "id";
 
   // 🔹 Query Builder
   const query: Prisma.PermissionSlipWhereInput = {};
 
-  // Date filter
+  // Date filter — default to today if no date selected
+  let startDate: Date;
+  let endDate: Date;
+
   if (date) {
+    // If user selected a date
     const rawDate = Array.isArray(date) ? date[0] : date;
     const selectedDate = new Date(rawDate);
-    const startDate = new Date(selectedDate.setHours(0, 0, 0, 0));
-    const endDate = new Date(selectedDate.setHours(23, 59, 59, 999));
-    query.date = { gte: startDate, lte: endDate };
+    startDate = new Date(selectedDate.setHours(0, 0, 0, 0));
+    endDate = new Date(selectedDate.setHours(23, 59, 59, 999));
+  } else {
+    // Default: today's date
+    const today = new Date();
+    startDate = new Date(today.setHours(0, 0, 0, 0));
+    endDate = new Date(today.setHours(23, 59, 59, 999));
   }
+
+  query.date = { gte: startDate, lte: endDate };
 
   // Student/Class/Grade filters
   query.student = {
     ...(classId ? { classId: Number(classId) } : {}),
     ...(gradeId ? { Class: { gradeId: Number(gradeId) } } : {}),
-    ...(search ? { name: { contains: String(search), mode: "insensitive" } } : {}),
+    ...(search
+      ? { name: { contains: String(search), mode: "insensitive" } }
+      : {}),
   };
 
   // 🔹 Restrict by role (teacher/student)
@@ -113,15 +125,37 @@ const PermissionSlipListPage = async ({
     };
   }
 
-  // 🔹 Fetch Data
   const [data, count] = await prisma.$transaction([
     prisma.permissionSlip.findMany({
       where: query,
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
-      include: {
+      select: {
+        id: true,
+        timeIssued: true,
+        date: true,
+        leaveType: true,
+        description: true,
+        withWhom: true,
+        relation: true,
+        studentId: true,
         student: {
-          include: {
-            Class: { include: { Grade: true } },
+          select: {
+            id: true,
+            name: true,
+            classId: true,
+            Class: {
+              select: {
+                id: true,
+                section: true,
+                gradeId: true,
+                Grade: {
+                  select: {
+                    id: true,
+                    level: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

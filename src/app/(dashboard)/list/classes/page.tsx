@@ -6,15 +6,10 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Class, Grade, Prisma, Teacher } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
-import { SearchParams } from "../../../../../types";
+import { ClassList, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
-
-type ClassList = Class & {
-  Teacher: Teacher | null;
-  Grade: Grade;
-};
 
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
@@ -43,20 +38,32 @@ const renderRow = (item: ClassList, role: string | null) => (
 
 const getColumns = (role: string | null) => [
   { header: "Class Name", accessor: "name" },
-  { header: "Supervisor", accessor: "supervisor", className: "hidden md:table-cell" },
+  {
+    header: "Supervisor",
+    accessor: "supervisor",
+    className: "hidden md:table-cell",
+  },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 
-const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+const ClassesList = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const params = await searchParams;
   const { role } = await fetchUserInfo();
 
   const pageParam = params.page;
-  const currentPage = Array.isArray(pageParam) ? parseInt(pageParam[0]) : parseInt(pageParam || "1");
+  const currentPage = Array.isArray(pageParam)
+    ? parseInt(pageParam[0])
+    : parseInt(pageParam || "1");
 
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
   const sortKeyRaw = params.sortKey;
-  const sortKey = Array.isArray(sortKeyRaw) ? sortKeyRaw[0] : sortKeyRaw || "id";
+  const sortKey = Array.isArray(sortKeyRaw)
+    ? sortKeyRaw[0]
+    : sortKeyRaw || "id";
 
   const query: Prisma.ClassWhereInput = {};
 
@@ -78,11 +85,25 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
 
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
-      orderBy: { [sortKey]: sortOrder },
       where: query,
-      include: {
-        Teacher: { select: { name: true } },
-        Grade: { select: { level: true } },
+      orderBy: { [sortKey]: sortOrder },
+      select: {
+        id: true,
+        section: true,
+        gradeId: true,
+        Grade: {
+          select: {
+            id: true,
+            level: true,
+          },
+        },
+        Teacher: {
+          select: {
+            id: true,
+            name: true,
+            classId: true,
+          },
+        },
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (currentPage - 1),
@@ -109,7 +130,11 @@ const ClassesList = async ({ searchParams }: { searchParams: Promise<SearchParam
       </div>
 
       {/* Table */}
-      <Table columns={getColumns(role)} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table
+        columns={getColumns(role)}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
 
       {/* Pagination */}
       <Pagination page={currentPage} count={count} />

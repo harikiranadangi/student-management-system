@@ -6,14 +6,12 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Homework, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import SortButton from "@/components/SortButton";
-import { SearchParams } from "../../../../../types";
+import { Homeworks, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-
-type Homeworks = Homework & { Class: Class };
 
 // Render a single table row
 const renderRow = (item: Homeworks, role: string | null) => (
@@ -22,16 +20,23 @@ const renderRow = (item: Homeworks, role: string | null) => (
     className="text-sm border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700"
   >
     <td className="p-2 text-gray-700 dark:text-gray-200">
-      {new Intl.DateTimeFormat("en-GB").format(new Date(item.date)).replace(/\//g, "-")}
+      {new Intl.DateTimeFormat("en-GB")
+        .format(new Date(item.date))
+        .replace(/\//g, "-")}
     </td>
 
+    {/* 🏫 Grade - Section */}
     {(role === "admin" || role === "teacher") && (
       <td className="p-2 text-gray-700 dark:text-gray-200">
-        {item.Class?.name ?? "N/A"}
+        {item.Class?.Grade?.level && item.Class?.section
+          ? `${item.Class.Grade.level} - ${item.Class.section}`
+          : "N/A"}
       </td>
     )}
 
-    <td className="p-2 text-gray-800 dark:text-gray-200 whitespace-pre-line">{item.description}</td>
+    <td className="p-2 text-gray-800 dark:text-gray-200 whitespace-pre-line">
+      {item.description}
+    </td>
 
     {(role === "admin" || role === "teacher") && (
       <td className="p-2">
@@ -47,12 +52,20 @@ const renderRow = (item: Homeworks, role: string | null) => (
 // Define table columns dynamically
 const getColumns = (role: string | null) => [
   { header: "Date", accessor: "date" },
-  ...(role === "admin" || role === "teacher" ? [{ header: "Class", accessor: "class" }] : []),
+  ...(role === "admin" || role === "teacher"
+    ? [{ header: "Class", accessor: "class" }]
+    : []),
   { header: "Description", accessor: "description" },
-  ...(role === "admin" || role === "teacher" ? [{ header: "Actions", accessor: "action" }] : []),
+  ...(role === "admin" || role === "teacher"
+    ? [{ header: "Actions", accessor: "action" }]
+    : []),
 ];
 
-const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+const HomeworkListPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const params = await searchParams;
   const { page, gradeId, date, classId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
@@ -62,10 +75,14 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
 
   // Sorting
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "date";
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "date";
 
   const rawDate = Array.isArray(date) ? date[0] : date;
-  const selectedDate = new Date(rawDate ?? new Date().toISOString().split("T")[0]);
+  const selectedDate = new Date(
+    rawDate ?? new Date().toISOString().split("T")[0]
+  );
   const startDate = startOfDay(selectedDate);
   const endDate = endOfDay(selectedDate);
 
@@ -97,8 +114,17 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
 
   if (queryParams.search) {
     filters.OR = [
-      { description: { contains: queryParams.search as string, mode: "insensitive" } },
-      { Class: { name: { contains: queryParams.search as string, mode: "insensitive" } } },
+      {
+        description: {
+          contains: queryParams.search as string,
+          mode: "insensitive",
+        },
+      },
+      {
+        Class: {
+          name: { contains: queryParams.search as string, mode: "insensitive" },
+        },
+      },
     ];
   }
 
@@ -109,7 +135,21 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
     prisma.homework.findMany({
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       where: filters,
-      include: { Class: true },
+      include: {
+        Class: {
+          select: {
+            id: true,
+            gradeId: true,
+            section: true,
+            Grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+          },
+        },
+      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),
@@ -122,13 +162,19 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
       {/* Top Controls */}
       <div className="flex items-center justify-between mb-3">
-        <h1 className="hidden text-lg font-semibold md:block">Homeworks ({count})</h1>
+        <h1 className="hidden text-lg font-semibold md:block">
+          Homeworks ({count})
+        </h1>
 
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} />
+            <ClassFilterDropdown
+              classes={classes}
+              grades={grades}
+              basePath={Path}
+            />
           )}
           <ResetFiltersButton basePath={Path} />
 
@@ -137,13 +183,19 @@ const HomeworkListPage = async ({ searchParams }: { searchParams: Promise<Search
               <Image src="/filter.png" alt="" width={14} height={14} />
             </button>
             <SortButton sortKey={sortKey} />
-            {(role === "admin" || role === "teacher") && <FormContainer table="homework" type="create" />}
+            {(role === "admin" || role === "teacher") && (
+              <FormContainer table="homework" type="create" />
+            )}
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={data} />
+      <Table
+        columns={columns}
+        renderRow={(item) => renderRow(item, role)}
+        data={data}
+      />
 
       {/* Pagination */}
       <Pagination page={parseInt(p)} count={count} />

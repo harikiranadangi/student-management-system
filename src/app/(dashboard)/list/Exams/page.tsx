@@ -6,20 +6,14 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Exam, Prisma, ExamGradeSubject, Grade, Subject } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
 import Image from "next/image";
-import { SearchParams } from "../../../../../types";
+import { Exams, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import TitleFilterDropdown from "@/components/TitleFilterDropdown";
 
 // Extended Exam type
-type Exams = Exam & {
-  examGradeSubjects: (ExamGradeSubject & {
-    Grade: Grade;
-    Subject: Subject;
-  })[];
-};
 
 const formatDateTime = (date: Date, time: string) => {
   const [hours, minutes] = time.split(":").map(Number);
@@ -38,7 +32,9 @@ const renderRow = (item: Exams, role: string | null) =>
       key={`${item.id}-${egs.Grade.id}-${egs.Subject.id}-${idx}`}
       className="text-sm border-b border-gray-200 dark:border-gray-700 even:bg-slate-50 dark:even:bg-gray-800 hover:bg-LamaPurpleLight dark:hover:bg-gray-700"
     >
-      <td className="hidden md:table-cell">{formatDateTime(new Date(egs.date), egs.startTime)}</td>
+      <td className="hidden md:table-cell">
+        {formatDateTime(new Date(egs.date), egs.startTime)}
+      </td>
       <td className="p-4">{egs.Grade.level}</td>
       <td className="p-4">{egs.Subject.name}</td>
       <td className="p-4">{egs.maxMarks}</td>
@@ -65,7 +61,11 @@ const getColumns = (role: string | null) => [
     : []),
 ];
 
-const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
+const ExamsList = async ({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
   const params = await searchParams;
   const { page, date, gradeId, ...queryParams } = params;
   const p = page ? (Array.isArray(page) ? page[0] : page) : "1";
@@ -73,8 +73,12 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
   const columns = getColumns(role);
 
   const sortOrder = params.sort === "asc" ? "asc" : "desc";
-  const sortKey = Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
-  const teacherId = Array.isArray(params.teacherId) ? params.teacherId[0] : params.teacherId;
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "id";
+  const teacherId = Array.isArray(params.teacherId)
+    ? params.teacherId[0]
+    : params.teacherId;
 
   let query: Prisma.ExamWhereInput = {};
   let examGradeSubjectsWhere: Prisma.ExamGradeSubjectWhereInput = {};
@@ -112,7 +116,9 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
 
   // Search filter
   if (queryParams.search) {
-    const searchValue = Array.isArray(queryParams.search) ? queryParams.search[0] : queryParams.search;
+    const searchValue = Array.isArray(queryParams.search)
+      ? queryParams.search[0]
+      : queryParams.search;
     examGradeSubjectsWhere.OR = [
       { Subject: { name: { contains: searchValue, mode: "insensitive" } } },
       { Grade: { level: { contains: searchValue, mode: "insensitive" } } },
@@ -125,13 +131,16 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
   // Exam title filter
   if (queryParams.title) {
     query.title = {
-      contains: Array.isArray(queryParams.title) ? queryParams.title[0] : queryParams.title,
+      contains: Array.isArray(queryParams.title)
+        ? queryParams.title[0]
+        : queryParams.title,
       mode: "insensitive",
     };
   }
 
   // Apply conditions
-  if (Object.keys(examGradeSubjectsWhere).length > 0) query.examGradeSubjects = { some: examGradeSubjectsWhere };
+  if (Object.keys(examGradeSubjectsWhere).length > 0)
+    query.examGradeSubjects = { some: examGradeSubjectsWhere };
 
   const [exams, count] = await prisma.$transaction([
     prisma.exam.findMany({
@@ -139,8 +148,26 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       include: {
         examGradeSubjects: {
-          where: Object.keys(examGradeSubjectsWhere).length ? examGradeSubjectsWhere : undefined,
-          include: { Grade: true, Subject: true },
+          where: Object.keys(examGradeSubjectsWhere).length
+            ? examGradeSubjectsWhere
+            : undefined,
+          select: {
+            date: true,
+            startTime: true,
+            maxMarks: true,
+            Grade: {
+              select: {
+                id: true,
+                level: true,
+              },
+            },
+            Subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
       },
       take: ITEM_PER_PAGE,
@@ -157,13 +184,20 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
       {/* HEADER */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden text-lg font-semibold md:block text-black dark:text-white">All Exams</h1>
+        <h1 className="hidden text-lg font-semibold md:block text-black dark:text-white">
+          All Exams
+        </h1>
         <div className="flex items-center gap-4">
           <TableSearch />
           <TitleFilterDropdown basePath={Path} />
           <DateFilter basePath={Path} />
           {(role === "admin" || role === "teacher") && (
-            <ClassFilterDropdown classes={classes} grades={grades} basePath={Path} showClassFilter={false} />
+            <ClassFilterDropdown
+              classes={classes}
+              grades={grades}
+              basePath={Path}
+              showClassFilter={false}
+            />
           )}
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <ResetFiltersButton basePath={Path} />
@@ -174,7 +208,9 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
               <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow dark:bg-LamaYellow">
                 <Image src="/sort.png" alt="Sort" width={14} height={14} />
               </button>
-              {(role === "admin" || role === "teacher") && <FormContainer table="exam" type="create" />}
+              {(role === "admin" || role === "teacher") && (
+                <FormContainer table="exam" type="create" />
+              )}
             </div>
           </div>
         </div>
@@ -182,7 +218,11 @@ const ExamsList = async ({ searchParams }: { searchParams: Promise<SearchParams>
 
       {/* TABLE */}
       <div className="space-y-6">
-        <Table columns={columns} renderRow={(item) => renderRow(item, role)} data={exams} />
+        <Table
+          columns={columns}
+          renderRow={(item) => renderRow(item, role)}
+          data={exams}
+        />
       </div>
 
       {/* PAGINATION */}

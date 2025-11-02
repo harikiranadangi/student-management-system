@@ -2,7 +2,7 @@
 import { LessonDay } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { selectClasses } from "../../types";
+import { dropdownUI } from "../../types";
 
 type ClassType = {
   id: number;
@@ -71,7 +71,7 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
       {/* Grade Dropdown */}
       <div className="relative w-full md:w-auto">
         <select
-          className={selectClasses}
+          className={dropdownUI}
           onChange={handleGradeChange}
           value={selectedGradeId || ""}
         >
@@ -90,7 +90,7 @@ const ClassFilterDropdown = ({ classes, grades, basePath, showClassFilter = true
       {showClassFilter && (
         <div className="relative w-full md:w-auto">
           <select
-            className={selectClasses}
+            className={dropdownUI}
             onChange={handleClassChange}
             value={selectedClassId || ""}
             disabled={!selectedGradeId}
@@ -130,7 +130,7 @@ const DateFilter = ({ basePath }: { basePath: string }) => {
       <input
         type="date"
         onChange={handleDateChange}
-        className={selectClasses}
+        className={dropdownUI}
       />
     </div>
   );
@@ -160,7 +160,7 @@ const StatusFilter = ({ basePath }: StatusFilterProps) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className={selectClasses}
+        className={dropdownUI}
         onChange={handleStatusChange}
         value={currentStatus}
       >
@@ -193,7 +193,7 @@ const StudentStatusFilter = ({ basePath }: StudentStatusFilterProps) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className={selectClasses}
+        className={dropdownUI}
         onChange={handleStudentStatusChange}
         value={currentStatus}
       >
@@ -231,7 +231,7 @@ const GenderFilter = ({ basePath }: { basePath: string }) => {
   return (
     <div className="relative w-full md:w-auto mt-4 md:mt-0">
       <select
-        className={selectClasses}
+        className={dropdownUI}
         onChange={handleGenderChange}
         value={currentGender}
       >
@@ -282,7 +282,7 @@ const DayFilter = ({ basePath }: DayFilterProps) => {
       <select
         value={selectedDay}
         onChange={handleDayChange}
-        className={selectClasses}
+        className={dropdownUI}
       >
         {Object.values(LessonDay).map((day) => (
           <option key={day} value={day}>

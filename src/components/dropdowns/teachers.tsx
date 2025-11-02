@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { selectClasses } from "../../../types";
+import { dropdownUI } from "../../../types";
 
 export default function TeacherFilterDropdown({
   teachers,
@@ -33,9 +33,9 @@ export default function TeacherFilterDropdown({
     {/* Teacher Dropdown */}
     <div className="relative w-full md:w-auto">
       <select
-        className={selectClasses}
+        className={dropdownUI}
         onChange={handleChange}
-        value={selectedTeacherId || ""}
+        value={selectedTeacherId}
       >
         <option value="" disabled>
           Select Teacher

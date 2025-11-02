@@ -5,18 +5,9 @@ import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { saveAs } from "file-saver";
+import { Props } from "../../types";
 
-type Props = {
-  data: {
-    id: number;
-    date: Date;
-    leaveType: string;
-    description: string | null;
-    timeIssued: Date;
-    student: Student & { Class: Class & { Grade: Grade } };
-  }[];
-  fileName: string;
-};
+
 
 const ExportButton = ({ data, fileName }: Props) => {
   // ✅ Excel Export

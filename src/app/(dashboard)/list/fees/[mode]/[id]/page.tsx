@@ -21,18 +21,35 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
   }
 
   const student = await prisma.student.findUnique({
-    where: { id },
-    include: {
-      attendances: true,
-      Class: {
-        include: {
-          Grade: true,
-          Teacher: true,
-          _count: { select: { lessons: true } },
+  where: { id },
+  select: {
+    id: true,
+    name: true,
+    img: true,
+    gender: true,
+    dob: true,
+    bloodType: true,
+    email: true,
+    phone: true,
+    Class: {
+      select: {
+        id: true,
+        name: true,
+        gradeId: true,
+        Grade: {
+          select: { id: true, level: true },
+        },
+        Teacher: {
+          select: { id: true, name: true },
+        },
+        _count: {
+          select: { lessons: true },
         },
       },
     },
-  });
+  },
+});
+
 
   if (!student) return notFound();
 

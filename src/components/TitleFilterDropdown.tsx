@@ -1,8 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { dropdownUI } from "../../types";
 
-export default function TitleFilterDropdown({ basePath }: { basePath: string }) {
+export default function TitleFilterDropdown({
+  basePath,
+}: {
+  basePath: string;
+}) {
   const [titles, setTitles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -37,18 +42,22 @@ export default function TitleFilterDropdown({ basePath }: { basePath: string }) 
   const selectedTitle = searchParams.get("title") || "";
 
   return (
-    <select
-      value={selectedTitle}
-      onChange={(e) => handleChange(e.target.value)}
-      className="w-full py-2 pl-4 pr-10 text-sm text-gray-500 border border-gray-300 rounded-full appearance-none md:w-auto focus:ring-2 focus:ring-LamaSky focus:outline-none"
-      disabled={loading}
-    >
-      <option value="">Select Exam</option>
-      {titles.map((title) => (
-        <option key={title} value={title}>
-          {title}
-        </option>
-      ))}
-    </select>
+    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <div className="relative w-full md:w-auto">
+        <select
+          className={dropdownUI}
+          onChange={(e) => handleChange(e.target.value)}
+          disabled={loading}
+          value={selectedTitle}
+        >
+          <option value="">Select Exam</option>
+          {titles.map((title) => (
+            <option key={title} value={title}>
+              {title}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   );
 }

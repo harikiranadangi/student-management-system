@@ -9,24 +9,11 @@ import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { getTermStatus } from "@/lib/utils/getTermStatus";
-import {
-  $Enums,
-  Prisma,
-  Student,
-  StudentFees,
-  StudentTotalFees,
-} from "@prisma/client";
+import { $Enums, Prisma } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchParams } from "../../../../../../types";
+import { SearchParams, StudentList } from "../../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
-
-// Define types
-type StudentList = Student & {
-  Class?: { name: string };
-  studentFees?: StudentFees[];
-  totalFees?: StudentTotalFees | null;
-};
 
 const rawGroupedFees = await getGroupedStudentFees();
 
@@ -208,7 +195,16 @@ const StudentFeeListPage = async ({
         { name: "asc" },
       ],
       where: query,
-      include: { Class: true, totalFees: true },
+      select: {
+        id: true,
+        name: true,
+        gender: true,
+        parentName: true,
+        phone: true,
+        img: true,
+        Class: { select: { name: true } },
+        totalFees: { select: { totalDiscountAmount: true } },
+      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),

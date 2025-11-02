@@ -7,15 +7,10 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { FeeStructure, Grade } from "@prisma/client";
 import Image from "next/image";
-import { SearchParams } from "../../../../../../types";
+import { FeesList, SearchParams } from "../../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
-
-// Types
-type FeesList = Grade & {
-  feestructure: FeeStructure[];
-};
+import AcademicYearDropdown from "@/components/dropdowns/AcademicYearDropdown";
 
 // Row Renderer
 const renderRow = (grade: FeesList, role: string | null) => {
@@ -43,15 +38,15 @@ const renderRow = (grade: FeesList, role: string | null) => {
             ? new Intl.DateTimeFormat("en-GB").format(new Date(fee.dueDate))
             : "-"}
         </td>
-        <td>{fee.academicYear == "Y2024_2025" ? "2024-25" : "2025-26"}</td>
-        <td className="p-2">
-          {role === "admin" && (
+        <td>{fee.academicYear === "Y2024_2025" ? "2024-25" : "2025-26"}</td>
+        {role === "admin" && (
+          <td className="p-2">
             <div className="flex items-center gap-2">
               <FormContainer table="fees" type="update" data={fee} />
               <FormContainer table="fees" type="delete" id={fee.id} />
             </div>
-          )}
-        </td>
+          </td>
+        )}
       </tr>
     );
   });
@@ -75,36 +70,61 @@ const FeesListPage = async ({
   searchParams: Promise<SearchParams>;
 }) => {
   const params = await searchParams;
-  const page = Array.isArray(params.page)
-    ? parseInt(params.page[0], 10)
-    : parseInt(params.page || "1", 10);
-
+  const page = Number(
+    Array.isArray(params.page) ? params.page[0] : params.page || "1"
+  );
+  const academicYear = params.academicYear || undefined;
   const gradeId = Array.isArray(params.gradeId)
     ? params.gradeId[0]
     : params.gradeId;
-
   const sortOrder = params.sort === "desc" ? "desc" : "asc";
-  const sortKey =
-    Array.isArray(params.sortKey) ? params.sortKey[0] : params.sortKey || "id";
+  const sortKey = Array.isArray(params.sortKey)
+    ? params.sortKey[0]
+    : params.sortKey || "id";
 
   const { role } = await fetchUserInfo();
   const columns = getColumns(role);
 
-  // Query
-  const query: any = gradeId ? { id: Number(gradeId) } : {};
+  const whereClause: any = {};
 
-  const [grades, totalCount] = await prisma.$transaction([
+  if (gradeId) whereClause.id = Number(gradeId);
+  if (academicYear) {
+    whereClause.feestructure = {
+      some: {
+        ...(academicYear ? { academicYear } : {}),
+      },
+    };
+  }
+
+  const [grades, totalCount] = await Promise.all([
     prisma.grade.findMany({
-      where: query,
-      include: { feestructure: true },
+      where: whereClause,
+      select: {
+        id: true,
+        level: true,
+        feestructure: {
+          select: {
+            id: true,
+            term: true,
+            termFees: true,
+            abacusFees: true,
+            startDate: true,
+            dueDate: true,
+            academicYear: true,
+          },
+        },
+      },
       orderBy: { [sortKey]: sortOrder },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (page - 1),
     }),
-    prisma.grade.count({ where: query }),
+    prisma.grade.count({ where: whereClause }),
   ]);
 
-  const allGrades = await prisma.grade.findMany();
+  const allGrades = await prisma.grade.findMany({
+    select: { id: true, level: true },
+  });
+
   const Path = `/list/fees/feemanagement`;
 
   return (
@@ -117,14 +137,14 @@ const FeesListPage = async ({
 
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
-          {/* Grade Filter */}
+          {/* Academic Year Dropdown */}
+          <AcademicYearDropdown basePath={Path} />
           <ClassFilterDropdown
-              classes={[]}
-              grades={allGrades}
-              basePath={Path}
-              showClassFilter={false}
-            />
-
+            classes={[]}
+            grades={allGrades}
+            basePath={Path}
+            showClassFilter={false}
+          />
           <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
             <ResetFiltersButton basePath={Path} />
             <div className="flex items-center self-end gap-4">

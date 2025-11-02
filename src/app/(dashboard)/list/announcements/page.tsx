@@ -6,10 +6,9 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Announcement, Class, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
-
-type AnnouncementList = Announcement & { Class: Class };
+import { AnnouncementList } from "../../../../../types";
 
 const renderRow = (item: AnnouncementList, role: string | null) => (
   <tr

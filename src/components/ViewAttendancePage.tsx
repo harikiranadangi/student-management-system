@@ -1,13 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Student, Attendance, Class as SchoolClass, Grade } from "@prisma/client";
+import { useEffect, useState, useMemo } from "react";
+import { Class, Grade } from "@prisma/client";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-
-type AttendanceResponse = {
-  attendance: Attendance[];
-  students: (Student & { Class: SchoolClass })[];
-};
+import { AttendanceResponse } from "../../types";
 
 interface Props {
   role: "admin" | "teacher";
@@ -23,7 +19,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
     students: [],
   });
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [classes, setClasses] = useState<SchoolClass[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<string | number>("");
   const [selectedClass, setSelectedClass] = useState<string | number>(
     role === "teacher" && teacherClassId ? teacherClassId : ""
@@ -31,20 +27,35 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
 
   const [filterStatus, setFilterStatus] = useState<"all" | "present" | "absent">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 30;
 
   const fetchAttendance = async () => {
-    let url = `/api/attendance/range?from=${from}&to=${to}`;
-    if (role === "admin") {
-      if (selectedGrade) url += `&gradeId=${selectedGrade}`;
-      if (selectedClass) url += `&classId=${selectedClass}`;
-    } else if (role === "teacher" && teacherClassId) {
-      url += `&classId=${teacherClassId}`;
+    setLoading(true);
+    try {
+      let url = `/api/attendance/range?from=${from}&to=${to}`;
+      if (role === "admin") {
+        if (selectedGrade) url += `&gradeId=${selectedGrade}`;
+        if (selectedClass) url += `&classId=${selectedClass}`;
+      } else if (role === "teacher" && teacherClassId) {
+        url += `&classId=${teacherClassId}`;
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
+      setRecords(data);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Error fetching attendance:", err);
+    } finally {
+      setLoading(false);
     }
-    const res = await fetch(url);
-    const data = await res.json();
-    setRecords(data);
   };
 
+  // Auto-fetch grades/classes for admin or teacher
   useEffect(() => {
     const fetchGradesAndClasses = async () => {
       if (role === "admin") {
@@ -62,12 +73,17 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
       } else if (role === "teacher" && teacherClassId) {
         const classRes = await fetch(`/api/classes?id=${teacherClassId}`);
         const classData = await classRes.json();
-        setClasses(classData);
+        setClasses(Array.isArray(classData) ? classData : [classData]);
       }
     };
 
     fetchGradesAndClasses();
   }, [selectedGrade, role, teacherClassId]);
+
+  // Auto-fetch when date range changes
+  useEffect(() => {
+    if (from && to) fetchAttendance();
+  }, [from, to]);
 
   const updateAttendance = async (attendanceId: number, currentStatus: boolean) => {
     const newStatus = !currentStatus;
@@ -89,18 +105,27 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
     }
   };
 
-  const filteredAttendance = records.attendance.filter((a) => {
-    const student = records.students.find((s) => s.id === a.studentId);
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "present" && a.present) ||
-      (filterStatus === "absent" && !a.present);
-    const matchesSearch =
-      !searchQuery ||
-      student?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student?.id.toString().includes(searchQuery);
-    return matchesStatus && matchesSearch;
-  });
+  const filteredAttendance = useMemo(() => {
+    return records.attendance.filter((a) => {
+      const student = records.students.find((s) => s.id === a.studentId);
+      const matchesStatus =
+        filterStatus === "all" ||
+        (filterStatus === "present" && a.present) ||
+        (filterStatus === "absent" && !a.present);
+      const matchesSearch =
+        !searchQuery ||
+        student?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student?.id.toString().includes(searchQuery);
+      return matchesStatus && matchesSearch;
+    });
+  }, [records, filterStatus, searchQuery]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAttendance.length / recordsPerPage);
+  const paginatedAttendance = filteredAttendance.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
 
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -117,6 +142,8 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
       ...uniqueDates.map((date) => ({ header: date, key: date, width: 12 })),
     ];
 
+    worksheet.getRow(1).font = { bold: true };
+
     records.students.forEach((student) => {
       const row: any = {
         studentId: student.id,
@@ -130,10 +157,17 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
             att.studentId === student.id &&
             new Date(att.date).toLocaleDateString("en-GB") === date
         );
-        if (a) row[date] = a.present ? "Present" : "Absent";
+        if (a) {
+          row[date] = a.present ? "Present" : "Absent";
+        }
       });
 
-      worksheet.addRow(row);
+      const newRow = worksheet.addRow(row);
+      uniqueDates.forEach((date) => {
+        const cell = newRow.getCell(date);
+        if (cell.value === "Present") cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "C6EFCE" } };
+        if (cell.value === "Absent") cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC7CE" } };
+      });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -207,9 +241,12 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
 
         <button
           onClick={fetchAttendance}
-          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+          disabled={loading}
+          className={`px-3 py-1 rounded text-white ${
+            loading ? "bg-gray-500" : "bg-green-600 hover:bg-green-700"
+          }`}
         >
-          Get Attendance
+          {loading ? "Loading..." : "Get Attendance"}
         </button>
       </div>
 
@@ -240,7 +277,9 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
       </div>
 
       {/* Attendance table */}
-      {filteredAttendance.length > 0 ? (
+      {loading ? (
+        <p className="mt-6 text-gray-600 dark:text-gray-400">Loading attendance...</p>
+      ) : paginatedAttendance.length > 0 ? (
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full border table-fixed bg-white dark:bg-gray-800 dark:border-gray-700">
             <thead>
@@ -254,7 +293,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
               </tr>
             </thead>
             <tbody>
-              {filteredAttendance.map((a) => {
+              {paginatedAttendance.map((a) => {
                 const student = records.students.find((s) => s.id === a.studentId);
                 if (!student) return null;
                 return (
@@ -268,7 +307,11 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
                     <td className="p-1 border dark:border-gray-700">{student.id}</td>
                     <td className="p-2 border dark:border-gray-700 truncate">{student.name}</td>
                     <td className="p-2 border dark:border-gray-700">{student.Class?.name || "N/A"}</td>
-                    <td className="p-1 border dark:border-gray-700">
+                    <td
+                      className={`p-1 border dark:border-gray-700 font-semibold ${
+                        a.present ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
                       {a.present ? "Present" : "Absent"}
                     </td>
                     <td className="p-1 border dark:border-gray-700">
@@ -286,6 +329,27 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
               })}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center items-center mt-4 gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span className="text-gray-800 dark:text-gray-200 text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       ) : (
         <p className="mt-4 text-gray-600 dark:text-gray-400">No attendance records found.</p>
