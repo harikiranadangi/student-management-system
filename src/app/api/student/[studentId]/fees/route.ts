@@ -8,13 +8,13 @@ export async function GET(
   const { studentId } = await params;
 
   try {
-    // Step 1: Get Student → including their Class → including Grade
+    // ✅ Step 1: Get Student → including Class & Grade
     const student = await prisma.student.findUnique({
       where: { id: studentId },
       include: {
         Class: {
           include: {
-            Grade: true, // 💥 get Grade from Class
+            Grade: true,
           },
         },
       },
@@ -24,32 +24,49 @@ export async function GET(
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
-    const gradeId = student.Class?.gradeId; // ✅ Get gradeId through class
+    const gradeId = student.Class?.gradeId;
+    const academicYear = student.academicYear; // ✅ student's current year
 
     if (!gradeId) {
-      return NextResponse.json({ error: "Grade not found for student" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Grade not found for student" },
+        { status: 404 }
+      );
     }
 
-    // Step 2: Get Fee Structure for the Grade
+    console.log(`🏫 Grade ID: ${gradeId}, 📘 Academic Year: ${academicYear}`);
+
+    // ✅ Step 2: Get Fee Structures only for this year
     const feeStructures = await prisma.feeStructure.findMany({
       where: {
         gradeId: gradeId,
+        academicYear: academicYear,
       },
     });
 
-    // Step 3: Get Student's Fees if paid
+    // ✅ Step 3: Get Student's Fees only for this year
     const studentFees = await prisma.studentFees.findMany({
-      where: { studentId },
+      where: {
+        studentId,
+        academicYear: academicYear,
+      },
     });
 
-    // Step 4: Merge FeeStructure + Paid Info
+    console.log(
+      `💰 Found ${feeStructures.length} fee structures and ${studentFees.length} student fees records.`
+    );
+
+    // ✅ Step 4: Merge data
     const feesWithPaymentStatus = feeStructures.map((fee) => {
-      const matchingPayment = studentFees.find((sf) => sf.feeStructureId === fee.id);
+      const matchingPayment = studentFees.find(
+        (sf) => sf.feeStructureId === fee.id
+      );
 
       return {
         feeStructureId: fee.id,
         studentId,
         term: fee.term,
+        academicYear: fee.academicYear,
         paidAmount: matchingPayment?.paidAmount || 0,
         discountAmount: matchingPayment?.discountAmount || 0,
         fineAmount: matchingPayment?.fineAmount || 0,
@@ -60,7 +77,10 @@ export async function GET(
 
     return NextResponse.json(feesWithPaymentStatus, { status: 200 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ Error fetching student fees:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

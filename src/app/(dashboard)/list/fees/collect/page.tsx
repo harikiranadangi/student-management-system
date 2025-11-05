@@ -62,7 +62,7 @@ const renderRow = (item: StudentList, role: string | null) => {
         {item.gender}
       </td>
       <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
-        {item.parentName || "N/A"}
+        {item.fatherName || "N/A"}
       </td>
       <td className="text-gray-800 dark:text-gray-200">{item.phone}</td>
       <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
@@ -199,10 +199,10 @@ const StudentFeeListPage = async ({
         id: true,
         name: true,
         gender: true,
-        parentName: true,
+        fatherName: true,
         phone: true,
         img: true,
-        Class: { select: { name: true } },
+        Class: { select: { section: true } },
         totalFees: { select: { totalDiscountAmount: true } },
       },
       take: ITEM_PER_PAGE,
@@ -220,7 +220,7 @@ const StudentFeeListPage = async ({
         <h1 className="hidden text-lg font-semibold md:block">
           {role === "teacher"
             ? `Fees Collection - ${
-                data[0]?.Class?.name ?? "Your Class"
+                data[0]?.Class?.section ?? "Your Class"
               } (${count})`
             : `Fees Collection (${count})`}
         </h1>

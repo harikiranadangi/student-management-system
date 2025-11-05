@@ -1,4 +1,4 @@
-,id,username,name,parentName,email,phone,address,img,bloodType,gender,dob,createdAt,deletedAt,classId
+,id,username,name,fatherName,email,phone,address,img,bloodType,gender,dob,createdAt,deletedAt,classId
 0,17159,S17159,CHAITHRA PRESINGU,NA,S17159@kotakschool.com,7093316614,Visakhapatnam,,Under Investigation,Female,13-12-2021,15-03-2025,,1
 1,16935,S16935,DHRUVITA PRAARTHANA SAVARAPU,NA,S16935@kotakschool.com,9912246176,Visakhapatnam,,Under Investigation,Female,18-07-2021,15-03-2025,,1
 2,17158,S17158,DHRUVITHA ALPHONSEY SONGA,NA,S17158@kotakschool.com,8341709383,Visakhapatnam,,Under Investigation,Female,28-07-2021,15-03-2025,,1

@@ -1,24 +1,23 @@
-import prisma from '@/lib/prisma';
-import { clerkClient } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
-import { studentschema } from '@/lib/formValidationSchemas';
-import { toast } from 'react-toastify';
-import { StudentStatus } from '@prisma/client';
+import prisma from "@/lib/prisma";
+import { clerkClient } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { studentschema } from "@/lib/formValidationSchemas";
+import { AcademicYear } from "@prisma/client";
 
-// Clerk User type alias (avoids import conflict)
 const client = await clerkClient();
-type ClerkUser = Awaited<ReturnType<typeof client.users.getUser>>;
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // ✅ Step 1: Validate input
-    const result = studentschema.safeParse(body);
-    if (!result.success) {
-      const errors = result.error.flatten().fieldErrors;
+    // ✅ Validate input
+    const parsed = studentschema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { message: 'Validation failed', errors },
+        {
+          message: "Validation failed",
+          errors: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
@@ -32,279 +31,183 @@ export async function POST(req: Request) {
       dob,
       email,
       gender,
-      parentName,
+      fatherName,
       bloodType,
       address,
       img,
-    } = result.data;
+    } = parsed.data;
 
-    console.log('Received data:', result.data);
+    // ✅ Normalize year to enum-safe value
+    const normalizedYear = academicYear
+      ?.trim()
+      .toUpperCase() as keyof typeof AcademicYear;
+    console.log("🎓 Requested academic year:", normalizedYear);
 
-    // ✅ Step 2: Generate Student ID
+    if (!AcademicYear[normalizedYear]) {
+      console.error("❌ Invalid academic year:", normalizedYear);
+      return NextResponse.json(
+        { message: `Invalid academic year: ${normalizedYear}` },
+        { status: 400 }
+      );
+    }
+
+    // ✅ Generate ID
     let id = requestedId;
     if (!id) {
-      const lastStudent = await prisma.student.findFirst({
-        orderBy: { id: 'desc' },
+      const last = await prisma.student.findFirst({
+        orderBy: { id: "desc" },
         select: { id: true },
       });
-
-      id = lastStudent?.id
-        ? (parseInt(lastStudent.id.toString()) + 1).toString()
-        : '10000';
+      id = last?.id ? (parseInt(last.id.toString()) + 1).toString() : "10000";
     }
 
-    const generatedUsername = `s${id}`;
-    const password = phone;
+    const username = `s${id}`;
     const phoneNumber = `+91${phone}`;
+    const password = phone;
 
-    // ✅ Step 3: Find or Create Parent Clerk User
-    let parentUser: ClerkUser | null = null;
-
-    // 🔑 Check if parent already exists by phone number
-    const existingUsers = await client.users.getUserList({
+    // ✅ Find or create Clerk user
+    const existing = await client.users.getUserList({
       phoneNumber: [phoneNumber],
     });
-
-    if (existingUsers.data.length > 0) {
-      parentUser = existingUsers.data[0]; // 👈 reuse existing parent
-      console.log('Parent user found in Clerk:', parentUser.id);
-    } else {
-      // 👩‍👩‍👦 If not found, create new parent user in Clerk
-      parentUser = await client.users.createUser({
-        username: generatedUsername,
-        password: password,
+    const parentUser =
+      existing.data[0] ??
+      (await client.users.createUser({
+        username,
+        password,
         firstName: name,
         phoneNumber: [phoneNumber],
-      });
+        publicMetadata: { role: "student" },
+      }));
 
-      await client.users.updateUser(parentUser.id, {
-        publicMetadata: { role: 'student' },
-      });
-
-      console.log('New User created in Clerk:', parentUser.id);
-    }
-
-    // ✅ Step 4: Create or reuse Profile
-    let profile = await prisma.profile.findUnique({
+    // ✅ Upsert profile
+    const profile = await prisma.profile.upsert({
       where: { clerk_id: parentUser.id },
-      include: { users: true, activeUser: true },
+      update: {},
+      create: { clerk_id: parentUser.id, phone },
     });
 
-    if (!profile) {
-      profile = await prisma.profile.create({
-        data: {
-          phone,
-          clerk_id: parentUser.id,
-        },
-        include: { users: true, activeUser: true },
-      });
-      console.log("New Profile created:", profile);
-    } else {
-      console.log("Existing Profile reused:", profile);
-    }
-
-    // ✅ Step 5: Ensure Role (student) exists for this profile
-    const existingRole = await prisma.linkedUser.findFirst({
-      where: { username: generatedUsername },
-    });
-
-    if (existingRole) {
+    // ✅ Prevent duplicate username
+    const duplicate = await prisma.student.findUnique({ where: { username } });
+    if (duplicate) {
       return NextResponse.json(
-        { message: `Student username "${generatedUsername}" already exists!` },
+        { message: `Student username "${username}" already exists.` },
         { status: 409 }
       );
     }
 
-    const role = await prisma.linkedUser.create({
-      data: {
-        role: "student",
-        username: generatedUsername,
-        profileId: profile.id, // 🔑 links to profile,
-      },
-    });
-    console.log("New Role created:", role);
+    // ✅ Transaction — create student and assign fees (only selected year)
+    const student = await prisma.$transaction(async (tx) => {
+      // ✅ Step 5: Create Student record linked to parent’s Clerk ID
+      console.log("Creating student with ID:", id);
 
-    // If profile has no active role yet, set this new role as active
-    if (!profile.activeUserId) {
-      await prisma.profile.update({
-        where: { id: profile.id },
-        data: { activeUserId: role.id },
-      });
-      console.log("Active role set for profile:", role.id);
-    }
-
-
-    const existingStudentAccount = await prisma.student.findUnique({
-      where: { username: generatedUsername },
-    });
-
-    if (existingStudentAccount) {
-      return NextResponse.json(
-        { message: `Student username "${generatedUsername}" already exists!` },
-        { status: 409 }
-      );
-    }
-
-    // ✅ Step 5: Create Student record linked to parent’s Clerk ID
-    console.log('Creating student with ID:', id);
-    const studentData: any = {
-      id,
-      username: generatedUsername,
-      name,
-      parentName,
-      email: email ?? undefined,
-      phone,
-      address,
-      gender,
-      img: img ?? undefined,
-      bloodType,
-      classId,
-      academicYear,
-      clerk_id: parentUser.id,
-      profileId: profile.id,
-      linkedUserId: role.id,
-    };
-
-    // Only add dob if provided
-    if (dob) {
-      studentData.dob = new Date(dob);
-    }
-
-    const student = await prisma.student.create({
-      data: studentData,
-    });
-
-    console.log('Student created:', student);
-
-
-
-    // ✅ Step 7: Get gradeId from class
-    const studentClass = await prisma.class.findUnique({
-      where: { id: student.classId },
-      select: { gradeId: true },
-    });
-
-    if (!studentClass) {
-      return NextResponse.json(
-        { message: 'Class not found for the student.' },
-        { status: 404 }
-      );
-    }
-
-    // ✅ Step 8: Match and assign fee structures
-    const matchingFeeStructures = await prisma.feeStructure.findMany({
-      where: {
-        gradeId: studentClass.gradeId,
-        academicYear: student.academicYear,
-      },
-    });
-
-    if (matchingFeeStructures.length > 0) {
-      await prisma.studentFees.createMany({
-        data: matchingFeeStructures.map((fee) => ({
-          studentId: student.id,
-          feeStructureId: fee.id,
-          academicYear,
-          term: fee.term,
-          paidAmount: 0,
-          discountAmount: 0,
-          fineAmount: 0,
-          abacusPaidAmount: 0,
-          receivedDate: null,
-          receiptDate: new Date(),
-          paymentMode: 'CASH',
-        })),
-      });
-    }
-
-    console.log('Fee structures assigned:', matchingFeeStructures);
-
-    return NextResponse.json(student, { status: 201 }); toast.success('Student created successfully!');
-  } catch (error: any) {
-    console.error('Error details:', JSON.stringify(error, null, 2));
-
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { message: 'Unique constraint failed (probably username exists).' },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      { message: 'Internal server error', error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-// ---------------------- GET ----------------------
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const classId = searchParams.get("classId");
-  const gradeId = searchParams.get("gradeId");
-  const gender = searchParams.get("gender");
-  const search = searchParams.get("search");
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const limit = parseInt(searchParams.get("limit") || "50", 10); // default 50
-
-  try {
-    // Base condition
-    const where: any = { status: StudentStatus.ACTIVE };
-
-    if (classId) {
-      where.classId = Number(classId);
-    }
-
-    if (gender) {
-      where.gender = gender;
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { parentName: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search, mode: "insensitive" } },
-        { username: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    // ✅ Only add grade filter if provided
-    if (gradeId) {
-      where.Class = {
-        gradeId: Number(gradeId),
+      const studentData: any = {
+        id,
+        username,
+        name,
+        fatherName,
+        email: email ?? undefined,
+        phone,
+        address,
+        gender,
+        img: img ?? undefined,
+        bloodType,
+        classId,
+        academicYear: normalizedYear as AcademicYear,
+        clerk_id: parentUser.id,
+        profileId: profile.id,
       };
-    }
 
-    // Pagination offset
-    const skip = (page - 1) * limit;
+      // ✅ Only add dob if provided
+      if (dob) {
+        studentData.dob = new Date(dob);
+      }
 
-    // Fetch students + count
-    const [students, total] = await Promise.all([
-      prisma.student.findMany({
-        where,
-        include: { Class: true },
-        orderBy: [{ classId: "asc" }, { gender: "desc" }, { name: "asc" }],
-        skip,
-        take: limit,
-      }),
-      prisma.student.count({ where }),
-    ]);
+      const newStudent = await tx.student.create({
+        data: studentData,
+      });
 
-    return NextResponse.json({
-      data: students,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        hasNextPage: page * limit < total,
-        hasPrevPage: page > 1,
-      },
+      console.log("🧩 Student created:", newStudent.username);
+
+      // ✅ Get gradeId
+      const classData = await tx.class.findUnique({
+        where: { id: classId },
+        select: { gradeId: true },
+      });
+      if (!classData) throw new Error("Class not found for student");
+
+      console.log("🏫 Grade ID:", classData.gradeId);
+
+      // ✅ Fetch only intended year’s fee structures
+      const feeStructures = await tx.feeStructure.findMany({
+        where: {
+          gradeId: classData.gradeId,
+          academicYear: normalizedYear as AcademicYear,
+        },
+      });
+
+      console.log(
+        `🎯 Found ${feeStructures.length} fee structures for ${normalizedYear}`
+      );
+      console.table(
+        feeStructures.map((f) => ({
+          id: f.id,
+          term: f.term,
+          academicYear: f.academicYear,
+        }))
+      );
+
+      if (feeStructures.length === 0) {
+        console.warn(`⚠️ No fee structures found for ${normalizedYear}`);
+        return newStudent;
+      }
+
+      // ✅ Prevent duplicates
+      const existingFees = await tx.studentFees.findMany({
+        where: { studentId: newStudent.id },
+      });
+
+      console.log("🧾 Existing student fees count:", existingFees.length);
+
+      if (existingFees.length === 0) {
+        await tx.studentFees.createMany({
+          data: feeStructures.map((f) => ({
+            studentId: newStudent.id,
+            feeStructureId: f.id,
+            academicYear: f.academicYear,
+            term: f.term,
+            paidAmount: 0,
+            discountAmount: 0,
+            fineAmount: 0,
+            abacusPaidAmount: 0,
+            paymentMode: "CASH",
+            receiptDate: new Date(),
+          })),
+        });
+
+        console.log(
+          `✅ Assigned ${feeStructures.length} fees for year ${normalizedYear}`
+        );
+      } else {
+        console.log("⚠️ Fees already mapped — skipping duplicates.");
+      }
+
+      return newStudent;
     });
-  } catch (error: any) {
-    console.error("❌ Error fetching students:", error);
+
     return NextResponse.json(
-      { error: error.message || "Failed to fetch students" },
+      { message: "✅ Student created successfully", student },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("❌ Error creating student:", error);
+    if (error.code === "P2002") {
+      return NextResponse.json(
+        { message: "Duplicate record found (username or fees)." },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json(
+      { message: "Internal server error", error: error.message },
       { status: 500 }
     );
   }

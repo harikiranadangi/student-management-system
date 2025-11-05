@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import {
-    ClassSchema, FeesSchema, HomeworkSchema,
-    LessonsSchema, Teacherschema
+    FeesSchema
 }
     from "./formValidationSchemas"
 import { clerkClient } from "@clerk/nextjs/server";
@@ -124,7 +123,6 @@ export const createFees = async (
     try {
         await prisma.feeStructure.create({
             data: {
-                id: data.id,
                 gradeId: data.gradeId, // ✅ gradeId is the primary key
                 term: data.term,
                 academicYear: data.academicYear,

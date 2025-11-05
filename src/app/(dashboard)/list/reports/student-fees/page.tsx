@@ -12,40 +12,18 @@ import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
 import {
-  FeeStructure,
   Prisma,
-  StudentFees,
-  StudentTotalFees,
 } from "@prisma/client";
 import Image from "next/image";
-import { SearchParams } from "../../../../../../types";
+import { SearchParams, StudentsFeeReportList } from "../../../../../../types";
 
-// Types
-type StudentFeeReportList = {
-  id: string;
-  name: string;
-  username: string;
-  parentName: string | null;
-  img: string | null;
-  dob: string;
-  phone: string | null;
-  gender: string | null;
-  studentFees?: (StudentFees & { feeStructure?: FeeStructure })[];
-  studentTotalFees?: StudentTotalFees | null;
-  Class?: {
-    name: string;
-    Grade?: {
-      name: string;
-      feestructure?: FeeStructure[];
-    };
-  };
-};
+
 
 // Fetch once globally
 const rawGroupedFees = await getGroupedStudentFees();
 
 // Render each row
-const renderRow = (item: StudentFeeReportList, role: string | null) => {
+const renderRow = (item: StudentsFeeReportList, role: string | null) => {
   const studentFee = rawGroupedFees.find((fee) => fee.studentId === item.id);
 
   const totalFees =
@@ -81,7 +59,7 @@ const renderRow = (item: StudentFeeReportList, role: string | null) => {
         {item.Class?.name ?? "N/A"}
       </td>
       <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
-        {item.parentName || "N/A"}
+        {item.fatherName || "N/A"}
       </td>
       <td className="hidden md:table-cell text-gray-700 dark:text-gray-200">
         {totalFees}
@@ -111,7 +89,7 @@ const getColumns = (role: string | null) => [
   { header: "Class", accessor: "class" },
   {
     header: "Parent Name",
-    accessor: "parentName",
+    accessor: "fatherName",
     className: "hidden md:table-cell",
   },
   {

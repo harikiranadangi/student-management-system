@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { feeStructures } = await req.json();
-
     const errors: string[] = [];
 
     const parseDate = (value: string) => {
@@ -14,13 +13,12 @@ export async function POST(req: NextRequest) {
       return isNaN(parsed.getTime()) ? null : parsed;
     };
 
+    // ✅ Validate input
     const validatedData = feeStructures
       .map((row: any, index: number) => {
         const missing = [];
 
-        if (!row.id) missing.push("id");
         if (!row.gradeId) missing.push("gradeId");
-        if (!row.abacusFees) missing.push("abacusFees");
         if (!row.termFees) missing.push("termFees");
         if (!row.term) missing.push("term");
         if (!row.startDate) missing.push("startDate");
@@ -41,9 +39,8 @@ export async function POST(req: NextRequest) {
         }
 
         return {
-          id: parseInt(row.id),
           gradeId: parseInt(row.gradeId),
-          abacusFees: parseInt(row.abacusFees),
+          abacusFees: row.abacusFees ? parseInt(row.abacusFees) : 0,
           termFees: parseInt(row.termFees),
           term: row.term,
           startDate,
@@ -53,21 +50,47 @@ export async function POST(req: NextRequest) {
       })
       .filter(Boolean);
 
-    if (validatedData.length) {
-      await prisma.feeStructure.createMany({
-        data: validatedData,
-        skipDuplicates: true,
+    if (!validatedData.length) {
+      return NextResponse.json({ message: "No valid records found", errors });
+    }
+
+    // ✅ Create or Update each record
+    for (const record of validatedData) {
+      await prisma.feeStructure.upsert({
+        where: {
+          gradeId_term_academicYear: {
+            gradeId: record.gradeId,
+            term: record.term,
+            academicYear: record.academicYear,
+          },
+        },
+        update: {
+          startDate: record.startDate,
+          dueDate: record.dueDate,
+          termFees: record.termFees,
+          abacusFees: record.abacusFees,
+        },
+        create: record,
       });
     }
 
+    // ✅ Resync ID sequence
+    await prisma.$executeRawUnsafe(`
+      SELECT setval(
+        pg_get_serial_sequence('"FeeStructure"', 'id'),
+        COALESCE((SELECT MAX(id) FROM "FeeStructure"), 0) + 1,
+        false
+      );
+    `);
+
     return NextResponse.json({
-      message: "Fee structure upload completed",
+      message: "Fee structure bulk upload completed (created/updated)",
       errors,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("❌ Bulk upload error:", error);
     return NextResponse.json(
-      { message: "Server error" },
+      { message: "Server error", error: error.message },
       { status: 500 }
     );
   }

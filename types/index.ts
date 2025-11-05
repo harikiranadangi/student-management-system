@@ -1,20 +1,17 @@
 // types/index.ts
 
 import {
+  AcademicYear,
   Announcement,
   Attendance,
   Class,
   Exam,
-  ExamGradeSubject,
   FeeTransaction,
   Grade,
   Homework,
   Messages,
-  PermissionSlip,
-  Prisma,
+  PaymentMode,
   Student,
-  Subject,
-  Teacher,
 } from "@prisma/client";
 
 export type FeeStructure = {
@@ -54,7 +51,7 @@ export type StudentFeeReportList = {
   id: string;
   name: string;
   username: string;
-  parentName: string | null;
+  fatherName: string | null;
   img: string | null;
   dob: string;
   phone: string | null;
@@ -129,20 +126,25 @@ export const dropdownUI =
 export interface StudentFee {
   id: number;
   studentId: string;
-  feeStructureId: number;
   term: string;
   paidAmount: number;
   discountAmount: number;
   fineAmount: number;
-  abacusPaidAmount?: number | null;
-  receivedDate: string | null;
-  receiptDate: string | null;
-  paymentMode: string | null;
-  feeStructure: FeeStructure;
-  feeTransactions: FeeTransaction[];
-  collectedAmount?: number;
-  receiptNo?: string | null;
-  remarks?: string | null;
+  receiptDate?: string;
+  receiptNo?: string;
+  remarks?: string;
+  paymentMode: PaymentMode;
+  academicYear: AcademicYear; // ✅ add this line
+  feeStructure?: {
+    id: number;
+    termFees?: number;
+    abacusFees?: number;
+    dueDate?: string;
+  };
+  feeTransactions?: {
+    receiptNo?: string;
+    remarks?: string;
+  }[];
 }
 
 export type PermissionWithRelations = {
@@ -236,15 +238,48 @@ export type StudentList = {
   id: string;
   name: string;
   gender: string;
-  parentName: string | null;
+  fatherName: string | null;
   phone: string;
   img?: string | null;
   Class?: { name: string | null } | null;
   totalFees?: { totalDiscountAmount: number | null } | null;
 };
 
+export type StudentsList = Student & {
+  Class: {
+    id: number;
+    section: string | null;
+    gradeId: number;
+    Grade: {
+      level: string;
+    };
+  };
+};
+
+
 export type FeesList = Grade & {
   feestructure: FeeStructure[];
+};
+
+// Types
+export type StudentsFeeReportList = {
+  id: string;
+  name: string;
+  username: string;
+  fatherName: string | null;
+  img: string | null;
+  dob: string;
+  phone: string | null;
+  gender: string | null;
+  studentFees?: (StudentFees & { feeStructure?: FeeStructure })[];
+  studentTotalFees?: StudentTotalFees | null;
+  Class?: {
+    name: string;
+    Grade?: {
+      name: string;
+      feestructure?: FeeStructure[];
+    };
+  };
 };
 
 export type Homeworks = Homework & {

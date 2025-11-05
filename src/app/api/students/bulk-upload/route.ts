@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     const { students } = await req.json();
 
     if (!Array.isArray(students)) {
-      return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid data format" },
+        { status: 400 }
+      );
     }
 
     let created = 0;
@@ -35,7 +38,7 @@ export async function POST(req: NextRequest) {
         id,
         username: rawUsername,
         name,
-        parentName,
+        fatherName,
         email,
         phone,
         address,
@@ -49,7 +52,9 @@ export async function POST(req: NextRequest) {
       } = s;
 
       if (!id || !rawUsername || !name || !dob || !classId || !phone) {
-        errors.push(`Missing required fields for student: ${rawUsername || id}`);
+        errors.push(
+          `Missing required fields for student: ${rawUsername || id}`
+        );
         continue;
       }
 
@@ -77,7 +82,9 @@ export async function POST(req: NextRequest) {
 
       if (!profile) {
         const normalizedClerkId =
-          providedClerkId && providedClerkId.trim() !== "" ? providedClerkId : null;
+          providedClerkId && providedClerkId.trim() !== ""
+            ? providedClerkId
+            : null;
 
         profile = await prisma.profile.create({
           data: {
@@ -86,7 +93,9 @@ export async function POST(req: NextRequest) {
           },
           include: { users: true },
         });
-        console.log(`Created profile for phone: ${phone} (Profile ID: ${profile.id})`);
+        console.log(
+          `Created profile for phone: ${phone} (Profile ID: ${profile.id})`
+        );
       }
 
       // ✅ Step 2: Ensure Student Role exists for this profile
@@ -112,7 +121,7 @@ export async function POST(req: NextRequest) {
           data: {
             username: studentUsername,
             name,
-            parentName,
+            fatherName,
             email,
             phone,
             address,
@@ -133,7 +142,7 @@ export async function POST(req: NextRequest) {
             id,
             username: studentUsername,
             name,
-            parentName,
+            fatherName,
             email,
             phone,
             address,
@@ -152,34 +161,53 @@ export async function POST(req: NextRequest) {
 
       console.log(`Processed student: ${id} - ${name} (${student.id})`);
 
-      // ✅ Step 4: Fee structure mapping (unchanged)
+      // ✅ Step 4: Fee structure mapping (strict academic year match)
       const feeStructures = await prisma.feeStructure.findMany({
-        where: { gradeId: cls.Grade.id, academicYear },
+        where: {
+          gradeId: cls.Grade.id,
+          academicYear: academicYear as any,
+        },
       });
 
-      if (feeStructures.length === 0) {
+      if (!feeStructures.length) {
         errors.push(
           `No fee structure for student ${id} (grade: ${cls.Grade.id}, year: ${academicYear})`
         );
         continue;
       }
 
-      await prisma.studentFees.createMany({
-        data: feeStructures.map((fee) => ({
+      // 🧹 First, cleanup any mismatched fee records (wrong year)
+      await prisma.studentFees.deleteMany({
+        where: {
           studentId: id,
-          feeStructureId: fee.id,
-          academicYear,
-          term: fee.term,
-          paidAmount: 0,
-          discountAmount: 0,
-          fineAmount: 0,
-          abacusPaidAmount: 0,
-          receivedDate: null,
-          receiptDate: null,
-          paymentMode: "CASH",
-        })),
-        skipDuplicates: true,
+          NOT: { academicYear: academicYear as any },
+        },
       });
+
+      // 🛡️ Then only insert fees for the correct year if not already existing
+      for (const fee of feeStructures) {
+        await prisma.studentFees.upsert({
+          where: {
+            studentId_academicYear_term: {
+              studentId: id,
+              academicYear: fee.academicYear,
+              term: fee.term,
+            },
+          },
+          update: {}, // do nothing if exists
+          create: {
+            studentId: id,
+            feeStructureId: fee.id,
+            academicYear: fee.academicYear,
+            term: fee.term,
+            paidAmount: 0,
+            discountAmount: 0,
+            fineAmount: 0,
+            abacusPaidAmount: 0,
+            paymentMode: "CASH",
+          },
+        });
+      }
 
       feesMapped++;
     }
@@ -190,6 +218,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("💥 Bulk upload failed:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

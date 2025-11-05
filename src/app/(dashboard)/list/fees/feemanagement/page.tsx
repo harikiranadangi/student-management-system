@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import ClassFilterDropdown from "@/components/FilterDropdown";
 import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
@@ -11,6 +12,8 @@ import Image from "next/image";
 import { FeesList, SearchParams } from "../../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import AcademicYearDropdown from "@/components/dropdowns/AcademicYearDropdown";
+import { AcademicYear } from "@prisma/client";
+import { FeeGradeSelect } from "../../../../../../types/query-types";
 
 // Row Renderer
 const renderRow = (grade: FeesList, role: string | null) => {
@@ -88,38 +91,38 @@ const FeesListPage = async ({
   const whereClause: any = {};
 
   if (gradeId) whereClause.id = Number(gradeId);
-  if (academicYear) {
+
+  // Cast to enum if it's a valid value
+  const parsedAcademicYear =
+    academicYear &&
+    Object.values(AcademicYear).includes(academicYear as AcademicYear)
+      ? (academicYear as AcademicYear)
+      : undefined;
+
+  if (parsedAcademicYear) {
     whereClause.feestructure = {
-      some: {
-        ...(academicYear ? { academicYear } : {}),
-      },
+      some: { academicYear: parsedAcademicYear },
     };
   }
 
   const [grades, totalCount] = await Promise.all([
-    prisma.grade.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        level: true,
-        feestructure: {
-          select: {
-            id: true,
-            term: true,
-            termFees: true,
-            abacusFees: true,
-            startDate: true,
-            dueDate: true,
-            academicYear: true,
-          },
-        },
+  prisma.grade.findMany({
+    where: whereClause,
+    select: {
+      ...FeeGradeSelect,
+      feestructure: {
+        where: parsedAcademicYear
+          ? { academicYear: parsedAcademicYear }
+          : undefined,
+        select: FeeGradeSelect.feestructure.select,
       },
-      orderBy: { [sortKey]: sortOrder },
-      take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (page - 1),
-    }),
-    prisma.grade.count({ where: whereClause }),
-  ]);
+    },
+    orderBy: { [sortKey || "id"]: sortOrder || "asc" },
+    take: ITEM_PER_PAGE,
+    skip: ITEM_PER_PAGE * ((page ?? 1) - 1),
+  }),
+  prisma.grade.count({ where: whereClause }),
+]);
 
   const allGrades = await prisma.grade.findMany({
     select: { id: true, level: true },
@@ -131,9 +134,7 @@ const FeesListPage = async ({
     <div className="flex-1 p-4 m-4 mt-0 bg-white dark:bg-gray-900 rounded-md text-black dark:text-white">
       {/* Top Controls */}
       <div className="flex items-center justify-between mb-3">
-        <h1 className="hidden text-lg font-semibold md:block">
-          Fees Management ({totalCount})
-        </h1>
+        <h1 className="hidden text-lg font-semibold md:block">Fees Management</h1>
 
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />

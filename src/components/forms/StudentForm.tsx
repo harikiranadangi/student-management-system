@@ -118,7 +118,7 @@ const StudentForm = ({
       <div className="flex flex-wrap justify-between gap-4">
         <InputField label="Admission No (Optional)" name="id" defaultValue={data?.id} register={register} placeholder="Enter admission number" error={errors.id} />
         <InputField label="Student Name" name="name" defaultValue={data?.name} register={register} error={errors.name} placeholder="As per Record" />
-        <InputField label="Parent Name" name="parentName" defaultValue={data?.parentName} register={register} error={errors.parentName}  placeholder="Enter Parent Number"/>
+        <InputField label="Parent Name" name="parentName" defaultValue={data?.fatherName} register={register} error={errors.fatherName}  placeholder="Enter Parent Number"/>
         <InputField label="Phone" name="phone" defaultValue={data?.phone} register={register} error={errors.phone} placeholder="Enter Mobile Number"/>
         <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address}  placeholder="Enter Address"/>
         <InputField label="Email (Optional)" name="email" defaultValue={data?.email} register={register} error={errors?.email} placeholder="Enter email id"/>

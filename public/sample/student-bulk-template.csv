@@ -1,3 +1,3 @@
-id,username,name,parentName,email,phone,address,img,bloodType,gender,dob,classId,clerk_id,academicYear
+id,username,name,fatherName,email,phone,address,img,bloodType,gender,dob,classId,clerk_id,academicYear
 s001,stu001,Ravi Kumar,Suresh Kumar,stu001@kotakschool.com,9876543210,123 Street,A.jpg,B+,Male,15-04-2009,1,,Y2024_2025
 s002,stu002,Meena Devi,Rajesh Devi,stu002@kotakschool.com,9876543211,456 Road,B.jpg,O+,Female,10-06-2010,1,,Y2024_2025

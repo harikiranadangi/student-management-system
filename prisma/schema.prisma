@@ -48,7 +48,6 @@ model Grade {
 
 model Class {
   id              Int              @id @default(autoincrement())
-  name            String // no @unique anymore
   section         String? // e.g., "A", "B"
   supervisorId    String?          @unique
   gradeId         Int
@@ -177,7 +176,8 @@ model Student {
   id                String             @id
   username          String             @unique
   name              String
-  parentName        String?
+  motherName        String?
+  fatherName        String?
   email             String?
   phone             String
   address           String
@@ -286,64 +286,70 @@ model FeeStructure {
 
   @@unique([gradeId, term, academicYear])
 }
-
 model FeeTransaction {
-  id              Int         @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   studentId       String
-  term            String
   studentFeesId   Int
-  amount          Float       @default(0)
-  discountAmount  Float       @default(0)
-  fineAmount      Float       @default(0)
+  term            String
+  amount          Float         @default(0)
+  discountAmount  Float         @default(0)
+  fineAmount      Float         @default(0)
   receiptDate     DateTime
-  receivedDate    DateTime?   @default(now())
+  receivedDate    DateTime?     @default(now())
   receiptNo       String
-  paymentMode     PaymentMode @default(CASH)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  paymentMode     PaymentMode   @default(CASH)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   remarks         String?
-  studentFees     StudentFees @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
-  student         Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  deletedAt       DateTime?
-  transactionType String      @default("PAYMENT") // use "CANCELLED" for cancelled fees
+  academicYear    AcademicYear  @default(Y2024_2025) // 🎯 Added field
+  transactionType String        @default("PAYMENT")  // or "CANCELLED"
   updatedByName   String?
+  deletedAt       DateTime?
+
+  studentFees     StudentFees   @relation("FeeTransactionStudentFees", fields: [studentFeesId], references: [id], onDelete: Cascade)
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, academicYear])
 }
 
 model StudentFees {
   id               Int              @id @default(autoincrement())
   studentId        String
+  feeStructureId   Int
+  academicYear     AcademicYear     @default(Y2024_2025)
+  term             String
   paidAmount       Int              @default(0)
   abacusPaidAmount Int?
-  feeStructureId   Int
   discountAmount   Int              @default(0)
   fineAmount       Int              @default(0)
   receiptDate      DateTime?
   receivedDate     DateTime?        @default(now())
   paymentMode      PaymentMode      @default(CASH)
-  academicYear     AcademicYear     @default(Y2024_2025)
   receiptNo        String?
-  term             String
   remarks          String?          @default("")
+  updatedByName    String?
+
   feeTransactions  FeeTransaction[] @relation("FeeTransactionStudentFees")
   feeStructure     FeeStructure     @relation(fields: [feeStructureId], references: [id])
   student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  updatedByName    String?
 
   @@unique([studentId, academicYear, term], name: "studentId_academicYear_term")
 }
 
 model StudentTotalFees {
-  id                  Int     @id @default(autoincrement())
-  studentId           String  @unique
-  totalPaidAmount     Float   @default(0)
-  totalDiscountAmount Float   @default(0)
-  totalFineAmount     Float   @default(0)
-  totalAbacusAmount   Float   @default(0)
-  totalFeeAmount      Float   @default(0)
-  dueAmount           Float   @default(0)
-  status              String  @default("Not Paid")
-  student             Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                  Int      @id @default(autoincrement())
+  studentId           String   @unique
+  totalPaidAmount     Float    @default(0)
+  totalDiscountAmount Float    @default(0)
+  totalFineAmount     Float    @default(0)
+  totalAbacusAmount   Float    @default(0)
+  totalFeeAmount      Float    @default(0)
+  dueAmount           Float    @default(0)
+  status              String   @default("Not Paid")
+
+  student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
+
 
 model Attendance {
   id        Int      @id @default(autoincrement())

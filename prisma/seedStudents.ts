@@ -42,7 +42,7 @@ async function seedStudents() {
             id: row.id,
             username: row.username,
             name: row.name,
-            parentName: row.parentName,
+            fatherName: row.fatherName,
             email: row.email,
             phone: row.phone,
             address: row.address,

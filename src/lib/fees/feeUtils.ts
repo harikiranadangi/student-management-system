@@ -11,7 +11,7 @@ export type StudentFee = {
 export type Student = {
   id: string;
   name: string;
-  parentName: string | null;
+  fatherName: string | null;
   phone: string | null;
   Class?: { name: string };
   studentFees: StudentFee[];
@@ -20,7 +20,7 @@ export type Student = {
 export type StudentFeeReportRow = {
   id: string;
   name: string;
-  parentName: string | null;
+  fatherName: string | null;
   phone: string | null;
   className: string;
   totalFees: number;
@@ -43,7 +43,7 @@ export const calculateStudentFeeReport = (student: Student): StudentFeeReportRow
   return {
     id: student.id,
     name: student.name,
-    parentName: student.parentName,
+    fatherName: student.fatherName,
     phone: student.phone,
     className: student.Class?.name || "-",
     totalFees,

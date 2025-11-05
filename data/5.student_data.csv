@@ -1,4 +1,4 @@
-id,username,name,parentName,email,phone,address,img,bloodType,gender,dob,classId,clerk_id,academicYear
+id,username,name,fatherName,email,phone,address,img,bloodType,gender,dob,classId,clerk_id,academicYear
 15708,s15708,KEERTHI MANJULA YELAMANCHILLI,Y GEETHA PRASAD,s15708@kotakschool.com,888687789,Visakhapatnam,,Under Investigation,Female,14-06-2013,30,,Y2024_2025
 15463,s15463,NAMISHA SAI PATNALA,P PYDIRAJU,s15463@kotakschool.com,6281167136,Visakhapatnam,,Under Investigation,Female,23-09-2009,44,,Y2024_2025
 16518,s16518,MOSES HENDRICKS TURUK,KISHORE KUMAR TURUK,s16518@kotakschool.com,6281470321,Visakhapatnam,,Under Investigation,Male,24-02-2018,8,,Y2024_2025

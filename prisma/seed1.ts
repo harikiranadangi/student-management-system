@@ -136,7 +136,6 @@ async function main() {
     try {
       await prisma.class.create({
         data: {
-          name: className,
           gradeId,
           section,
           supervisorId,
@@ -216,7 +215,7 @@ async function main() {
     id: row.id,
     username: row.username,
     name: row.name,
-    parentName: row.parentName,
+    fatherName: row.fatherName,
     email: row.email,
     phone: row.phone,
     address: row.address,

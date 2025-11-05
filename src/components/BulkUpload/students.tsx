@@ -8,7 +8,7 @@ type StudentCSV = {
   id: string;
   username: string;
   name: string;
-  parentName?: string;
+  fatherName?: string;
   email?: string;
   phone: string;
   address?: string;
