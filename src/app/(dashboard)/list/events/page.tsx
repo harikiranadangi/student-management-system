@@ -6,22 +6,10 @@ import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
-import { Event, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
-import { SearchParams } from "../../../../../types";
+import { Events, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
-
-type GradeType = {
-  id: number;
-  level: string;
-};
-
-type ClassType = {
-  section: string | null;
-  grade?: GradeType | null;
-};
-
-type Events = Event & { class: ClassType | null };
 
 const renderRow = (item: Events, role: string | null) => (
   <tr
@@ -156,14 +144,12 @@ const EventsList = async ({
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
       where: query,
-      include: {
+      select: {
         Class: {
           select: {
-            id: true,
             section: true,
             Grade: {
               select: {
-                id: true,
                 level: true,
               },
             },

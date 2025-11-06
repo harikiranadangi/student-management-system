@@ -12,6 +12,7 @@ import SortButton from "@/components/SortButton";
 import { Homeworks, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import { fetchUserInfo } from "@/lib/utils/server-utils";
+import { HomeworkSelect } from "../../../../../types/query-types";
 
 // Render a single table row
 const renderRow = (item: Homeworks, role: string | null) => (
@@ -135,21 +136,7 @@ const HomeworkListPage = async ({
     prisma.homework.findMany({
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       where: filters,
-      include: {
-        Class: {
-          select: {
-            id: true,
-            gradeId: true,
-            section: true,
-            Grade: {
-              select: {
-                id: true,
-                level: true,
-              },
-            },
-          },
-        },
-      },
+      select: HomeworkSelect,
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),

@@ -21,7 +21,6 @@ async function seedClasses() {
     try {
       await prisma.class.create({
         data: {
-          name: className,
           section: cls.section,
           gradeId: cls.gradeId,
           supervisorId: cls.supervisorId,

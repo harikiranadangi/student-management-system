@@ -25,7 +25,7 @@ const renderRow = (item: StudentList, role: string | null) => {
   const totalFeeAmount = studentFee?.totalFeeAmount ?? 0;
   const discountAmount = item.totalFees?.totalDiscountAmount ?? 0;
   const dueAmount = totalFeeAmount - paidAmount - abacusAmount - discountAmount;
-  const isPreKg = item.Class?.name?.trim().toLowerCase() === "pre kg";
+  const isPreKg = item.Class?.section?.trim().toLowerCase() === "pre kg";
 
   const { status } = getTermStatus({
     dueAmount,
@@ -52,7 +52,7 @@ const renderRow = (item: StudentList, role: string | null) => {
         />
         <div className="flex flex-col">
           <h3 className="font-semibold">
-            {item.name} ({item.Class?.name ?? "N/A"})
+            {item.name} ({item.Class?.section})
           </h3>
           <p className="text-xs">{item.id}</p>
         </div>

@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { SingleStudentFeeSelect } from "../../../../../../../types/query-types";
 
 interface StudentFeePageProps {
   params: Promise<{ mode: string; id: string }>;
@@ -22,32 +23,7 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
 
   const student = await prisma.student.findUnique({
   where: { id },
-  select: {
-    id: true,
-    name: true,
-    img: true,
-    gender: true,
-    dob: true,
-    bloodType: true,
-    email: true,
-    phone: true,
-    Class: {
-      select: {
-        id: true,
-        name: true,
-        gradeId: true,
-        Grade: {
-          select: { id: true, level: true },
-        },
-        Teacher: {
-          select: { id: true, name: true },
-        },
-        _count: {
-          select: { lessons: true },
-        },
-      },
-    },
-  },
+  select: SingleStudentFeeSelect,
 });
 
 
@@ -117,7 +93,7 @@ const StudentFeePage = async ({ params }: StudentFeePageProps) => {
 
             {/* Class Name Card */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-md flex-1">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{student.Class.name}</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{student.Class.Grade.level} - {student.Class.section}</h1>
               <span className="text-sm text-gray-400 dark:text-gray-300">Class</span>
             </div>
 

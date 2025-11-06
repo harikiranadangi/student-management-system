@@ -154,13 +154,15 @@ export async function POST(req: NextRequest) {
     // ✅ Step 10: Log a message
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      include: { Class: true },
+      include: {
+        Class: { select: { id: true, section: true, gradeId: true } },
+      },
     });
 
     if (student) {
       const messageContent = getMessageContent("FEE_COLLECTION", {
         name: student.name,
-        className: student.Class?.name ?? "",
+        className: student.Class?.section ?? "",
         amount,
         term,
       });
@@ -191,48 +193,52 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-  console.error("❌ API Error:", error);
+    console.error("❌ API Error:", error);
 
-  if (error.code === "P2002") {
+    if (error.code === "P2002") {
+      return NextResponse.json(
+        { message: "Duplicate record constraint violation", meta: error.meta },
+        { status: 400 }
+      );
+    }
+
+    if (error.code === "P2003") {
+      return NextResponse.json(
+        { message: "Foreign key constraint failed", meta: error.meta },
+        { status: 400 }
+      );
+    }
+
+    // 🧩 ADD THIS: to print Prisma validation errors
+    if (error.name === "PrismaClientValidationError") {
+      console.error("⚠️ Validation Error Details:", error.message);
+      return NextResponse.json(
+        { message: "Prisma validation error", error: error.message },
+        { status: 400 }
+      );
+    }
+
+    // 🧩 ADD THIS: to print unknown Prisma known errors
+    if (error.name === "PrismaClientKnownRequestError") {
+      console.error("⚠️ Known Prisma Error:", error.message);
+      return NextResponse.json(
+        {
+          message: "Prisma known error",
+          error: error.message,
+          meta: error.meta,
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { message: "Duplicate record constraint violation", meta: error.meta },
-      { status: 400 }
+      {
+        message: "Internal Server Error",
+        prismaError: error?.meta || null,
+        error: error.message || "Unknown error",
+        stack: error.stack,
+      },
+      { status: 500 }
     );
   }
-
-  if (error.code === "P2003") {
-    return NextResponse.json(
-      { message: "Foreign key constraint failed", meta: error.meta },
-      { status: 400 }
-    );
-  }
-
-  // 🧩 ADD THIS: to print Prisma validation errors
-  if (error.name === "PrismaClientValidationError") {
-    console.error("⚠️ Validation Error Details:", error.message);
-    return NextResponse.json(
-      { message: "Prisma validation error", error: error.message },
-      { status: 400 }
-    );
-  }
-
-  // 🧩 ADD THIS: to print unknown Prisma known errors
-  if (error.name === "PrismaClientKnownRequestError") {
-    console.error("⚠️ Known Prisma Error:", error.message);
-    return NextResponse.json(
-      { message: "Prisma known error", error: error.message, meta: error.meta },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json(
-    {
-      message: "Internal Server Error",
-      prismaError: error?.meta || null,
-      error: error.message || "Unknown error",
-      stack: error.stack,
-    },
-    { status: 500 }
-  );
-}
 }

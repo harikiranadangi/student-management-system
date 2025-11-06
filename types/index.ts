@@ -4,7 +4,7 @@ import {
   AcademicYear,
   Announcement,
   Attendance,
-  Class,
+  Event,
   Exam,
   FeeTransaction,
   Grade,
@@ -44,29 +44,6 @@ export type StudentTotalFees = {
   totalFeeAmount: number;
   dueAmount: number;
   status: string; // like "Paid", "Partial", "Not Paid"
-};
-
-// Full student report model
-export type StudentFeeReportList = {
-  id: string;
-  name: string;
-  username: string;
-  fatherName: string | null;
-  img: string | null;
-  dob: string;
-  phone: string | null;
-  gender: string | null;
-
-  studentFees?: StudentFees[]; // multiple studentFees with feeStructure inside
-  studentTotalFees?: StudentTotalFees | null; // total fees, optional
-
-  Class?: {
-    name: string;
-    Grade?: {
-      name: string;
-      feestructure?: FeeStructure[]; // grade-wise feeStructure
-    };
-  };
 };
 
 // types.ts
@@ -200,29 +177,44 @@ export type Props = {
   fileName: string;
 };
 
-export type AnnouncementList = Announcement & { Class: Class };
+export type AnnouncementList = Announcement & {
+  Class: {
+    name: string | null;
+  };
+};
 
 export type AttendanceResponse = {
   attendance: Attendance[];
-  students: (Student & { Class: Class })[];
+  students: (Student & {
+    Class: {
+      id: number;
+      section: string | null;
+      gradeId: number;
+      Grade: {
+        level: string;
+      };
+    };
+  })[];
 };
 
 export type ClassList = {
   id: number;
-  section: string | null;
-  gradeId: number;
-  Grade: {
-    id: number;
-    level: string;
-  };
+  name: string;
+  supervisorId: string | null;
   Teacher: {
-    id: string;
     name: string;
-    classId: number;
   } | null;
 };
 
-export type Events = Event & { class: Class };
+export type Events = Event & {
+  class?: {
+    section: string | null;
+    grade?: {
+      id: number;
+      level: string;
+    } | null;
+  } | null;
+};
 
 export type Exams = Exam & {
   examGradeSubjects: {
@@ -241,7 +233,14 @@ export type StudentList = {
   fatherName: string | null;
   phone: string;
   img?: string | null;
-  Class?: { name: string | null } | null;
+  Class: {
+    id: number;
+    section: string | null;
+    gradeId: number;
+    Grade: {
+      level: string;
+    };
+  };
   totalFees?: { totalDiscountAmount: number | null } | null;
 };
 
@@ -255,7 +254,6 @@ export type StudentsList = Student & {
     };
   };
 };
-
 
 export type FeesList = Grade & {
   feestructure: FeeStructure[];
@@ -282,22 +280,28 @@ export type StudentsFeeReportList = {
   };
 };
 
-export type Homeworks = Homework & {
+export type Homeworks = {
+  id: number;
+  groupId: string;
+  date: string;
+  description: string;
+  classId: number;
   Class: {
     id: number;
     gradeId: number;
     section: string | null;
     Grade: {
-      id: number;
       level: string;
     };
   };
 };
 
+
 export type MessageList = Messages & {
   Student: {
     id: string;
     name: string;
+    classId: number;
   } | null;
   Class: {
     id: number;

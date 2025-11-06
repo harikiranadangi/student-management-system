@@ -7,7 +7,7 @@ type Lesson = {
   period: keyof typeof PERIOD_TIMINGS | null; // PERIOD1, PERIOD2, BREAK1...
   subject: string;
   teacher?: string;
-  class?: string;
+  class: string | null;
 };
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];

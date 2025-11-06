@@ -40,6 +40,7 @@ const renderRow = (item: StudentsList, role: string | null) => (
 
     {role === "admin" && <td>{item.Class.Grade.level} - {item.Class.section}</td>}
     <td className="hidden md:table-cell">{item.fatherName || "N/A"}</td>
+    <td className="hidden md:table-cell">{item.motherName || "N/A"}</td>
     <td className="hidden md:table-cell">
       {new Date(item.dob).toLocaleDateString("en-GB").replace(/\//g, "-")}
     </td>
@@ -69,8 +70,13 @@ const getColumns = (role: string | null) => [
   { header: "Student Name", accessor: "name" },
   ...(role === "admin" ? [{ header: "Class", accessor: "class" }] : []),
   {
-    header: "Parent Name",
+    header: "Father Name",
     accessor: "fatherName",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Mother Name",
+    accessor: "motherName",
     className: "hidden md:table-cell",
   },
   { header: "DOB", accessor: "dob", className: "hidden md:table-cell" },

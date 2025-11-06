@@ -2,6 +2,7 @@ import React from "react";
 import prisma from "@/lib/prisma";
 import FeesTable from "./FeesTable";
 import { StudentFee } from "../../../types";
+import { AcademicYear } from "@prisma/client";
 
 interface FeesTableContainerProps {
   studentId: string;
@@ -40,24 +41,32 @@ const FeesTableContainer = async ({
     const matchingPayment = studentFees.find(
       (sf) => sf.feeStructureId === fee.id
     );
+
     return {
       id: matchingPayment?.id || 0,
+      academicYear: fee.academicYear as AcademicYear,
       feeStructureId: fee.id,
       studentId,
       term: fee.term,
       paidAmount: matchingPayment?.paidAmount || 0,
       discountAmount: matchingPayment?.discountAmount || 0,
       fineAmount: matchingPayment?.fineAmount || 0,
-      abacusPaidAmount: matchingPayment?.abacusPaidAmount || null,
-      receivedDate: matchingPayment?.receivedDate?.toISOString() ?? null,
-      receiptDate: matchingPayment?.receiptDate?.toISOString() ?? null,
-      paymentMode: matchingPayment?.paymentMode || null,
+      abacusPaidAmount: matchingPayment?.abacusPaidAmount ?? null,
+      receiptDate: matchingPayment?.receiptDate?.toISOString() ?? undefined, // ✅ changed
+      receiptNo: matchingPayment?.receiptNo ?? undefined, // ✅ added for completeness
+      remarks: matchingPayment?.remarks ?? undefined, // ✅ added
+      paymentMode: matchingPayment?.paymentMode ?? "CASH", // ✅ always a valid PaymentMode
       feeStructure: {
-        ...fee,
-        startDate: fee.startDate?.toISOString?.() ?? null,
-        dueDate: fee.dueDate?.toISOString?.() ?? null,
+        id: fee.id,
+        termFees: fee.termFees ?? 0,
+        abacusFees: fee.abacusFees ?? 0,
+        dueDate: fee.dueDate?.toISOString?.() ?? undefined, // ✅ changed
       },
-      feeTransactions: matchingPayment?.feeTransactions || [],
+      feeTransactions:
+        matchingPayment?.feeTransactions?.map((tx) => ({
+          receiptNo: tx.receiptNo ?? undefined,
+          remarks: tx.remarks ?? undefined,
+        })) ?? [],
     };
   });
 

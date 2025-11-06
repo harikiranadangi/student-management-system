@@ -148,7 +148,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
       const row: any = {
         studentId: student.id,
         studentName: student.name,
-        className: student.Class?.name || "N/A",
+        className: student.Class.Grade.level + student.Class.section || "N/A",
       };
 
       uniqueDates.forEach((date) => {
@@ -306,7 +306,7 @@ export default function ViewAttendancePage({ role, teacherClassId }: Props) {
                     </td>
                     <td className="p-1 border dark:border-gray-700">{student.id}</td>
                     <td className="p-2 border dark:border-gray-700 truncate">{student.name}</td>
-                    <td className="p-2 border dark:border-gray-700">{student.Class?.name || "N/A"}</td>
+                    <td className="p-2 border dark:border-gray-700">{student.Class.Grade.level + student.Class.section || "N/A"}</td>
                     <td
                       className={`p-1 border dark:border-gray-700 font-semibold ${
                         a.present ? "text-green-600" : "text-red-600"

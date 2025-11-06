@@ -14,6 +14,7 @@ const ClassTimetableContainer = async ({ classId }: { classId: number }) => {
       subject: lesson.Subject.name,
       teacher: lesson.Teacher.name,
       class: lesson.Class.name,
+      
     }))
     .filter((l) => l.period !== null);
 

@@ -10,6 +10,7 @@ import SortButton from "@/components/SortButton";
 import { MessageList, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
 import { fetchUserInfo, getClassIdForRole } from "@/lib/utils/server-utils";
+import { MessagesSelect } from "../../../../../types/query-types";
 
 const renderRow = (item: MessageList, role: string | null) => (
   <tr
@@ -175,27 +176,7 @@ const MessagesList = async ({
     prisma.messages.findMany({
       orderBy: [{ [sortKey]: sortOrder }, { id: "desc" }],
       where: query,
-      include: {
-        Student: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        Class: {
-          select: {
-            id: true,
-            section: true,
-            gradeId: true,
-            Grade: {
-              select: {
-                id: true,
-                level: true,
-              },
-            },
-          },
-        },
-      },
+      select: MessagesSelect,
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (parseInt(p) - 1),
     }),

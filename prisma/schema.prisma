@@ -48,7 +48,8 @@ model Grade {
 
 model Class {
   id              Int              @id @default(autoincrement())
-  section         String? // e.g., "A", "B"
+  name            String?           @unique 
+  section         String // e.g., "A", "B"
   supervisorId    String?          @unique
   gradeId         Int
   Announcement    Announcement[]

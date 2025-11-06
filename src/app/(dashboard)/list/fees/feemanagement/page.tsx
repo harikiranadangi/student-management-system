@@ -41,7 +41,6 @@ const renderRow = (grade: FeesList, role: string | null) => {
             ? new Intl.DateTimeFormat("en-GB").format(new Date(fee.dueDate))
             : "-"}
         </td>
-        <td>{fee.academicYear === "Y2024_2025" ? "2024-25" : "2025-26"}</td>
         {role === "admin" && (
           <td className="p-2">
             <div className="flex items-center gap-2">
@@ -62,7 +61,6 @@ const getColumns = (role: string | null) => [
   { header: "Term Fees", accessor: "feestructure.termFees" },
   { header: "Start Date", accessor: "feestructure.startDate" },
   { header: "Due Date", accessor: "feestructure.dueDate" },
-  { header: "Academic Year", accessor: "feestructure.academicyear" },
   ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
 ];
 

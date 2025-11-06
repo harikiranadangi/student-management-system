@@ -10,6 +10,7 @@ import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import { ClassList, SearchParams } from "../../../../../types";
 import ResetFiltersButton from "@/components/ResetFiltersButton";
+import { ClassSelect } from "../../../../../types/query-types";
 
 const renderRow = (item: ClassList, role: string | null) => (
   <tr
@@ -18,7 +19,7 @@ const renderRow = (item: ClassList, role: string | null) => (
                dark:border-gray-700 dark:even:bg-gray-800 dark:hover:bg-gray-700"
   >
     <td className="flex items-center gap-4 p-4 text-black dark:text-white">
-      {item.Grade.level} - {item.section}
+      {item.name}
     </td>
     <td className="hidden md:table-cell text-black dark:text-white">
       {item.Teacher ? item.Teacher.name : "No Class Teacher"}
@@ -87,24 +88,7 @@ const ClassesList = async ({
     prisma.class.findMany({
       where: query,
       orderBy: { [sortKey]: sortOrder },
-      select: {
-        id: true,
-        section: true,
-        gradeId: true,
-        Grade: {
-          select: {
-            id: true,
-            level: true,
-          },
-        },
-        Teacher: {
-          select: {
-            id: true,
-            name: true,
-            classId: true,
-          },
-        },
-      },
+      select: ClassSelect,
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (currentPage - 1),
     }),

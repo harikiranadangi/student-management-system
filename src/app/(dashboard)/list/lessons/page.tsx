@@ -29,14 +29,14 @@ const LessonsListPage = async ({
     : undefined;
 
   // Fetch data for dropdowns
-  const classes = await prisma.class.findMany({ include: { Grade: true } });
-  const grades = await prisma.grade.findMany();
-  const teachers = await prisma.teacher.findMany();
+  const classes = await prisma.class.findMany({ select: { id: true, section: true, gradeId: true } });
+  const grades = await prisma.grade.findMany({select: { id: true, level: true }});
+  const teachers = await prisma.teacher.findMany({select: { id: true, name: true }});
 
   const classData = classes.map((cls) => ({
     id: cls.id,
     section: cls.section,
-    gradeId: cls.Grade?.id ?? 0,
+    gradeId: cls.gradeId ?? 0,
   }));
 
   const gradeData = grades.map((g) => ({ id: g.id, level: g.level }));

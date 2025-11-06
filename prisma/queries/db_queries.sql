@@ -27,6 +27,14 @@ JOIN information_schema.columns c
 FROM information_schema.sequences s
 WHERE s.sequence_name LIKE '%Subject%id%seq%';
 
+SELECT 
+  'ALTER SEQUENCE "' || s.sequence_name || '" RESTART WITH ' ||
+  (SELECT COALESCE(MAX(id), 0) + 1 FROM "class") || ';' AS reset_command
+FROM information_schema.sequences s
+WHERE s.sequence_name LIKE '%Class%id%seq%';
+
+ALTER SEQUENCE "class_id_seq" RESTART WITH 1;
+
 
 
 -- 2. Basic SELECT queries
@@ -35,7 +43,7 @@ WHERE s.sequence_name LIKE '%Subject%id%seq%';
 SELECT * FROM "Admin";
 SELECT * FROM "Student";
 SELECT * FROM "Teacher";
-SELECT * FROM "Class";
+SELECT * FROM "class";
 SELECT * FROM "Grade";
 SELECT * FROM "FeeStructure";
 SELECT * FROM "FeesCollection";

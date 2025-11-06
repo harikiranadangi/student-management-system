@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     for (const cls of classes) {
       const section = typeof cls.section === "string" ? cls.section.trim() : null;
-      const gradeId = parseInt(cls.gradeId);
+      const gradeId = Number(cls.gradeId);
       const supervisorId = typeof cls.supervisorId === "string" ? cls.supervisorId.trim() : undefined;
 
       if (!gradeId || isNaN(gradeId)) {
@@ -28,14 +28,11 @@ export async function POST(req: NextRequest) {
       }
 
       const grade = await prisma.grade.findUnique({ where: { id: gradeId } });
-
       if (!grade) {
         results.skipped++;
         results.messages.push(`Grade ID ${gradeId} not found`);
         continue;
       }
-
-      const className = `${grade.level} - ${section}`;
 
       const existing = await prisma.class.findFirst({
         where: { section, gradeId },
@@ -43,24 +40,25 @@ export async function POST(req: NextRequest) {
 
       if (existing) {
         results.skipped++;
-        results.messages.push(`Duplicate skipped: ${className}`);
+        results.messages.push(`Duplicate skipped: ${grade.level}-${section}`);
         continue;
       }
 
       try {
         await prisma.class.create({
           data: {
-            name: className,
             section,
             gradeId,
             supervisorId,
+            // ✅ no need to set name manually — Prisma auto-generates it
           },
         });
+
         results.inserted++;
-        results.messages.push(`Inserted: ${className}`);
+        results.messages.push(`Inserted: ${grade.level}-${section}`);
       } catch (error: any) {
         results.failed++;
-        results.messages.push(`Failed: ${className} (${error.code}: ${error.message})`);
+        results.messages.push(`Failed: ${grade.level}-${section} (${error.code ?? "ERR"}: ${error.message})`);
       }
     }
 

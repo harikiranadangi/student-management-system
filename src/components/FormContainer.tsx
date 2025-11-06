@@ -142,7 +142,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
             case 'homework':
                 const classHomework = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true, section: true }, // ✅ include gradeId
+                    select: { id: true, gradeId: true, section: true }, // ✅ include gradeId
                 });
 
                 const gradeHomework = await prisma.grade.findMany({
@@ -175,7 +175,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
             case 'announcement':
                 const classAnnouncement = await prisma.class.findMany({
-                    select: { id: true, name: true },
+                    select: { id: true, section: true },
                 });
 
                 const gradeAnnouncement = await prisma.grade.findMany({
@@ -220,7 +220,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
 
                 // Fetch classes based on the grade
                 const classpermissions = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true, section: true }, // Including gradeId to associate classes with grades
+                    select: { id: true, gradeId: true, section: true }, // Including gradeId to associate classes with grades
                 });
 
                 // Fetch students based on the class
@@ -272,7 +272,7 @@ const FormContainer = async ({ table, type, data, id, }: FormContainerProps) => 
                 });
 
                 const classesResults = await prisma.class.findMany({
-                    select: { id: true, name: true, gradeId: true }, // Including gradeId to associate classes with grades
+                    select: { id: true, section:true, gradeId: true }, // Including gradeId to associate classes with grades
                 });
 
                 relatedData = {

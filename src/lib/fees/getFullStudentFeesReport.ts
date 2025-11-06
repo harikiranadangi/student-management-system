@@ -10,22 +10,22 @@ export async function getFullStudentFeesReport() {
         Class: {
           include: {
             Grade: {
-              include: {
-                feestructure: true,
-              },
+              include: { feestructure: true },
             },
           },
         },
         totalFees: true,
-        studentFees: {
-          include: {
-            feeStructure: true,
-          },
-        },
+        studentFees: { include: { feeStructure: true } },
       },
     });
 
-    return allStudents.map(calculateStudentFeeReport);
+    // ✅ Normalize Class.name before passing to calculateStudentFeeReport
+    return allStudents.map((student) =>
+      calculateStudentFeeReport({
+        ...student,
+        Class: { name: student.Class?.name ?? "-" },
+      })
+    );
   } catch (error) {
     console.error("Error fetching student fees report:", error);
     throw error;

@@ -9,6 +9,7 @@ import { fetchUserInfo } from "@/lib/utils/server-utils";
 import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import { AnnouncementList } from "../../../../../types";
+import { AnnouncementSelect } from "../../../../../types/query-types";
 
 const renderRow = (item: AnnouncementList, role: string | null) => (
   <tr
@@ -19,7 +20,7 @@ const renderRow = (item: AnnouncementList, role: string | null) => (
       {new Date(item.date).toLocaleDateString("en-US")}
     </td>
 
-    <td className="hidden md:table-cell">{item.Class?.name}</td>
+    <td className="hidden md:table-cell">{item.Class.name}</td>
     <td className="flex md:table-cell">{item.title}</td>
     <td className="flex items-left gap-4 p-4">{item.description}</td>
     <td>
@@ -99,9 +100,7 @@ const AnnouncementsList = async ({
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({
       where: query,
-      include: {
-        Class: true,
-      },
+      select: AnnouncementSelect,
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
@@ -118,7 +117,7 @@ const AnnouncementsList = async ({
         <div className="flex flex-col items-center w-full gap-4 md:flex-row md:w-auto">
           <TableSearch />
           {/* 🔄 Reset Filters Button */}
-            <ResetFiltersButton basePath="/list/announcements" />
+          <ResetFiltersButton basePath="/list/announcements" />
           <div className="flex items-center self-end gap-4">
             <button className="flex items-center justify-center w-8 h-8 rounded-full bg-LamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
