@@ -117,6 +117,8 @@ const StudentForm = ({
       <span className="text-xs font-medium text-gray-400">Personal Information</span>
       <div className="flex flex-wrap justify-between gap-4">
         <InputField label="Admission No (Optional)" name="id" defaultValue={data?.id} register={register} placeholder="Enter admission number" error={errors.id} />
+      </div>
+      <div className="flex flex-wrap justify-between gap-4">
         <InputField label="Student Name" name="name" defaultValue={data?.name} register={register} error={errors.name} placeholder="As per Record" />
         <InputField label="Father Name" name="fatherName" defaultValue={data?.fatherName} register={register} error={errors.fatherName}  placeholder="Enter Father Name"/>
         <InputField label="Mother Name" name="motherName" defaultValue={data?.motherName} register={register} error={errors.motherName}  placeholder="Enter Mother Name"/>
@@ -124,7 +126,27 @@ const StudentForm = ({
         <InputField label="Address" name="address" defaultValue={data?.address} register={register} error={errors.address}  placeholder="Enter Address"/>
         <InputField label="Email (Optional)" name="email" defaultValue={data?.email} register={register} error={errors?.email} placeholder="Enter email id"/>
         <InputField label="Birthday" name="dob" defaultValue={data?.dob ? new Date(data.dob).toISOString().split("T")[0] : ""} register={register} error={errors.dob} type="date" />
-  
+
+        {/* Gender */}
+        <div className="flex flex-col w-full gap-2 md:w-1/4">
+          <label htmlFor="gender" className="text-xs text-gray-500">Gender</label>
+          <select
+            id="gender"
+            {...register("gender")}
+            defaultValue={data?.gender || ""}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+          >
+            <option value="" disabled>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          {errors.gender?.message && (
+            <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
+          )}
+        </div>       
+
+
+        
         {/* Academic Year */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label htmlFor="academicYear" className="text-xs text-gray-500">Academic Year</label>
@@ -143,23 +165,7 @@ const StudentForm = ({
           )}
         </div>
   
-        {/* Gender */}
-        <div className="flex flex-col w-full gap-2 md:w-1/4">
-          <label htmlFor="gender" className="text-xs text-gray-500">Gender</label>
-          <select
-            id="gender"
-            {...register("gender")}
-            defaultValue={data?.gender || ""}
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-          >
-            <option value="" disabled>Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-          {errors.gender?.message && (
-            <p className="text-xs text-red-400">{errors.gender.message.toString()}</p>
-          )}
-        </div>
+        
   
         {/* Grade Select */}
         <div className="flex flex-col w-full gap-2 md:w-1/4">
@@ -202,6 +208,7 @@ const StudentForm = ({
         </div>
   
         {/* Image Upload */}
+          <InputField label="Pen Number" name="penNo" defaultValue={data?.penNo} register={register} error={errors.penNo} placeholder="Enter Pen Number"/>
         <div className="flex flex-col w-full gap-2 md:w-1/4">
           <label className="text-xs text-gray-500">Photo (Optional)</label>
           <CldUploadWidget
@@ -220,6 +227,11 @@ const StudentForm = ({
             )}
           </CldUploadWidget>
         </div>
+
+        
+        <InputField label="Father Aadhar" name="fatherAadhar" defaultValue={data?.fatherAadhar} register={register} error={errors.fatherAadhar} placeholder="Enter Father Aadhar"/>
+        <InputField label="Student Aadhar" name="studentAadhar" defaultValue={data?.studentAadhar} register={register} error={errors.studentAadhar} placeholder="Enter Student Aadhar"/>
+        <InputField label="Mother Aadhar" name="motherAadhar" defaultValue={data?.motherAadhar} register={register} error={errors.motherAadhar} placeholder="Enter Mother Aadhar"/>
       </div>
   
       {state.error && <span className="text-red-500">Something went wrong!</span>}

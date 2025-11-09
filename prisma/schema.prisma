@@ -179,6 +179,10 @@ model Student {
   name              String
   motherName        String?
   fatherName        String?
+  penNo             String?
+  studentAadhar     String?
+  fatherAadhar      String?
+  motherAadhar      String?
   email             String?
   phone             String
   address           String

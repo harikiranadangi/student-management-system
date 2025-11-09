@@ -40,11 +40,16 @@ export const studentschema = z.object({
   name: z.string().min(1, { message: "Name is required!" }),
   fatherName: z.string().min(1, { message: "Father Name is required!" }),
   motherName: z.string().min(1, { message: "Mother Name is required!" }),
+  penNo: z.string().min(1, { message: "Pen Number is required!" }).optional().or(z.literal("")),
+  motherAadhar: z.string().min(1, { message: "Mother Aadhar is required!" }).optional().or(z.literal("")),
+  fatherAadhar: z.string().min(1, { message: "Father Aadhar is required!" }).optional().or(z.literal("")),
+  studentAadhar: z.string().min(1, { message: "Student Aadhar is required!" }).optional().or(z.literal("")),
   phone: z.string().regex(/^\d{10}$/, { message: "Phone number must be exactly 10 digits!" }),
   address: z.string().min(1, { message: "Address is required!" }),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Under Investigation"])
     .default("Under Investigation"),
   dob: z.union([z.coerce.date(), z.literal(""), z.null()]).optional(),
+
 
   img: z.string().optional().nullable(),
   email: z.string().email({ message: "Invalid email address!" }).optional().nullable(),
